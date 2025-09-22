@@ -1,0 +1,46 @@
+{
+  "compilerOptions": {
+    // File Layout - UNCOMMENT AND SET THESE
+    "rootDir": "./src",
+    "outDir": "./dist",
+    
+    // Environment Settings - CHANGE THESE
+    "module": "commonjs",        // Changed from "nodenext" 
+    "target": "es2020",          // Changed from "esnext"
+    "lib": ["es2020"],           // Add this for Node.js
+    "types": ["node"],           // Add Node.js types
+    
+    // Other Outputs
+    "sourceMap": true,
+    "declaration": true,
+    "declarationMap": true,
+    
+    // Stricter Typechecking Options
+    "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": true,
+    
+    // Style Options - UNCOMMENT THESE FOR BETTER CODE QUALITY
+    "noImplicitReturns": true,
+    "noImplicitOverride": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+    
+    // Recommended Options
+    "strict": true,
+    // "jsx": "react-jsx",                    // REMOVE - not needed for backend
+    // "verbatimModuleSyntax": true,          // REMOVE - can cause issues with Express
+    "isolatedModules": true,
+    // "noUncheckedSideEffectImports": true,  // REMOVE - not needed for backend
+    "moduleDetection": "force",
+    "skipLibCheck": true,
+    
+    // Additional Backend-Specific Options
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist", "**/*.test.ts", "**/*.spec.ts"]
+}
