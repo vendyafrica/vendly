@@ -1,27 +1,42 @@
 {
   "name": "vendly",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Vendly monorepo with frontend and backend applications",
+  "private": true,
+  "type": "commonjs",
   "directories": {
     "doc": "docs"
   },
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "turbo run build",
+    "dev": "turbo run dev --parallel --filter=!//",
+    "lint": "turbo run lint",
+    "type-check": "turbo run type-check",
+    "clean": "turbo run clean",
+    "test": "turbo run test"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/vendyafrica/vendly.git"
   },
-  "keywords": [],
+  "keywords": ["monorepo", "turborepo", "nextjs", "express", "typescript"],
   "author": "",
   "license": "ISC",
-  "type": "commonjs",
   "bugs": {
     "url": "https://github.com/vendyafrica/vendly/issues"
   },
   "homepage": "https://github.com/vendyafrica/vendly#readme",
   "devDependencies": {
-    "turbo": "^2.5.6"
-  }
+    "turbo": "^2.5.6",
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0"
+  },
+  "pnpm": {
+    "overrides": {}
+  },
+  "packageManager": "pnpm@10.7.0"
 }
