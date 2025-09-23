@@ -13,7 +13,7 @@ git clone https://github.com/vendyafrica/vendly.git
 cd vendly
 pnpm install
 ```
-
+//////////
 ## 2. Always sync with dev before you start
 ```sh
 git fetch origin
