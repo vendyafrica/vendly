@@ -1,14 +1,21 @@
-import express, { Application } from 'express';
+import express from "express";
+import { db } from "./database/db";
+import { users, User, NewUser } from "./database/schema";
 
-const app: Application = express();
-const port = process.env.PORT || 3000;
+const app = express();
+app.use(express.json());
 
-app.get('/', (_req, res) => {
-  res.send('hello world');
+// Get all users
+app.get("/users", async (_req, res) => {
+  const allUsers: User[] = await db.select().from(users);
+  res.json(allUsers);
 });
 
-app.listen(port, () => {
-  console.log(`Server running on port ${port}`);
+// Add user
+app.post("/users", async (req, res) => {
+  const newUser: NewUser = req.body;
+  const inserted = await db.insert(users).values(newUser).returning();
+  res.json(inserted[0]);
 });
 
-export default app;
+app.listen(4000, () => console.log("🚀 Server running on http://localhost:4000"));

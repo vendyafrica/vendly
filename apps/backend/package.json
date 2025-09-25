@@ -5,7 +5,9 @@
   "main": "index.js",
   "scripts": {
     "dev": "set PORT=4000 && nodemon --watch src --ext ts --exec ts-node src/index.ts",
-    "test": "vitest"
+    "test": "vitest",
+    "generate": "drizzle-kit generate",
+    "push": "drizzle-kit push"
   },
   "keywords": [],
   "author": "",
@@ -13,23 +15,31 @@
   "packageManager": "pnpm@10.7.0",
   "dependencies": {
     "@clerk/express": "^1.7.33",
+    "@supabase/supabase-js": "^2.57.4",
     "cors": "^2.8.5",
     "dotenv": "^17.2.2",
-    "express": "^5.1.0"
+    "drizzle-orm": "^0.44.5",
+    "express": "^5.1.0",
+    "pg": "^8.16.3",
+    "postgres": "^3.4.7",
+    "uuid": "^13.0.0"
   },
   "devDependencies": {
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.3",
     "@types/jest": "^30.0.0",
     "@types/node": "^24.5.2",
+    "@types/pg": "^8.15.5",
     "@types/supertest": "^6.0.2",
     "@typescript-eslint/eslint-plugin": "^8.44.0",
     "@typescript-eslint/parser": "^8.44.0",
     "@vitest/ui": "^2.1.8",
+    "drizzle-kit": "^0.31.4",
     "eslint": "^9.36.0",
     "nodemon": "^3.1.10",
     "supertest": "^7.0.0",
     "ts-node": "^10.9.2",
+    "tsx": "^4.20.5",
     "typescript": "^5.9.2",
     "vitest": "^2.1.8"
   }
