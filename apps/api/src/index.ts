@@ -1,21 +1,13 @@
-import express from "express";
-import { db } from "./database/db";
-import { users, User, NewUser } from "./database/schema";
+import { Request, Response } from 'express'
 
-const app = express();
-app.use(express.json());
+const express = require('express')
+const app = express()
+const port = 8000
 
-// Get all users
-app.get("/users", async (_req, res) => {
-  const allUsers: User[] = await db.select().from(users);
-  res.json(allUsers);
-});
+app.get('/', (req: Request, res: Response) => {
+  res.send('Hello World!')
+})
 
-// Add user
-app.post("/users", async (req, res) => {
-  const newUser: NewUser = req.body;
-  const inserted = await db.insert(users).values(newUser).returning();
-  res.json(inserted[0]);
-});
-
-app.listen(4000, () => console.log("🚀 Server running on http://localhost:4000"));
+app.listen(port, () => {
+  console.log(`Example app listening on port ${port}`)
+})
