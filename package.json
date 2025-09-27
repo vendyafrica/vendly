@@ -1,7 +1,7 @@
 {
   "name": "vendly",
   "version": "1.0.0",
-  "description": "Vendly monorepo with frontend and backend applications",
+  "description": "Vendly - Transform social commerce with AI-powered cataloging, payments, and delivery",
   "private": true,
   "type": "commonjs",
   "directories": {
