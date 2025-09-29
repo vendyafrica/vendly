@@ -19,10 +19,17 @@
     "db:migrate": "drizzle-kit migrate",
     "db:seed": "tsx src/scripts/seed.ts"
   },
-  "keywords": ["express", "api", "backend", "vendly"],
+  "keywords": [
+    "express",
+    "api",
+    "backend",
+    "vendly"
+  ],
   "author": "Vendly Africa",
   "license": "ISC",
   "dependencies": {
+    "@vendly/auth": "workspace:*",
+    "@vendly/database": "workspace:*",
     "@clerk/express": "^1.7.33",
     "@supabase/supabase-js": "^2.57.4",
     "cors": "^2.8.5",

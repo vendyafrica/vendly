@@ -1,8 +1,12 @@
 {
   "compilerOptions": {
-    // File Layout - UNCOMMENT AND SET THESE
+    // File Layout
     "rootDir": "./src",
     "outDir": "./dist",
+    "baseUrl": ".",
+    "paths": {
+      "@vendly/*": ["../../packages/*/src"]
+    },
     
     // Environment Settings - CHANGE THESE
     "module": "commonjs",        // Changed from "nodenext" 
