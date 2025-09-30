@@ -8,21 +8,15 @@
     ".": "./src/index.ts"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
     "db:generate": "drizzle-kit generate",
     "db:push": "drizzle-kit push"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "packageManager": "pnpm@10.7.0",
   "dependencies": {
-    "dotenv": "^17.2.3",
     "drizzle-orm": "^0.44.5",
     "postgres": "^3.4.7"
   },
   "devDependencies": {
     "drizzle-kit": "^0.31.5",
-    "tsx": "^4.20.6"
+    "dotenv": "^17.2.3"
   }
 }

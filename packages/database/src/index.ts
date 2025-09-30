@@ -12,7 +12,7 @@ if (!process.env.DATABASE_URL) {
 }
 
 const client = postgres(process.env.DATABASE_URL);
-const db = drizzle({ client, schema });
+const db: any = drizzle({ client, schema });
 
 export { db };
 export * from "../schema/auth-schema";

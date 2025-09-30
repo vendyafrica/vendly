@@ -1,5 +1,73 @@
+# Dependencies
 node_modules
-.vscode
+.pnp
+.pnp.js
+
+# Build outputs
+dist
+build
+.next
 .turbo
-.env*
+out
+
+# TypeScript compiled outputs (in source directories)
+**/*.js
+**/*.d.ts
+**/*.d.ts.map
+**/*.js.map
+!*.config.js
+!*.config.ts
+
+# But allow config files
+!next.config.js
+!tailwind.config.js
+!postcss.config.js
+!vitest.config.js
+
+# Testing
+coverage
+.nyc_output
+
+# Environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env*.local
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+*~
+
+# Database
 drizzle*
+*.db
+*.sqlite
+
+# Misc
+.turbo
+.cache
+.parcel-cache
+.vercel
+.netlify
+
+# TypeScript
+*.tsbuildinfo
+next-env.d.ts
