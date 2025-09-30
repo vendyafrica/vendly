@@ -12,7 +12,7 @@ if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
     throw new Error("Google client ID and secret must be provided");
 }
 
-export const auth = betterAuth({
+export const auth: any = betterAuth({
     database: drizzleAdapter(db, {
         provider: "pg",
     }),

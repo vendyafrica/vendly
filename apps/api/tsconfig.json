@@ -1,7 +1,7 @@
 {
+   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    // File Layout
-    "rootDir": "./src",
+    "rootDir": "../../",
     "outDir": "./dist",
     "baseUrl": ".",
     "paths": {
@@ -45,6 +45,9 @@
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true
   },
-  "include": ["src/**/*", "src/database/schema.ts"],
+    "include": [
+    "src/**/*",
+    "../../packages/*/src/**/*"
+  ],
   "exclude": ["node_modules", "dist", "**/*.test.ts", "**/*.spec.ts"]
 }
