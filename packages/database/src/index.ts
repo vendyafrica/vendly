@@ -3,7 +3,7 @@ import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
 import dotenv from "dotenv";
 import path from "path";
-
+import * as schema from "../schema/auth-schema";
 
 dotenv.config({ path: path.resolve(__dirname, "../../../.env") });
 
@@ -12,6 +12,7 @@ if (!process.env.DATABASE_URL) {
 }
 
 const client = postgres(process.env.DATABASE_URL);
-const db = drizzle({ client });
+const db = drizzle({ client, schema });
 
 export { db };
+export * from "../schema/auth-schema";

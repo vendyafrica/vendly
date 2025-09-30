@@ -1,7 +1,7 @@
 // packages/auth/auth.ts
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
-import { db } from "../database/src/index";
+import { db, user, session, account, verification } from "../database/src/index";
 import dotenv from "dotenv";
 import path from "path";
 
@@ -15,7 +15,14 @@ if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
 export const auth: any = betterAuth({
     database: drizzleAdapter(db, {
         provider: "pg",
+        schema: {
+            user,
+            session,
+            account,
+            verification,
+        },
     }),
+    trustedOrigins: ["http://localhost:3000", "http://localhost:4000"],
     socialProviders: {
         google: {
             clientId: process.env.GOOGLE_CLIENT_ID as string,

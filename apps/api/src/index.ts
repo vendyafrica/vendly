@@ -13,8 +13,8 @@ app.use(
   })
 );
 
-// Auth routes
-app.all("/api/auth/*", toNodeHandler(auth));
+// Auth routes - use regex pattern for Express 5 compatibility
+app.all(/^\/api\/auth\/.*/, toNodeHandler(auth));
 
 // Other middleware
 app.use(express.json());

@@ -1,5 +1,7 @@
-// Adjust the import according to the actual export from "@vendly/auth"
-import { authClient } from "@vendly/auth";
+
+"use client";
+
+import { authClient } from "@vendly/auth/client";
 
 
 export default function Home() {
@@ -21,7 +23,9 @@ export default function Home() {
   return (
     <div>
       <h1>Welcome to the Home Page</h1>
-      <button onClick={handle}>Sign in with Google</button>
+      <button onClick={handle}
+      className="px-4 py-2 bg-blue-500 text-white rounded-md"
+      >Sign in with Google</button>
     </div>
   );
 }

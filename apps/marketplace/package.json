@@ -4,7 +4,7 @@
   "description": "Vendly buyer marketplace and discovery platform",
   "private": true,
   "scripts": {
-    "dev": "next dev --turbopack",
+    "dev": "next dev --port 4000 --turbopack",
     "build": "next build --turbopack",
     "start": "next start",
     "lint": "eslint"
