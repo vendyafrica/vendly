@@ -1,6 +1,6 @@
 {
-  "name": "Vendly Web",
-  "short_name": "Vendly",
+  "name": "vendly",
+  "short_name": "MySite",
   "icons": [
     {
       "src": "/web-app-manifest-192x192.png",
