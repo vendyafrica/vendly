@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { Container } from "./container";
 
 export default function Footer() {
@@ -7,7 +8,7 @@ export default function Footer() {
       <Container className="py-10 grid grid-cols-1 gap-8 md:grid-cols-4">
         <div className="space-y-3">
           <div className="flex items-center gap-2 font-semibold">
-            <span className="h-6 w-6 rounded-md brand-gradient" />
+            <Image src="/icon0.svg" alt="Vendly logo" width={24} height={24} />
             <span>Vendly</span>
           </div>
           <p className="text-sm text-muted-foreground">

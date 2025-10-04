@@ -10,8 +10,9 @@ import {
   CardTitle,
 } from "@/app/components/ui/card";
 import { Container } from "@/app/components/container";
+import { cn } from "@/lib/utils";
 import CtaBand from "@/app/components/cta-band";
-import { Sparkles, Store, Rocket, Shield, Plug, Users } from "lucide-react";
+import { Sparkles, Store, Rocket, Shield, Plug, Users, ImageIcon } from "lucide-react";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 24 },
@@ -22,45 +23,105 @@ const fadeUp = {
   }),
 };
 
+const floatingPlaceholders = [
+  { className: "hidden lg:block top-[-6rem] left-[6%]", size: "h-28 w-28", delay: 0.3 },
+  { className: "top-[-4rem] right-[8%]", size: "h-24 w-24 sm:h-28 sm:w-28", delay: 0.6 },
+  { className: "bottom-[-6rem] left-[10%]", size: "h-24 w-24 sm:h-28 sm:w-28", delay: 0.9 },
+  { className: "bottom-[-6rem] right-[6%] hidden sm:block", size: "h-24 w-24", delay: 1.2 },
+  { className: "top-[20%] left-[18%] hidden md:block", size: "h-16 w-16", delay: 1.5 },
+  { className: "top-[38%] right-[18%] hidden md:block", size: "h-20 w-20", delay: 1.8 },
+] as const;
+
 export default function Home() {
   return (
     <>
       {/* Hero */}
       <section className="section-y" aria-labelledby="hero-title">
-        <Container className="text-center">
+        <Container className="relative overflow-hidden text-center">
           <motion.div
             initial="hidden"
             animate="visible"
             variants={fadeUp}
-            className="mx-auto max-w-3xl"
+            className="mx-auto flex max-w-4xl flex-col items-center gap-6"
           >
-            <p className="inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs/6 text-muted-foreground glass">
+            <p className="inline-flex items-center gap-2 rounded-full bg-white/75 px-4 py-1.5 text-[0.7rem] font-semibold uppercase tracking-[0.32em] text-muted-foreground/80 shadow-sm shadow-black/5">
               <Sparkles className="h-3.5 w-3.5 text-[var(--brand-purple)]" />
-              Your store beyond the feed
+              Beyond the feed
             </p>
             <h1
               id="hero-title"
-              className="mt-5 text-balance text-4xl font-semibold tracking-tight sm:text-5xl md:text-6xl gradient-text"
+              className="text-balance text-[clamp(2.75rem,5vw,4.75rem)] font-semibold leading-[1.08] text-foreground"
             >
               Turn your social media store into reality
             </h1>
-            <p className="mt-4 text-pretty text-muted-foreground">
-              Swiftly transform followers into customers with a beautiful,
-              mobile‑first storefront that plugs into your social presence.
+            <p className="max-w-2xl text-base leading-relaxed text-muted-foreground sm:text-lg">
+              Vendly helps social sellers transform Instagram and WhatsApp stores into polished online storefronts. Get a complete setup with payments and delivery in minutes.
             </p>
-            <div className="mt-6 flex items-center justify-center gap-3">
-              <Button variant="brand" className="px-6">
-                Start free
+            <div className="flex flex-wrap items-center justify-center gap-3">
+              <Button variant="brand" className="rounded-full px-7 py-3 text-sm font-semibold shadow-sm shadow-black/10">
+                Get started
               </Button>
-              <Button variant="outline">Book demo</Button>
+              <Button variant="outline" className="rounded-full px-7 py-3 text-sm font-semibold">
+                Learn more
+              </Button>
             </div>
           </motion.div>
 
-          {/* Decorative image placeholders like the wireframe */}
-          <div className="pointer-events-none mt-10 grid grid-cols-3 gap-4 opacity-60 sm:grid-cols-6">
-            {Array.from({ length: 12 }).map((_, i) => (
-              <div key={i} className="h-12 rounded-md border bg-secondary" />
-            ))}
+          <div className="relative mt-16 flex w-full justify-center">
+            <motion.div
+              initial="hidden"
+              animate="visible"
+              variants={fadeUp}
+              custom={1}
+              className="relative z-10 w-full max-w-3xl rounded-[32px] border border-white/70 bg-white/80 p-10 shadow-2xl shadow-black/10 backdrop-blur-lg"
+            >
+              <div className="flex flex-col items-start gap-6 text-left sm:flex-row sm:items-center sm:justify-between">
+                <div className="space-y-2">
+                  <p className="text-xs font-semibold uppercase tracking-[0.32em] text-muted-foreground/70">
+                    Preview Storefront
+                  </p>
+                  <h2 className="text-2xl font-semibold tracking-tight text-foreground">
+                    Everything you need to launch in minutes
+                  </h2>
+                  <p className="max-w-sm text-sm leading-relaxed text-muted-foreground">
+                    Customize your layout, connect socials, and manage orders from one beautiful dashboard.
+                  </p>
+                </div>
+                <Button variant="brand" className="rounded-full px-6 py-2 text-sm font-semibold shadow-sm shadow-black/10">
+                  View demo
+                </Button>
+              </div>
+            </motion.div>
+
+            <div className="pointer-events-none absolute inset-0 -z-10">
+              {floatingPlaceholders.map((item, index) => (
+                <motion.div
+                  key={index}
+                  initial={{ opacity: 0, y: 36 }}
+                  animate={{
+                    opacity: 0.9,
+                    y: [-10, 12, -6],
+                    rotate: [0, 6, -4, 0],
+                  }}
+                  transition={{
+                    duration: 14 + index,
+                    delay: item.delay,
+                    repeat: Infinity,
+                    repeatType: "mirror",
+                    ease: "easeInOut",
+                  }}
+                  className={cn(
+                    "absolute rounded-3xl border border-white/60 bg-white/80 shadow-xl shadow-black/10 backdrop-blur-md",
+                    item.size,
+                    item.className
+                  )}
+                >
+                  <div className="flex h-full w-full items-center justify-center">
+                    <ImageIcon className="h-7 w-7 text-muted-foreground/60" />
+                  </div>
+                </motion.div>
+              ))}
+            </div>
           </div>
         </Container>
       </section>
