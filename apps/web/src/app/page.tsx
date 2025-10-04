@@ -15,11 +15,15 @@ import CtaBand from "@/app/components/cta-band";
 import { Sparkles, Store, Rocket, Shield, Plug, Users, ImageIcon } from "lucide-react";
 
 const fadeUp = {
-  hidden: { opacity: 0, y: 24 },
+  hidden: { opacity: 0, y: 30 },
   visible: (i: number = 0) => ({
     opacity: 1,
     y: 0,
-    transition: { duration: 0.6, ease: "easeOut", delay: i * 0.08 },
+    transition: {
+      duration: 0.8,
+      ease: [0.25, 0.1, 0.25, 1],
+      delay: i * 0.1
+    },
   }),
 };
 
@@ -36,58 +40,59 @@ export default function Home() {
   return (
     <>
       {/* Hero */}
-      <section className="section-y" aria-labelledby="hero-title">
+      <section className="py-24 sm:py-32 lg:py-40" aria-labelledby="hero-title">
         <Container className="relative overflow-hidden text-center">
           <motion.div
             initial="hidden"
             animate="visible"
             variants={fadeUp}
-            className="mx-auto flex max-w-4xl flex-col items-center gap-6"
+            className="mx-auto flex max-w-5xl flex-col items-center gap-8"
           >
-            <p className="inline-flex items-center gap-2 rounded-full bg-white/75 px-4 py-1.5 text-[0.7rem] font-semibold uppercase tracking-[0.32em] text-muted-foreground/80 shadow-sm shadow-black/5">
-              <Sparkles className="h-3.5 w-3.5 text-[var(--brand-purple)]" />
+            <p className="inline-flex items-center gap-2 rounded-full bg-white/90 px-5 py-2 text-[0.7rem] font-bold uppercase tracking-[0.32em] text-muted-foreground/70 shadow-md shadow-black/5 backdrop-blur-sm">
+              <Sparkles className="h-4 w-4 text-[var(--brand-purple)]" />
               Beyond the feed
             </p>
             <h1
               id="hero-title"
-              className="text-balance text-[clamp(2.75rem,5vw,4.75rem)] font-semibold leading-[1.08] text-foreground"
+              className="text-balance text-[clamp(3.5rem,8vw,6rem)] font-extrabold leading-[1.05] tracking-tight"
             >
-              Turn your social media store into reality
+              Turn your social media{" "}
+              <span className="text-gray-400">store into reality</span>
             </h1>
-            <p className="max-w-2xl text-base leading-relaxed text-muted-foreground sm:text-lg">
+            <p className="max-w-2xl text-lg leading-relaxed text-muted-foreground/80 sm:text-xl sm:leading-relaxed">
               Vendly helps social sellers transform Instagram and WhatsApp stores into polished online storefronts. Get a complete setup with payments and delivery in minutes.
             </p>
-            <div className="flex flex-wrap items-center justify-center gap-3">
-              <Button variant="brand" className="rounded-full px-7 py-3 text-sm font-semibold shadow-sm shadow-black/10">
+            <div className="flex flex-wrap items-center justify-center gap-4">
+              <Button variant="brand" className="rounded-full px-10 py-4 text-base font-bold shadow-lg shadow-purple-500/20 transition-all hover:shadow-xl hover:shadow-purple-500/30 hover:scale-105">
                 Get started
               </Button>
-              <Button variant="outline" className="rounded-full px-7 py-3 text-sm font-semibold">
+              <Button variant="outline" className="rounded-full px-10 py-4 text-base font-semibold border-2 hover:bg-white/50 transition-all">
                 Learn more
               </Button>
             </div>
           </motion.div>
 
-          <div className="relative mt-16 flex w-full justify-center">
+          <div className="relative mt-20 flex w-full justify-center">
             <motion.div
               initial="hidden"
               animate="visible"
               variants={fadeUp}
               custom={1}
-              className="relative z-10 w-full max-w-3xl rounded-[32px] border border-white/70 bg-white/80 p-10 shadow-2xl shadow-black/10 backdrop-blur-lg"
+              className="relative z-10 w-full max-w-3xl rounded-[40px] border border-white/60 bg-white/70 p-12 shadow-2xl shadow-black/5 backdrop-blur-xl"
             >
               <div className="flex flex-col items-start gap-6 text-left sm:flex-row sm:items-center sm:justify-between">
                 <div className="space-y-2">
                   <p className="text-xs font-semibold uppercase tracking-[0.32em] text-muted-foreground/70">
                     Preview Storefront
                   </p>
-                  <h2 className="text-2xl font-semibold tracking-tight text-foreground">
+                  <h2 className="text-3xl font-bold tracking-tight text-foreground">
                     Everything you need to launch in minutes
                   </h2>
                   <p className="max-w-sm text-sm leading-relaxed text-muted-foreground">
                     Customize your layout, connect socials, and manage orders from one beautiful dashboard.
                   </p>
                 </div>
-                <Button variant="brand" className="rounded-full px-6 py-2 text-sm font-semibold shadow-sm shadow-black/10">
+                <Button variant="brand" className="rounded-full px-8 py-3 text-base font-bold shadow-lg shadow-purple-500/20 transition-all hover:shadow-xl hover:shadow-purple-500/30">
                   View demo
                 </Button>
               </div>
@@ -111,7 +116,7 @@ export default function Home() {
                     ease: "easeInOut",
                   }}
                   className={cn(
-                    "absolute rounded-3xl border border-white/60 bg-white/80 shadow-xl shadow-black/10 backdrop-blur-md",
+                    "absolute rounded-[32px] border border-white/50 bg-white/70 shadow-xl shadow-black/5 backdrop-blur-lg",
                     item.size,
                     item.className
                   )}
@@ -129,7 +134,7 @@ export default function Home() {
       {/* Sell smarter section */}
       <section
         id="features"
-        className="section-y"
+        className="py-24 sm:py-32"
         aria-labelledby="features-title"
       >
         <Container>
@@ -139,12 +144,12 @@ export default function Home() {
             whileInView="visible"
             viewport={{ once: true, amount: 0.2 }}
             variants={fadeUp}
-            className="mb-8 text-center text-2xl font-semibold sm:text-3xl"
+            className="mb-12 text-center text-3xl font-bold sm:text-4xl"
           >
             Sell smarter online
           </motion.h2>
 
-          <div className="grid gap-6 md:grid-cols-3">
+          <div className="grid gap-8 md:grid-cols-3">
             {/* Left large card */}
             <motion.div
               initial="hidden"
@@ -153,7 +158,7 @@ export default function Home() {
               variants={fadeUp}
               className="md:col-span-2"
             >
-              <Card className="h-full">
+              <Card className="h-full transition-all duration-300 hover:shadow-xl hover:shadow-black/5 hover:-translate-y-1">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Store className="h-5 w-5 text-[var(--brand-purple)]" />
@@ -165,13 +170,13 @@ export default function Home() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="aspect-video w-full rounded-md border bg-secondary" />
+                  <div className="aspect-video w-full rounded-2xl border bg-secondary" />
                 </CardContent>
               </Card>
             </motion.div>
 
             {/* Right stack */}
-            <div className="grid gap-6">
+            <div className="grid gap-8">
               <motion.div
                 initial="hidden"
                 whileInView="visible"
@@ -179,7 +184,7 @@ export default function Home() {
                 variants={fadeUp}
                 custom={1}
               >
-                <Card>
+                <Card className="transition-all duration-300 hover:shadow-xl hover:shadow-black/5 hover:-translate-y-1">
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                       <Plug className="h-5 w-5 text-[var(--brand-purple)]" />
@@ -191,7 +196,7 @@ export default function Home() {
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <div className="aspect-[16/10] w-full rounded-md border bg-secondary" />
+                    <div className="aspect-[16/10] w-full rounded-2xl border bg-secondary" />
                   </CardContent>
                 </Card>
               </motion.div>
@@ -203,7 +208,7 @@ export default function Home() {
                 variants={fadeUp}
                 custom={2}
               >
-                <Card>
+                <Card className="transition-all duration-300 hover:shadow-xl hover:shadow-black/5 hover:-translate-y-1">
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                       <Users className="h-5 w-5 text-[var(--brand-purple)]" />
@@ -214,7 +219,7 @@ export default function Home() {
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <div className="aspect-[16/10] w-full rounded-md border bg-secondary" />
+                    <div className="aspect-[16/10] w-full rounded-2xl border bg-secondary" />
                   </CardContent>
                 </Card>
               </motion.div>
@@ -224,7 +229,7 @@ export default function Home() {
       </section>
 
       {/* Four-step timeline */}
-      <section id="how" className="section-y" aria-labelledby="how-title">
+      <section id="how" className="py-24 sm:py-32" aria-labelledby="how-title">
         <Container className="grid gap-10 md:grid-cols-[1fr,auto,1fr]">
           <motion.div
             initial="hidden"
@@ -233,12 +238,12 @@ export default function Home() {
             variants={fadeUp}
             className="md:col-span-3 text-center"
           >
-            <h2 id="how-title" className="text-2xl font-semibold sm:text-3xl">
+            <h2 id="how-title" className="text-3xl font-bold sm:text-4xl">
               Launch your online store in four simple steps
             </h2>
           </motion.div>
 
-          <ol className="relative mx-auto w-full max-w-3xl space-y-8">
+          <ol className="relative mx-auto w-full max-w-3xl space-y-10">
             {[
               {
                 title: "Create account",
@@ -284,17 +289,17 @@ export default function Home() {
       {/* Showcase area */}
       <section
         id="showcase"
-        className="section-y"
+        className="py-24 sm:py-32"
         aria-labelledby="showcase-title"
       >
-        <Container className="space-y-4">
+        <Container className="space-y-8">
           <motion.h2
             id="showcase-title"
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true }}
             variants={fadeUp}
-            className="text-2xl font-semibold sm:text-3xl"
+            className="text-3xl font-bold sm:text-4xl"
           >
             Claim your digital storefront now
           </motion.h2>
@@ -304,9 +309,9 @@ export default function Home() {
             viewport={{ once: true }}
             variants={fadeUp}
             custom={1}
-            className="rounded-xl border bg-card"
+            className="rounded-3xl border bg-card"
           >
-            <div className="aspect-video w-full rounded-xl border bg-secondary" />
+            <div className="aspect-video w-full rounded-3xl border bg-secondary" />
           </motion.div>
           <motion.div
             initial="hidden"
@@ -314,10 +319,14 @@ export default function Home() {
             viewport={{ once: true }}
             variants={fadeUp}
             custom={2}
-            className="flex gap-3"
+            className="flex gap-4"
           >
-            <Button variant="brand">Start free</Button>
-            <Button variant="outline">View templates</Button>
+            <Button variant="brand" className="rounded-full px-8 py-3 text-base font-bold shadow-lg shadow-purple-500/20 transition-all hover:shadow-xl hover:shadow-purple-500/30">
+              Start free
+            </Button>
+            <Button variant="outline" className="rounded-full px-8 py-3 text-base font-semibold border-2 hover:bg-white/50 transition-all">
+              View templates
+            </Button>
           </motion.div>
         </Container>
       </section>

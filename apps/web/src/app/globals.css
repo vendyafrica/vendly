@@ -133,10 +133,13 @@
   /* Site-wide diagonal brand gradient:
      bottom-left black &gt; center purple &gt; top-right peach */
   .brand-gradient {
-    background-image:
-      radial-gradient(60% 55% at 8% 92%, var(--brand-black) 0%, transparent 60%),
-      radial-gradient(70% 70% at 50% 55%, color-mix(in oklch, var(--brand-purple) 90%, white 10%) 0%, transparent 60%),
-      linear-gradient(135deg, var(--brand-black) 0%, var(--brand-purple) 55%, var(--brand-peach) 100%);
+    background: linear-gradient(135deg,
+      #f3e7ff 0%,
+      #e9d5ff 25%,
+      #fce7f3 50%,
+      #ffd9d1 75%,
+      #ffe4d9 100%
+    );
   }
 
   .gradient-text {
@@ -154,6 +157,6 @@
   }
 
   .section-y {
-    padding-block: clamp(3rem, 6vw, 6rem);
+    padding-block: clamp(5rem, 10vw, 8rem);
   }
 }
