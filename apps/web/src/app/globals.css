@@ -120,3 +120,40 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Brand tokens and gradient utilities */
+:root {
+  --brand-purple: #7042D2;
+  --brand-peach: #FFD9D1;
+  --brand-black: #000000;
+}
+
+/* Utilities */
+@layer utilities {
+  /* Site-wide diagonal brand gradient:
+     bottom-left black &gt; center purple &gt; top-right peach */
+  .brand-gradient {
+    background-image:
+      radial-gradient(60% 55% at 8% 92%, var(--brand-black) 0%, transparent 60%),
+      radial-gradient(70% 70% at 50% 55%, color-mix(in oklch, var(--brand-purple) 90%, white 10%) 0%, transparent 60%),
+      linear-gradient(135deg, var(--brand-black) 0%, var(--brand-purple) 55%, var(--brand-peach) 100%);
+  }
+
+  .gradient-text {
+    background-image: linear-gradient(135deg, var(--brand-purple), var(--brand-peach));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .glass {
+    background-color: rgb(255 255 255 / 0.6);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid var(--border);
+  }
+
+  .section-y {
+    padding-block: clamp(3rem, 6vw, 6rem);
+  }
+}
