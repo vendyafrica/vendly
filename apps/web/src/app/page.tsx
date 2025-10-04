@@ -1,14 +1,14 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/app/components/ui/button";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
+} from "@/app/components/ui/card";
 import { Container } from "@/app/components/container";
 import CtaBand from "@/app/components/cta-band";
 import { Sparkles, Store, Rocket, Shield, Plug, Users } from "lucide-react";
@@ -49,7 +49,9 @@ export default function Home() {
               mobile‑first storefront that plugs into your social presence.
             </p>
             <div className="mt-6 flex items-center justify-center gap-3">
-              <Button variant="brand" className="px-6">Start free</Button>
+              <Button variant="brand" className="px-6">
+                Start free
+              </Button>
               <Button variant="outline">Book demo</Button>
             </div>
           </motion.div>
@@ -64,7 +66,11 @@ export default function Home() {
       </section>
 
       {/* Sell smarter section */}
-      <section id="features" className="section-y" aria-labelledby="features-title">
+      <section
+        id="features"
+        className="section-y"
+        aria-labelledby="features-title"
+      >
         <Container>
           <motion.h2
             id="features-title"
@@ -93,7 +99,8 @@ export default function Home() {
                     Transform followers into paying customers
                   </CardTitle>
                   <CardDescription>
-                    Create a fast, conversion‑ready storefront that feels native to your audience.
+                    Create a fast, conversion‑ready storefront that feels native
+                    to your audience.
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -118,7 +125,8 @@ export default function Home() {
                       Plug into your social channels
                     </CardTitle>
                     <CardDescription>
-                      Link in bio, product tags, and checkout designed for socials.
+                      Link in bio, product tags, and checkout designed for
+                      socials.
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
@@ -213,7 +221,11 @@ export default function Home() {
       </section>
 
       {/* Showcase area */}
-      <section id="showcase" className="section-y" aria-labelledby="showcase-title">
+      <section
+        id="showcase"
+        className="section-y"
+        aria-labelledby="showcase-title"
+      >
         <Container className="space-y-4">
           <motion.h2
             id="showcase-title"

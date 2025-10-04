@@ -1,5 +1,5 @@
 "use client";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/app/components/ui/button";
 import { Container } from "./container";
 
 export default function CtaBand() {
@@ -13,14 +13,18 @@ export default function CtaBand() {
                 Grow your digital selling empire
               </h3>
               <p className="mt-2 max-w-xl text-white/85">
-                Spin up your storefront in minutes and turn followers into loyal customers.
+                Spin up your storefront in minutes and turn followers into loyal
+                customers.
               </p>
             </div>
             <div className="flex gap-3">
               <Button variant="brand" className="shadow">
                 Start free
               </Button>
-              <Button variant="outline" className="bg-white/10 text-white border-white/30 hover:bg-white/20">
+              <Button
+                variant="outline"
+                className="bg-white/10 text-white border-white/30 hover:bg-white/20"
+              >
                 Book demo
               </Button>
             </div>
