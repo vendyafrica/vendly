@@ -12,129 +12,255 @@ import {
 import { Container } from "@/app/components/container";
 import { cn } from "@/lib/utils";
 import CtaBand from "@/app/components/cta-band";
-import { Sparkles, Store, Rocket, Shield, Plug, Users, ImageIcon } from "lucide-react";
+import { Sparkles, Store, Rocket, Shield, Plug, Users, ImageIcon, ArrowRight, Instagram, ShoppingBag } from "lucide-react";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 30 },
   visible: (i: number = 0) => ({
     opacity: 1,
     y: 0,
-    transition: {
-      duration: 0.8,
-      ease: [0.25, 0.1, 0.25, 1],
-      delay: i * 0.1
+    transition: { 
+      duration: 0.8, 
+      ease: [0.25, 0.1, 0.25, 1], 
+      delay: i * 0.1 
     },
   }),
 };
 
-const floatingPlaceholders = [
-  { className: "hidden lg:block top-[-6rem] left-[6%]", size: "h-28 w-28", delay: 0.3 },
-  { className: "top-[-4rem] right-[8%]", size: "h-24 w-24 sm:h-28 sm:w-28", delay: 0.6 },
-  { className: "bottom-[-6rem] left-[10%]", size: "h-24 w-24 sm:h-28 sm:w-28", delay: 0.9 },
-  { className: "bottom-[-6rem] right-[6%] hidden sm:block", size: "h-24 w-24", delay: 1.2 },
-  { className: "top-[20%] left-[18%] hidden md:block", size: "h-16 w-16", delay: 1.5 },
-  { className: "top-[38%] right-[18%] hidden md:block", size: "h-20 w-20", delay: 1.8 },
-] as const;
+const floatingAnimation = {
+  initial: { opacity: 0, y: 20, rotate: 0 },
+  animate: (i: number) => ({
+    opacity: [0, 1, 1],
+    y: [20, -10, 10, -10],
+    rotate: [0, 2, -2, 2, 0],
+    transition: {
+      duration: 4 + i * 0.5,
+      repeat: Infinity,
+      repeatType: "reverse" as const,
+      ease: "easeInOut",
+      delay: i * 0.3,
+    },
+  }),
+};
 
 export default function Home() {
   return (
     <>
-      {/* Hero */}
-      <section className="py-24 sm:py-32 lg:py-40" aria-labelledby="hero-title">
-        <Container className="relative overflow-hidden text-center">
-          <motion.div
-            initial="hidden"
-            animate="visible"
-            variants={fadeUp}
-            className="mx-auto flex max-w-5xl flex-col items-center gap-8"
-          >
-            <p className="inline-flex items-center gap-2 rounded-full bg-white/90 px-5 py-2 text-[0.7rem] font-bold uppercase tracking-[0.32em] text-muted-foreground/70 shadow-md shadow-black/5 backdrop-blur-sm">
-              <Sparkles className="h-4 w-4 text-[var(--brand-purple)]" />
-              Beyond the feed
-            </p>
-            <h1
-              id="hero-title"
-              className="text-balance text-[clamp(3.5rem,8vw,6rem)] font-extrabold leading-[1.05] tracking-tight"
-            >
-              Turn your social media{" "}
-              <span className="text-gray-400">store into reality</span>
-            </h1>
-            <p className="max-w-2xl text-lg leading-relaxed text-muted-foreground/80 sm:text-xl sm:leading-relaxed">
-              Vendly helps social sellers transform Instagram and WhatsApp stores into polished online storefronts. Get a complete setup with payments and delivery in minutes.
-            </p>
-            <div className="flex flex-wrap items-center justify-center gap-4">
-              <Button variant="brand" className="rounded-full px-10 py-4 text-base font-bold shadow-lg shadow-purple-500/20 transition-all hover:shadow-xl hover:shadow-purple-500/30 hover:scale-105">
-                Get started
-              </Button>
-              <Button variant="outline" className="rounded-full px-10 py-4 text-base font-semibold border-2 hover:bg-white/50 transition-all">
-                Learn more
-              </Button>
-            </div>
-          </motion.div>
-
-          <div className="relative mt-20 flex w-full justify-center">
+      {/* Hero Section - Full Height 2-Column Layout */}
+      <section className="relative min-h-screen flex items-center px-8 md:px-16 lg:px-24 pt-24" aria-labelledby="hero-title">
+        <div className="mx-auto w-full max-w-7xl">
+          <div className="grid gap-12 lg:grid-cols-[60%_40%] lg:gap-16 items-center">
+            {/* Left Column - Content */}
             <motion.div
               initial="hidden"
               animate="visible"
               variants={fadeUp}
-              custom={1}
-              className="relative z-10 w-full max-w-3xl rounded-[40px] border border-white/60 bg-white/70 p-12 shadow-2xl shadow-black/5 backdrop-blur-xl"
+              className="flex flex-col gap-8 z-10"
             >
-              <div className="flex flex-col items-start gap-6 text-left sm:flex-row sm:items-center sm:justify-between">
-                <div className="space-y-2">
-                  <p className="text-xs font-semibold uppercase tracking-[0.32em] text-muted-foreground/70">
-                    Preview Storefront
-                  </p>
-                  <h2 className="text-3xl font-bold tracking-tight text-foreground">
-                    Everything you need to launch in minutes
-                  </h2>
-                  <p className="max-w-sm text-sm leading-relaxed text-muted-foreground">
-                    Customize your layout, connect socials, and manage orders from one beautiful dashboard.
-                  </p>
-                </div>
-                <Button variant="brand" className="rounded-full px-8 py-3 text-base font-bold shadow-lg shadow-purple-500/20 transition-all hover:shadow-xl hover:shadow-purple-500/30">
-                  View demo
+              {/* Eyebrow Badge */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.2 }}
+                className="inline-flex items-center gap-2 self-start rounded-full bg-[#8B0000] px-5 py-2 text-sm font-medium text-white shadow-lg"
+              >
+                <Sparkles className="h-4 w-4" />
+                BEYOND THE FEED - Launch in 5 minutes
+                <ArrowRight className="h-4 w-4" />
+              </motion.div>
+
+              {/* Stripe-Style Headline */}
+              <h1
+                id="hero-title"
+                className="text-[clamp(3rem,8vw,7.5rem)] font-extrabold leading-[0.9] tracking-tight"
+                style={{ letterSpacing: '-0.02em' }}
+              >
+                <motion.span
+                  initial={{ opacity: 0, y: 30 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.8, delay: 0.3 }}
+                  className="block text-white/80"
+                >
+                  Your store
+                </motion.span>
+                <motion.span
+                  initial={{ opacity: 0, y: 30 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.8, delay: 0.4 }}
+                  className="block text-white/80"
+                >
+                  beyond
+                </motion.span>
+                <motion.span
+                  initial={{ opacity: 0, y: 30 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.8, delay: 0.5 }}
+                  className="block text-white/80"
+                >
+                  the feed
+                </motion.span>
+              </h1>
+
+              {/* Subheadline */}
+              <motion.p
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, delay: 0.6 }}
+                className="max-w-xl text-2xl leading-relaxed text-white/90 font-normal"
+              >
+                Turn Instagram DMs into a real online store. Get paid, deliver orders, and get discovered—all in 5 minutes.
+              </motion.p>
+
+              {/* CTA Buttons */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, delay: 0.7 }}
+                className="flex flex-wrap items-center gap-4"
+              >
+                <Button
+                  size="lg"
+                  className="group rounded-full bg-black px-10 py-6 text-base font-semibold text-white shadow-xl transition-all hover:bg-black/90 hover:scale-105"
+                >
+                  Start for free
+                  <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
                 </Button>
-              </div>
+                <Button
+                  size="lg"
+                  variant="outline"
+                  className="rounded-full border-2 border-white/30 bg-transparent px-10 py-6 text-base font-semibold text-white backdrop-blur-sm transition-all hover:bg-white/10 hover:border-white/50"
+                >
+                  Watch demo
+                </Button>
+              </motion.div>
             </motion.div>
 
-            <div className="pointer-events-none absolute inset-0 -z-10">
-              {floatingPlaceholders.map((item, index) => (
-                <motion.div
-                  key={index}
-                  initial={{ opacity: 0, y: 36 }}
-                  animate={{
-                    opacity: 0.9,
-                    y: [-10, 12, -6],
-                    rotate: [0, 6, -4, 0],
-                  }}
-                  transition={{
-                    duration: 14 + index,
-                    delay: item.delay,
-                    repeat: Infinity,
-                    repeatType: "mirror",
-                    ease: "easeInOut",
-                  }}
-                  className={cn(
-                    "absolute rounded-[32px] border border-white/50 bg-white/70 shadow-xl shadow-black/5 backdrop-blur-lg",
-                    item.size,
-                    item.className
-                  )}
-                >
-                  <div className="flex h-full w-full items-center justify-center">
-                    <ImageIcon className="h-7 w-7 text-muted-foreground/60" />
+            {/* Right Column - Instagram to Storefront Animation */}
+            <div className="relative h-[600px] lg:h-[700px] order-first lg:order-last">
+              {/* Stage 1: Floating Instagram Cards */}
+              <motion.div
+                custom={0}
+                initial="initial"
+                animate="animate"
+                variants={floatingAnimation}
+                className="absolute top-[10%] left-[10%] w-48 h-64 rounded-3xl bg-white/10 backdrop-blur-lg border border-white/20 shadow-2xl p-4"
+              >
+                <div className="w-full h-40 rounded-2xl bg-gradient-to-br from-purple-400 to-pink-400 mb-3" />
+                <div className="space-y-2">
+                  <div className="h-3 bg-white/30 rounded w-3/4" />
+                  <div className="h-3 bg-white/20 rounded w-1/2" />
+                </div>
+              </motion.div>
+
+              <motion.div
+                custom={1}
+                initial="initial"
+                animate="animate"
+                variants={floatingAnimation}
+                className="absolute top-[30%] right-[5%] w-44 h-56 rounded-3xl bg-white/10 backdrop-blur-lg border border-white/20 shadow-2xl p-4"
+              >
+                <div className="w-full h-32 rounded-2xl bg-gradient-to-br from-orange-400 to-red-400 mb-3" />
+                <div className="space-y-2">
+                  <div className="h-2 bg-white/30 rounded w-2/3" />
+                  <div className="h-2 bg-white/20 rounded w-1/2" />
+                </div>
+              </motion.div>
+
+              <motion.div
+                custom={2}
+                initial="initial"
+                animate="animate"
+                variants={floatingAnimation}
+                className="absolute bottom-[20%] left-[5%] w-40 h-52 rounded-3xl bg-white/10 backdrop-blur-lg border border-white/20 shadow-2xl p-3"
+              >
+                <div className="w-full h-28 rounded-2xl bg-gradient-to-br from-blue-400 to-cyan-400 mb-2" />
+                <div className="space-y-2">
+                  <div className="h-2 bg-white/30 rounded w-3/4" />
+                  <div className="h-2 bg-white/20 rounded w-1/2" />
+                </div>
+              </motion.div>
+
+              {/* Center Storefront UI */}
+              <motion.div
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 1, delay: 1.5 }}
+                className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 rounded-3xl bg-white/95 backdrop-blur-xl border border-white/40 shadow-2xl p-6 z-10"
+              >
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-2">
+                    <ShoppingBag className="h-5 w-5 text-[#7042D2]" />
+                    <span className="font-bold text-lg">Vendly Store</span>
                   </div>
-                </motion.div>
-              ))}
+                  <div className="flex gap-1">
+                    <div className="w-2 h-2 rounded-full bg-red-400" />
+                    <div className="w-2 h-2 rounded-full bg-yellow-400" />
+                    <div className="w-2 h-2 rounded-full bg-green-400" />
+                  </div>
+                </div>
+                
+                <div className="space-y-3 mb-4">
+                  <div className="h-10 bg-gray-100 rounded-lg flex items-center px-3 text-sm text-gray-500">
+                    Search products...
+                  </div>
+                  <div className="flex gap-2">
+                    <div className="px-3 py-1 bg-[#7042D2] text-white text-xs rounded-full">All</div>
+                    <div className="px-3 py-1 bg-gray-100 text-gray-600 text-xs rounded-full">Fashion</div>
+                    <div className="px-3 py-1 bg-gray-100 text-gray-600 text-xs rounded-full">Beauty</div>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3 mb-4">
+                  {[1, 2, 3, 4].map((i) => (
+                    <div key={i} className="rounded-xl bg-gradient-to-br from-purple-100 to-pink-100 aspect-square" />
+                  ))}
+                </div>
+
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="w-full bg-[#7042D2] text-white py-3 rounded-xl font-semibold shadow-lg shadow-purple-500/30"
+                >
+                  Checkout with M-Pesa
+                </motion.button>
+              </motion.div>
+
+              {/* Floating UI Elements */}
+              <motion.div
+                animate={{
+                  y: [0, -20, 0],
+                  opacity: [0.1, 0.2, 0.1],
+                }}
+                transition={{
+                  duration: 6,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                }}
+                className="absolute top-[5%] right-[20%] w-32 h-20 rounded-2xl bg-white/10 backdrop-blur-sm border border-white/10"
+              />
+              
+              <motion.div
+                animate={{
+                  y: [0, 15, 0],
+                  opacity: [0.1, 0.15, 0.1],
+                }}
+                transition={{
+                  duration: 8,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                  delay: 1,
+                }}
+                className="absolute bottom-[10%] right-[15%] w-40 h-24 rounded-2xl bg-white/10 backdrop-blur-sm border border-white/10"
+              />
             </div>
           </div>
-        </Container>
+        </div>
       </section>
 
       {/* Sell smarter section */}
       <section
         id="features"
-        className="py-24 sm:py-32"
+        className="py-24 sm:py-32 bg-white"
         aria-labelledby="features-title"
       >
         <Container>
@@ -229,7 +355,7 @@ export default function Home() {
       </section>
 
       {/* Four-step timeline */}
-      <section id="how" className="py-24 sm:py-32" aria-labelledby="how-title">
+      <section id="how" className="py-24 sm:py-32 bg-gray-50" aria-labelledby="how-title">
         <Container className="grid gap-10 md:grid-cols-[1fr,auto,1fr]">
           <motion.div
             initial="hidden"
@@ -289,7 +415,7 @@ export default function Home() {
       {/* Showcase area */}
       <section
         id="showcase"
-        className="py-24 sm:py-32"
+        className="py-24 sm:py-32 bg-white"
         aria-labelledby="showcase-title"
       >
         <Container className="space-y-8">

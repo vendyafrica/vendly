@@ -6,7 +6,7 @@ export default function GradientBackground() {
   return (
     <div
       aria-hidden="true"
-      className="pointer-events-none fixed inset-0 -z-10 brand-gradient"
+      className="pointer-events-none fixed inset-0 -z-10 brand-gradient-animated"
     />
   );
 }
