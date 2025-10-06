@@ -1,19 +1,12 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Barlow } from "next/font/google";
 //@ts-ignore
 import "./globals.css";
-import GradientBackground from "./components/gradient-background";
-import Navbar from "./components/navbar";
-import Footer from "./components/footer";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const barlow = Barlow({
+  variable: "--font-barlow",
   subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+  weight: ["400", "500", "700"], // Adjust if you want different weights
 });
 
 export const metadata: Metadata = {
@@ -37,11 +30,8 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        <GradientBackground />
-        <Navbar />
+      <body className={`${barlow.variable} antialiased`}>
         <main>{children}</main>
-        <Footer />
       </body>
     </html>
   );
