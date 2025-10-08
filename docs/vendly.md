@@ -1,58 +1,37 @@
-# Vendly
+# Vendly: The Fastest Way for Africa’s Social Sellers to Go Pro
 
-## Core Idea
+## Vision
+Vendly is on a mission to make it possible for anyone in Africa to start and scale a real business online in minutes.  
+We handle all the hard infrastructure: payments, delivery, and professional storefronts.  
+Sellers just focus on their products and keeping customers happy.
 
-Vendly helps social sellers on Instagram and WhatsApp instantly turn their social media stores into real online stores. In minutes, sellers get a storefront, payments, delivery, and marketplace discovery.
+---
 
-## The Problem
+## Target Users
+- **Micro-business operators and solopreneurs**, especially young people whose businesses run manually — finding products, selling on social media platforms.  
+- **Entrepreneurs specializing in high-frequency/niche products**: fashion, gifts, flowers, and everyday items that thrive in fast-moving, social contexts.  
+- **Sellers who want the ease and discoverability of a proper store**, but not the pain of complex platforms or the limits of Jumia/Jiji.
 
-### For Buyers
+---
 
-- Hard to find products consistently (algorithms hide posts in the social life, no central catalog).
-- Purchase requires multiple DMs for price, availability, and delivery.
-- Discovery is fragmented—you might see something once and never again.
+## Market Problem
+- Manual social selling is exhausting: sellers manage inventory over DMs, lose track of payments, and often miss deals due to chaotic communication.  
+- Discoverability is low unless sellers pay for ads — most buyers never find what’s in the social feed.  
+- Platforms like Shopify are too complex and lack local payment/delivery integrations.  
+- Large marketplaces don’t support the nuanced, personal selling style of Africa’s new generation.
 
-### For Sellers
+---
 
-- Business runs in DMs → repetitive typing, manual confirmations.
-- Catalog = scattered across posts/stories, no structured inventory.
-- Payments are messy (screenshots, manual tracking).
-- Delivery coordination eats time and leads to order drop-offs.
+## Vendly’s Solution
+- **Instant Onboarding:** Upload your products as easily as posting to WhatsApp or Instagram — AI-powered cataloging structures everything in seconds.  
+- **Professional Storefront in Minutes:** No coding, no jargon. Get a branded store link, beautiful templates, and automatic mobile optimization.  
+- **Built-in Payments & Delivery:** Bank cards, M-Pesa, and more — setup is instant. Courier APIs simplify fulfillment without losing control.  
+- **Effortless Management:** Sellers can finally run on autopilot: automate common tasks, track orders, and grow their audience like Instagram followers.  
+- **Discoverability:** Vendly makes every store and product searchable and sharable — buyers follow stores, share favorite items, and return easily.  
+- **Scalable Trust Layer:** Vendly bridges the gap between social proof and professional commerce, letting sellers build loyal communities as they grow.
 
-## The Solution
+---
 
-Vendly meets sellers where they are today.
-
-- **AI-powered cataloging**: Import last ~20 IG posts or WhatsApp images → structured product listings.
-- **Instant storefront**: 5-minute setup, amazing templates for your specific store, unique URL.
-- **Built-in checkout**: Native M-Pesa + courier integration.
-- **Order manager**: Dashboard + real-time notifications + tracking links.
-- **Marketplace discovery**: Every product normalized into Vendly's taxonomy for search + exposure.
-
-For buyers → trust, central discovery, fast checkout.  
-For sellers → less admin, more completed orders, phone-first workflow.
-
-## MVP Product Plan
-
-- Auto-draft products from social media with help of AI.
-- Storefront with a unique URL allowing further customization for your brand message.
-- Payments: M-Pesa integration and bank integration.
-- Delivery with a courier partner.
-- Orders with a dashboard + real-time updates.
-- Marketplace: Searchable listings from normalized taxonomy.
-
-## Why Now
-
-- **Behavioral**: Social-first commerce is the default for African micro-SMEs, but workflows are still manual.
-- **Tech**: Modern vision/NLP makes auto-cataloging viable. PWAs deliver lightweight storefronts for low-data markets.
-- **Ecosystem**: Mobile money + courier APIs are now reliable and widely available.
-
-## Business Model
-
-- Free storefront + marketplace listing.
-- Pro subscription: Themes, analytics, custom domains, abandoned-cart links.
-- Payments: Blended take on transactions.
-- Logistics: Margin on courier + optional COD.
-- Add-ons: Instant payouts, AI photo cleanup, fulfillment storage.
-
-**In short: Vendly is your store beyond the feed.**
+## Ultimate Goal
+Become Africa’s go-to platform for launching and scaling agentic businesses.  
+Sellers keep control and their own rules — Vendly simply handles the backbone of trust, payments, delivery, and discoverability.

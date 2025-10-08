@@ -67,3 +67,24 @@ export enum TransactionType {
   REFUND = 'refund',
   PAYOUT = 'payout',
 }
+
+export enum Country {
+  KE = 'KE',
+  UG = 'UG',
+}
+
+export enum Currency {
+  KES = 'KES',
+  UGX = 'UGX',
+}
+
+export enum PayoutMethod {
+  MOBILE_MONEY = 'mobile_money',
+  BANK = 'bank',
+}
+
+export enum MobileMoneyProvider {
+  MPESA = 'mpesa',
+  AIRTEL = 'airtel',
+  MTN = 'mtn',
+}

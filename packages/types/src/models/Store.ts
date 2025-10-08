@@ -1,3 +1,5 @@
+import { Country, Currency } from '../enums';
+
 export interface Store {
   id: string;
   sellerId: string;
@@ -16,9 +18,11 @@ export interface Store {
   secondaryColor: string;
   templateId: string;
   
-  // Location
-  country: string;
+  // Location & Locale
+  country: Country;
+  currency: Currency;
   city: string;
+  pickupAddress: string;
   address: string | null;
   latitude: number | null;
   longitude: number | null;
@@ -34,9 +38,10 @@ export interface Store {
   privacyPolicy: string | null;
   termsOfService: string | null;
   
-  // Operating Info
+  // Operating & Discoverability
   isActive: boolean;
   operatingHours: Record<string, string> | null;
+  marketplaceListed: boolean;
   
   // Social Links
   instagramUrl: string | null;
@@ -44,6 +49,12 @@ export interface Store {
   twitterUrl: string | null;
   tiktokUrl: string | null;
   websiteUrl: string | null;
+
+  // Social Sources (ingestion metadata)
+  socialSource?: {
+    instagram?: { lastSyncAt?: Date; importedCount: number };
+    whatsappCatalog?: { lastSyncAt?: Date; importedCount: number };
+  };
   
   // Announcements & About
   aboutSection: string | null;

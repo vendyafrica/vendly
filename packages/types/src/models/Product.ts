@@ -28,11 +28,25 @@ export interface Product {
   images: string[];
   videos: string[];
   aiGeneratedModelUrl: string | null;
+
+  // Ingestion Source (MVP social imports)
+  // - Set by Instagram Business import or WhatsApp Business Catalog import
+  // - Manual creations default to type 'manual'
+  source?: {
+    type: 'instagram' | 'whatsapp_catalog' | 'manual';
+    externalId?: string | null;
+    externalUrl?: string | null;
+    caption?: string | null;
+    importedAt?: Date | null;
+  };
   
   // Variants
+  // MVP: single-SKU only; keep flag for forward compatibility (must be false in v1)
   hasVariants: boolean;
   
   // Availability
+  // status supersedes isActive in v1; keep isActive for backward compatibility
+  status: 'draft' | 'active';
   isActive: boolean;
   isFeatured: boolean;
   isSeasonal: boolean;
