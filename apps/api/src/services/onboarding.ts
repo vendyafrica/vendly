@@ -126,13 +126,10 @@ export async function createOnboarding(payload: OnboardingPayload): Promise<Onbo
     verifiedAt: null,
 
     payoutMethod: payout.method,
-    mmProvider: payout.method === "mobile_money" ? payout.mobileMoney?.provider ?? null : null,
-    mmPhone: payout.method === "mobile_money" ? payout.mobileMoney?.phone ?? null : null,
-    bankAccountName: payout.method === "bank" ? payout.bank?.accountName ?? null : null,
-    bankAccountNumber: payout.method === "bank" ? payout.bank?.accountNumber ?? null : null,
-    bankName: payout.method === "bank" ? payout.bank?.bankName ?? null : null,
-    bankBranch: payout.method === "bank" ? payout.bank?.branch ?? null : null,
-    bankSwift: payout.method === "bank" ? payout.bank?.swift ?? null : null,
+    payoutDetails: {
+      mobileMoney: payout.method === "mobile_money" ? payout.mobileMoney : undefined,
+      bank: payout.method === "bank" ? payout.bank : undefined,
+    },
   });
 
   // Insert Store

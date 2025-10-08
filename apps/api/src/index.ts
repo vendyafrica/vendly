@@ -4,6 +4,9 @@ import cors from "cors";
 import { auth, toNodeHandler } from "@vendly/auth";
 import onboardingRouter from "./routes/onboarding";
 import type { Request, Response, NextFunction } from "express";
+import sellerRoutes from './routes/seller.routes';
+import storeRoutes from './routes/store.routes';
+import importRoutes from './routes/import.routes';
 
 const app = express();
 const port = 8000;
@@ -32,6 +35,10 @@ app.get("/api/onboarding", (_req: Request, res: Response) => {
 
 // Onboarding routes
 app.use("/api/onboarding", onboardingRouter);
+
+app.use('/api/sellers', sellerRoutes);
+app.use('/api/stores', storeRoutes);
+app.use('/api/import', importRoutes);
 
 // Your other routes
 app.get("/", (_req, res) => {
