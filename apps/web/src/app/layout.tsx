@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
-import { Barlow } from "next/font/google";
+import { Open_Sans } from "next/font/google";
 //@ts-ignore
 import "./globals.css";
 
-const barlow = Barlow({
-  variable: "--font-barlow",
+const openSans = Open_Sans({
+  variable: "--font-open-sans",
   subsets: ["latin"],
   weight: ["400", "500", "700"], // Adjust if you want different weights
 });
@@ -30,7 +30,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${barlow.variable} antialiased`}>
+      <body className={`${openSans.variable} antialiased`}>
         <main>{children}</main>
       </body>
     </html>
