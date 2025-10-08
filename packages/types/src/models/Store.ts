@@ -14,9 +14,9 @@ export interface Store {
   // Branding
   logoUrl: string | null;
   bannerUrl: string | null;
-  primaryColor: string;
-  secondaryColor: string;
-  templateId: string;
+  primaryColor: string | null;
+  secondaryColor: string | null;
+  templateId: string | null;
   
   // Location & Locale
   country: Country;
@@ -52,8 +52,8 @@ export interface Store {
 
   // Social Sources (ingestion metadata)
   socialSource?: {
-    instagram?: { lastSyncAt?: Date; importedCount: number };
-    whatsappCatalog?: { lastSyncAt?: Date; importedCount: number };
+    instagram?: { lastSyncAt?: string; importedCount: number };
+    whatsappCatalog?: { lastSyncAt?: string; importedCount: number };
   };
   
   // Announcements & About

@@ -2,25 +2,19 @@ import { UserRole } from '../enums';
 
 export interface User {
   id: string;
+  name: string;
   email: string;
-  phoneNumber: string;
+  emailVerified: boolean;
+  image: string | null;
+  
+  // Extended fields
+  phoneNumber: string | null;
   whatsappEnabled: boolean;
-
-  // Auth
-  passwordHash: string;
-  authProviders?: ('google' | 'apple' | 'email_otp' | 'phone_otp')[];
-  googleId?: string;
-  appleId?: string;
-  emailOTPEnabled?: boolean;
-  phoneOTPEnabled?: boolean;
-
-  // Roles & status
   role: UserRole;
   isActive: boolean;
-  emailVerified: boolean;
   phoneVerified: boolean;
+  lastLogin: Date | null;
 
   createdAt: Date;
   updatedAt: Date;
-  lastLogin: Date | null;
 }

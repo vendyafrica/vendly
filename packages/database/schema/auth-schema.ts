@@ -6,6 +6,15 @@ export const user = pgTable("user", {
   email: text("email").notNull().unique(),
   emailVerified: boolean("email_verified").default(false).notNull(),
   image: text("image"),
+  
+  // Extended user fields
+  phoneNumber: text("phone_number"),
+  whatsappEnabled: boolean("whatsapp_enabled").default(false).notNull(),
+  role: text("role").default("buyer").notNull(), // 'buyer' | 'seller' | 'admin'
+  isActive: boolean("is_active").default(true).notNull(),
+  phoneVerified: boolean("phone_verified").default(false).notNull(),
+  lastLogin: timestamp("last_login"),
+  
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at")
     .defaultNow()

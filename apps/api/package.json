@@ -13,10 +13,11 @@
     "clean": "rimraf dist"
   },
   "dependencies": {
+    "@clerk/express": "^1.7.33",
     "@vendly/auth": "workspace:*",
     "@vendly/database": "workspace:*",
-    "@clerk/express": "^1.7.33",
     "cors": "^2.8.5",
+    "drizzle-orm": "^0.44.5",
     "express": "^5.1.0",
     "helmet": "^7.1.0",
     "morgan": "^1.10.0",
