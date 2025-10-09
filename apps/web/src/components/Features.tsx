@@ -1,10 +1,7 @@
 import { CalendarIcon, FileTextIcon } from "@radix-ui/react-icons"
 import { BellIcon, Share2Icon, TruckIcon } from "lucide-react"
-import { cn } from "@/lib/utils"
-import AnimatedBeamMultipleOutputDemo from "../registry/example/animated-beam-multiple-outputs"
 import AnimatedListDemo from "../registry/example/animated-list-demo"
 import { BentoCard, BentoGrid } from "@/components/ui/bento-grid"
-import { Globe } from "../registry/magicui/globe"
 import { DotLottieReact } from '@lottiefiles/dotlottie-react'
 
 export default function Features() {
