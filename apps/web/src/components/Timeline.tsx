@@ -1,3 +1,8 @@
+"use client"
+
+import { useEffect, useRef } from "react"
+import gsap from "gsap"
+import { ScrollTrigger } from "gsap/ScrollTrigger"
 import {
   Timeline,
   TimelineHeader,
@@ -6,6 +11,11 @@ import {
   TimelineSeparator,
   TimelineTitle,
 } from "@/components/ui/timeline"
+
+// Register GSAP plugin
+if (typeof window !== "undefined") {
+  gsap.registerPlugin(ScrollTrigger)
+}
 
 const items = [
   {
@@ -46,33 +56,79 @@ const items = [
 ]
 
 export default function TimelineComponent() {
+  const headerRef = useRef<HTMLDivElement>(null)
+  const timelineRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const ctx = gsap.context(() => {
+      // Animate header
+      if (headerRef.current) {
+        gsap.from(headerRef.current.children, {
+          opacity: 0,
+          y: 30,
+          duration: 0.8,
+          stagger: 0.2,
+          ease: "power3.out",
+          scrollTrigger: {
+            trigger: headerRef.current,
+            start: "top 80%",
+            toggleActions: "play none none reverse",
+          },
+        })
+      }
+
+      // Animate timeline items
+      if (timelineRef.current) {
+        const timelineItems = timelineRef.current.querySelectorAll("[data-timeline-item]")
+        
+        timelineItems.forEach((item, index) => {
+          gsap.from(item, {
+            opacity: 0,
+            x: index % 2 === 0 ? -50 : 50,
+            duration: 0.8,
+            ease: "power3.out",
+            scrollTrigger: {
+              trigger: item,
+              start: "top 85%",
+              toggleActions: "play none none reverse",
+            },
+          })
+        })
+      }
+    })
+
+    return () => ctx.revert()
+  }, [])
+
   return (
-    <div className="w-full max-w-4xl mx-auto px-4 py-16">
-      <div className="text-center mb-12">
-        <h2 className="text-4xl font-bold text-gray-900 mb-4">How It Works</h2>
-        <p className="text-lg text-gray-600">
+    <div className="w-full max-w-4xl mx-auto px-4 py-8 md:py-16">
+      <div ref={headerRef} className="text-center mb-8 md:mb-12">
+        <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">How It Works</h2>
+        <p className="text-base md:text-lg text-gray-600">
           From social feed to full-fledged store — powered by AI.
         </p>
       </div>
-      <Timeline defaultValue={1}>
-        {items.map((item) => (
-          <TimelineItem key={item.id} step={item.id}>
-            <TimelineHeader>
-              <TimelineSeparator />
-              <div className="flex-1">
-                <div className="flex items-baseline gap-2 mb-1">
-                  <span className="text-sm font-semibold text-purple-600">{item.step}</span>
-                  <TimelineTitle className="text-xl font-bold text-gray-900">
-                    {item.title}
-                  </TimelineTitle>
+      <div ref={timelineRef}>
+        <Timeline defaultValue={1}>
+          {items.map((item) => (
+            <TimelineItem key={item.id} step={item.id} data-timeline-item>
+              <TimelineHeader>
+                <TimelineSeparator />
+                <div className="flex-1">
+                  <div className="flex items-baseline gap-2 mb-1">
+                    <span className="text-sm font-semibold text-purple-600">{item.step}</span>
+                    <TimelineTitle className="text-lg md:text-xl font-bold text-gray-900">
+                      {item.title}
+                    </TimelineTitle>
+                  </div>
+                  <p className="text-sm md:text-base text-gray-600 mt-2">{item.description}</p>
                 </div>
-                <p className="text-gray-600 mt-2">{item.description}</p>
-              </div>
-              <TimelineIndicator />
-            </TimelineHeader>
-          </TimelineItem>
-        ))}
-      </Timeline>
+                <TimelineIndicator />
+              </TimelineHeader>
+            </TimelineItem>
+          ))}
+        </Timeline>
+      </div>
     </div>
   )
 }

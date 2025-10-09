@@ -1,38 +1,40 @@
-
-import { Button } from "@/components/ui/button"
+import { Button } from "@/components/ui/button";
 import {
   NavigationMenu,
   NavigationMenuItem,
   NavigationMenuLink,
   NavigationMenuList,
-} from "@/components/ui/navigation-menu"
+  NavigationMenuTrigger,
+  NavigationMenuContent,
+} from "@/components/ui/navigation-menu";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/components/ui/popover"
-import Image from "next/image"
+} from "@/components/ui/popover";
+import Image from "next/image";
 
-// Navigation links array to be used in both desktop and mobile menus
+// Primary links for both desktop and mobile (except the Compare dropdown)
 const navigationLinks = [
-  { href: "#", label: "Home", active: true },
-  { href: "#", label: "Features" },
-  { href: "#", label: "How it Works" },
-]
+  { href: "#", label: "Overview", active: true },
+  { href: "#", label: "How it works" },
+  { href: "#", label: "What you get" },
+];
 
 export default function Component() {
   return (
-    <header className="border-b border-gray-200 px-4 md:px-6 bg-white/80 backdrop-blur-sm">
+    <header className="px-4 md:px-6 bg-white/80 backdrop-blur-sm">
       <div className="flex h-16 items-center gap-4">
-        {/* Left side - Logo */}
+        {/* Left - Logo + Mobile menu */}
         <div className="flex items-center gap-2">
-          {/* Mobile menu trigger */}
+          {/* Mobile menu trigger
           <Popover>
             <PopoverTrigger asChild>
               <Button
                 className="group size-8 md:hidden"
                 variant="ghost"
                 size="icon"
+                aria-label="Toggle menu"
               >
                 <svg
                   className="pointer-events-none"
@@ -61,58 +63,94 @@ export default function Component() {
                 </svg>
               </Button>
             </PopoverTrigger>
-            <PopoverContent align="start" className="w-36 p-1 md:hidden">
+            <PopoverContent align="start" className="w-44 p-1 md:hidden">
               <NavigationMenu className="max-w-none *:w-full">
-                <NavigationMenuList className="flex-col items-start gap-0 md:gap-2">
-                  {navigationLinks.map((link, index) => (
-                    <NavigationMenuItem key={index} className="w-full">
-                      <NavigationMenuLink
-                        href={link.href}
-                        className="py-1.5"
-                        active={link.active}
-                      >
-                        {link.label}
-                      </NavigationMenuLink>
-                    </NavigationMenuItem>
-                  ))}
+                <NavigationMenuList className="flex-col items-start gap-0">
+                  <NavigationMenuItem className="w-full">
+                    <NavigationMenuLink href="#" className="py-1.5">
+                      Overview
+                    </NavigationMenuLink>
+                  </NavigationMenuItem>
+
+                  {navigationLinks
+                    .filter((l) => l.label !== "Overview")
+                    .map((link, index) => (
+                      <NavigationMenuItem key={index} className="w-full">
+                        <NavigationMenuLink href={link.href} className="py-1.5">
+                          {link.label}
+                        </NavigationMenuLink>
+                      </NavigationMenuItem>
+                    ))}
                 </NavigationMenuList>
               </NavigationMenu>
             </PopoverContent>
-          </Popover>
-          <a href="#" className="hover:opacity-80 transition-opacity">
-            <Image src="/apple-icon.png" alt="Logo" width={32} height={32} />
+          </Popover> */}
+
+          <a
+            href="#"
+            className="flex items-center gap-2 hover:opacity-80 transition-opacity"
+          >
+            <Image
+              src="/apple-icon.png"
+              alt="vendly logo"
+              width={32}
+              height={32}
+            />
+            <span className="font-semibold text-gray-900">vendly.</span>
           </a>
         </div>
 
-        {/* Center - Navigation menu */}
+        {/* Center - Desktop navigation */}
         <div className="flex-1 flex justify-center">
           <NavigationMenu className="max-md:hidden">
-            <NavigationMenuList className="gap-2">
-              {navigationLinks.map((link, index) => (
-                <NavigationMenuItem key={index}>
-                  <NavigationMenuLink
-                    active={link.active}
-                    href={link.href}
-                    className="text-gray-700 hover:text-gray-900 py-1.5 font-medium transition-colors"
-                  >
-                    {link.label}
-                  </NavigationMenuLink>
-                </NavigationMenuItem>
-              ))}
+            <NavigationMenuList className="gap-6">
+              <NavigationMenuItem>
+                <NavigationMenuLink
+                  active
+                  href="#"
+                  className="text-gray-700 hover:text-gray-900 py-1.5 font-medium transition-colors"
+                >
+                  Overview
+                </NavigationMenuLink>
+              </NavigationMenuItem>
+
+              {navigationLinks
+                .filter((l) => l.label !== "Overview")
+                .map((link, index) => (
+                  <NavigationMenuItem key={index}>
+                    <NavigationMenuLink
+                      href={link.href}
+                      className="text-gray-700 hover:text-gray-900 py-1.5 font-medium transition-colors"
+                    >
+                      {link.label}
+                    </NavigationMenuLink>
+                  </NavigationMenuItem>
+                ))}
             </NavigationMenuList>
           </NavigationMenu>
         </div>
 
-        {/* Right side - Buttons */}
+        {/* Right - Actions */}
         <div className="flex items-center gap-2">
-          <Button asChild variant="ghost" size="sm" className="text-sm text-gray-700 hover:text-gray-900 hover:bg-gray-100">
-            <a href="#">Sign In</a>
+          <Button
+            asChild
+            variant="outline"
+            size="sm"
+            className="rounded-full px-4 text-sm"
+          >
+            <a href="#">Login</a>
           </Button>
-          <Button asChild size="sm" className="text-sm bg-gray-900 text-white hover:bg-gray-800">
-            <a href="#">Get Started</a>
+          <Button
+            asChild
+            size="sm"
+            className="rounded-full px-4 text-sm bg-gray-900 text-white hover:bg-gray-800"
+          >
+            <a href="#" className="inline-flex items-center gap-1">
+              Get Started <span aria-hidden>↗</span>
+            </a>
           </Button>
         </div>
       </div>
     </header>
-  )
+  );
 }

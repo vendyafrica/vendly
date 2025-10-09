@@ -3,8 +3,8 @@ import Features from "@/components/Features";
 import HeroSection from "@/components/Hero";
 import Component from "@/components/NavBar";
 import TimelineComponent from "@/components/Timeline";
-
-
+import CTA from "@/components/CTA";
+import Footer from "@/components/Footer";
 
 export default function Home() {
   return (
@@ -13,6 +13,8 @@ export default function Home() {
       <HeroSection />
       <TimelineComponent />
       <Features />
+      <CTA />
+      <Footer />
     </main>
   );
 }
