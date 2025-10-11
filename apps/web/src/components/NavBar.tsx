@@ -4,15 +4,10 @@ import {
   NavigationMenuItem,
   NavigationMenuLink,
   NavigationMenuList,
-  NavigationMenuTrigger,
-  NavigationMenuContent,
 } from "@/components/ui/navigation-menu";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
 import Image from "next/image";
+import Link from "next/link";
+
 
 // Primary links for both desktop and mobile (except the Compare dropdown)
 const navigationLinks = [
@@ -138,7 +133,7 @@ export default function Component() {
             size="sm"
             className="rounded-full px-4 text-sm"
           >
-            <a href="#">Login</a>
+            <Link href="/login">Login</Link>
           </Button>
           <Button
             asChild
