@@ -17,7 +17,9 @@
       "@vendly/auth": ["../../packages/auth/src/index.ts"],
       "@vendly/auth/*": ["../../packages/auth/src/*"],
       "@vendly/database": ["../../packages/database/src/index.ts"],
-      "@vendly/database/*": ["../../packages/database/src/*"]
+      "@vendly/database/*": ["../../packages/database/src/*"],
+      "@vendly/types": ["../../packages/types/src/index.ts"],
+      "@vendly/types/*": ["../../packages/types/src/*"]
     }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],

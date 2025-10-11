@@ -8,8 +8,8 @@
       "@vendly/database/*": ["./packages/database/src/*"],
       "@vendly/auth": ["./packages/auth/src/index.ts"],
       "@vendly/auth/*": ["./packages/auth/src/*"],
-      "@vendly/instagram": ["./packages/instagram/src/index.ts"],
-      "@vendly/instagram/*": ["./packages/instagram/src/*"]
+      "@vendly/types": ["./packages/types/src/index.ts"],
+      "@vendly/types/*": ["./packages/types/src/*"]
     },
     "strict": true,
     "esModuleInterop": true,

@@ -3,17 +3,31 @@
     "target": "ES2020",
     "module": "Node16",
     "moduleResolution": "node16",
-    "lib": ["ES2020"],
+    "lib": [
+      "ES2020"
+    ],
     "outDir": "./dist",
     "ignoreDeprecations": "6.0",
     "baseUrl": "../../",
     "paths": {
-      "@vendly/database": ["packages/database/src/index.ts"],
-      "@vendly/database/*": ["packages/database/src/*"],
-      "@vendly/auth": ["packages/auth/src/index.ts"],
-      "@vendly/auth/*": ["packages/auth/src/*"],
-      "@vendly/instagram": ["packages/instagram/src/index.ts"],
-      "@vendly/instagram/*": ["packages/instagram/src/*"]
+      "@vendly/database": [
+        "packages/database/src/index.ts"
+      ],
+      "@vendly/database/*": [
+        "packages/database/src/*"
+      ],
+      "@vendly/auth": [
+        "packages/auth/src/index.ts"
+      ],
+      "@vendly/auth/*": [
+        "packages/auth/src/*"
+      ],
+      "@vendly/types": [
+        "packages/types/src/index.ts"
+      ],
+      "@vendly/types/*": [
+        "packages/types/src/*"
+      ]
     },
     "strict": true,
     "esModuleInterop": true,
@@ -22,7 +36,9 @@
     "resolveJsonModule": true,
     "declaration": true,
     "sourceMap": true,
-    "types": ["node"],
+    "types": [
+      "node"
+    ],
     "noUncheckedIndexedAccess": true,
     "noImplicitReturns": true,
     "noUnusedLocals": true,
@@ -32,7 +48,14 @@
     "src/**/*",
     "../../packages/auth/src/**/*",
     "../../packages/database/src/**/*",
-    "../../packages/instagram/src/**/*"
+    "../../packages/instagram/src/**/*",
+    "../../packages/types/src/**/*",
+    "src/routes/auth.routes.ts"
   ],
-  "exclude": ["node_modules", "dist", "**/*.test.ts", "**/*.spec.ts"]
+  "exclude": [
+    "node_modules",
+    "dist",
+    "**/*.test.ts",
+    "**/*.spec.ts"
+  ]
 }

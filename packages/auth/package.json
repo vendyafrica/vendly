@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@vendly/database": "workspace:*",
+    "@vendly/types": "workspace:*",
     "@supabase/supabase-js": "^2.57.4",
     "better-auth": "^1.3.23",
     "dotenv": "^17.2.3"

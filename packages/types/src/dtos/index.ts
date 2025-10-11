@@ -1,4 +1,4 @@
-export * from './AuthDto';
+export * from './auth.dto';
 export * from './StoreDto';
 export * from './ProductDto';
 export * from './OrderDto';

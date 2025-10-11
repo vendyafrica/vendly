@@ -1,43 +1,38 @@
-// apps/api/src/index.ts
-import express from "express";
-import cors from "cors";
-import dotenv from "dotenv";
-import { auth, toNodeHandler } from "@vendly/auth";
-import type { Request, Response } from "express";
-import instagramRoutes from "./routes/instagram.routes";
+  import express from "express";
+  import cors from "cors";
+  import authRoutes from "./routes/auth.routes";
 
-// Load environment variables
-dotenv.config();
+  const app = express();
 
-const app = express();
-const port = 8000;
 
-app.use(
-  cors({
-    origin: process.env.WEB_URL || "http://localhost:3000",
-    credentials: true,
-  })
-);
+  app.use(express.json());
+  app.use(express.urlencoded({ extended: true }));
 
-// Auth routes - use regex pattern for Express 5 compatibility
-app.all(/^\/api\/auth\/.*/, toNodeHandler(auth));
+  app.use(
+    cors({
+      origin: [
+        process.env.WEB_URL || "http://localhost:3000",
+        process.env.MARKETPLACE_URL || "http://localhost:4000",
+      ],
+      credentials: true,
+    })
+  );
 
-// Other middleware
-app.use(express.json());
+  app.use("/api/v1/auth", authRoutes);
 
-// Instagram OAuth routes
-app.use(instagramRoutes);
+  app.get("/", (_req, res) => {
+    res.json({ message: "Vendly API is running" });
+  });
 
-// Temporary GET for diagnostics (should return 200)
-app.get("/api/onboarding", (_req: Request, res: Response) => {
-  res.json({ ok: true, via: "index" });
-});
+  app.use((err: any, _req: express.Request, res: express.Response, next: express.NextFunction) => {
+    console.error("Error:", err);
+    res.status(500).json({
+      error: "Internal server error",
+      message: err.message
+    });
+  });
 
-// Your other routes
-app.get("/", (_req, res) => {
-    res.json({ message: "API is running" });
-});
-
-app.listen(port, () => {
-    console.log(`API server listening on port ${port}`);
-});
+  const PORT = process.env.PORT || 8000;
+  app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+  });
