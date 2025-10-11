@@ -24,7 +24,7 @@
     res.json({ message: "Vendly API is running" });
   });
 
-  app.use((err: any, _req: express.Request, res: express.Response, next: express.NextFunction) => {
+    app.use((err: any, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
     console.error("Error:", err);
     res.status(500).json({
       error: "Internal server error",
