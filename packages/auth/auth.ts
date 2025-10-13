@@ -11,7 +11,6 @@ const baseURL = process.env.BETTER_AUTH_URL || "http://localhost:8000";
 
 export const auth = betterAuth({
   baseURL: baseURL,
-  basePath: "/api/v1/auth",
   secret: process.env.BETTER_AUTH_SECRET as string,
   
   database: drizzleAdapter(db, {
