@@ -10,7 +10,7 @@
   },
   "include": [
     "**/*",
-    "../../apps/api/src/routes/auth.routes.ts"
+    "../../apps/api/src/routes/auth_routes.ts"
   ],
   "exclude": [
     "node_modules",

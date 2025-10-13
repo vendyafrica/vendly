@@ -5,10 +5,8 @@ export interface RegisterRequest {
   email: string;
   password: string;
   name: string;
-  phoneNumber?: string;
-  role?: UserRole;
   image?: string;
-  whatsappEnabled?: boolean;
+  callbackURL?: string;
 }
 
 export interface LoginRequest {

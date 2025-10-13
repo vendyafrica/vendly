@@ -9,10 +9,13 @@
     "moduleResolution": "bundler",
     "jsx": "preserve",
     "incremental": true,
+    // "ignoreDeprecations": "6.0",
     "baseUrl": ".",
     "plugins": [{ "name": "next" }],
     "paths": {
       "@/*": ["./src/*"],
+      "@vendly/api": ["../../apps/api/src/index.ts"],
+      "@vendly/api/*": ["../../apps/api/src/*"],
       "@vendly/auth": ["../../packages/auth/src/index.ts"],
       "@vendly/auth/*": ["../../packages/auth/src/*"],
       "@vendly/database": ["../../packages/database/src/index.ts"],

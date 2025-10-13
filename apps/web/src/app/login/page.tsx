@@ -1,12 +1,12 @@
 "use client";
 
-import { signInWithGoogle } from "@vendly/auth/client";
+import { OnboardingService } from "@vendly/api/services/onboarding_service";
 
 export default function LoginPage() {
 
   const handleGoogleSignIn = async () => {
     try {
-      await signInWithGoogle();
+      await OnboardingService.signInWithGoogle();
     } catch (error: any) {
       alert(error.message);
     }

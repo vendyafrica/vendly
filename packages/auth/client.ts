@@ -1,2 +1,2 @@
 
-export { authClient, signInWithGoogle, signInWithInstagram } from "./auth-client";
+export { authClient } from "./auth_client";

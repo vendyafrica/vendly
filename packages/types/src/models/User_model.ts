@@ -6,15 +6,12 @@ export interface User {
   email: string;
   emailVerified: boolean;
   image: string | null;
-  
-  // Extended fields
   phoneNumber: string | null;
   whatsappEnabled: boolean;
   role: UserRole;
   isActive: boolean;
   phoneVerified: boolean;
   lastLogin: Date | null;
-
   createdAt: Date;
   updatedAt: Date;
 }

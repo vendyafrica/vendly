@@ -49,7 +49,7 @@
     "../../packages/database/src/**/*",
     "../../packages/instagram/src/**/*",
     "../../packages/types/src/**/*",
-    "src/routes/auth.routes.ts"
+    "src/routes/auth_routes.ts"
   ],
   "exclude": [
     "node_modules",
