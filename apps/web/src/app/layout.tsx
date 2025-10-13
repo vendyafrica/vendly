@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Open_Sans } from "next/font/google";
 //@ts-ignore
 import "./globals.css";
+import { Analytics } from '@vercel/analytics/next';
 
 const openSans = Open_Sans({
   variable: "--font-open-sans",
@@ -32,6 +33,7 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${openSans.variable} antialiased`}>
         <main>{children}</main>
+           <Analytics />
       </body>
     </html>
   );
