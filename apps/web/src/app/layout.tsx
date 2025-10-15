@@ -1,13 +1,13 @@
 import type { Metadata } from "next";
-import { Open_Sans } from "next/font/google";
+import { Geist} from "next/font/google";
 //@ts-ignore
 import "./globals.css";
 import { Analytics } from '@vercel/analytics/next';
 
-const openSans = Open_Sans({
-  variable: "--font-open-sans",
+const geist = Geist({
+  variable: "--font-geist",
   subsets: ["latin"],
-  weight: ["400", "500", "700"], // Adjust if you want different weights
+ weight: ["100", "200", "300", "400", "500", "600", "700", "800", "900"],
 });
 
 export const metadata: Metadata = {
@@ -31,7 +31,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${openSans.variable} antialiased`}>
+      <body className={`${geist.variable} antialiased`} >
         <main>{children}</main>
            <Analytics />
       </body>

@@ -1,26 +1,11 @@
-"use client";
-import { authClient } from "@vendly/auth/client";
+import { LoginForm } from "@/components/login-form"
 
 export default function LoginPage() {
-  const handleGoogleSignIn = async () => {
-    try {
-      await authClient.signIn.social({
-        provider: "google",
-        callbackURL: "/me",
-      });
-    } catch (error: any) {
-      alert(error.message);
-    }
-  };
-
   return (
-    <div>
-      <button 
-        className="px-4 border-2 m-5 bg-amber-300" 
-        onClick={handleGoogleSignIn}
-      >
-        Sign in with Google
-      </button>
+    <div className="bg-muted flex min-h-svh flex-col items-center justify-center p-6 md:p-10">
+      <div className="w-full max-w-sm md:max-w-4xl">
+        <LoginForm />
+      </div>
     </div>
-  );
+  )
 }
