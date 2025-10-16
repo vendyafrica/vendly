@@ -8,7 +8,7 @@ export default function HeroSection() {
       <div className="mx-auto max-w-5xl px-4 text-center">
         {/* Main Heading */}
         <h1 className="mt-8 text-4xl font-semibold tracking-tight text-foreground sm:text-5xl md:text-6xl leading-tight">
-          One <span className="text-primary">platform</span> and to run your
+          One <span className="text-primary">platform</span> to run your
           business
         </h1>
 
