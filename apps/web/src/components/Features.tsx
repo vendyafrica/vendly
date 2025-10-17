@@ -1,11 +1,6 @@
 "use client";
 
-import {
-  ShoppingBag,
-  Blocks,
-  Factory,
-  PackageCheck,
-} from "lucide-react";
+import { ShoppingBag, Blocks, Factory, PackageCheck } from "lucide-react";
 import AnimatedBeamMultipleOutputDemo from "@/registry/example/animated-beam-multiple-outputs";
 import { BentoCard, BentoGrid } from "@/components/ui/bento-grid";
 import { DotLottieReact } from "@lottiefiles/dotlottie-react";
@@ -80,7 +75,9 @@ export default function Features() {
     <section className="py-32 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-gray-50 to-white">
       <div className="mx-auto max-w-7xl">
         <div className="mb-20 text-center">
-          <p className="mb-3 text-sm font-semibold uppercase tracking-wider text-blue-600">Features</p>
+          <p className="mb-3 text-sm font-semibold uppercase tracking-wider text-blue-600">
+            Features
+          </p>
           <h2 className="mb-6 text-5xl font-bold text-gray-900 sm:text-6xl leading-tight">
             Everything You Need to Sell Effortlessly
           </h2>

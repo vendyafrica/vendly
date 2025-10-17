@@ -1,19 +1,18 @@
-import { ComponentPropsWithoutRef, ReactNode } from "react"
-import { cn } from "@/lib/utils"
-
+import { ComponentPropsWithoutRef, ReactNode } from "react";
+import { cn } from "@/lib/utils";
 
 interface BentoGridProps extends ComponentPropsWithoutRef<"div"> {
-  children: ReactNode
-  className?: string
+  children: ReactNode;
+  className?: string;
 }
 
 interface BentoCardProps extends ComponentPropsWithoutRef<"div"> {
-  name: string
-  className: string
-  background: ReactNode
-  Icon: React.ElementType
-  description: string
-  mediaClassName?: string
+  name: string;
+  className: string;
+  background: ReactNode;
+  Icon: React.ElementType;
+  description: string;
+  mediaClassName?: string;
 }
 
 const BentoGrid = ({ children, className, ...props }: BentoGridProps) => {
@@ -28,10 +27,8 @@ const BentoGrid = ({ children, className, ...props }: BentoGridProps) => {
     >
       {children}
     </div>
-  )
-}
-
-
+  );
+};
 
 const BentoCard = ({
   name,
@@ -65,12 +62,17 @@ const BentoCard = ({
         </p>
       </div>
 
-      <div className={cn("relative h-56 rounded-xl bg-gray-50 ring-1 ring-gray-200 overflow-hidden flex items-center justify-center", mediaClassName)}>
+      <div
+        className={cn(
+          "relative h-56 rounded-xl bg-gray-50 ring-1 ring-gray-200 overflow-hidden flex items-center justify-center",
+          mediaClassName
+        )}
+      >
         {background}
       </div>
     </div>
     <div className="pointer-events-none absolute inset-0 transform-gpu bg-[radial-gradient(120%_120%_at_0%_0%,#0000000d_0%,transparent_50%)] transition-opacity duration-300 group-hover:opacity-100" />
   </div>
-)
+);
 
-export { BentoCard, BentoGrid }
+export { BentoCard, BentoGrid };
