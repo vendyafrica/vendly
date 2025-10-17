@@ -1,12 +1,9 @@
 import express from "express";
 import cors from "cors";
-import authRoutes from "./routes/auth_routes";
+import { auth, toNodeHandler } from "@vendly/auth";
 
 const app = express();
 const PORT = 8000;
-
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
 
 app.use(
   cors({
@@ -18,7 +15,16 @@ app.use(
   })
 );
 
-app.use("/api/auth", authRoutes);
+app.all("/api/auth/*splat", toNodeHandler(auth));
+
+app.get("/", (_req, res) => {
+  res.send("API is running");
+});
+
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// console.log("Available Better Auth API routes:", Object.keys(auth.api));
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);

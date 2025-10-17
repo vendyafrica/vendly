@@ -1,11 +1,22 @@
-import { LoginForm } from "@/components/login-form"
+"use client"
+
+import React from "react";
+import * as AuthButtons from "@vendly/auth/client";
+import { Button } from "@/components/ui/button";
 
 export default function LoginPage() {
+  const handleGoogleSignIn = async () => {
+    await AuthButtons.signInWithGoogle();
+  };
+
+  const handleInstagramSignIn = async () => {
+    await AuthButtons.signInWithInstagram();
+  };
+
   return (
-    <div className="bg-muted flex min-h-svh flex-col items-center justify-center p-6 md:p-10">
-      <div className="w-full max-w-sm md:max-w-4xl">
-        <LoginForm />
-      </div>
+    <div>
+      <Button onClick={handleGoogleSignIn}>Sign in with Google</Button>
+      <Button onClick={handleInstagramSignIn}>Sign in with Instagram</Button  >
     </div>
-  )
+  );
 }
