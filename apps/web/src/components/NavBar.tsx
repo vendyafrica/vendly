@@ -29,7 +29,7 @@ export default function NavBar() {
               width={32}
               height={32}
             />
-            <span className="font-semibold text-foreground">vendly.</span>
+            <span className="font-bold text-foreground">vendly.</span>
           </Link>
         </div>
         <div className="flex-1 flex justify-center">
@@ -37,9 +37,9 @@ export default function NavBar() {
             <NavigationMenuList className="gap-6">
               <NavigationMenuItem>
                 <NavigationMenuLink
-                  active
+                  
                   href="#"
-                  className="text-foreground/70 hover:text-foreground py-1.5 font-medium transition-colors"
+                  className="text-[14px] py-1.5 font-semibold"
                 >
                   Overview
                 </NavigationMenuLink>
@@ -50,7 +50,7 @@ export default function NavBar() {
                   <NavigationMenuItem key={index}>
                     <NavigationMenuLink
                       href={link.href}
-                      className="text-muted-foreground hover:text-foreground py-1.5 font-medium transition-colors"
+                      className="text-[14px] py-1.5 font-semibold"
                     >
                       {link.label}
                     </NavigationMenuLink>
@@ -62,14 +62,14 @@ export default function NavBar() {
 
         {/* Right - Actions */}
         <div className="flex items-center gap-2">
-          <Button
+          {/* <Button
             asChild
             variant="outline"
             size="sm"
             className="rounded-full px-4 text-sm"
           >
             <Link href="/login">Login</Link>
-          </Button>
+          </Button> */}
           <Button
             asChild
             size="sm"

@@ -16,8 +16,6 @@ const features = [
     name: "Instant Setup & Sync",
     description:
       "Connect your socials, and we sync your products with your storefront in minutes. No migration, no plugins.",
-    href: "/",
-    cta: "Learn More",
     className: "col-span-12",
     background: (
       <AnimatedBeamMultipleOutputDemo className="absolute -right-10 -top-10 h-[300px] w-[600px] border-none transition-all duration-300 ease-out [mask-image:linear-gradient(to_top,transparent_10%,#000_100%)] group-hover:scale-105" />
@@ -28,9 +26,7 @@ const features = [
     name: "Payments and delivery built in for you",
     description:
       "No more back‑and‑forth. Buyers pay, pick delivery, you just confirm and dispatch.",
-    href: "/",
-    cta: "Learn More",
-    className: "col-span-12 sm:col-span-6",
+    className: "col-span-6",
     background: (
       <DotLottieReact
         src="https://lottie.host/d0468ba9-bd89-4362-8d4c-f8e6a21b358b/jxmK7PuIsU.lottie"
@@ -46,9 +42,7 @@ const features = [
     name: "Convert followers to customers",
     description:
       "Share your vendly store across all social media. Buyers can follow your store, save favorites, and re‑order in one tap.",
-    href: "/",
-    cta: "Learn More",
-    className: "col-span-12 sm:col-span-6",
+    className: "col-span-6",
     background: (
       <div className="absolute inset-0 flex items-center justify-center opacity-60 [mask-image:linear-gradient(to_bottom,transparent_0%,#000_20%,#000_80%,transparent_100%)] transition-opacity duration-300 ease-out group-hover:opacity-80">
         <DotLottieReact
@@ -66,8 +60,6 @@ const features = [
     name: "Business tools at the tip of your fingers",
     description:
       "One dashboard to do it all. Manage orders, inventory, customers, and payouts without leaving your workflow.",
-    href: "/",
-    cta: "Learn More",
     className: "col-span-12",
     background: (
       <div className="absolute inset-x-0 bottom-0 mx-auto h-full w-full opacity-50 [mask-image:linear-gradient(to_bottom,transparent_30%,#000_90%)] transition-all duration-300 ease-out group-hover:opacity-80 group-hover:scale-105">
