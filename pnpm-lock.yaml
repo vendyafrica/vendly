@@ -99,6 +99,12 @@ importers:
       supertest:
         specifier: ^7.0.0
         version: 7.1.4
+      tsx:
+        specifier: ^4.19.2
+        version: 4.20.6
+      typescript:
+        specifier: ^5.7.2
+        version: 5.9.3
       undici-types:
         specifier: 6.21.0
         version: 6.21.0
