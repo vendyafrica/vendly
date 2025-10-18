@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 export default function HeroSection() {
   return (
     <section className="relative overflow-hidden bg-background py-20 sm:py-28">
+      <div className="absolute -top-40 left-1/2 -translate-x-1/2 h-[600px] w-[600px] rounded-full bg-primary/20 blur-[120px] animate-pulse" />
       <div className="mx-auto max-w-5xl px-4 text-center">
         {/* Main Heading */}
         <h1 className="mt-8 text-4xl font-geist tracking-tight text-foreground sm:text-5xl md:text-6xl leading-tight">
@@ -22,7 +23,7 @@ export default function HeroSection() {
         <div className="mt-10 flex flex-col sm:flex-row justify-center gap-4">
           <Button size="lg">See Demo</Button>
           <Button size="lg" variant="outline">
-            Contact 
+            Contact
           </Button>
         </div>
       </div>

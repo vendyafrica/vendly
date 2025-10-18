@@ -1,9 +1,9 @@
-"use client"
+"use client";
 
-import { forwardRef, useRef } from "react"
-import { cn } from "@/lib/utils"
-import { AnimatedBeam } from "@/registry/magicui/animated-beam"
-import Image from "next/image"
+import { forwardRef, useRef } from "react";
+import { cn } from "@/lib/utils";
+import { AnimatedBeam } from "@/registry/magicui/animated-beam";
+import Image from "next/image";
 
 const Circle = forwardRef<
   HTMLDivElement,
@@ -19,35 +19,36 @@ const Circle = forwardRef<
     >
       {children}
     </div>
-  )
-})
+  );
+});
 
-Circle.displayName = "Circle"
+Circle.displayName = "Circle";
 
 export default function AnimatedBeamMultipleOutputDemo({
   className,
 }: {
-  className?: string
+  className?: string;
 }) {
-  const containerRef = useRef<HTMLDivElement>(null)
-  const div1Ref = useRef<HTMLDivElement>(null)
-  const div2Ref = useRef<HTMLDivElement>(null)
-  const div3Ref = useRef<HTMLDivElement>(null)
-  const div4Ref = useRef<HTMLDivElement>(null)
-  const div5Ref = useRef<HTMLDivElement>(null)
-  const div6Ref = useRef<HTMLDivElement>(null)
-  const div7Ref = useRef<HTMLDivElement>(null)
+  const containerRef = useRef<HTMLDivElement>(null);
+  const div1Ref = useRef<HTMLDivElement>(null);
+  const div2Ref = useRef<HTMLDivElement>(null);
+  const div3Ref = useRef<HTMLDivElement>(null);
+  const div4Ref = useRef<HTMLDivElement>(null);
+  const div5Ref = useRef<HTMLDivElement>(null);
+  const div6Ref = useRef<HTMLDivElement>(null);
+  const div7Ref = useRef<HTMLDivElement>(null);
 
   return (
     <div
       className={cn(
-        "relative flex w-full items-center justify-center overflow-hidden rounded-lg border bg-background p-10 md:shadow-xl",
+        "relative flex w-full max-w-4xl items-center justify-between overflow-hidden rounded-2xl border border-border/30 bg-background/80 p-8 sm:p-10 backdrop-blur-md shadow-md hover:shadow-lg transition-all duration-300",
         className
       )}
       ref={containerRef}
     >
-      <div className="flex h-full w-full flex-row items-stretch justify-between gap-10">
-        <div className="flex flex-col justify-center gap-2">
+      <div className="flex w-full flex-row items-center justify-between gap-8 sm:gap-12">
+        {/* Left icons */}
+        <div className="flex flex-col justify-center items-center gap-3 sm:gap-4">
           <Circle ref={div1Ref}>
             <Icons.instagram />
           </Circle>
@@ -64,18 +65,23 @@ export default function AnimatedBeamMultipleOutputDemo({
             <Icons.tiktok />
           </Circle>
         </div>
-        <div className="flex flex-col justify-center">
-          <Circle ref={div6Ref} className="h-16 w-16">
+
+        {/* Center Vendly */}
+        <div className="flex flex-col justify-center items-center">
+          <Circle ref={div6Ref} className="h-16 w-16 sm:h-20 sm:w-20">
             <Icons.vendly />
           </Circle>
         </div>
-        <div className="flex flex-col justify-center">
+
+        {/* Right store */}
+        <div className="flex flex-col justify-center items-center">
           <Circle ref={div7Ref}>
             <Icons.store />
           </Circle>
         </div>
       </div>
 
+      {/* Animated Beams */}
       <AnimatedBeam
         containerRef={containerRef}
         fromRef={div1Ref}
@@ -107,7 +113,7 @@ export default function AnimatedBeamMultipleOutputDemo({
         toRef={div7Ref}
       />
     </div>
-  )
+  );
 }
 
 const Icons = {
@@ -184,12 +190,7 @@ const Icons = {
     </svg>
   ),
   vendly: () => (
-     <Image
-    src="/icon0.svg"   
-    alt="Vendly Icon"
-    width={24}
-    height={24}
-  />
+    <Image src="/icon0.svg" alt="Vendly Icon" width={24} height={24} />
   ),
   store: () => (
     <svg
@@ -209,4 +210,4 @@ const Icons = {
       <path d="M22 7v3a2 2 0 0 1-2 2v0a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 16 12a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 12 12a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 8 12a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 4 12v0a2 2 0 0 1-2-2V7" />
     </svg>
   ),
-}
+};

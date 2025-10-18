@@ -13,7 +13,7 @@ const features = [
       "Connect your socials, and we sync your products with your storefront in minutes. No migration, no plugins.",
     className: "col-span-12 lg:col-span-6",
     background: (
-      <AnimatedBeamMultipleOutputDemo className="absolute inset-0 h-full w-full object-cover transition-all duration-300 ease-out [mask-image:linear-gradient(to_top,transparent_10%,#000_100%)] group-hover:scale-105" />
+      <AnimatedBeamMultipleOutputDemo className="absolute inset-0 h-full w-full object-cover" />
     ),
     mediaClassName: "p-0",
   },
@@ -72,7 +72,7 @@ export default function Features() {
             Benefits
           </p>
           <h2 className="mb-4 text-4xl font-bold text-gray-900 sm:text-5xl leading-tight dark:text-white">
-            Super-charge your operations
+            <span className="text-primary">Super-charge</span> your operations
           </h2>
           <p className="mx-auto max-w-2xl text-lg text-gray-600 leading-relaxed dark:text-gray-400">
             Everything you need to sell effortlessly online.
