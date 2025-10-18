@@ -1,19 +1,26 @@
-import { any } from "better-auth/*";
-import { createAuthClient } from "better-auth/client";
+import { ClientOptions, createAuthClient } from "better-auth/client";
 import { genericOAuthClient } from "better-auth/client/plugins";
 
+type AuthClientOptions = Omit<ClientOptions, "plugins"> & {
+  plugins: [ReturnType<typeof genericOAuthClient>];
+};
 
-export const authClient = createAuthClient({
-  baseURL: process.env.EXPRESS_URL || "http://localhost:8000",
+// 1. Create the client locally so TypeScript can infer its full, augmented type
+const _authClient = createAuthClient<AuthClientOptions>({
+  baseURL: (process.env.WEB_URL as string) || "http://localhost:3000",
   basePath: "/api/auth",
   plugins: [genericOAuthClient()],
-}) as ReturnType<typeof createAuthClient>;
+});
 
+// 2. Create an exported type from the inferred client
+export type MyAuthClient = typeof _authClient;
+
+// 3. Export the client with the new, explicit type
+export const authClient: MyAuthClient = _authClient;
 
 export async function signInWithGoogle() {
   const data = await authClient.signIn.social({
     provider: "google",
-    callbackURL: "https://www.vendlyafrica.store",
   });
   return data;
 }
@@ -22,9 +29,11 @@ export async function signInWithInstagram() {
   try {
     const data = await authClient.signIn.oauth2({
       providerId: "instagram",
-      callbackURL: "https://www.vendlyafrica.store",
+      callbackURL: "/dashboard",
       errorCallbackURL: "/auth/error",
     });
+
+    console.log("Instagram sign-in successful:", data);
     return data;
   } catch (error) {
     console.error("Instagram sign-in failed:", error);
@@ -40,6 +49,3 @@ export async function signOut() {
     throw error;
   }
 }
-
-
-

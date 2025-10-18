@@ -1,15 +1,18 @@
 {
   "extends": "../../tsconfig.base.json",
-  "compilerOptions": {
-    "ignoreDeprecations": "6.0",
+   "compilerOptions": {
+    "composite": false,
+    // "declaration": false,
+    "lib": ["dom"],
+    "skipLibCheck": true,
+   "strict": true,
+   "ignoreDeprecations": "6.0",
     "moduleResolution": "node",
     "outDir": "./dist",
-    "types": [
-      "node"
-    ]
+    "types": ["node"]
   },
   "include": [
-    "**/*",
+    "./**/*.ts",
     "../../apps/api/src/routes/auth_routes.ts"
   ],
   "exclude": [

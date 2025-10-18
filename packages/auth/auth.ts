@@ -39,7 +39,7 @@ export const auth = betterAuth({
       clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
     },
   },
-  
+
   plugins: [
     genericOAuth({
       config: [
@@ -70,6 +70,11 @@ export const auth = betterAuth({
 
   advanced: {
     cookiePrefix: "vendly",
+    // defaultCookieAttributes: {
+    //   sameSite: "none",
+    //   secure: true,
+    //   partitioned: true
+    // },
     crossSubDomainCookies: {
       enabled: false,
     },
