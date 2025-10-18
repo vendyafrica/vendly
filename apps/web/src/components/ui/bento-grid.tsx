@@ -12,6 +12,7 @@ interface BentoCardProps extends ComponentPropsWithoutRef<"div"> {
   background: ReactNode;
   Icon: React.ElementType;
   description: string;
+  tag?: string;
   mediaClassName?: string;
 }
 
@@ -19,8 +20,7 @@ const BentoGrid = ({ children, className, ...props }: BentoGridProps) => {
   return (
     <div
       className={cn(
-        // 12-col grid on lg for precise card spans; 6-col on small screens
-        "grid w-full auto-rows-auto grid-cols-1 sm:grid-cols-6 lg:grid-cols-12 gap-8",
+        "grid w-full auto-rows-min grid-cols-1 sm:grid-cols-6 lg:grid-cols-12 gap-4",
         className
       )}
       {...props}
@@ -36,42 +36,47 @@ const BentoCard = ({
   background,
   Icon,
   description,
+  tag,
   mediaClassName,
   ...props
 }: BentoCardProps) => (
   <div
     key={name}
     className={cn(
-      "group relative col-span-1 flex flex-col justify-between overflow-hidden rounded-2xl p-8",
-      // light styles
-      "bg-white border border-gray-200 shadow-sm hover:shadow-md transition-shadow duration-300",
-      // dark styles
-      "dark:bg-background dark:border-gray-800 transform-gpu dark:[box-shadow:0_-20px_80px_-20px_#ffffff1f_inset]",
+      "group relative col-span-1 flex flex-col overflow-hidden rounded-[10px] p-5 sm:p-8",
+      "bg-gray-80 border border-gray-100 shadow-sm",
+      "dark:bg-neutral-900 dark:border-neutral-800",
       className
     )}
     {...props}
   >
-    <div className="relative z-10">
-      <div className="flex transform-gpu flex-col gap-2 mb-6">
-        <Icon className="h-8 w-8 origin-left transform-gpu text-gray-800" />
-        <h3 className="text-xl sm:text-2xl font-semibold text-gray-900 dark:text-neutral-300">
+    <div className="relative z-10 flex flex-col h-full">
+      <div className="flex items-center gap-2 mb-3">
+        <Icon className="h-4 w-4 text-purple-500 dark:text-gray-400" />
+        {/* <span className="text-xs font-medium text-purple-500 dark:text-gray-400">
+          {tag}
+        </span> */}
+      </div>
+      <div className="flex flex-col gap-1 mb-6">
+        <h3 className="text-2xl font-semibold text-gray-900 dark:text-neutral-100 leading-tight">
           {name}
         </h3>
-        <p className="max-w-xl text-sm sm:text-base text-gray-600 leading-relaxed">
+        <p className="text-[14px] text-black-500 dark:text-neutral-400 leading-relaxed">
           {description}
         </p>
       </div>
-
       <div
         className={cn(
-          "relative h-56 rounded-xl bg-gray-50 ring-1 ring-gray-200 overflow-hidden flex items-center justify-center",
+          "relative flex-1 rounded-[10px]",
+          // "bg-purple-50 dark:bg-neutral-800/50",
+          "overflow-hidden flex items-center justify-center",
+          "min-h-[200px] sm:min-h-[240px]",
           mediaClassName
         )}
       >
         {background}
       </div>
     </div>
-    <div className="pointer-events-none absolute inset-0 transform-gpu bg-[radial-gradient(120%_120%_at_0%_0%,#0000000d_0%,transparent_50%)] transition-opacity duration-300 group-hover:opacity-100" />
   </div>
 );
 

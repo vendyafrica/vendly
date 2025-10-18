@@ -1,39 +1,58 @@
 "use client";
 
-import React from "react";
-import { BackgroundLines } from "@/components/ui/background-lines";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import React, { useState } from "react";
+
 
 export default function Waitlist() {
-  return (
-    <section className="relative flex min-h-screen w-full items-center justify-center overflow-hidden bg-background py-24 sm:py-32">
-      <BackgroundLines className="container relative flex w-full flex-col items-center justify-center px-6 sm:px-8">
-        {/* Heading */}
-        <h2 className="text-center font-sans text-4xl font-medium tracking-tight text-foreground sm:text-6xl md:text-7xl lg:text-8xl leading-tight">
-         Book your <span className="text-primary">vendly</span> store
-        </h2>
+  const [storeName, setStoreName] = useState("");
+  const [submitted, setSubmitted] = useState(false);
 
-        {/* Subheading */}
-        <p className="mt-6 max-w-2xl text-center text-base text-muted-foreground sm:text-lg lg:text-xl">
-          Reserve your storefront on the waitlist and get early access .
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    setSubmitted(true);
+    setTimeout(() => setSubmitted(false), 3000);
+  };
+
+  return (
+    <section className="relative overflow-hidden bg-background py-20 sm:py-28">
+      <div className="mx-auto max-w-5xl px-4 text-center">
+        {/* Badge */}
+        <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-1.5 text-sm font-medium text-primary border border-primary/20">
+          <span className="relative flex h-2 w-2">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
+          </span>
+          Limited Early Access Available
+        </div>
+
+        {/* Main Heading */}
+        <h1 className="mt-8 text-4xl font-geist tracking-tight text-foreground sm:text-5xl md:text-6xl leading-tight">
+          Get your <span className="text-primary">vendly</span> store
+        </h1>
+
+        {/* Subtext */}
+        <p className="mx-auto mt-5 max-w-2xl text-base text-black sm:text-lg leading-relaxed">
+          Transform how we sell online. Reserve your custom subdomain and get
+          exclusive early access with premium features.
         </p>
 
-        {/* Waitlist Input */}
-        <div className="mt-10 flex w-full max-w-md flex-col sm:flex-row items-center gap-3 rounded-full bg-muted/40 p-2 backdrop-blur-sm border border-border/60">
-          <Input
-            type="text"
-            placeholder="yourstore.vendly.store"
-            className="h-12 flex-1 rounded-full border-none bg-transparent px-5 text-base placeholder:text-muted-foreground/70 focus-visible:ring-0 focus-visible:outline-none"
-          />
-          <Button
-            size="lg"
-            className="h-12 w-full sm:w-auto rounded-full px-6 text-base font-semibold bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
-          >
-            Join Waitlist
-          </Button>
+        <div className="mt-10 mx-auto max-w-2xl space-y-3">
+          <div className="flex flex-col sm:flex-row items-center gap-3 rounded-lg bg-muted/40 p-1.5 backdrop-blur-sm border border-border">
+            <div className="flex-1 w-full relative">
+              <input
+                type="text"
+                value={storeName}
+                onChange={(e) => setStoreName(e.target.value)}
+                placeholder="@yourstore"
+                className="h-11 w-full rounded-md border-none bg-background px-4 text-base text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+              />
+              <span className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground text-sm pointer-events-none">
+                .vendly.store
+              </span>
+            </div>
+          </div>
         </div>
-      </BackgroundLines>
+      </div>
     </section>
   );
 }

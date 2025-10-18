@@ -12,11 +12,5 @@ router.get("/me", async (req, res) => {
     return res.json(session);
 });
 
-router.get("/ok", async (_req, res) => {
-    return res.json({ status: "ok" });
-});
-
-
-
 export default router;
 

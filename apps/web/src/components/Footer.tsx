@@ -17,9 +17,9 @@ export default function Footer() {
         </a>
 
         {/* Short tagline */}
-        <p className="max-w-md text-lg text-muted-foreground/80">
+        <p className="max-w-md text-medium  text-black ">
           One platform to sell anywhere, manage everything, and grow your
-          business — without the DMs.
+          business.
         </p>
 
         {/* Socials */}
