@@ -1,0 +1,45 @@
+# Google App Engine configuration
+# Note: For Node.js apps, Cloud Run is generally preferred over App Engine
+# This config is for App Engine Standard Environment
+
+runtime: nodejs22
+service: vendly-api
+
+env_variables: 
+  NODE_ENV: "production"
+  # # Add your environment variables here
+  # DATABASE_URL: "postgresql://postgres.faszlywdmtxzyvkgbkfx:jlBnbQi4zACeBoml@aws-1-eu-north-1.pooler.supabase.com:5432/postgres"
+  # #GOOGLE OAUTH PROVIDERS
+  # GOOGLE_CLIENT_ID: "958986226253-bf3hp7frb0nsvkfb98pqll53vaq6irb5.apps.googleusercontent.com"
+  # GOOGLE_CLIENT_SECRET: "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"
+
+  # #INSTAGRAM OAUTH PROVIDERS
+  # INSTAGRAM_CLIENT_ID: "2731783380328492"
+  # INSTAGRAM_CLIENT_SECRET: "edfd2ee8d65d294f6191e292ba654f51"
+  # INSTAGRAM_REDIRECT_URI: "https://vendly-web.vercel.app"
+  # INSTAGRAM_FORCE_REAUTH: "true"
+
+  # BETTER_AUTH_SECRET: "MdyiqCGV4ARqamqGCC1DgMVfCPPNEGBY"
+  # BETTER_AUTH_URL: ""
+
+# Automatic scaling configuration
+# automatic_scaling:
+#   min_instances: 0
+#   max_instances: 10
+#   target_cpu_utilization: 0.65
+
+# # Instance resources
+# instance_class: F2
+
+# handlers:
+#   - url: /.*
+#     script: auto
+#     secure: always
+
+# Files to skip uploading
+skip_files:
+  - ^(.*/)?\.git/.*$
+  - ^(.*/)?\.gitignore$
+  - ^(.*/)?node_modules/.*$
+  - ^(.*/)?\.env$
+  - ^(.*/)?\.env\..*$
