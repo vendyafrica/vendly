@@ -21,9 +21,9 @@
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "dist", "**/*.test.ts", "**/*.spec.ts"],
-  "references": [ // <-- ADD THIS
+  "references": [ 
     { "path": "../../packages/auth" },
     { "path": "../../packages/database" },
-    { "path": " ../../packages/types" }
+    { "path": "../../packages/types" }
   ]
 }
