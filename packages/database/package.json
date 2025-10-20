@@ -13,7 +13,7 @@
   "scripts": {
     "db:generate": "drizzle-kit generate",
     "db:push": "drizzle-kit push",
-    "build": "tsc"
+    "build": "tsc -b"
   },
   "dependencies": {
     "drizzle-orm": "^0.44.5",
