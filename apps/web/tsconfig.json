@@ -2,7 +2,11 @@
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "target": "ES2017",
-    "lib": ["dom", "dom.iterable", "esnext"],
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
+    ],
     "allowJs": true,
     "noEmit": true,
     "module": "esnext",
@@ -11,20 +15,50 @@
     "incremental": true,
     // "ignoreDeprecations": "6.0",
     "baseUrl": ".",
-    "plugins": [{ "name": "next" }],
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ],
     "paths": {
-      "@/*": ["./src/*"],
-      "@vendly/api": ["../../apps/api/src/index.ts"],
-      "@vendly/api/*": ["../../apps/api/src/*"],
-      "@vendly/auth": ["../../packages/auth/src/index.ts"],
-      "@vendly/auth/*": ["../../packages/auth/src/*"],
-      "@vendly/database": ["../../packages/database/src/index.ts"],
-      "@vendly/database/*": ["../../packages/database/src/*"],
-      "@vendly/types": ["../../packages/types/src/index.ts"],
-      "@vendly/types/*": ["../../packages/types/src/*"]
-    }
+      "@/*": [
+        "./src/*"
+      ],
+      "@vendly/api": [
+        "../../apps/api/src/index.ts"
+      ],
+      "@vendly/api/*": [
+        "../../apps/api/src/*"
+      ],
+      "@vendly/auth": [
+        "../../packages/auth/src/index.ts"
+      ],
+      "@vendly/auth/*": [
+        "../../packages/auth/src/*"
+      ],
+      "@vendly/database": [
+        "../../packages/database/src/index.ts"
+      ],
+      "@vendly/database/*": [
+        "../../packages/database/src/*"
+      ],
+      "@vendly/types": [
+        "../../packages/types/src/index.ts"
+      ],
+      "@vendly/types/*": [
+        "../../packages/types/src/*"
+      ]
+    },
+    "isolatedModules": true
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
-  "exclude": ["node_modules"]
+  "include": [
+    "next-env.d.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    ".next/types/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
 }
 //should work

@@ -1,5 +1,5 @@
 import { pgTable, text, varchar, timestamp, boolean, jsonb } from "drizzle-orm/pg-core";
-import { user } from "./auth-schema";
+import { user } from "./auth_schema";
 
 export const sellerProfile = pgTable(
     "seller_profile",

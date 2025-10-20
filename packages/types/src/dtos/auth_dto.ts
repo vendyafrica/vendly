@@ -1,5 +1,5 @@
 
-import { UserRole } from "@vendly/types";
+import { UserRole } from "../enums/index";
 
 export interface RegisterRequest {
   email: string;

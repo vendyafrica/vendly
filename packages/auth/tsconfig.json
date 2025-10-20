@@ -1,24 +1,19 @@
 {
   "extends": "../../tsconfig.base.json",
-   "compilerOptions": {
-    "composite": false,
-    // "declaration": false,
-    "lib": ["dom"],
-    "skipLibCheck": true,
-   "strict": true,
-   "ignoreDeprecations": "6.0",
-    "moduleResolution": "node",
+  "compilerOptions": {
     "outDir": "./dist",
-    "types": ["node"]
+    "rootDir": ".",
+    "composite": true,
+    "declaration": true,
+    "declarationMap": true,
+    "moduleResolution": "node10",
+    "incremental": true,
+    "tsBuildInfoFile": "./dist/.tsbuildinfo"
   },
-  "include": [
-    "./**/*.ts",
-    "../../apps/api/src/routes/auth_routes.ts"
-  ],
-  "exclude": [
-    "node_modules",
-    "dist",
-    "**/*.test.ts",
-    "**/*.spec.ts"
+  "include": ["src/**/*","*.ts"],
+  "exclude": ["node_modules", "dist"],
+  "references": [
+    { "path": "../database" },
+    { "path": "../types" }
   ]
 }
