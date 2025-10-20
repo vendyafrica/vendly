@@ -6,7 +6,7 @@
     "moduleResolution": "node16",
     "lib": ["ES2020"],
     "outDir": "./dist",
-    "rootDir": "src", // <-- CHANGE THIS
+    "rootDir": "src",
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
@@ -23,11 +23,11 @@
     "incremental": true,
     "tsBuildInfoFile": "./dist/.tsbuildinfo",
     "baseUrl": "."
-    // "paths": { ... }  <-- DELETE THIS ENTIRE BLOCK
+    // DELETE THE "paths" BLOCK
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "dist", "**/*.test.ts", "**/*.spec.ts"],
-  "references": [ // <-- ADD THIS ENTIRE BLOCK
+  "references": [
     { "path": "../../packages/auth" },
     { "path": "../../packages/database" },
     { "path": "../../packages/types" }
