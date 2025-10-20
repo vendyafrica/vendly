@@ -25,8 +25,8 @@
   "include": ["src/**/*"],
   "exclude": ["node_modules", "dist", "**/*.test.ts", "**/*.spec.ts"],
   "references": [
-    { "path": "../../packages/auth" },
+    { "path": "../../packages/types" },
     { "path": "../../packages/database" },
-    { "path": "../../packages/types" }
+    { "path": "../../packages/auth" }
   ]
 }
