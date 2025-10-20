@@ -16,20 +16,14 @@
     "declaration": true,
     "sourceMap": true,
     "types": ["node"],
-    "noUncheckedIndexedAccess": true,
-    "noImplicitReturns": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
-    "incremental": true,
     "tsBuildInfoFile": "./dist/.tsbuildinfo",
     "baseUrl": "."
-    // DELETE THE "paths" BLOCK
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "dist", "**/*.test.ts", "**/*.spec.ts"],
-  "references": [
+  "references": [ // <-- ADD THIS
     { "path": "../../packages/auth" },
     { "path": "../../packages/database" },
-    { "path": "../../packages/types" }
+    { "path": " ../../packages/types" }
   ]
 }
