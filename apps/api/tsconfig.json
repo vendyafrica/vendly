@@ -6,7 +6,7 @@
     "moduleResolution": "node16",
     "lib": ["ES2020"],
     "outDir": "./dist",
-    "rootDir": "./src",
+    "rootDir": "../../",
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
@@ -20,13 +20,17 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "incremental": true,
-    "tsBuildInfoFile": "./dist/.tsbuildinfo"
+    "tsBuildInfoFile": "./dist/.tsbuildinfo",
+    "baseUrl": ".",
+    "paths": {
+      "@vendly/auth": ["../../packages/auth/src/index.ts"],
+      "@vendly/auth/*": ["../../packages/auth/src/*"],
+      "@vendly/database": ["../../packages/database/src/index.ts"],
+      "@vendly/database/*": ["../../packages/database/src/*"],
+      "@vendly/types": ["../../packages/types/src/index.ts"],
+      "@vendly/types/*": ["../../packages/types/src/*"]
+    }
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "dist", "**/*.test.ts", "**/*.spec.ts"],
-  "references": [
-    { "path": "../../packages/types" },
-    { "path": "../../packages/database" },
-    { "path": "../../packages/auth" }
-  ]
 }
