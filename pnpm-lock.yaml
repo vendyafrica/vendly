@@ -109,7 +109,7 @@ importers:
         specifier: 6.21.0
         version: 6.21.0
 
-  apps/marketplace:
+  apps/storefront:
     dependencies:
       '@vendly/auth':
         specifier: workspace:*
