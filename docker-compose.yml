@@ -1,0 +1,33 @@
+services:
+  # The Express API
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    image: my-monorepo/api
+    ports:
+      - "8080:8080"
+    env_file:
+      - ./.env
+
+  # The 'web' Next.js App
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+    image: my-monorepo/web
+    ports:
+      - "3000:3000"
+    env_file:
+      - ./.env
+
+  # CHANGED: Service name, dockerfile path, and ports
+  storefront:
+    build:
+      context: .
+      dockerfile: apps/storefront/Dockerfile
+    image: my-monorepo/storefront
+    ports:
+      - "4000:4000" # Host port 4000 mapped to container port 4000
+    env_file:
+      - ./.env
