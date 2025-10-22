@@ -2,19 +2,31 @@
   "name": "@vendly/types",
   "version": "0.0.0",
   "private": true,
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./enums": {
+      "types": "./dist/enums/index.d.ts",
+      "default": "./dist/enums/index.js"
+    },
+    "./models": {
+      "types": "./dist/models/index.d.ts",
+      "default": "./dist/models/index.js"
+    },
+    "./dtos": {
+      "types": "./dist/dtos/index.d.ts",
+      "default": "./dist/dtos/index.js"
+    }
+  },
   "scripts": {
     "build": "tsc -b",
     "lint": "eslint src/**/*.{ts,js}",
     "type-check": "tsc --noEmit",
     "clean": "rimraf dist",
     "test": "vitest"
-  },
-  "exports": {
-    ".": "./src/index.ts",
-    "./enums": "./src/enums/index.ts",
-    "./models": "./src/models/index.ts",
-    "./dtos": "./src/dtos/index.ts"
   }
-}
+} 

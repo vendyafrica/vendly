@@ -1,7 +1,7 @@
 import { betterAuth } from "better-auth";
 import { genericOAuth } from "better-auth/plugins";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
-import { db, user, session, account, verification } from "../database/src/index";
+import { db, user, session, account, verification } from "@vendly/database";
 import dotenv from "dotenv";
 import path from "path";
 

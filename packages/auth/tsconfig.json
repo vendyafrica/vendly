@@ -2,18 +2,8 @@
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "outDir": "./dist",
-    "rootDir": ".",
-    "composite": true,
-    "declaration": true,
-    "declarationMap": true,
-    "moduleResolution": "node10",
-    "incremental": true,
-    "tsBuildInfoFile": "./dist/.tsbuildinfo"
+    "rootDir": "./src"
   },
-  "include": ["src/**/*","*.ts"],
-  "exclude": ["node_modules", "dist"],
-  "references": [
-    { "path": "../database" },
-    { "path": "../types" }
-  ]
-}
+  "include": ["src/**/*", "*.ts"],
+  "exclude": ["node_modules", "dist"]
+} 
