@@ -22,6 +22,9 @@
       "default": "./dist/dtos/index.js"
     }
   },
+  "devDependencies": {
+    "@vendly/typescript-config": "workspace:*"
+  },
   "scripts": {
     "build": "tsc -b",
     "lint": "eslint src/**/*.{ts,js}",
@@ -29,4 +32,4 @@
     "clean": "rimraf dist",
     "test": "vitest"
   }
-} 
+}

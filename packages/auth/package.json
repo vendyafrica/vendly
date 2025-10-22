@@ -25,6 +25,7 @@
     "@supabase/supabase-js": "^2.57.4",
     "@vendly/database": "workspace:*",
     "@vendly/types": "workspace:*",
+    "@vendly/typescript-config": "workspace:*",
     "better-auth": "^1.3.23",
     "dotenv": "^17.2.3",
     "undici-types": "6.21.0"

@@ -1,0 +1,16 @@
+{
+  "name": "@vendly/typescript-config",
+  "version": "1.0.0",
+  "private": true,
+  "license": "MIT",
+  "files": [
+    "tsconfig.json"
+  ],
+  "scripts": {
+    "clean": "rimraf dist *.tsbuildinfo" 
+  },
+  "devDependencies": {
+    "rimraf": "^6.0.1",
+    "typescript": "^5.0.0"
+  }
+}

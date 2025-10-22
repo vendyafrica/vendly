@@ -29,6 +29,7 @@
   },
   "devDependencies": {
     "drizzle-kit": "^0.31.5",
-    "dotenv": "^17.2.3"
+    "dotenv": "^17.2.3",
+    "@vendly/typescript-config": "workspace:*"
   }
 }
