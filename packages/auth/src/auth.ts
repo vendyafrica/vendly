@@ -28,9 +28,11 @@ export const auth = betterAuth({
   },
 
   trustedOrigins: [
-    process.env.WEB_URL || "http://localhost:3000",
-    process.env.MARKETPLACE_URL || "http://localhost:4000",
-    process.env.CLIENT_URL || "https://www.vendlyafrica.store",
+    process.env.WEB_URL as string,
+    "http://localhost:3000",
+    process.env.MARKETPLACE_URL as string,
+    "http://localhost:4000",
+    process.env.CLIENT_URL as string,
   ],
 
   socialProviders: {
@@ -70,11 +72,6 @@ export const auth = betterAuth({
 
   advanced: {
     cookiePrefix: "vendly",
-    // defaultCookieAttributes: {
-    //   sameSite: "none",
-    //   secure: true,
-    //   partitioned: true
-    // },
     crossSubDomainCookies: {
       enabled: false,
     },

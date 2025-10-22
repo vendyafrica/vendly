@@ -8,8 +8,11 @@ const PORT = 8000;
 app.use(
   cors({
     origin: [
-      process.env.WEB_URL || "http://localhost:3000",
-      process.env.MARKETPLACE_URL || "http://localhost:4000",
+      process.env.WEB_URL as string,
+      "http://localhost:3000",
+      process.env.MARKETPLACE_URL as string,
+      "http://localhost:4000",
+      process.env.CLIENT_URL as string,
     ],
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],

@@ -7,7 +7,7 @@ type AuthClientOptions = Omit<ClientOptions, "plugins"> & {
 
 // 1. Create the client locally so TypeScript can infer its full, augmented type
 const _authClient: ReturnType<typeof createAuthClient<AuthClientOptions>> = createAuthClient<AuthClientOptions>({
-  baseURL: (process.env.WEB_URL as string) || "http://localhost:3000",
+  baseURL: (process.env.BACKEND_URL as string) || "http://localhost:8000",
   basePath: "/api/auth",
   plugins: [genericOAuthClient()],
 });

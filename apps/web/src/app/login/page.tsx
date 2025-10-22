@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 
 export default function LoginPage() {
   const handleGoogleSignIn = async () => {
-    await AuthButtons.signInWithGoogle();
+    await Auth.signInWithGoogle();
   };
 
   const handleInstagramSignIn = async () => {
