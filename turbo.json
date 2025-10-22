@@ -8,7 +8,7 @@
         ".next/**",
         "build/**"
       ]
-    },  
+    },
     "dev": {
       "cache": false,
       "persistent": true
@@ -21,6 +21,16 @@
     },
     "type-check": {
       "dependsOn": ["^build"]
+    },
+    "lint": {
+      "dependsOn": ["^build"]
+    },
+    "test": {
+      "dependsOn": ["^build"],
+      "outputs": ["coverage/**"]
+    },
+    "clean": {
+      "cache": false
     }
   }
 }

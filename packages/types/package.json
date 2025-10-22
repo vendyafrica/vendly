@@ -5,12 +5,16 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "build": "tsc -b"
+    "build": "tsc -b",
+    "lint": "eslint src/**/*.{ts,js}",
+    "type-check": "tsc --noEmit",
+    "clean": "rimraf dist",
+    "test": "vitest"
   },
   "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "default": "./dist/index.js"
-    }
+    ".": "./src/index.ts",
+    "./enums": "./src/enums/index.ts",
+    "./models": "./src/models/index.ts",
+    "./dtos": "./src/dtos/index.ts"
   }
 }

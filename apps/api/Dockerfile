@@ -22,13 +22,16 @@ COPY pnpm-workspace.yaml ./pnpm-workspace.yaml
 
 # Copy pruned workspace
 COPY --from=pruner /app/out/json/ .
-COPY --from=pruner /app/out/pnpm-lock.yaml ./pnpm-lock.yaml
+COPY --from=pruner /app/pnpm-lock.yaml ./pnpm-lock.yaml
 
 RUN pnpm install --frozen-lockfile
 
 # 4. Builder stage
 FROM base AS builder
 WORKDIR /app
+
+# Set PNPM_HOME to match the base stage
+ENV PNPM_HOME="/pnpm"
 
 # Copy workspace config
 COPY pnpm-workspace.yaml ./pnpm-workspace.yaml
@@ -37,11 +40,16 @@ COPY pnpm-workspace.yaml ./pnpm-workspace.yaml
 COPY --from=pruner /app/out/full/ .
 COPY --from=pruner /app/out/pnpm-lock.yaml ./pnpm-lock.yaml
 
-# Copy installed deps
+# Copy installed deps and pnpm store
 COPY --from=installer /app/node_modules ./node_modules
+COPY --from=installer /pnpm /pnpm
+
+# Copy base config
+COPY --from=pruner /app/tsconfig.base.json ./tsconfig.base.json
 
 # Build only the api
-RUN pnpm turbo build --filter=api
+RUN pnpm turbo build --filter=@vendly/api
+
 
 # 5. Prod-installer stage
 FROM base AS prod-installer

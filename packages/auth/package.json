@@ -5,18 +5,16 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "build": "tsc -b"
+    "build": "tsc -b",
+    "lint": "eslint src/**/*.{ts,js}",
+    "type-check": "tsc --noEmit",
+    "clean": "rimraf dist",
+    "test": "vitest"
   },
-  "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "default": "./dist/index.js"
-    },
-    "./client": {
-      "types": "./dist/auth-client.d.ts",
-      "default": "./dist/auth-client.js"
-    }
-  },
+ "exports": {
+   ".": "./src/index.ts",
+   "./client": "./client.ts"
+ },
   "dependencies": {
     "@supabase/supabase-js": "^2.57.4",
     "@vendly/database": "workspace:*",

@@ -5,15 +5,17 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "default": "./dist/index.js"
-    }
-  },
+  ".": "./src/index.ts",
+  "./schema": "./schema/index.ts"
+},
   "scripts": {
     "db:generate": "drizzle-kit generate",
     "db:push": "drizzle-kit push",
-    "build": "tsc -b"
+    "build": "tsc -b",
+    "lint": "eslint src/**/*.{ts,js}",
+    "type-check": "tsc --noEmit",
+    "clean": "rimraf dist",
+    "test": "vitest"
   },
   "dependencies": {
     "drizzle-orm": "^0.44.5",

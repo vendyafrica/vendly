@@ -29,7 +29,7 @@ COPY --from=pruner /app/out/full/ .
 COPY --from=pruner /app/out/pnpm-lock.yaml ./pnpm-lock.yaml
 COPY --from=installer /app/node_modules ./node_modules
 
-RUN pnpm turbo build --filter=web
+RUN pnpm turbo build --filter=@vendly/web
 
 FROM base AS prod-installer
 WORKDIR /app
