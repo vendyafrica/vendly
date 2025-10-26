@@ -1,4 +1,5 @@
-import { db, waitlist } from "@vendly/database";
+import { db } from "@vendly/database";
+import { waitlist } from "@vendly/database/schema";
 import { WaitlistDto } from "@vendly/types";
 
 export class WaitlistService {
@@ -15,8 +16,8 @@ export class WaitlistService {
         message: "User joined waitlist successfully",
         data: result[0],
       };
-    } catch (error) {
-      console.error("Error joining waitlist:", error);
+    } catch (error: any) {
+      console.error("🔥 Detailed DB Error:", error);
       throw new Error("Failed to join waitlist");
     }
   }

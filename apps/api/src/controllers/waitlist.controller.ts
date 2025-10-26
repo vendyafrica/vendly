@@ -1,4 +1,3 @@
-// controllers/waitlist.controller.ts
 import { Request, Response } from "express";
 import { WaitlistService, waitlistService } from "../services/waitlist.service";
 

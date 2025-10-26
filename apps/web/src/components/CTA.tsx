@@ -5,21 +5,41 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Field, FieldLabel, FieldDescription } from "@/components/ui/field";
 import { motion, AnimatePresence } from "framer-motion";
+import { joinWaitlist } from "@/lib/api";
 
 export default function Waitlist() {
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [storeName, setStoreName] = useState("");
   const [submitted, setSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email.trim() || !phone.trim() || !storeName.trim()) return;
-    setSubmitted(true);
-    setTimeout(() => setSubmitted(false), 3500);
-    setEmail("");
-    setPhone("");
-    setStoreName("");
+
+    setLoading(true);
+    setError("");
+
+    try {
+      const data = await joinWaitlist({ email, phone, storeName });
+      setSubmitted(true);
+
+      if (!data.ok) {
+        throw new Error(data.error || "Failed to join waitlist");
+      }
+      setSubmitted(true);
+      setEmail("");
+      setPhone("");
+      setStoreName("");
+      setTimeout(() => setSubmitted(false), 3500);
+    } catch (err: any) {
+      setError(err.message || "Something went wrong. Please try again.");
+      console.error("Waitlist error:", err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -101,7 +121,7 @@ export default function Waitlist() {
           <Button
             type="submit"
             disabled={submitted}
-            className="h-12 w-full rounded-xl bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary font-medium transition-all text-base mt-8"
+            className="h-12 w-full rounded-xl bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary font-medium transition-all text-base mt-8 cursor-pointer"
           >
             {submitted ? "Reserved ✓" : "Reserve Your Store"}
           </Button>

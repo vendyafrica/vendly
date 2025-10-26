@@ -30,7 +30,7 @@ app.get("/", (_req, res) => {
   res.send("API is running");
 });
 
-// ✅ Mount routes
+
 app.use("/api/waitlist", waitlistRoutes);
 
 app.listen(PORT, () => {
