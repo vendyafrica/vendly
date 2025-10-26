@@ -41,6 +41,16 @@ export async function signInWithInstagram() {
   }
 }
 
+export async function getSession() {
+  try {
+    const session = await authClient.getSession();
+    return session;
+  } catch (error) {
+    console.error("Error getting session:", error);
+    throw error;
+  }
+}
+
 export async function signOut() {
   try {
     await authClient.signOut();

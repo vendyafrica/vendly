@@ -1,5 +1,11 @@
 import { Country, PayoutMethod, MobileMoneyProvider } from '../enums';
 
+export interface WaitlistDto {
+  email: string;
+  phone: string;
+  storeName: string;
+}
+
 /** Seller onboarding segment: account */
 export interface SellerOnboardingAccount {
   fullName: string;
