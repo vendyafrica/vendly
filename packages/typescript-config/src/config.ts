@@ -20,11 +20,16 @@ export const BETTER_AUTH_URL = isProd
   ? process.env.BETTER_AUTH_URL_PROD
   : process.env.BETTER_AUTH_URL_DEV;
 
+export const STOREFRONT_URL = isProd
+  ? process.env.STOREFRONT_URL_PROD
+  : process.env.STOREFRONT_URL_DEV;
+
 export const ENV = {
   NODE_ENV: process.env.NODE_ENV,
   BACKEND_URL,
   WEB_URL,
   BETTER_AUTH_URL,
+  STOREFRONT_URL,
 };
 
 console.log(`[ENV] Loaded ${isProd ? "production" : "development"} config`);

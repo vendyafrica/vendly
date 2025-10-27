@@ -2,11 +2,9 @@ import { betterAuth } from "better-auth";
 import { genericOAuth } from "better-auth/plugins";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { db, user, session, account, verification } from "@vendly/database";
-import dotenv from "dotenv";
-import path from "path";
+import { BETTER_AUTH_URL, WEB_URL, STOREFRONT_URL } from "@vendly/typescript-config";
 
-dotenv.config({ path: path.resolve(__dirname, "../../.env") });
-const baseURL = process.env.BETTER_AUTH_URL || "http://localhost:8000";
+const baseURL = BETTER_AUTH_URL || "http://localhost:8000";
 
 export const auth = betterAuth({
   baseURL,
@@ -28,12 +26,11 @@ export const auth = betterAuth({
   },
 
   trustedOrigins: [
-    process.env.WEB_URL as string,
+    WEB_URL,
+    STOREFRONT_URL,
     "http://localhost:3000",
-    process.env.MARKETPLACE_URL as string,
     "http://localhost:4000",
-    process.env.CLIENT_URL as string,
-  ],
+  ].filter((origin): origin is string => Boolean(origin)),
 
   socialProviders: {
     google: {
