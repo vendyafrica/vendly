@@ -338,6 +338,10 @@ importers:
         version: link:../typescript-config
 
   packages/typescript-config:
+    dependencies:
+      dotenv:
+        specifier: ^17.2.3
+        version: 17.2.3
     devDependencies:
       rimraf:
         specifier: ^6.0.1

@@ -1,4 +1,6 @@
-const API_URL = process.env.BACKEND_URL || "http://localhost:8000";
+import { BACKEND_URL } from "@vendly/typescript-config";
+
+const API_URL = BACKEND_URL;
 
 export async function joinWaitlist(data: {
   email: string;

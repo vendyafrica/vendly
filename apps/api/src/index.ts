@@ -2,6 +2,7 @@ import express from "express";
 import cors from "cors";
 import { auth, toNodeHandler } from "@vendly/auth";
 import waitlistRoutes from "./routes/waitlist";
+import {WEB_URL} from "@vendly/typescript-config";
 
 const app = express();
 const PORT = 8000;
@@ -9,11 +10,7 @@ const PORT = 8000;
 app.use(
   cors({
     origin: [
-      process.env.WEB_URL as string,
-      "http://localhost:3000",
-      process.env.MARKETPLACE_URL as string,
-      "http://localhost:4000",
-      process.env.CLIENT_URL as string,
+      WEB_URL || "http://localhost:3000"
     ],
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],

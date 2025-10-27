@@ -4,13 +4,18 @@
   "private": true,
   "license": "MIT",
   "files": [
-    "tsconfig.json"
+    "tsconfig.json",
+    "config.ts",
+    "index.ts"
   ],
   "scripts": {
-    "clean": "rimraf dist *.tsbuildinfo" 
+    "clean": "rimraf dist *.tsbuildinfo"
   },
   "devDependencies": {
     "rimraf": "^6.0.1",
     "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "dotenv": "^17.2.3"
   }
 }
