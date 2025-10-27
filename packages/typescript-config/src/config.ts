@@ -1,10 +1,5 @@
-import dotenv from "dotenv";
-import path from "path";
-
-
-if (process.env.NODE_ENV !== "production") {
-  dotenv.config({ path: path.resolve(__dirname, "../../../.env") });
-}
+// Environment variables are loaded automatically by Next.js and other Node.js environments
+// This module simply exports the configured URLs based on the NODE_ENV
 
 const isProd = process.env.NODE_ENV === "production";
 
@@ -31,5 +26,3 @@ export const ENV = {
   BETTER_AUTH_URL,
   STOREFRONT_URL,
 };
-
-console.log(`[ENV] Loaded ${isProd ? "production" : "development"} config`);
