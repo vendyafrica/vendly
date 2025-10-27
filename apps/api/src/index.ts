@@ -2,7 +2,8 @@ import express from "express";
 import cors from "cors";
 import { auth, toNodeHandler } from "@vendly/auth";
 import waitlistRoutes from "./routes/waitlist";
-import {WEB_URL} from "@vendly/typescript-config";
+import { WEB_URL } from "@vendly/typescript-config";
+
 
 const app = express();
 const PORT = 8000;
