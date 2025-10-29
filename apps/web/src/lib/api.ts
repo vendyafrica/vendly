@@ -1,6 +1,7 @@
 import { WaitlistDto } from "@vendly/types";
+import { CLIENT_CONFIG } from "@vendly/typescript-config";
 
-const API_URL = process.env.NEXT_PUBLIC_BACKEND_URL_DEV;
+const API_URL = CLIENT_CONFIG.BACKEND_URL;
 
 export async function joinWaitlist(data: WaitlistDto): Promise<{
   message: string;
