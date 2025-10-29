@@ -2,9 +2,9 @@ import { betterAuth } from "better-auth";
 import { genericOAuth } from "better-auth/plugins";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { db, user, session, account, verification } from "@vendly/database";
-import { BETTER_AUTH_URL, WEB_URL, STOREFRONT_URL } from "@vendly/typescript-config";
+import { SERVER_CONFIG } from "@vendly/typescript-config";
 
-const baseURL = BETTER_AUTH_URL || "http://localhost:8000";
+const baseURL = SERVER_CONFIG.BETTER_AUTH_URL || "http://localhost:8000";
 
 export const auth = betterAuth({
   baseURL,
@@ -26,8 +26,8 @@ export const auth = betterAuth({
   },
 
   trustedOrigins: [
-    WEB_URL,
-    STOREFRONT_URL,
+    SERVER_CONFIG.WEB_URL,
+    SERVER_CONFIG.STOREFRONT_URL,
     "http://localhost:3000",
     "http://localhost:4000",
   ].filter((origin): origin is string => Boolean(origin)),
