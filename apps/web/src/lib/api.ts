@@ -1,11 +1,11 @@
+import { WaitlistDto } from "@vendly/types";
 
-const API_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
+const API_URL = process.env.NEXT_PUBLIC_BACKEND_URL_DEV;
 
-export async function joinWaitlist(data: {
-  email: string;
-  phone: string;
-  storeName: string;
-}) {
+export async function joinWaitlist(data: WaitlistDto): Promise<{
+  message: string;
+  data: any;
+}> {
   const response = await fetch(`${API_URL}/api/waitlist/join-waitlist`, {
     method: "POST",
     headers: {
@@ -17,7 +17,7 @@ export async function joinWaitlist(data: {
   const result = await response.json();
 
   if (!response.ok) {
-    throw new Error(result.error || "Failed to join waitlist");
+    throw new Error(result.message || result.error || "Failed to join waitlist");
   }
 
   return result;

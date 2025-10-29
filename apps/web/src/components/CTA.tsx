@@ -23,12 +23,11 @@ export default function Waitlist() {
     setError("");
 
     try {
-      const data = await joinWaitlist({ email, phone, storeName });
-      setSubmitted(true);
-
-      if (!data.ok) {
-        throw new Error(data.error || "Failed to join waitlist");
-      }
+      const result = await joinWaitlist({ email, phone, storeName });
+      
+      console.log('Result from API:', result); // Debug log
+      
+      // The API returns { message, data }, not { ok, error }
       setSubmitted(true);
       setEmail("");
       setPhone("");
@@ -118,12 +117,19 @@ export default function Waitlist() {
             </FieldDescription>
           </Field>
 
+          {/* Error Message */}
+          {error && (
+            <div className="rounded-lg bg-destructive/10 border border-destructive/20 p-3 text-sm text-destructive">
+              {error}
+            </div>
+          )}
+
           <Button
             type="submit"
-            disabled={submitted}
-            className="h-12 w-full rounded-xl bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary font-medium transition-all text-base mt-8 cursor-pointer"
+            disabled={loading || submitted}
+            className="h-12 w-full rounded-xl bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary font-medium transition-all text-base mt-8 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {submitted ? "Reserved ✓" : "Reserve Your Store"}
+            {loading ? "Reserving..." : submitted ? "Reserved ✓" : "Reserve Your Store"}
           </Button>
         </form>
 

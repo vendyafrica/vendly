@@ -332,6 +332,10 @@ importers:
         version: 0.31.5
 
   packages/types:
+    dependencies:
+      zod:
+        specifier: ^3.22.4
+        version: 3.25.76
     devDependencies:
       '@vendly/typescript-config':
         specifier: workspace:*

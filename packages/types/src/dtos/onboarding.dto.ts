@@ -1,10 +1,14 @@
 import { Country, PayoutMethod, MobileMoneyProvider } from '../enums';
+import * as z from 'zod';
 
-export interface WaitlistDto {
-  email: string;
-  phone: string;
-  storeName: string;
-}
+export const WaitlistDtoSchema = z.object({
+  email: z.string().email(),
+  phone: z.string().min(10).max(15),
+  storeName: z.string().min(2).max(100),
+});
+
+export type WaitlistDto = z.infer<typeof WaitlistDtoSchema>;
+
 
 /** Seller onboarding segment: account */
 export interface SellerOnboardingAccount {

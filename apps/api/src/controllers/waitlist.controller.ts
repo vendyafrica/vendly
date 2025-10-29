@@ -5,9 +5,17 @@ export class WaitlistController {
   constructor(private waitlistService: WaitlistService) {}
 
   async joinWaitlist(req: Request, res: Response) {
-    const data = req.body;
-    const result = await this.waitlistService.joinWaitlist(data);
-    res.status(200).json(result);
+    try {
+      const data = req.body;
+      const result = await this.waitlistService.joinWaitlist(data);
+      res.status(200).json(result);
+    } catch (error: any) {
+      console.error("Controller error:", error);
+      res.status(500).json({
+        message: error.message || "Failed to join waitlist",
+        error: true
+      });
+    }
   }
 }
 
