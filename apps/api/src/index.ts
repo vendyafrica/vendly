@@ -11,7 +11,13 @@ const PORT = 8000;
 app.use(
   cors({
     origin: [
-      WEB_URL || "http://localhost:3000"
+      'http://localhost:3000',              
+      'http://localhost:4000',
+      'https://vendly-web.vercel.app',
+      'https://www.vendlyafrica.store',
+      'https://vendlyafrica.store',
+      'https://vendly-storefront.vercel.app',
+      /\.vercel\.app$/,
     ],
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
