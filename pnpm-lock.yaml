@@ -41,6 +41,9 @@ importers:
       '@vendly/types':
         specifier: workspace:*
         version: link:../../packages/types
+      '@vendly/typescript-config':
+        specifier: workspace:*
+        version: link:../../packages/typescript-config
       axios:
         specifier: ^1.12.2
         version: 1.12.2
@@ -87,9 +90,6 @@ importers:
       '@types/supertest':
         specifier: ^6.0.2
         version: 6.0.3
-      '@vendly/typescript-config':
-        specifier: workspace:*
-        version: link:../../packages/typescript-config
       better-auth:
         specifier: ^1.3.27
         version: 1.3.27(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
@@ -196,6 +196,9 @@ importers:
       '@vercel/analytics':
         specifier: ^1.5.0
         version: 1.5.0(next@15.5.3(@babel/core@7.28.4)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react@19.1.0)
+      axios:
+        specifier: ^1.12.2
+        version: 1.12.2
       class-variance-authority:
         specifier: ^0.7.1
         version: 0.7.1
@@ -329,6 +332,10 @@ importers:
         version: 0.31.5
 
   packages/types:
+    dependencies:
+      zod:
+        specifier: ^3.22.4
+        version: 3.25.76
     devDependencies:
       '@vendly/typescript-config':
         specifier: workspace:*

@@ -3,18 +3,42 @@
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Field, FieldLabel, FieldDescription } from "@/components/ui/field";
 import { motion, AnimatePresence } from "framer-motion";
+import { joinWaitlist } from "@/lib/api";
 
 export default function Waitlist() {
   const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+  const [storeName, setStoreName] = useState("");
   const [submitted, setSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email.trim()) return;
-    setSubmitted(true);
-    setTimeout(() => setSubmitted(false), 3500);
-    setEmail(""); // reset field
+    if (!email.trim() || !phone.trim() || !storeName.trim()) return;
+
+    setLoading(true);
+    setError("");
+
+    try {
+      const result = await joinWaitlist({ email, phone, storeName });
+      
+      console.log('Result from API:', result); // Debug log
+      
+      // The API returns { message, data }, not { ok, error }
+      setSubmitted(true);
+      setEmail("");
+      setPhone("");
+      setStoreName("");
+      setTimeout(() => setSubmitted(false), 3500);
+    } catch (err: any) {
+      setError(err.message || "Something went wrong. Please try again.");
+      console.error("Waitlist error:", err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -40,27 +64,72 @@ export default function Waitlist() {
           to premium tools for creators and sellers.
         </p>
 
-        {/* ✅ Waitlist Form */}
+        {/* Waitlist Form */}
         <form
           onSubmit={handleSubmit}
-          className="mx-auto mt-10 flex w-full max-w-lg flex-col items-center gap-3 sm:flex-row sm:gap-2"
+          className="mx-auto mt-10 w-full max-w-lg space-y-6 text-left"
         >
-          <div className="relative w-full">
+          <Field>
+            <FieldLabel htmlFor="email">Email Address</FieldLabel>
             <Input
+              id="email"
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="Enter your email"
-              className="h-12 w-full rounded-xl bg-background/80 px-4 pr-24 text-base text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all border border-border/50"
+              placeholder="your@email.com"
+              className="h-12 w-full rounded-xl bg-background/80 px-4 text-base"
               required
             />
-          </div>
+            <FieldDescription>
+              We'll send your early access invite here
+            </FieldDescription>
+          </Field>
+
+          <Field>
+            <FieldLabel htmlFor="phone">Phone Number</FieldLabel>
+            <Input
+              id="phone"
+              type="tel"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              placeholder="+254 (0700) 000-0000"
+              className="h-12 w-full rounded-xl bg-background/80 px-4 text-base"
+              required
+            />
+            <FieldDescription>
+              For order notifications and support
+            </FieldDescription>
+          </Field>
+
+          <Field>
+            <FieldLabel htmlFor="storeName">Store Name</FieldLabel>
+            <Input
+              id="storeName"
+              type="text"
+              value={storeName}
+              onChange={(e) => setStoreName(e.target.value)}
+              placeholder="MyAwesomeStore"
+              className="h-12 w-full rounded-xl bg-background/80 px-4 text-base"
+              required
+            />
+            <FieldDescription>
+              Reserve your unique Vendly storefront URL
+            </FieldDescription>
+          </Field>
+
+          {/* Error Message */}
+          {error && (
+            <div className="rounded-lg bg-destructive/10 border border-destructive/20 p-3 text-sm text-destructive">
+              {error}
+            </div>
+          )}
+
           <Button
             type="submit"
-            disabled={submitted}
-            className="h-12 w-full sm:w-auto rounded-xl bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary font-medium transition-all"
+            disabled={loading || submitted}
+            className="h-12 w-full rounded-xl bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary font-medium transition-all text-base mt-8 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {submitted ? "Subscribed ✓" : "Join Waitlist"}
+            {loading ? "Reserving..." : submitted ? "Reserved ✓" : "Reserve Your Store"}
           </Button>
         </form>
 
@@ -73,7 +142,7 @@ export default function Waitlist() {
               exit={{ opacity: 0, y: 10 }}
               className="mt-5 text-sm text-green-600"
             >
-              You’re on the list! We’ll notify you when Vendly stores go live.
+              You're on the list! We'll notify you when Vendly stores go live.
             </motion.p>
           )}
         </AnimatePresence>

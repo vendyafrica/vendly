@@ -3,12 +3,25 @@
   "version": "1.0.0",
   "private": true,
   "license": "MIT",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./tsconfig.json": "./tsconfig.json",
+    "./nextjs.json": "./nextjs.json"
+  },
   "files": [
-    "tsconfig.json"
+    "tsconfig.json",
+    "nextjs.json",
+    "dist"
   ],
   "scripts": {
-    "clean": "rimraf dist *.tsbuildinfo" 
-  },
+    "clean": "rimraf dist tsconfig.tsbuildinfo",
+    "build": "tsc -b"
+  },  
   "devDependencies": {
     "rimraf": "^6.0.1",
     "typescript": "^5.0.0"
