@@ -16,3 +16,4 @@ export const db = drizzle(client, { schema });
 
 export { eq } from 'drizzle-orm';
 export * from "./schema";
+export * from "./queries";

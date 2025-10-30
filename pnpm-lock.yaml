@@ -314,6 +314,9 @@ importers:
 
   packages/database:
     dependencies:
+      '@vendly/types':
+        specifier: workspace:*
+        version: link:../types
       drizzle-orm:
         specifier: ^0.44.5
         version: 0.44.6(kysely@0.28.8)(postgres@3.4.7)
