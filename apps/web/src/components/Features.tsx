@@ -63,9 +63,9 @@ const features = [
   },
 ];
 
-export default function Features() {
+export default function Features({id}: {id?: string}) {
   return (
-    <section className="py-24 px-4 sm:px-6 lg:px-8 bg-gray-50/50 dark:bg-neutral-900/50">
+    <section className="py-24 px-4 sm:px-6 lg:px-8 bg-gray-50/50 dark:bg-neutral-900/50" id={id}>
       <div className="mx-auto max-w-7xl">
         <div className="mb-16 text-center">
           <p className="mb-3 text-sm font-semibold uppercase tracking-wider text-purple-600">

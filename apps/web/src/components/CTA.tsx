@@ -7,7 +7,7 @@ import { Field, FieldLabel, FieldDescription } from "@/components/ui/field";
 import { motion, AnimatePresence } from "framer-motion";
 import { joinWaitlist } from "@/lib/api";
 
-export default function Waitlist() {
+export default function Waitlist({ id }: { id?: string }) {
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [storeName, setStoreName] = useState("");
@@ -24,10 +24,8 @@ export default function Waitlist() {
 
     try {
       const result = await joinWaitlist({ email, phone, storeName });
-      
-      console.log('Result from API:', result); // Debug log
-      
-      // The API returns { message, data }, not { ok, error }
+
+      console.log("Result from API:", result);
       setSubmitted(true);
       setEmail("");
       setPhone("");
@@ -42,7 +40,10 @@ export default function Waitlist() {
   };
 
   return (
-    <section className="relative overflow-hidden bg-gradient-to-b from-background via-background/95 to-background/60 py-24 sm:py-32">
+    <section
+      className="relative overflow-hidden bg-gradient-to-b from-background via-background/95 to-background/60 py-24 sm:py-32"
+      id={id}
+    >
       <div className="relative z-10 mx-auto max-w-4xl px-6 text-center">
         {/* Badge */}
         <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-4 py-1.5 text-sm font-medium text-primary backdrop-blur-sm">
@@ -129,7 +130,11 @@ export default function Waitlist() {
             disabled={loading || submitted}
             className="h-12 w-full rounded-xl bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary font-medium transition-all text-base mt-8 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {loading ? "Reserving..." : submitted ? "Reserved ✓" : "Reserve Your Store"}
+            {loading
+              ? "Reserving..."
+              : submitted
+              ? "Reserved ✓"
+              : "Reserve Your Store"}
           </Button>
         </form>
 

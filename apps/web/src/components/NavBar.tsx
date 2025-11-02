@@ -1,3 +1,5 @@
+"use client";
+
 import { Button } from "@/components/ui/button";
 import {
   NavigationMenu,
@@ -9,15 +11,20 @@ import Image from "next/image";
 import Link from "next/link";
 
 const navigationLinks = [
-  { href: "#", label: "Overview", active: true },
-  { href: "#", label: "How it works" },
-  { href: "#", label: "Solutions" },
+  { id: "hero", label: "Overview" },
+  { id: "how-it-works", label: "How it works" },
+  { id: "solutions", label: "Solutions" },
 ];
 
 export default function NavBar() {
+  const handleScroll = (id: string) => {
+    const section = document.getElementById(id);
+    if (section) section.scrollIntoView({ behavior: "smooth" });
+  };
+
   return (
-    <header className="px-4 md:px-6 bg-background/80 backdrop-blur-sm ">
-      <div className="absolute -top-40 left-1/2 -translate-x-1/2 h-[600px] w-[600px] rounded-full bg-primary/20 blur-[120px] opacity-50" />
+    <header className="px-4 md:px-6 bg-background/80 backdrop-blur-sm fixed w-full z-50">
+      <div className="absolute -top-40 left-1/2 -translate-x-1/2 h-[600px] w-[600px] rounded-full bg-primary/20 blur-[120px] glow-sync" />{" "}
       <div className="flex h-16 items-center gap-4">
         <div className="flex items-center gap-2">
           <Link
@@ -33,51 +40,40 @@ export default function NavBar() {
             <span className="font-bold text-foreground">vendly.</span>
           </Link>
         </div>
+
+        {/* Center - Nav links */}
         <div className="flex-1 flex justify-center">
           <NavigationMenu className="max-md:hidden">
             <NavigationMenuList className="gap-6">
-              <NavigationMenuItem>
-                <NavigationMenuLink
-                  href="#"
-                  className="text-[14px] py-1.5 font-semibold"
-                >
-                  Overview
-                </NavigationMenuLink>
-              </NavigationMenuItem>
-              {navigationLinks
-                .filter((l) => l.label !== "Overview")
-                .map((link, index) => (
-                  <NavigationMenuItem key={index}>
-                    <NavigationMenuLink
-                      href={link.href}
-                      className="text-[14px] py-1.5 font-semibold"
-                    >
-                      {link.label}
-                    </NavigationMenuLink>
-                  </NavigationMenuItem>
-                ))}
+              {navigationLinks.map((link) => (
+                <NavigationMenuItem key={link.id}>
+                  <NavigationMenuLink
+                    href={`#${link.id}`}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      handleScroll(link.id);
+                    }}
+                    className="text-[14px] py-1.5 font-semibold cursor-pointer"
+                  >
+                    {link.label}
+                  </NavigationMenuLink>
+                </NavigationMenuItem>
+              ))}
             </NavigationMenuList>
           </NavigationMenu>
         </div>
 
         {/* Right - Actions */}
         <div className="flex items-center gap-2">
-          {/* <Button
-            asChild
-            variant="outline"
-            size="sm"
-            className="rounded-full px-4 text-sm"
-          >
-            <Link href="/login">Login</Link>
-          </Button> */}
           <Button
-            asChild
             size="sm"
-            className="rounded-full px-4 text-sm bg-primary text-primary-foreground hover:bg-primary/90"
+            className="rounded-full px-4 text-sm bg-primary text-primary-foreground hover:bg-primary/90 cursor-pointer"
+            onClick={(e) => {
+              e.preventDefault();
+              handleScroll("cta");
+            }}
           >
-            <a href="#" className="inline-flex items-center gap-1">
-              Get Started
-            </a>
+            Get Started
           </Button>
         </div>
       </div>

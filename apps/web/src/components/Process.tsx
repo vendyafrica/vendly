@@ -1,7 +1,7 @@
 import React from "react";
 import { Timeline } from "@/components/ui/timeline";
 
-export default function Process() {
+export default function Process({id}: {id?: string}) {
   const data = [
     {
       title: "1. Connect your socials",
@@ -50,6 +50,7 @@ export default function Process() {
   ];
 
   return (
+    <section id={id}>
     <div className="py-10">
       <div className="mx-auto max-w-3xl text-center">
         <h2 className="mb-4 text-4xl font-medium tracking-tight text-neutral-900 dark:text-neutral-100 md:text-4xl">
@@ -72,5 +73,6 @@ export default function Process() {
         </ul>
       </div>
     </div>
+    </section>
   );
 }

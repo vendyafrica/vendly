@@ -178,6 +178,23 @@
   }
 }
 
+@keyframes glowPulse {
+  0%, 100% {
+    opacity: 0.3;
+  }
+  50% {
+    opacity: 0.6;
+  }
+}
+
+.glow-sync {
+  animation: glowPulse 4s ease-in-out infinite;
+}
+
+body {
+  letter-spacing: var(--tracking-normal);
+}
+
 body {
   letter-spacing: var(--tracking-normal);
 }
@@ -190,4 +207,8 @@ body {
     @apply bg-background text-foreground;
     letter-spacing: var(--tracking-normal);
   }
+}
+
+html {
+  scroll-behavior: smooth;
 }
