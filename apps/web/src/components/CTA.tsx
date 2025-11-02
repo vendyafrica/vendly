@@ -68,7 +68,7 @@ export default function Waitlist({ id }: { id?: string }) {
         {/* Waitlist Form */}
         <form
           onSubmit={handleSubmit}
-          className="mx-auto mt-10 w-full max-w-lg space-y-6 text-left"
+          className="mx-auto mt-10 w-full max-w-lg space-y-6 text-left relative z-20"
         >
           <Field>
             <FieldLabel htmlFor="email">Email Address</FieldLabel>
@@ -78,7 +78,8 @@ export default function Waitlist({ id }: { id?: string }) {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="your@email.com"
-              className="h-12 w-full rounded-xl bg-background/80 px-4 text-base"
+              className="h-12 w-full rounded-xl bg-background px-4 text-base relative z-20 cursor-text"
+              style={{ pointerEvents: 'auto' }}
               required
             />
             <FieldDescription>
@@ -94,7 +95,8 @@ export default function Waitlist({ id }: { id?: string }) {
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
               placeholder="+254 (0700) 000-0000"
-              className="h-12 w-full rounded-xl bg-background/80 px-4 text-base"
+              className="h-12 w-full rounded-xl bg-background px-4 text-base relative z-20 cursor-text"
+              style={{ pointerEvents: 'auto' }}
               required
             />
             <FieldDescription>
@@ -110,7 +112,8 @@ export default function Waitlist({ id }: { id?: string }) {
               value={storeName}
               onChange={(e) => setStoreName(e.target.value)}
               placeholder="MyAwesomeStore"
-              className="h-12 w-full rounded-xl bg-background/80 px-4 text-base"
+              className="h-12 w-full rounded-xl bg-background px-4 text-base relative z-20 cursor-text"
+              style={{ pointerEvents: 'auto' }}
               required
             />
             <FieldDescription>

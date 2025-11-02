@@ -24,7 +24,7 @@ export default function NavBar() {
 
   return (
     <header className="px-4 md:px-6 bg-background/80 backdrop-blur-sm fixed w-full z-50">
-      <div className="absolute -top-40 left-1/2 -translate-x-1/2 h-[600px] w-[600px] rounded-full bg-primary/20 blur-[120px] glow-sync" />{" "}
+      <div className="absolute -top-40 left-1/2 -translate-x-1/2 h-[600px] w-[600px] rounded-full bg-primary/20 blur-[120px] glow-sync pointer-events-none" />{" "}
       <div className="flex h-16 items-center gap-4">
         <div className="flex items-center gap-2">
           <Link

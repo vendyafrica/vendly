@@ -51,7 +51,7 @@ export default function Process({id}: {id?: string}) {
 
   return (
     <section id={id}>
-    <div className="py-10">
+    <div className="py-10 px-6">
       <div className="mx-auto max-w-3xl text-center">
         <h2 className="mb-4 text-4xl font-medium tracking-tight text-neutral-900 dark:text-neutral-100 md:text-4xl">
           Join <span className="text-primary">vendly</span> and see how easy
