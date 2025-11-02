@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Field, FieldLabel, FieldDescription } from "@/components/ui/field";
 import { motion, AnimatePresence } from "framer-motion";
-import { joinWaitlist } from "@/lib/api";
+import { joinWaitlist } from "@/app/api/api";
 
 export default function Waitlist({ id }: { id?: string }) {
   const [email, setEmail] = useState("");
