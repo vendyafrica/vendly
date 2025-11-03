@@ -1,2 +1,2 @@
-export * from './auth_schema';
+export * from './auth.schema';
 export * from './waitlist';
