@@ -37,7 +37,7 @@
   --sidebar-border: oklch(0.92 0.004 286.32);
   --sidebar-ring: oklch(0.606 0.25 292.717);
 
-  --font-geist: var(--font-geist), sans-serif
+  --font-geist: var(--font-geist), sans-serif;
 
   /* Shadows */
   --shadow-x: 0px;
@@ -165,38 +165,33 @@
   --shadow-opacity: var(--shadow-opacity);
   --color-shadow-color: var(--shadow-color);
   --animate-shine: shine var(--duration) infinite linear;
+
+  /* Keyframes inside @theme inline block */
+  @keyframes glowPulse {
+    0%, 100% {
+      opacity: 0.08;
+    }
+    50% {
+      opacity: 0.15;
+    }
+  }
+  
   @keyframes shine {
-  0% {
-    background-position: 0% 0%;
+    0% {
+      background-position: 0% 0%;
     }
-  50% {
-    background-position: 100% 100%;
+    50% {
+      background-position: 100% 100%;
     }
-  to {
-    background-position: 0% 0%;
+    to {
+      background-position: 0% 0%;
     }
   }
 }
 
-@keyframes glowPulse {
-  0%, 100% {
-    opacity: 0.3;
-  }
-  50% {
-    opacity: 0.6;
-  }
-}
-
+/* Regular CSS classes outside @theme block */
 .glow-sync {
   animation: glowPulse 4s ease-in-out infinite;
-}
-
-body {
-  letter-spacing: var(--tracking-normal);
-}
-
-body {
-  letter-spacing: var(--tracking-normal);
 }
 
 @layer base {
