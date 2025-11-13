@@ -1,4 +1,4 @@
-# nixpacks.toml (repo root)
+# nixpacks.toml
 
 [phases.setup]
 nixPkgs = ["nodejs_18", "pnpm", "openssl"]
