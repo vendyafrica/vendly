@@ -1,9 +1,9 @@
+# nixpacks.toml (place at repository root)
 [phases.setup]
 nixPkgs = ["nodejs_18", "pnpm"]
 
 [phases.install]
 cmds = [
-  "cd ../..",
   "pnpm install --frozen-lockfile"
 ]
 
