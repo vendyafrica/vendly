@@ -2,10 +2,17 @@
 nixPkgs = ["nodejs_18", "pnpm"]
 
 [phases.install]
-cmd = "cd ../.. && pnpm install --frozen-lockfile"
+cmds = [
+  "cd ../..",
+  "pnpm install --frozen-lockfile"
+]
 
 [phases.build]
-cmd = "pnpm --filter ./apps/api... run build"
+cmds = [
+  "pnpm --filter ./apps/api... run build"
+]
 
 [phases.start]
-cmd = "pnpm --filter ./apps/api... start"
+cmds = [
+  "pnpm --filter ./apps/api... start"
+]
