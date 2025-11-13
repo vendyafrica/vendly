@@ -1,10 +1,10 @@
 "use client";
-import Features from "@/components/Features";
-import HeroSection from "@/components/Hero";
-import Component from "@/components/NavBar";
-import  Waitlist from "@/components/CTA";
-import Footer from "@/components/Footer";
-import Process from "@/components/Process";
+import Features from "@/components/marketing/Features";
+import HeroSection from "@/components/marketing/Hero";
+import Component from "@/components/marketing/NavBar";
+import  Waitlist from "@/components/marketing/CTA";
+import Footer from "@/components/marketing/Footer";
+import Process from "@/components/marketing/Process";
 
 export default function Home() {
   return (
