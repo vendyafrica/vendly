@@ -23,10 +23,7 @@ export default function NavBar() {
   };
 
   return (
-    <header className="px-4 md:px-6 bg-background/80 backdrop-blur-sm fixed w-full z-50">
-      {/* Fixed position glow that stays in place */}
-      <div className="fixed -top-40 left-1/2 -translate-x-1/2 h-[600px] w-[600px] rounded-full bg-primary/20 blur-[120px] glow-sync pointer-events-none -z-10" />
-      
+    <header className="px-4 md:px-6 bg-white/80 backdrop-blur-md fixed w-full z-50 border-b border-gray-100">
       <div className="flex h-16 items-center gap-4">
         <div className="flex items-center gap-2">
           <Link
@@ -55,7 +52,7 @@ export default function NavBar() {
                       e.preventDefault();
                       handleScroll(link.id);
                     }}
-                    className="text-[14px] py-1.5 font-semibold cursor-pointer"
+                    className="text-[14px] py-1.5 font-semibold cursor-pointer hover:text-primary transition-colors"
                   >
                     {link.label}
                   </NavigationMenuLink>
@@ -69,7 +66,6 @@ export default function NavBar() {
         <div className="flex items-center gap-2">
           <Button
             size="sm"
-            className="rounded-full px-4 text-sm bg-primary text-primary-foreground hover:bg-primary/90 cursor-pointer"
             onClick={(e) => {
               e.preventDefault();
               handleScroll("cta");

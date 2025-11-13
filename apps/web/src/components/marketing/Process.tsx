@@ -51,28 +51,37 @@ export default function Process({id}: {id?: string}) {
 
   return (
     <section id={id}>
-    <div className="py-10 px-6">
-      <div className="mx-auto max-w-3xl text-center">
-        <h2 className="mb-4 text-4xl font-medium tracking-tight text-neutral-900 dark:text-neutral-100 md:text-4xl">
-          Join <span className="text-primary">vendly</span> and see how easy
-          selling can be
-        </h2>
-      </div>
+      <div className="py-24 px-6">
+        <div className="mx-auto max-w-3xl text-center mb-12">
+          <h2 className="text-3xl sm:text-4xl font-semibold tracking-tight text-foreground">
+            Join <span className="text-primary">Vendly</span> and see how easy selling can be
+          </h2>
+        </div>
 
-      <div className="relative mx-auto mt-12 w-full max-w-4xl overflow-clip">
-        <Timeline data={data} />
+        <div className="relative mx-auto mt-12 w-full max-w-4xl overflow-clip">
+          <Timeline data={data} />
+        </div>
+        
+        <div className="mx-auto mt-16 max-w-3xl">
+          <h3 className="mb-6 text-2xl font-semibold tracking-tight text-foreground">
+            Why it works for you
+          </h3>
+          <ul className="space-y-3 text-muted-foreground">
+            <li className="flex items-start gap-2">
+              <span className="text-primary mt-1">•</span>
+              <span>No migration. Quick setup.</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="text-primary mt-1">•</span>
+              <span>Built in tools for your business.</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="text-primary mt-1">•</span>
+              <span>Focus on selling and your customers.</span>
+            </li>
+          </ul>
+        </div>
       </div>
-      <div className="mx-auto mt-16 max-w-3xl text-left">
-        <h3 className="mb-4 text-4xl font-medium tracking-tight text-neutral-900 dark:text-neutral-100 md:text-4xl">
-          Why it <span className="text-primary">works</span> for you
-        </h3>
-        <ul className="mt-4 list-inside list-disc space-y-2 text-neutral-700 dark:text-neutral-300">
-          <li>No migration. Quick setup.</li>
-          <li>Built in tools for your business.</li>
-          <li>Focus on selling and your customers.</li>
-        </ul>
-      </div>
-    </div>
     </section>
   );
 }

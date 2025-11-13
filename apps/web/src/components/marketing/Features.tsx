@@ -65,16 +65,13 @@ const features = [
 
 export default function Features({id}: {id?: string}) {
   return (
-    <section className="py-24 px-4 sm:px-6 lg:px-8 bg-gray-50/50 dark:bg-neutral-900/50" id={id}>
+    <section className="py-24 px-4 sm:px-6 lg:px-8 bg-muted/30" id={id}>
       <div className="mx-auto max-w-7xl">
         <div className="mb-16 text-center">
-          <p className="mb-3 text-sm font-semibold uppercase tracking-wider text-purple-600">
-            Benefits
-          </p>
-          <h2 className="mb-4 text-4xl font-bold text-gray-900 sm:text-5xl leading-tight dark:text-white">
-            <span className="text-primary">Super-charge</span> your operations
+          <h2 className="text-3xl sm:text-4xl font-semibold tracking-tight text-foreground">
+            <span className="text-primary">Supercharge</span> your operations
           </h2>
-          <p className="mx-auto max-w-2xl text-lg text-gray-600 leading-relaxed dark:text-gray-400">
+          <p className="mx-auto mt-4 max-w-2xl text-lg text-muted-foreground">
             Everything you need to sell effortlessly online.
           </p>
         </div>

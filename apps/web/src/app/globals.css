@@ -5,7 +5,8 @@
 
 :root {
   --radius: 0.65rem;
-  --background: oklch(1 0 0);
+  --background: oklch(0.99 0.005 292);
+  --glow-ambient: oklch(0.97 0.015 292);
   --foreground: oklch(0.141 0.005 285.823);
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.141 0.005 285.823);
@@ -48,12 +49,17 @@
   --shadow-color: hsl(0 0% 0%);
   --shadow-2xs: 0px 2px 3px 0px hsl(0 0% 0% / 0.08);
   --shadow-xs: 0px 2px 3px 0px hsl(0 0% 0% / 0.08);
-  --shadow-sm: 0px 2px 3px 0px hsl(0 0% 0% / 0.16), 0px 1px 2px -1px hsl(0 0% 0% / 0.16);
-  --shadow: 0px 2px 3px 0px hsl(0 0% 0% / 0.16), 0px 1px 2px -1px hsl(0 0% 0% / 0.16);
-  --shadow-md: 0px 2px 3px 0px hsl(0 0% 0% / 0.16), 0px 2px 4px -1px hsl(0 0% 0% / 0.16);
-  --shadow-lg: 0px 2px 3px 0px hsl(0 0% 0% / 0.16), 0px 4px 6px -1px hsl(0 0% 0% / 0.16);
-  --shadow-xl: 0px 2px 3px 0px hsl(0 0% 0% / 0.16), 0px 8px 10px -1px hsl(0 0% 0% / 0.16);
-  --shadow-2xl: 0px 2px 3px 0px hsl(0 0% 0% / 0.40);
+  --shadow-sm: 0px 2px 3px 0px hsl(0 0% 0% / 0.16),
+    0px 1px 2px -1px hsl(0 0% 0% / 0.16);
+  --shadow: 0px 2px 3px 0px hsl(0 0% 0% / 0.16),
+    0px 1px 2px -1px hsl(0 0% 0% / 0.16);
+  --shadow-md: 0px 2px 3px 0px hsl(0 0% 0% / 0.16),
+    0px 2px 4px -1px hsl(0 0% 0% / 0.16);
+  --shadow-lg: 0px 2px 3px 0px hsl(0 0% 0% / 0.16),
+    0px 4px 6px -1px hsl(0 0% 0% / 0.16);
+  --shadow-xl: 0px 2px 3px 0px hsl(0 0% 0% / 0.16),
+    0px 8px 10px -1px hsl(0 0% 0% / 0.16);
+  --shadow-2xl: 0px 2px 3px 0px hsl(0 0% 0% / 0.4);
 
   /* Spacing & Tracking */
   --tracking-normal: -0.025em;
@@ -66,6 +72,7 @@
 /* --- New Dark Theme --- */
 .dark {
   --background: oklch(0.141 0.005 285.823);
+  --glow-ambient: oklch(0.18 0.01 285);
   --foreground: oklch(0.985 0 0);
   --card: oklch(0.21 0.006 285.885);
   --card-foreground: oklch(0.985 0 0);
@@ -138,7 +145,7 @@
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);  
+  --radius-xl: calc(var(--radius) + 4px);
 
   --shadow-2xs: var(--shadow-2xs);
   --shadow-xs: var(--shadow-xs);
@@ -168,14 +175,15 @@
 
   /* Keyframes inside @theme inline block */
   @keyframes glowPulse {
-    0%, 100% {
+    0%,
+    100% {
       opacity: 0.08;
     }
     50% {
       opacity: 0.15;
     }
   }
-  
+
   @keyframes shine {
     0% {
       background-position: 0% 0%;
@@ -189,9 +197,20 @@
   }
 }
 
-/* Regular CSS classes outside @theme block */
-.glow-sync {
-  animation: glowPulse 4s ease-in-out infinite;
+/* Modern SaaS typography - Moss style */
+body {
+  @apply bg-background text-foreground;
+  font-feature-settings: "rlig" 1, "calt" 1;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  @apply font-semibold tracking-tight;
+}
+
+/* Cleaner paragraph text */
+p {
+  font-weight: 400;
+  letter-spacing: -0.01em;
 }
 
 @layer base {
@@ -206,4 +225,8 @@
 
 html {
   scroll-behavior: smooth;
+}
+
+* {
+  @apply border-border;
 }
