@@ -1,2 +1,2 @@
-export * from './auth_dto';
+export * from './auth.dto';
 export * from './onboarding.dto';
