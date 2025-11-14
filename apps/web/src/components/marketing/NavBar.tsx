@@ -7,6 +7,7 @@ import {
   NavigationMenuLink,
   NavigationMenuList,
 } from "@/components/ui/navigation-menu";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -23,7 +24,7 @@ export default function NavBar() {
   };
 
   return (
-    <header className="px-4 md:px-6 bg-white/80 backdrop-blur-md fixed w-full z-50 border-b border-gray-100">
+    <header className="px-4 md:px-6 bg-background/80 backdrop-blur-md fixed w-full z-50 border-b border-border">
       <div className="flex h-16 items-center gap-4">
         <div className="flex items-center gap-2">
           <Link
@@ -64,6 +65,7 @@ export default function NavBar() {
 
         {/* Right - Actions */}
         <div className="flex items-center gap-2">
+          <ThemeToggle />
           <Button
             size="sm"
             onClick={(e) => {

@@ -6,7 +6,7 @@ import Process from "@/components/marketing/Process";
 
 export default function Home() {
   return (
-    <main className="relative min-h-screen overflow-hidden bg-white text-gray-900">
+    <main className="relative min-h-screen overflow-hidden bg-background text-foreground">
       <HeroSection id="hero" />
       <Process id="how-it-works" />
       <Features id="solutions" />
