@@ -1,4 +1,4 @@
-import { CreateWorkspaceForm } from "@/app/onboarding/(components)/create-store";
+import { CreateStoreForm } from "@/app/onboarding/(components)/create-store";
 
 export default function Page() {
   return (
@@ -13,7 +13,7 @@ export default function Page() {
           backgroundSize: "14px 14px",
         }}
       />
-      <CreateWorkspaceForm />
+      <CreateStoreForm />
     </div>
   );
 }

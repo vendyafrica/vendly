@@ -13,6 +13,7 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Google } from "@/components/ui/svgs/google";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -21,6 +22,8 @@ interface AuthModalProps {
 }
 
 export function AuthModal({ defaultMode = 'signup' }: AuthModalProps) {
+  const router = useRouter();
+  const [open, setOpen] = useState(false);
   const [mode, setMode] = useState<'login' | 'signup'>(defaultMode);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -34,6 +37,14 @@ export function AuthModal({ defaultMode = 'signup' }: AuthModalProps) {
     const data = mode === 'login' ? { email, password } : { email };
     console.log(`${mode === 'login' ? 'Logging in' : 'Signing up'} with:`, data);
     // Add your auth logic here
+
+    setOpen(false);
+    if (mode === 'signup') {
+      router.push('/onboarding');
+    } else {
+      // For login, redirect to dashboard or home
+      router.push('/');
+    }
   };
 
   const title = mode === 'login' ? 'Sign in to your account' : 'Create your free account';
@@ -42,7 +53,7 @@ export function AuthModal({ defaultMode = 'signup' }: AuthModalProps) {
   const footerLink = mode === 'login' ? 'Join vendly.' : 'Sign in';
 
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button size="sm" className="cursor-pointer">
           Get Started
