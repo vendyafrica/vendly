@@ -40,7 +40,7 @@ export function AuthModal({ defaultMode = 'signup' }: AuthModalProps) {
 
     setOpen(false);
     if (mode === 'signup') {
-      router.push('/onboarding');
+      router.push('/create-store');
     } else {
       router.push('/');
     }

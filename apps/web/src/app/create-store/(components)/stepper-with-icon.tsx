@@ -3,7 +3,7 @@
 import { HomeIcon, SettingsIcon, UserIcon } from "lucide-react";
 import * as React from "react";
 
-import { defineStepper } from "@/app/onboarding/(components)/stepper";
+import { defineStepper } from "@/app/create-store/(components)/stepper";
 import { Button } from "@/components/ui/button";
 
 const { Stepper } = defineStepper(
