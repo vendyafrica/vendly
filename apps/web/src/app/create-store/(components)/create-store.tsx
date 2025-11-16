@@ -1,3 +1,4 @@
+// CreateStoreForm.tsx
 "use client"
 
 import { useState } from "react"
@@ -16,13 +17,19 @@ import { ButtonGroup, ButtonGroupText } from "@/components/ui/button-group"
 import { InputGroup, InputGroupInput } from "@/components/ui/input-group"
 import { Label } from "@/components/ui/label"
 import { useRouter } from "next/navigation"
+import { HTMLAttributes } from "react"
 
-interface CreateStoreFormProps extends React.ComponentProps<"div"> {
-   onNext: () => void
-  onBack?: () => void
+interface CreateStoreFormProps extends HTMLAttributes<HTMLDivElement> {
+  onNext?: () => void;
+  onPrev?: () => void;
 }
 
-export function CreateStoreForm({ className, onNext, onBack, ...props }: CreateStoreFormProps) {
+export function CreateStoreForm({ 
+  className, 
+  onNext,
+  onPrev,
+  ...props 
+}: CreateStoreFormProps) {
   const [slug, setSlug] = useState("")
   const [storeName, setStoreName] = useState("")
   const router = useRouter()
@@ -34,13 +41,12 @@ export function CreateStoreForm({ className, onNext, onBack, ...props }: CreateS
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     // Add any form submission logic here (e.g., API call)
-     onNext()
-    router.push("/payment-setup")
+    onNext?.()
   }
 
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit} className="flex flex-col gap-6">
         <FieldGroup>
           <Link
             href="/"
@@ -55,8 +61,7 @@ export function CreateStoreForm({ className, onNext, onBack, ...props }: CreateS
             <span className="font-bold text-lg text-foreground">vendly.</span>
           </Link>
 
-          {/* FIXED h1 */}
-          <h1 className="!text-lg !font-semibold  text-muted-foreground">
+          <h1 className="!text-lg !font-semibold text-muted-foreground">
             Welcome to vendly.
           </h1>
           <Field>
@@ -104,11 +109,16 @@ export function CreateStoreForm({ className, onNext, onBack, ...props }: CreateS
             )}
           </Field>
 
-          <Field>
-            <Button type="submit" className="cursor-pointer">
+          <div className="flex gap-3">
+            {onPrev && (
+              <Button type="button" variant="outline" onClick={onPrev} className="cursor-pointer">
+                Back
+              </Button>
+            )}
+            <Button type="submit" className="cursor-pointer flex-1">
               Create Store
             </Button>
-          </Field>
+          </div>
         </FieldGroup>
       </form>
     </div>

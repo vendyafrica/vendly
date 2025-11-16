@@ -1,17 +1,20 @@
-import { GalleryVerticalEnd } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
+"use client"
+
+import { cn } from "@/lib/utils"
+import { Button } from "@/components/ui/button"
 import {
   Field,
-  FieldDescription,
   FieldGroup,
   FieldLabel,
-  FieldSeparator,
-} from "@/components/ui/field";
-import { Input } from "@/components/ui/input";
+} from "@/components/ui/field"
+import { Input } from "@/components/ui/input"
+import { useRouter } from "next/navigation"
+import Link from "next/link"
+import Image from "next/image"
+import { HTMLAttributes } from "react"
 
-interface PersonalDetailsFormProps extends React.ComponentProps<"div"> {
-  onNext: () => void;
+interface PersonalDetailsFormProps extends HTMLAttributes<HTMLDivElement> {
+  onNext?: () => void;
 }
 
 export function PersonalDetailsForm({
@@ -19,64 +22,62 @@ export function PersonalDetailsForm({
   onNext,
   ...props
 }: PersonalDetailsFormProps) {
+  const router = useRouter()
+
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    onNext(); // move to the next step
-  };
+    e.preventDefault()
+    // ... your validation logic
+    onNext?.() // Call the onNext callback
+  }
 
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit} className="flex flex-col gap-6">
         <FieldGroup>
-          <div className="flex flex-col items-center gap-2 text-center">
-            <a
-              href="#"
-              className="flex flex-col items-center gap-2 font-medium"
-            >
-              <div className="flex size-8 items-center justify-center rounded-md">
-                <GalleryVerticalEnd className="size-6" />
-              </div>
-              <span className="sr-only">Acme Inc.</span>
-            </a>
-            <h1 className="text-xl font-bold">Welcome to Acme Inc.</h1>
-            <FieldDescription>
-              Already have an account? <a href="#">Sign in</a>
-            </FieldDescription>
-          </div>
-
+          <Link
+            href="/"
+            className="flex items-center gap-2 hover:opacity-80 transition-opacity"
+          >
+            <Image
+              src="/apple-icon.png"
+              alt="vendly logo"
+              width={32}
+              height={32}
+            />
+            <span className="font-bold text-lg text-foreground">vendly.</span>
+          </Link>
           <Field>
-            <FieldLabel htmlFor="email">Email</FieldLabel>
+            <FieldLabel htmlFor="full-name">Full Name</FieldLabel>
             <Input
-              id="email"
-              type="email"
-              placeholder="m@example.com"
+              id="full-name"
+              type="text"
+              placeholder="John Doe"
               required
             />
           </Field>
-
           <Field>
-            <Button type="submit">Create Account</Button>
+            <FieldLabel htmlFor="phone-number">Phone Number</FieldLabel>
+            <Input
+              id="phone-number"
+              type="tel"
+              placeholder="+254 4567890"
+              required
+            />
           </Field>
-
-          <FieldSeparator>Or</FieldSeparator>
-
-          <Field className="grid gap-4 sm:grid-cols-2">
-            <Button variant="outline" type="button">
-              {/* Apple SVG */}
-              Continue with Apple
-            </Button>
-            <Button variant="outline" type="button">
-              {/* Google SVG */}
-              Continue with Google
-            </Button>
+          <Field>
+            <FieldLabel htmlFor="password">Password</FieldLabel>
+            <Input
+              id="password"
+              type="password"
+              placeholder="********"
+              required
+            />
+          </Field>
+          <Field>
+            <Button type="submit" className="cursor-pointer">Continue</Button>
           </Field>
         </FieldGroup>
       </form>
-
-      <FieldDescription className="px-6 text-center">
-        By clicking continue, you agree to our <a href="#">Terms of Service</a>{" "}
-        and <a href="#">Privacy Policy</a>.
-      </FieldDescription>
     </div>
-  );
+  )
 }

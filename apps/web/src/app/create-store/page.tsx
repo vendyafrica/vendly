@@ -1,29 +1,42 @@
+// app/create-store/page.tsx
 "use client";
 
-import { useState } from "react";
-
-import Layout from "./CreateStoreLayout";
-import { CreateStoreForm } from "./(components)/create-store";
 import { PersonalDetailsForm } from "./(components)/personal-details";
+import { CreateStoreForm } from "./(components)/create-store";
 import { PaymentSetupForm } from "./(components)/payment-setup";
+import { DeliveryDetails } from "./(components)/delivery-details";
+import { useSteps } from "./(components)/step-context";
 
-const steps = ["Store", "Personal Details", "Payment"];
-
-export default function Page() {
-  const [step, setStep] = useState(1);
-
-  const next = () => setStep((s) => Math.min(s + 1, steps.length));
-  const back = () => setStep((s) => Math.max(s - 1, 1));
-
-  let CurrentForm;
-  if (step === 1) CurrentForm = <PersonalDetailsForm onNext={next} />;
-  if (step === 2)
-    CurrentForm = <CreateStoreForm onNext={next} onBack={back} />;
-  if (step === 3) CurrentForm = <PaymentSetupForm onBack={back} />;
+export default function CreateStorePage() {
+  const { currentStep, nextStep, prevStep, registerStepRef } = useSteps();
 
   return (
-    <Layout step={step} steps={steps}>
-      {CurrentForm}
-    </Layout>
+    <div className="space-y-12">
+      {/* Step 1: Personal Details */}
+      <div ref={(ref) => registerStepRef(1, ref)}>
+        {currentStep === 1 && <PersonalDetailsForm onNext={nextStep} />}
+      </div>
+
+      {/* Step 2: Store Info */}
+      <div ref={(ref) => registerStepRef(2, ref)}>
+        {currentStep === 2 && (
+          <CreateStoreForm onNext={nextStep} onPrev={prevStep} />
+        )}
+      </div>
+
+      {/* Step 3: Payment Setup */}
+      <div ref={(ref) => registerStepRef(3, ref)}>
+        {currentStep === 3 && (
+          <PaymentSetupForm onBack={prevStep} />
+        )}
+      </div>
+
+      {/* Step 4: Delivery Setup */}
+      <div ref={(ref) => registerStepRef(4, ref)}>
+        {currentStep === 4 && (
+          <DeliveryDetails onBack={prevStep} />
+        )}
+      </div>
+    </div>
   );
 }
