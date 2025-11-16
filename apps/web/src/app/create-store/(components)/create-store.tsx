@@ -22,13 +22,15 @@ import { HTMLAttributes } from "react"
 interface CreateStoreFormProps extends HTMLAttributes<HTMLDivElement> {
   onNext?: () => void;
   onPrev?: () => void;
+  currentStep?: number;
 }
 
-export function CreateStoreForm({ 
-  className, 
+export function CreateStoreForm({
+  className,
   onNext,
   onPrev,
-  ...props 
+  currentStep = 1,
+  ...props
 }: CreateStoreFormProps) {
   const [slug, setSlug] = useState("")
   const [storeName, setStoreName] = useState("")
@@ -48,18 +50,33 @@ export function CreateStoreForm({
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <form onSubmit={handleSubmit} className="flex flex-col gap-6">
         <FieldGroup>
-          <Link
-            href="/"
-            className="flex items-center gap-2 hover:opacity-80 transition-opacity"
-          >
-            <Image
-              src="/apple-icon.png"
-              alt="vendly logo"
-              width={32}
-              height={32}
-            />
-            <span className="font-bold text-lg text-foreground">vendly.</span>
-          </Link>
+          {currentStep > 1 ? (
+            <button
+              onClick={onPrev}
+              className="flex items-center gap-2 hover:opacity-80 transition-opacity"
+            >
+              <Image
+                src="/apple-icon.png"
+                alt="vendly logo"
+                width={32}
+                height={32}
+              />
+              <span className="font-bold text-lg text-foreground">vendly.</span>
+            </button>
+          ) : (
+            <Link
+              href="/"
+              className="flex items-center gap-2 hover:opacity-80 transition-opacity"
+            >
+              <Image
+                src="/apple-icon.png"
+                alt="vendly logo"
+                width={32}
+                height={32}
+              />
+              <span className="font-bold text-lg text-foreground">vendly.</span>
+            </Link>
+          )}
 
           <h1 className="!text-lg !font-semibold text-muted-foreground">
             Welcome to vendly.

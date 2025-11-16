@@ -15,11 +15,13 @@ import { HTMLAttributes } from "react"
 
 interface PersonalDetailsFormProps extends HTMLAttributes<HTMLDivElement> {
   onNext?: () => void;
+  currentStep?: number;
 }
 
 export function PersonalDetailsForm({
   className,
   onNext,
+  currentStep = 1,
   ...props
 }: PersonalDetailsFormProps) {
   const router = useRouter()
