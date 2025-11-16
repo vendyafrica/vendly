@@ -1,11 +1,19 @@
-import { StepperWithIcon } from "@/app/onboarding/(components)/stepper-with-icon";
+import { CreateWorkspaceForm } from "@/app/onboarding/(components)/create-store";
 
-export default async function Page() {
+export default function Page() {
   return (
-    <div className="flex min-h-screen items-center justify-center">
-      <div className="w-full max-w-2xl px-4">
-        <StepperWithIcon />
-      </div>
+    <div className="relative flex min-h-screen w-full items-center justify-center p-4">
+      {/* Subtle dotted grid */}
+      <div
+        aria-hidden="true"
+        className="-z-1 pointer-events-none absolute inset-0"
+        style={{
+          backgroundImage:
+            "radial-gradient(rgba(255,255,255,0.1) 0.8px, transparent 1px)",
+          backgroundSize: "14px 14px",
+        }}
+      />
+      <CreateWorkspaceForm />
     </div>
   );
 }

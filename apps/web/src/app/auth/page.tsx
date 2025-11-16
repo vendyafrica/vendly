@@ -1,8 +1,11 @@
-export default function OnboardingPage() {
+
+import { SignupForm } from "@/app/auth/(components)/signup-form"
+export default function SignupPage() {
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center bg-background text-foreground">
-      <h1 className="text-4xl font-bold">Welcome to the Onboarding Page</h1>
-      <p className="mt-4 text-lg">Let's get you set up!</p>
-    </main>
-  );
+    <div className="bg-muted flex min-h-svh flex-col items-center justify-center p-6 md:p-10">
+      <div className="w-full max-w-sm md:max-w-4xl">
+        <SignupForm />
+      </div>
+    </div>
+  )
 }
