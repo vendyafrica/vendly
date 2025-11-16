@@ -42,7 +42,6 @@ export function AuthModal({ defaultMode = 'signup' }: AuthModalProps) {
     if (mode === 'signup') {
       router.push('/onboarding');
     } else {
-      // For login, redirect to dashboard or home
       router.push('/');
     }
   };
