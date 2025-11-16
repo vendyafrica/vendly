@@ -1,101 +1,108 @@
-"use client"
-import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
+"use client";
+import { Button } from "@/components/ui/button";
 import {
-  Field,
-  FieldDescription,
-  FieldGroup,
-  FieldLabel,
-  FieldSeparator,
-} from "@/components/ui/field"
-import { Input } from "@/components/ui/input"
-import { Google } from "@/components/ui/svgs/google"
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogDescription,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Separator } from "@/components/ui/separator";
+import { Google } from "@/components/ui/svgs/google";
+import { useState } from "react";
+import Image from "next/image";
+import Link from "next/link";
 
-export function SignupForm({
-  className,
-  ...props
-}: React.ComponentProps<"div">) {
+export function SignupForm() {
+  const [email, setEmail] = useState("");
+
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    // Handle form submission
-  }
+    e.preventDefault();
+    console.log("Signing up with:", { email });
+    // Add your signup logic here
+  };
 
   return (
-    <div className={cn("flex flex-col gap-6", className)} {...props}>
-      <Card className="overflow-hidden">
-        <CardContent className="grid p-0 md:grid-cols-2">
-          <div className="p-8 md:p-10">
-            <div className="mb-6">
-              <CardTitle className="text-2xl mb-2">Create an account</CardTitle>
-              <CardDescription>
-                Enter your information below to create your account
-              </CardDescription>
-            </div>
-            
-            <FieldGroup>
-              <Field>
-                <FieldLabel htmlFor="email">Email</FieldLabel>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="m@example.com"
-                  required
-                />
-              </Field>
-              
-              <Field>
-                <Button
-                  onClick={handleSubmit}
-                  className="w-full"
-                >
-                  Create Account
-                </Button>
-              </Field>
-              
-              <FieldSeparator>Or</FieldSeparator>
-              
-              <Field>
-                <Button
-                  variant="outline"
-                  type="button"
-                  className="w-full"
-                >
-                  <Google className="size-5 mr-2" />
-                  Continue with Google
-                </Button>
-              </Field>
-              
-              <FieldDescription className="text-center">
-                Already have an account?{" "}
-                <a href="#" className="underline hover:text-primary">
-                  Sign in
-                </a>
-              </FieldDescription>
-            </FieldGroup>
-          </div>
-          
-          <div className="bg-muted relative hidden md:block">
-            <img
-              src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&h=600&fit=crop"
-              alt="Signup illustration"
-              className="absolute inset-0 h-full w-full object-cover dark:brightness-[0.2] dark:grayscale"
+    <Dialog>
+      <DialogTrigger asChild>
+        <Button size="sm" className="cursor-pointer">
+          Get Started
+        </Button>
+      </DialogTrigger>
+      <DialogContent
+        className="sm:max-w-md"
+        onOpenAutoFocus={(e) => e.preventDefault()}
+      >
+        <DialogHeader className="flex flex-col items-start text-left gap-4">
+          <DialogTitle className="flex items-center gap-2">
+            <Link
+              href="/"
+              className="flex items-center gap-2 hover:opacity-80 transition-opacity"
+            >
+              <Image
+                src="/apple-icon.png"
+                alt="vendly logo"
+                width={32}
+                height={32}
+              />
+              <span className="font-bold text-lg text-foreground">vendly.</span>
+            </Link>
+          </DialogTitle>
+          <DialogDescription>Create your free account</DialogDescription>
+        </DialogHeader>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="email">Email</Label>
+            <Input
+              id="email"
+              type="email"
+              placeholder="m@example.com"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
             />
           </div>
-        </CardContent>
-      </Card>
-      
-      <FieldDescription className="text-center text-sm">
-        By clicking continue, you agree to our{" "}
-        <a href="#" className="underline hover:text-primary">
-          Terms of Service
-        </a>{" "}
-        and{" "}
-        <a href="#" className="underline hover:text-primary">
-          Privacy Policy
-        </a>
-        .
-      </FieldDescription>
-    </div>
-  )
+          <Button type="submit" className="w-full cursor-pointer">
+            Create Account
+          </Button>
+        </form>
+
+        <div className="relative my-4">
+          <div className="absolute inset-0 flex items-center">
+            <Separator className="w-full" />
+          </div>
+          <div className="relative flex justify-center text-xs uppercase">
+            <span className="bg-background px-2 text-muted-foreground">Or</span>
+          </div>
+        </div>
+
+        <div className="grid gap-4">
+          <Button variant="outline" type="button" className="cursor-pointer">
+            <Google className="size-5 mr-2" />
+            Continue with Google
+          </Button>
+        </div>
+        <DialogDescription>
+          Already have an account?{" "}
+          <Link href="#" className="text-primary hover:underline">
+            Sign in
+          </Link>
+        </DialogDescription>
+        <p className="px-6 text-center text-xs text-muted-foreground">
+          By clicking continue, you agree to our{" "}
+          <a href="#" className="underline hover:text-primary">
+            Terms of Service
+          </a>{" "}
+          and{" "}
+          <a href="#" className="underline hover:text-primary">
+            Privacy Policy
+          </a>
+          .
+        </p>
+      </DialogContent>
+    </Dialog>
+  );
 }

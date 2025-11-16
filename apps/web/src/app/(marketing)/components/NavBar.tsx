@@ -1,6 +1,5 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
 import {
   NavigationMenu,
   NavigationMenuItem,
@@ -10,6 +9,7 @@ import {
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import Image from "next/image";
 import Link from "next/link";
+import { SignupForm } from "@/app/auth/(components)/signup-form";
 
 const navigationLinks = [
   { id: "hero", label: "Overview" },
@@ -64,17 +64,9 @@ export default function NavBar() {
         </div>
 
         {/* Right - Actions */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 cursor-pointer">
           <ThemeToggle />
-          <Button
-            size="sm"
-            onClick={(e) => {
-              e.preventDefault();
-              handleScroll("cta");
-            }}
-          >
-            Get Started
-          </Button>
+          <SignupForm  />
         </div>
       </div>
     </header>
