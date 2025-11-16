@@ -9,7 +9,7 @@ import {
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import Image from "next/image";
 import Link from "next/link";
-import { SignupForm } from "@/app/auth/(components)/signup-form";
+import { AuthModal } from "@/app/auth/(components)/auth-modal";
 
 const navigationLinks = [
   { id: "hero", label: "Overview" },
@@ -66,7 +66,7 @@ export default function NavBar() {
         {/* Right - Actions */}
         <div className="flex items-center gap-2 cursor-pointer">
           <ThemeToggle />
-          <SignupForm  />
+          <AuthModal  />
         </div>
       </div>
     </header>
