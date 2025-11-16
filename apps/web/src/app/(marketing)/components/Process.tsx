@@ -50,7 +50,7 @@ export default function Process({id}: {id?: string}) {
   ];
 
   return (
-    <section id={id}>
+    <section className="bg-background" id={id}>
       <div className="py-24 px-6">
         <div className="mx-auto max-w-3xl text-center mb-12">
           <h2 className="text-3xl sm:text-4xl font-semibold tracking-tight text-foreground">
@@ -62,9 +62,9 @@ export default function Process({id}: {id?: string}) {
           <Timeline data={data} />
         </div>
         
-        <div className="mx-auto mt-16 max-w-3xl">
+        <div className="mx-auto mt-16 max-w-3xl bg-background">
           <h3 className="mb-6 text-2xl font-semibold tracking-tight text-foreground">
-            Why it works for you
+            <span className="text-primary">Why </span>it works for you
           </h3>
           <ul className="space-y-3 text-muted-foreground">
             <li className="flex items-start gap-2">

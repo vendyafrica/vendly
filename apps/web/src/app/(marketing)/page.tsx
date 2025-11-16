@@ -1,12 +1,12 @@
 "use client";
-import Features from "@/components/marketing/Features";
-import HeroSection from "@/components/marketing/Hero";
-import Waitlist from "@/components/marketing/ContactUs";
-import Process from "@/components/marketing/Process";
+import Features from "@/app/(marketing)/components/Features";
+import HeroSection from "@/app/(marketing)/components/Hero";
+import Waitlist from "@/app/(marketing)/components/ContactUs";
+import Process from "@/app/(marketing)/components/Process";
 
 export default function Home() {
   return (
-    <main className="relative min-h-screen overflow-hidden bg-white text-gray-900">
+    <main className="relative min-h-screen overflow-hidden bg-background text-foreground">
       <HeroSection id="hero" />
       <Process id="how-it-works" />
       <Features id="solutions" />
@@ -14,4 +14,3 @@ export default function Home() {
     </main>
   );
 }
-
