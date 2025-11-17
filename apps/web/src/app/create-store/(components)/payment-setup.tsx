@@ -119,7 +119,7 @@ export function PaymentSetupForm({
                   )}
                 >
                   <ReceiptText className="h-6 w-6" />
-                  <span className="text-sm font-medium">Till Number</span>
+                  <span className="text-sm font-medium">Till</span>
                 </Label>
               </div>
 

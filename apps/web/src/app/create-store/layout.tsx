@@ -49,9 +49,9 @@ export default function CreateStoreLayout({ children }: { children: ReactNode })
     <StepProvider>
       <div className="h-screen bg-background dark:bg-background overflow-hidden flex flex-col">
 
-        {/* --- Mobile Layout (No Change) --- */}
+        {/* --- Mobile Layout (Centered) --- */}
         <div className="flex md:hidden flex-col h-screen">
-          <div className="flex-1 flex flex-col items-center px-6 pt-12 pb-20 overflow-y-auto">
+          <div className="flex-1 flex flex-col items-center justify-center px-6">
             <div className="w-full max-w-lg">
               <MobileTimeline />
               <div className="flex flex-col items-center">
