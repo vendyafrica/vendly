@@ -5,13 +5,9 @@ import { ReactNode } from "react";
 import { StepProvider, useSteps } from "./(components)/step-context";
 import { Stepper } from "./(components)/stepper";
 
-interface LayoutProps {
-  children: ReactNode;
-}
-
-// Separate component to access step context for stepper - hidden on mobile
+// --- StepperSidebar component (No Change) ---
 function StepperSidebar() {
-  const { currentStep } = useSteps();
+  const { currentStep, goToStep } = useSteps();
 
   const stepperData = [
     { title: "Personal Details", status: (currentStep > 1 ? "finish" : currentStep === 1 ? "process" : "wait") as "finish" | "process" | "wait" },
@@ -22,16 +18,16 @@ function StepperSidebar() {
 
   return (
     <div className="hidden md:flex h-[400px] w-full items-center justify-center">
-      <Stepper data={stepperData} currentStep={currentStep} />
+      <Stepper data={stepperData} currentStep={currentStep} onStepClick={goToStep} />
     </div>
   );
 }
 
+// --- MobileTimeline component (No Change) ---
 import { MobileStepper } from "./(components)/mobile-stepper";
 
-// Mobile horizontal timeline component
 function MobileTimeline() {
-  const { currentStep } = useSteps();
+  const { currentStep, goToStep } = useSteps();
 
   const stepperData = [
     { title: "Personal", status: (currentStep > 1 ? "finish" : currentStep === 1 ? "process" : "wait") as "finish" | "process" | "wait" },
@@ -47,14 +43,15 @@ function MobileTimeline() {
   );
 }
 
-export default function CreateStoreLayout({ children }: LayoutProps) {
+
+export default function CreateStoreLayout({ children }: { children: ReactNode }) {
   return (
     <StepProvider>
-      {/* Full viewport height, hidden overflow */}
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 overflow-hidden">
-        {/* Mobile Layout - Centered vertically and horizontally */}
-        <div className="flex md:hidden flex-col min-h-screen">
-          <div className="flex-1 flex flex-col justify-center items-center px-6">
+      <div className="h-screen bg-background dark:bg-background overflow-hidden flex flex-col">
+
+        {/* --- Mobile Layout (No Change) --- */}
+        <div className="flex md:hidden flex-col h-screen">
+          <div className="flex-1 flex flex-col items-center px-6 pt-12 pb-20 overflow-y-auto">
             <div className="w-full max-w-lg">
               <MobileTimeline />
               <div className="flex flex-col items-center">
@@ -64,9 +61,9 @@ export default function CreateStoreLayout({ children }: LayoutProps) {
           </div>
         </div>
 
-        {/* Desktop Layout - Two column grid */}
-        <div className="hidden md:flex min-h-screen">
-          <main className="flex-1 p-6 overflow-auto">
+        {/* --- Desktop Layout (CHANGED) --- */}
+        <div className="hidden md:flex h-screen">
+          <main className="flex-1 p-6">
             <div className="grid grid-cols-5 gap-8 h-full max-w-6xl mx-auto">
               {/* Left Column - Stepper */}
               <div className="col-span-1 h-full flex items-center justify-center">
@@ -74,7 +71,9 @@ export default function CreateStoreLayout({ children }: LayoutProps) {
               </div>
 
               {/* Right Column - Form */}
+              {/* --- 1. REMOVED overflow-y-auto --- */}
               <div className="col-span-3 col-start-2 h-full flex items-center justify-center">
+                {/* --- 2. REMOVED py-12 --- */}
                 <div className="w-full max-w-lg">
                   {children}
                 </div>
