@@ -32,7 +32,7 @@ export const Stepper = ({
     }
   }, []);
 
-  // Animate beam when step changes (removed vertical scrolling)
+  // Animate transform and beam when step changes
   useEffect(() => {
     // This logic relies on stepRefs being 0-indexed (0, 1, 2, 3)
     const activeStep = stepRefs.current[currentStep - 1];
@@ -40,6 +40,16 @@ export const Stepper = ({
 
     const stepOffsetTop = activeStep.offsetTop;
     const stepHeight = activeStep.offsetHeight;
+
+    // Calculate transform to center active step vertically
+    const targetTranslate = stepOffsetTop + stepHeight / 2 - containerHeight / 2;
+
+    // Smooth animation
+    animate(translateY, targetTranslate, {
+      duration: 0.5,
+      ease: "easeInOut",
+      type: "tween"
+    });
 
     // Animate beam to point to active step center
     animate(beamHeight, stepOffsetTop + stepHeight / 2, {
