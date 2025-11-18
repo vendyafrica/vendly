@@ -18,7 +18,7 @@ export default function CreateStorePage() {
       case 2:
         return <CreateStoreForm onNext={nextStep} onPrev={prevStep} currentStep={currentStep} />;
       case 3:
-        return <PaymentSetupForm onBack={prevStep} />;
+        return <PaymentSetupForm onNext={nextStep} onBack={prevStep} />;
       case 4:
         return <DeliveryDetails onBack={prevStep} />;
       default:

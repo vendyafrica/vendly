@@ -1,3 +1,4 @@
+// app/create-store/(components)/personal-details.tsx
 "use client"
 
 import { cn } from "@/lib/utils"
@@ -12,6 +13,7 @@ import { useRouter } from "next/navigation"
 import Link from "next/link"
 import Image from "next/image"
 import { HTMLAttributes } from "react"
+import { useSteps } from "./step-context" // --- NEW ---
 
 interface PersonalDetailsFormProps extends HTMLAttributes<HTMLDivElement> {
   onNext?: () => void;
@@ -25,6 +27,10 @@ export function PersonalDetailsForm({
   ...props
 }: PersonalDetailsFormProps) {
   const router = useRouter()
+  
+  // --- NEW ---
+  // Get formData and setFormData from the context
+  const { formData, setFormData } = useSteps();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -36,6 +42,7 @@ export function PersonalDetailsForm({
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <form onSubmit={handleSubmit} className="flex flex-col gap-6">
         <FieldGroup>
+          {/* ... (Logo/Link remains the same) ... */}
           <Link
             href="/"
             className="flex items-center gap-2 hover:opacity-80 transition-opacity"
@@ -55,6 +62,9 @@ export function PersonalDetailsForm({
               type="text"
               placeholder="John Doe"
               required
+              // --- UPDATED ---
+              value={formData.fullName || ""}
+              onChange={(e) => setFormData({ fullName: e.target.value })}
             />
           </Field>
           <Field>
@@ -64,6 +74,9 @@ export function PersonalDetailsForm({
               type="tel"
               placeholder="+254 4567890"
               required
+              // --- UPDATED ---
+              value={formData.phoneNumber || ""}
+              onChange={(e) => setFormData({ phoneNumber: e.target.value })}
             />
           </Field>
           <Field>
@@ -73,6 +86,9 @@ export function PersonalDetailsForm({
               type="password"
               placeholder="********"
               required
+              // --- UPDATED ---
+              value={formData.password || ""}
+              onChange={(e) => setFormData({ password: e.target.value })}
             />
           </Field>
           <Field>
