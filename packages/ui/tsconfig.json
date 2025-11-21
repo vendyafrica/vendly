@@ -1,0 +1,17 @@
+{
+  "extends": "@vendly/typescript-config/tsconfig.json",
+  "compilerOptions": {
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "lib": ["ES2020", "dom"],
+    "jsx": "preserve",
+    "paths": {
+        "@vendly/ui/*": ["./src/*"]
+    },
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "composite": true
+  },
+  "include": ["."],
+  "exclude": ["node_modules", "dist", "**/*.test.ts", "**/*.spec.ts"]
+}

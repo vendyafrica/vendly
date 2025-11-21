@@ -1,5 +1,5 @@
 import React from "react";
-import { Timeline } from "@/components/ui/timeline";
+import { Timeline } from "@vendly/ui/components/timeline";
 
 export default function Process({id}: {id?: string}) {
   const data = [

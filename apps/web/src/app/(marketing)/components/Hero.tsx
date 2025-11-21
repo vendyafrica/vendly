@@ -1,7 +1,7 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Button } from "@vendly/ui/components/button";
+import { Input } from "@vendly/ui/components/input";
 import { useState } from "react";
 import { joinWaitlist } from "@/app/api/api";
 

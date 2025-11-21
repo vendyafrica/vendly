@@ -3,19 +3,19 @@
 
 import { useState, HTMLAttributes } from "react"
 import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
+import { Button } from "@vendly/ui/components/button"
 import {
   Field,
   FieldDescription,
   FieldGroup,
   FieldLabel,
-} from "@/components/ui/field"
-import { Input } from "@/components/ui/input"
+} from "@vendly/ui/components/field"
+import { Input } from "@vendly/ui/components/input"
 import Link from "next/link"
 import Image from "next/image"
-import { ButtonGroup, ButtonGroupText } from "@/components/ui/button-group"
-import { InputGroup, InputGroupInput } from "@/components/ui/input-group"
-import { Label } from "@/components/ui/label"
+import { ButtonGroup, ButtonGroupText } from "@vendly/ui/components/button-group"
+import { InputGroup, InputGroupInput } from "@vendly/ui/components/input-group"
+import { Label } from "@vendly/ui/components/label"
 import { useRouter } from "next/navigation"
 import { useSteps } from "./step-context"
 

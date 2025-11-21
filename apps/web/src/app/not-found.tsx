@@ -1,6 +1,6 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
+import { Button } from "@vendly/ui/components/button";
 import { DotLottieReact } from "@lottiefiles/dotlottie-react";
 import Link from "next/link";
 

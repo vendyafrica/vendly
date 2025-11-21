@@ -1,9 +1,9 @@
 "use client";
 
 import React, { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Button } from "@vendly/ui/components/button";
+import { Input } from "@vendly/ui/components/input";
+import { Label } from "@vendly/ui/components/label";
 
 export default function ContactUs({ id }: { id?: string }) {
   const [email, setEmail] = useState("");
