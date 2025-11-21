@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Geist } from "next/font/google";
 import "@vendly/ui/globals.css"
 import { Analytics } from '@vercel/analytics/next';
-import { Providers } from "@/components/providers"
+import { ThemeProvider } from "@vendly/ui/components/theme-provider"
 
 const geist = Geist({
   variable: "--font-geist",
@@ -150,7 +150,6 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <Providers>
       <html lang="en" suppressHydrationWarning>
         <head>
           <meta charSet="utf-8" />
@@ -181,10 +180,17 @@ export default function RootLayout({
           <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         </head>
         <body className={`${geist.variable} antialiased`}>
+            <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+          >
           <main>{children}</main>
           <Analytics />
+          </ThemeProvider>
         </body>
       </html>
-    </Providers>
+
   );
 }
