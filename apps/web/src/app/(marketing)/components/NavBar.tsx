@@ -64,7 +64,7 @@ export default function NavBar() {
         </div>
 
         {/* Right - Actions */}
-        <div className="flex items-center gap-2 cursor-pointer">
+        <div className="flex items-center gap-2">
           <ThemeToggle />
           <AuthModal  />
         </div>
