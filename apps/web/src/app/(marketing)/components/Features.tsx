@@ -2,7 +2,7 @@
 
 import { ShoppingBag, Blocks, Factory, PackageCheck } from "lucide-react";
 import AnimatedBeamMultipleOutputDemo from "@/registry/example/animated-beam-multiple-outputs";
-import { BentoCard, BentoGrid } from "@/components/ui/bento-grid";
+import { BentoCard, BentoGrid } from "@vendly/ui/components/bento-grid";
 import { DotLottieReact } from "@lottiefiles/dotlottie-react";
 
 const features = [

@@ -45,6 +45,9 @@
       ],
       "@vendly/types/*": [
         "../../packages/types/src/*"
+      ],
+      "@vendly/ui": [
+        "../../packages/ui/src/*"
       ]
     },
     "isolatedModules": true

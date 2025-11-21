@@ -2,13 +2,13 @@
 "use client"
 
 import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
+import { Button } from "@vendly/ui/components/button"
 import {
   Field,
   FieldGroup,
   FieldLabel,
-} from "@/components/ui/field"
-import { Input } from "@/components/ui/input"
+} from "@vendly/ui/components/field"
+import { Input } from "@vendly/ui/components/input"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import Image from "next/image"

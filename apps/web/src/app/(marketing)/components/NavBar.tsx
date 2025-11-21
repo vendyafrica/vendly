@@ -5,8 +5,8 @@ import {
   NavigationMenuItem,
   NavigationMenuLink,
   NavigationMenuList,
-} from "@/components/ui/navigation-menu";
-import { ThemeToggle } from "@/components/ui/theme-toggle";
+} from "@vendly/ui/components/navigation-menu";
+import { ThemeToggle } from "@vendly/ui/components/theme-toggle";
 import Image from "next/image";
 import Link from "next/link";
 import { AuthModal } from "@/app/auth/(components)/auth-modal";
@@ -64,7 +64,7 @@ export default function NavBar() {
         </div>
 
         {/* Right - Actions */}
-        <div className="flex items-center gap-2 cursor-pointer">
+        <div className="flex items-center gap-2">
           <ThemeToggle />
           <AuthModal  />
         </div>

@@ -3,15 +3,15 @@
 // --- NEW IMPORT ---
 import { HTMLAttributes, useState } from "react" 
 import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
+import { Button } from "@vendly/ui/components/button"
 import {
   Field,
   FieldGroup,
   FieldLabel,
-} from "@/components/ui/field"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group" 
+} from "@vendly/ui/components/field"
+import { Input } from "@vendly/ui/components/input"
+import { Label } from "@vendly/ui/components/label"
+import { RadioGroup, RadioGroupItem } from "@vendly/ui/components/radio-group" 
 import Link from "next/link"
 import Image from "next/image"
 import { useSteps } from "./step-context"

@@ -1,5 +1,5 @@
 "use client";
-import { Button } from "@/components/ui/button";
+import { Button } from "@vendly/ui/components/button";
 import {
   Dialog,
   DialogContent,
@@ -7,11 +7,11 @@ import {
   DialogTitle,
   DialogTrigger,
   DialogDescription,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Separator } from "@/components/ui/separator";
-import { Google } from "@/components/ui/svgs/google";
+} from "@vendly/ui/components/dialog";
+import { Input } from "@vendly/ui/components/input";
+import { Label } from "@vendly/ui/components/label";
+import { Separator } from "@vendly/ui/components/separator";
+import { Google } from "@vendly/ui/components/svgs/google";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
