@@ -2,7 +2,7 @@
   "name": "vendly",
   "version": "1.0.0",
   "private": true,
-    "scripts": {
+  "scripts": {
     "build": "turbo run build",
     "dev": "turbo run dev --parallel",
     "lint": "turbo run lint",
@@ -11,12 +11,15 @@
     "test": "turbo run test"
   },
   "devDependencies": {
-    "turbo": "^2.5.6",
     "@types/node": "^20.0.0",
-    "typescript": "^5.0.0",
     "rimraf": "^6.0.1",
     "tsx": "^4.20.6",
+    "turbo": "^2.5.6",
+    "typescript": "^5.0.0",
     "vitest": "^2.1.8"
   },
-  "packageManager": "pnpm@10.7.0"
+  "packageManager": "pnpm@10.7.0",
+  "dependencies": {
+    "v0-sdk": "^0.15.1"
+  }
 }
