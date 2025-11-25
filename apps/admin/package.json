@@ -1,7 +1,7 @@
 {
-  "name": "@vendly/web",
+  "name": "@vendly/admin",
   "version": "1.0.0",
-  "description": "Vendly seller dashboard and storefronts",
+  "description": "Vendly admin dashboard",
   "private": true,
   "scripts": {
     "dev": "next dev --port 5000 --turbopack",
