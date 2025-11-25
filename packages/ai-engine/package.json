@@ -1,0 +1,27 @@
+{
+  "name": "ai-engine",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "packageManager": "pnpm@10.7.0",
+  "dependencies": {
+    "ai": "6.0.0-beta.116",
+    "dotenv": "^17.2.3",
+    "v0-sdk": "^0.15.1",
+    "zod": "^4.1.13"
+  },
+  "devDependencies": {
+    "@types/node": "^24.10.1",
+    "@vendly/database": "workspace:*",
+    "@vendly/types": "workspace:*",
+    "@vendly/typescript-config": "workspace:*",
+    "tsx": "^4.20.6",
+    "typescript": "^5.9.3"
+  }
+}
