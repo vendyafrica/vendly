@@ -21,6 +21,12 @@
       ],
       "@vendly/database/*": [
         "../../packages/database/src/*"
+      ],
+      "@vendly/ui": [
+        "../../packages/ui/src/index.ts"
+      ],
+      "@vendly/ui/*": [
+        "../../packages/ui/src/*"
       ]
     }
   },
