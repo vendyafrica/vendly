@@ -7,7 +7,11 @@ import {
   timestamp,
   index,
 } from 'drizzle-orm/pg-core';
-import { roleEnum } from './enums';
+import { relations } from 'drizzle-orm';
+import { roleEnum } from '../shared/shared.schema.enums';
+import { stores } from '../stores/store.schema';
+import { activityLogs } from '../auth/auth.schema';
+import { sellerPaymentMethods, sellerDeliveryMethods } from '../stores/store.schema';
 
 export const sellers = pgTable(
   'sellers',
@@ -32,3 +36,10 @@ export const sellers = pgTable(
     igHandleIdx: index('sellers_ig_handle_idx').on(table.instagramHandle),
   })
 );
+
+export const sellersRelations = relations(sellers, ({ many }) => ({
+  stores: many(stores),
+  activityLogs: many(activityLogs),
+  paymentMethods: many(sellerPaymentMethods),
+  deliveryMethods: many(sellerDeliveryMethods),
+}));

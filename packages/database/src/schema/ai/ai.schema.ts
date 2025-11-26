@@ -8,8 +8,9 @@ import {
   timestamp,
   index,
 } from 'drizzle-orm/pg-core';
-import { aiRequestStatusEnum } from './enums';
-import { stores } from './store';
+import { relations } from 'drizzle-orm';
+import { aiRequestStatusEnum } from '../shared/shared.schema.enums';
+import { stores } from '../stores/store.schema';
 
 export const aiRequests = pgTable(
   'ai_requests',
@@ -36,3 +37,7 @@ export const aiRequests = pgTable(
     requestTypeIdx: index('ai_requests_type_idx').on(table.requestType),
   })
 );
+
+export const aiRequestsRelations = relations(aiRequests, ({ one }) => ({
+  store: one(stores, { fields: [aiRequests.storeId], references: [stores.id] }),
+}));

@@ -1,8 +1,8 @@
 import { createWaitlistEntry } from "@vendly/database";
-import { WaitlistDto } from "@vendly/types";
+import { Waitlist } from "@vendly/database/schema/waitlist";
 
 export class WaitlistService {
-  async joinWaitlist(data: WaitlistDto) {
+  async joinWaitlist(data: Waitlist) {
     try {
       const result = await createWaitlistEntry(data);
       return {

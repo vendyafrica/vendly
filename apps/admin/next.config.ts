@@ -8,14 +8,13 @@ const nextConfig: NextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
-  transpilePackages: ["@vendly/auth", "@vendly/database", "@vendly/types", "@vendly/ui"],
+  transpilePackages: ["@vendly/auth", "@vendly/database", "@vendly/ui"],
   outputFileTracingRoot: path.resolve(__dirname, "../../"),
   turbopack: {
     root: path.resolve(__dirname, "../../"),
     resolveAlias: {
       "@vendly/auth": "../../packages/auth/src/index.ts",
       "@vendly/database": "../../packages/database/src/index.ts",
-      "@vendly/types": "../../packages/types/src/index.ts",
       "@vendly/ui": "../../packages/ui/src/index.ts",
     },
   },

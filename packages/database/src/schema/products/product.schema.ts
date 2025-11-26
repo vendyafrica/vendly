@@ -11,8 +11,9 @@ import {
   index,
   unique,
 } from 'drizzle-orm/pg-core';
-import { productStatusEnum, mediaTypeEnum } from './enums';
-import { stores } from './store';
+import { relations } from 'drizzle-orm';
+import { productStatusEnum, mediaTypeEnum } from '../shared/shared.schema.enums';
+import { stores } from '../stores/store.schema';
 
 export const products = pgTable(
   'products',
@@ -96,3 +97,21 @@ export const mediaAssets = pgTable(
     productIdx: index('media_assets_product_id_idx').on(table.productId),
   })
 );
+
+export const productsRelations = relations(products, ({ one, many }) => ({
+  store: one(stores, { fields: [products.storeId], references: [stores.id] }),
+  variants: many(productVariants),
+  media: many(mediaAssets),
+}));
+
+export const mediaAssetsRelations = relations(mediaAssets, ({ one }) => ({
+  store: one(stores, { fields: [mediaAssets.storeId], references: [stores.id] }),
+  product: one(products, {
+    fields: [mediaAssets.productId],
+    references: [products.id],
+  }),
+}));
+
+export const productVariantsRelations = relations(productVariants, ({ one }) => ({
+  product: one(products, { fields: [productVariants.productId], references: [products.id] }),
+}));

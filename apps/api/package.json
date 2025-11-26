@@ -16,7 +16,6 @@
     "@clerk/express": "^1.7.33",
     "@vendly/auth": "workspace:*",
     "@vendly/database": "workspace:*",
-    "@vendly/types": "workspace:*",
     "@vendly/typescript-config": "workspace:*",
     "axios": "^1.12.2",
     "bcryptjs": "^2.4.3",

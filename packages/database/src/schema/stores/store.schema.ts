@@ -10,12 +10,17 @@ import {
   index,
   unique,
 } from 'drizzle-orm/pg-core';
+import { relations } from 'drizzle-orm';
 import {
   storeStatusEnum,
   paymentMethodEnum,
   deliveryMethodEnum,
-} from './enums';
-import { sellers } from './seller';
+} from '../shared/shared.schema.enums';
+import { sellers } from '../sellers/seller.schema';
+import { products } from '../products/product.schema';
+import { mediaAssets } from '../products/product.schema';
+import { aiRequests } from '../ai/ai.schema';
+import { activityLogs } from '../auth/auth.schema';
 
 export const stores = pgTable(
   'stores',
@@ -189,3 +194,35 @@ export const sellerDeliveryMethods = pgTable(
     ),
   })
 );
+
+export const storesRelations = relations(stores, ({ one, many }) => ({
+  seller: one(sellers, { fields: [stores.sellerId], references: [sellers.id] }),
+  products: many(products),
+  media: many(mediaAssets),
+  brandPalette: one(brandPalettes),
+  aiRequests: many(aiRequests),
+  carts: many(carts),
+  orders: many(orders),
+}));
+
+export const brandPalettesRelations = relations(brandPalettes, ({ one }) => ({
+  store: one(stores, { fields: [brandPalettes.storeId], references: [stores.id] }),
+}));
+
+export const themesRelations = relations(themes, ({ many }) => ({})); // No direct relations, but can be linked via brandPalettes.theme
+
+export const sellerPaymentMethodsRelations = relations(sellerPaymentMethods, ({ one }) => ({
+  seller: one(sellers, { fields: [sellerPaymentMethods.sellerId], references: [sellers.id] }),
+}));
+
+export const cartsRelations = relations(carts, ({ one }) => ({
+  store: one(stores, { fields: [carts.storeId], references: [stores.id] }),
+}));
+
+export const ordersRelations = relations(orders, ({ one }) => ({
+  store: one(stores, { fields: [orders.storeId], references: [stores.id] }),
+}));
+
+export const sellerDeliveryMethodsRelations = relations(sellerDeliveryMethods, ({ one }) => ({
+  seller: one(sellers, { fields: [sellerDeliveryMethods.sellerId], references: [sellers.id] }),
+}));

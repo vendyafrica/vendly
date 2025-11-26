@@ -1,18 +1,6 @@
 {
   "extends":"@vendly/typescript-config/nextjs.json",
   "compilerOptions": {
-    "target": "ES2017",
-    "lib": [
-      "dom",
-      "dom.iterable",
-      "esnext"
-    ],
-    "allowJs": true,
-    "noEmit": true,
-    "module": "esnext",
-    "moduleResolution": "bundler",
-    "jsx": "preserve",
-    "incremental": true,
     "plugins": [
       {
         "name": "next"
@@ -21,12 +9,6 @@
     "paths": {
       "@/*": [
         "./src/*"
-      ],
-      "@vendly/api": [
-        "../../apps/api/src/index.ts"
-      ],
-      "@vendly/api/*": [
-        "../../apps/api/src/*"
       ],
       "@vendly/auth": [
         "../../packages/auth/src/index.ts"
@@ -39,18 +21,8 @@
       ],
       "@vendly/database/*": [
         "../../packages/database/src/*"
-      ],
-      "@vendly/types": [
-        "../../packages/types/src/index.ts"
-      ],
-      "@vendly/types/*": [
-        "../../packages/types/src/*"
-      ],
-      "@vendly/ui": [
-        "../../packages/ui/src/*"
       ]
-    },
-    "isolatedModules": true
+    }
   },
   "include": [
     "next-env.d.ts",

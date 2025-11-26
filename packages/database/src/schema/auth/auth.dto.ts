@@ -1,5 +1,4 @@
-
-import { UserRole } from "../enums/index";
+import { UserRole } from "../shared/shared.enums";
 
 export interface RegisterRequest {
   email: string;

@@ -63,9 +63,6 @@ importers:
       '@vendly/auth':
         specifier: workspace:*
         version: link:../../packages/auth
-      '@vendly/types':
-        specifier: workspace:*
-        version: link:../../packages/types
       '@vendly/ui':
         specifier: workspace:*
         version: link:../../packages/ui
@@ -169,9 +166,6 @@ importers:
       '@vendly/database':
         specifier: workspace:*
         version: link:../../packages/database
-      '@vendly/types':
-        specifier: workspace:*
-        version: link:../../packages/types
       '@vendly/typescript-config':
         specifier: workspace:*
         version: link:../../packages/typescript-config
@@ -333,9 +327,6 @@ importers:
       '@vendly/auth':
         specifier: workspace:*
         version: link:../../packages/auth
-      '@vendly/types':
-        specifier: workspace:*
-        version: link:../../packages/types
       '@vendly/ui':
         specifier: workspace:*
         version: link:../../packages/ui
@@ -458,9 +449,6 @@ importers:
       '@vendly/database':
         specifier: workspace:*
         version: link:../database
-      '@vendly/types':
-        specifier: workspace:*
-        version: link:../types
       '@vendly/typescript-config':
         specifier: workspace:*
         version: link:../typescript-config
@@ -479,9 +467,6 @@ importers:
       '@vendly/database':
         specifier: workspace:*
         version: link:../database
-      '@vendly/types':
-        specifier: workspace:*
-        version: link:../types
       '@vendly/typescript-config':
         specifier: workspace:*
         version: link:../typescript-config
@@ -500,9 +485,6 @@ importers:
       '@neondatabase/serverless':
         specifier: ^1.0.2
         version: 1.0.2
-      '@vendly/types':
-        specifier: workspace:*
-        version: link:../types
       drizzle-orm:
         specifier: ^0.44.6
         version: 0.44.6(@neondatabase/serverless@1.0.2)(@opentelemetry/api@1.9.0)(@types/pg@8.15.6)(kysely@0.28.8)(postgres@3.4.7)
@@ -522,16 +504,6 @@ importers:
       tsx:
         specifier: ^4.20.6
         version: 4.20.6
-
-  packages/types:
-    dependencies:
-      zod:
-        specifier: ^3.22.4
-        version: 3.25.76
-    devDependencies:
-      '@vendly/typescript-config':
-        specifier: workspace:*
-        version: link:../typescript-config
 
   packages/typescript-config:
     devDependencies:
