@@ -2,7 +2,6 @@ export enum UserRole {
   BUYER = 'buyer',
   SELLER = 'seller',
   ADMIN = 'admin',
-  COURIER = 'courier',
 }
 
 export enum SellerTier {
@@ -87,4 +86,36 @@ export enum MobileMoneyProvider {
   MPESA = 'mpesa',
   AIRTEL = 'airtel',
   MTN = 'mtn',
+}
+
+export enum StoreStatus {
+  DRAFT = 'draft',
+  UNDER_AI_REVIEW = 'under_ai_review',
+  BUILDING = 'building',
+  LIVE = 'live',
+  ARCHIVED = 'archived',
+}
+
+export enum AiRequestStatus {
+  PENDING = 'pending',
+  PROCESSING = 'processing',
+  COMPLETED = 'completed',
+  FAILED = 'failed',
+}
+
+export enum DeliveryMethod {
+  COURIER = 'courier',
+  SELF_DELIVERY = 'self_delivery',
+}
+
+export enum MediaType {
+  IMAGE = 'image',
+  VIDEO = 'video',
+  CAROUSEL = 'carousel',
+}
+
+export enum ProductStatus {
+  DRAFT = 'draft',
+  PUBLISHED = 'published',
+  ARCHIVED = 'archived',
 }
