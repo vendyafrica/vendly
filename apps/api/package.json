@@ -2,6 +2,7 @@
   "name": "@vendly/api",
   "version": "1.0.0",
   "description": "Vendly backend API server",
+  "type": "module",
   "main": "dist/index.js",
   "scripts": {
     "dev": "cross-env PORT=8000 nodemon --watch src --ext ts --exec tsx src/index.ts",
