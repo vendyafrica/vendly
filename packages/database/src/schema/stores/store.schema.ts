@@ -20,7 +20,7 @@ import { sellers } from '../sellers/seller.schema';
 import { products } from '../products/product.schema';
 import { mediaAssets } from '../products/product.schema';
 import { aiRequests } from '../ai/ai.schema';
-import { activityLogs } from '../auth/auth.schema';
+
 
 export const stores = pgTable(
   'stores',
@@ -79,6 +79,8 @@ export const brandPalettes = pgTable(
     storeIdx: index('brand_palettes_store_id_idx').on(table.storeId),
   })
 );
+
+
 export const themes = pgTable(
   'themes',
   {
