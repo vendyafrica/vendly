@@ -1,93 +1,54 @@
+// components/sales-trend-chart.tsx
 "use client"
-
 import { TrendingUp } from "lucide-react"
-import { Area, AreaChart, CartesianGrid, XAxis } from "recharts"
-
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@vendly/ui/components/card"
-import {
-  ChartConfig,
-  ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
-} from "@vendly/ui/components/chart"
+import { Bar, BarChart, CartesianGrid, XAxis, ResponsiveContainer, Tooltip } from "recharts"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@vendly/ui/components/card"
+import { ChartConfig, ChartContainer } from "@vendly/ui/components/chart"
 
 const chartData = [
-  { month: "Jan", sales: 18600 },
-  { month: "Feb", sales: 30500 },
-  { month: "Mar", sales: 23700 },
-  { month: "Apr", sales: 17300 },
-  { month: "May", sales: 20900 },
-  { month: "Jun", sales: 31400 },
+  { month: "January", sales: 186 },
+  { month: "February", sales: 305 },
+  { month: "March", sales: 237 },
+  { month: "April", sales: 73 },
+  { month: "May", sales: 209 },
+  { month: "June", sales: 214 },
 ]
 
 const chartConfig = {
   sales: {
     label: "Sales",
-    color: "hsl(var(--primary))",
+    color: "#c4b5fd",
   },
 } satisfies ChartConfig
 
 export function SalesTrendChart() {
   return (
-    <Card className="flex flex-col h-full border-gray-200 shadow-sm">
-      <CardHeader>
-        <CardTitle>Sales Trend</CardTitle>
-        <CardDescription>
-          Total sales volume Jan - Jun 2024
-        </CardDescription>
+    <Card className="h-full flex flex-col border-gray-200 bg-white">
+      <CardHeader className="pb-2">
+        <CardTitle className="text-sm font-semibold">Sales Trend</CardTitle>
+        <CardDescription className="text-xs">Total sales volume Jan - Jun 2024</CardDescription>
       </CardHeader>
-      <CardContent className="flex-1 min-h-0">
-        <ChartContainer config={chartConfig} className="h-full w-full">
-          <AreaChart
-            accessibilityLayer
-            data={chartData}
-            margin={{
-              left: 12,
-              right: 12,
-              top: 12,
-              bottom: 12,
-            }}
-          >
-            <CartesianGrid vertical={false} />
-            <XAxis
-              dataKey="month"
-              tickLine={false}
-              axisLine={false}
-              tickMargin={8}
-            />
-            <ChartTooltip
-              cursor={false}
-              content={<ChartTooltipContent indicator="line" />}
-            />
-            <Area
-              dataKey="sales"
-              type="natural"
-              fill="var(--color-sales)"
-              fillOpacity={0.4}
-              stroke="var(--color-sales)"
-            />
-          </AreaChart>
+      <CardContent className="flex-1 p-0 pb-4">
+        <ChartContainer config={chartConfig} className="w-full h-full min-h-0">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={chartData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+              <CartesianGrid vertical={false} strokeDasharray="3 3" stroke="#e5e7eb" />
+              <XAxis
+                dataKey="month"
+                tickLine={false}
+                axisLine={false}
+                tickFormatter={(value) => value.slice(0, 3)}
+                tick={{ fill: "#9ca3af", fontSize: 11 }}
+              />
+              <Tooltip
+                contentStyle={{ backgroundColor: "#fff", border: "1px solid #e5e7eb", borderRadius: "6px" }}
+                formatter={(value) => [value, "Sales"]}
+              />
+              <Bar dataKey="sales" fill="#c4b5fd" radius={[6, 6, 0, 0]} />
+            </BarChart>
+          </ResponsiveContainer>
         </ChartContainer>
       </CardContent>
-      <CardFooter>
-        <div className="flex w-full items-start gap-2 text-sm">
-          <div className="grid gap-2">
-            <div className="flex items-center gap-2 leading-none font-medium">
-              Trending up by 5.2% this month <TrendingUp className="h-4 w-4 text-green-600" />
-            </div>
-            <div className="text-muted-foreground flex items-center gap-2 leading-none text-xs">
-              January - June 2024
-            </div>
-          </div>
-        </div>
-      </CardFooter>
     </Card>
   )
 }

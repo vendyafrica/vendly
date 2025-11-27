@@ -1,16 +1,11 @@
-// page.tsx
 "use client";
 
-import { AppSidebar } from "./components/sidebar";
 import { StatsCard } from "./components/stats-card";
-import { SalesTrendChart } from "./components/sales-trend-chart";
-import { RevenueInsightsChart } from "./components/revenue-insights-chart";
-import { TransactionsTable } from "./components/transactions-table";
-import { columns, Transaction } from "./components/columns";
-import { Button } from "@vendly/ui/components/button"; // Assuming you have this
-import { Calendar, Download } from "lucide-react";
+import { SalesTrendChart } from "./components/sales-trend-chart"
+import { GrowthInsightsChart } from "./components/growth-insights-chart"
+import { TransactionsTable } from "./components/transactions-table"
+import { columns, Transaction } from "./components/columns"
 
-// ... keep your transactionData array exactly as it is ...
 const transactionData: Transaction[] = [
   {
     id: "#04910",
@@ -53,26 +48,13 @@ const transactionData: Transaction[] = [
 export default function Home() {
   return (
     <div className="flex h-screen bg-gray-50 overflow-hidden">
-
       {/* Main Content - Scrollable */}
       <main className="flex-1 flex flex-col h-full overflow-hidden">
         {/* Header */}
-        <div className="bg-white border-b border-gray-200 px-8 py-5 flex items-center justify-between shrink-0">
+        <div className="bg-white border-b border-gray-200 px-8 py-3 flex items-center h-16 shrink-0">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Welcome back, Salung</h1>
-            <p className="text-gray-500 text-sm mt-1">Here's what's happening with your store today</p>
-          </div>
-          <div className="flex items-center gap-3">
-             {/* Added Buttons to match design */}
-             <Button variant="outline" className="gap-2 bg-white">
-                Daily <Calendar className="w-4 h-4 text-gray-500"/>
-             </Button>
-             <Button variant="outline" className="gap-2 bg-white">
-                6 Nov 2025 <Calendar className="w-4 h-4 text-gray-500"/>
-             </Button>
-             <Button className="gap-2 bg-gray-900 text-white hover:bg-gray-800">
-                <Download className="w-4 h-4"/> Export CSV
-             </Button>
+            <h1 className="text-lg font-bold text-gray-900">Welcome back, Salung</h1>
+            <p className="text-xs text-gray-500">Here's what's happening with your store today</p>
           </div>
         </div>
 
@@ -88,27 +70,27 @@ export default function Home() {
           </div>
 
           {/* Charts Row - Fixed Height */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[400px]">
-             {/* Sales Trend takes up 2/3 space */}
-            <div className="lg:col-span-2 h-full">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-80">
+            {/* Sales Trend takes up 2/3 space */}
+            <div className="lg:col-span-2">
               <SalesTrendChart />
             </div>
-             {/* Revenue Insights takes up 1/3 space */}
-            <div className="h-full">
-              <RevenueInsightsChart />
+            {/* Growth Insights takes up 1/3 space */}
+            <div>
+              <GrowthInsightsChart />
             </div>
           </div>
 
           {/* Transactions Table */}
           <div className="rounded-lg border border-gray-200 bg-white shadow-sm">
-            <div className="p-4 border-b border-gray-200 font-semibold text-gray-900">
-                Recent Transactions
+            <div className="px-6 py-4 border-b border-gray-200">
+              <h2 className="text-sm font-semibold text-gray-900">Recent Transactions</h2>
             </div>
             <TransactionsTable columns={columns} data={transactionData} />
           </div>
           
           {/* Bottom spacer for scrolling comfort */}
-          <div className="h-8"></div>
+          <div className="h-4"></div>
         </div>
       </main>
     </div>
