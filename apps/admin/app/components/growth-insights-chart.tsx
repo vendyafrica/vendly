@@ -15,10 +15,10 @@ const chartConfig = {
 
 export function GrowthInsightsChart() {
   return (
-    <Card className="h-full flex flex-col border-gray-100 bg-white rounded-xl shadow-sm">
+    <Card className="h-full flex flex-col border-border bg-card rounded-xl shadow-sm">
       <CardHeader className="flex flex-row items-center justify-between pb-2">
-        <CardTitle className="text-base font-bold text-gray-900">Sales Overview</CardTitle>
-        <button className="text-gray-400 hover:text-gray-600"><MoreHorizontal className="w-5 h-5" /></button>
+        <CardTitle className="text-base font-bold text-card-foreground">Sales Overview</CardTitle>
+        <button className="text-muted-foreground hover:text-foreground"><MoreHorizontal className="w-5 h-5" /></button>
       </CardHeader>
       
       {/* Chart Section */}
@@ -32,8 +32,8 @@ export function GrowthInsightsChart() {
                     if (viewBox && "cx" in viewBox && "cy" in viewBox) {
                         return (
                         <text x={viewBox.cx} y={viewBox.cy} textAnchor="middle" dominantBaseline="middle">
-                            <tspan x={viewBox.cx} y={viewBox.cy} className="fill-gray-900 text-3xl font-bold">70.8%</tspan>
-                            <tspan x={viewBox.cx} y={(viewBox.cy || 0) + 24} className="fill-gray-500 text-xs">Sales Growth</tspan>
+                            <tspan x={viewBox.cx} y={viewBox.cy} className="fill-foreground text-3xl font-bold">70.8%</tspan>
+                            <tspan x={viewBox.cx} y={(viewBox.cy || 0) + 24} className="fill-muted-foreground text-xs">Sales Growth</tspan>
                         </text>
                         )
                     }
@@ -49,14 +49,14 @@ export function GrowthInsightsChart() {
         <div className="w-full px-6 mt-2">
             <div className="flex justify-between items-end mb-2">
                 <div>
-                    <span className="text-xs text-gray-500 block">Sales</span>
-                    <span className="text-lg font-bold text-gray-900">$3,884.00</span>
+                    <span className="text-xs text-muted-foreground block">Sales</span>
+                    <span className="text-lg font-bold text-foreground">$3,884.00</span>
                 </div>
                 <div className="text-right">
-                    <span className="text-xs text-gray-500 block">Target $20,000.00</span>
+                    <span className="text-xs text-muted-foreground block">Target $20,000.00</span>
                 </div>
             </div>
-            <Progress value={20} className="h-2 bg-gray-100 [&>div]:bg-orange-600" />
+            <Progress value={20} className="h-2 bg-muted [&>div]:bg-primary" />
         </div>
       </CardContent>
     </Card>

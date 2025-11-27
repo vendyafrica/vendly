@@ -26,18 +26,18 @@ const chartConfig = {
 
 export function SalesTrendChart() {
   return (
-    <Card className="h-full flex flex-col border-gray-100 bg-white rounded-xl shadow-sm">
+    <Card className="h-full flex flex-col border-border bg-card rounded-xl shadow-sm">
       <CardHeader className="flex flex-row items-center justify-between pb-4">
         <div>
-          <CardTitle className="text-base font-bold text-gray-900">Revenue Insights</CardTitle>
+          <CardTitle className="text-base font-bold text-card-foreground">Revenue Insights</CardTitle>
           <div className="flex items-center gap-2 mt-1">
              <span className="text-2xl font-bold">$5,567.00</span>
-             <span className="bg-orange-50 text-orange-600 text-xs px-1.5 py-0.5 rounded">↑ 4.9%</span>
+             <span className="bg-primary/10 text-primary text-xs px-1.5 py-0.5 rounded">↑ 4.9%</span>
           </div>
         </div>
-        <div className="flex bg-gray-50 p-1 rounded-lg">
-          <Button variant="ghost" size="sm" className="h-7 text-xs rounded-md hover:bg-white hover:shadow-sm">Monthly</Button>
-          <Button size="sm" className="h-7 text-xs bg-gray-900 text-white rounded-md shadow-sm">Yearly</Button>
+        <div className="flex bg-muted p-1 rounded-lg">
+          <Button variant="ghost" size="sm" className="h-7 text-xs rounded-md hover:bg-background hover:shadow-sm">Monthly</Button>
+          <Button size="sm" className="h-7 text-xs bg-foreground text-background rounded-md shadow-sm">Yearly</Button>
         </div>
       </CardHeader>
       <CardContent className="flex-1 min-h-0 pl-0">
