@@ -17,33 +17,23 @@ import Image from "next/image";
 const items = [
   {
     title: "Dashboard",
-    url: "#",
+    url: "/dashboard",
     icon: LayoutDashboard,
-  },
-    {
-    title: "Store",
-    url: "#",
-    icon: Store,
   },
   {
     title: "Orders",
-    url: "#",
+    url: "/orders",
     icon: ShoppingCart,
   },
   {
     title: "Products",
-    url: "#",
+    url: "/products",
     icon: Store,
   },
   {
     title: "Customers",
-    url: "#",
+    url: "/customers",
     icon: User,
-  },
-  {
-    title: "Messages",
-    url: "#",
-    icon: MessagesSquare,
   },
   {
     title: "Reports",
