@@ -1,7 +1,7 @@
 // page.tsx
 "use client";
 
-import { Sidebar } from "@/components/sidebar";
+import { AppSidebar } from "./components/sidebar";
 import { StatsCard } from "./components/stats-card";
 import { SalesTrendChart } from "./components/sales-trend-chart";
 import { RevenueInsightsChart } from "./components/revenue-insights-chart";
@@ -53,8 +53,6 @@ const transactionData: Transaction[] = [
 export default function Home() {
   return (
     <div className="flex h-screen bg-gray-50 overflow-hidden">
-      {/* Sidebar - Fixed */}
-      <Sidebar />
 
       {/* Main Content - Scrollable */}
       <main className="flex-1 flex flex-col h-full overflow-hidden">
