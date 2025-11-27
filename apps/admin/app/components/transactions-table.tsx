@@ -1,4 +1,3 @@
-// components/transactions-table.tsx
 "use client"
 import * as React from "react"
 import {
@@ -10,7 +9,8 @@ import {
 } from "@tanstack/react-table"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@vendly/ui/components/table"
 import { Button } from "@vendly/ui/components/button"
-import { ChevronLeft, ChevronRight } from "lucide-react"
+import { Input } from "@vendly/ui/components/input" // npx shadcn@latest add input
+import { ChevronLeft, ChevronRight, Filter, Search } from "lucide-react"
 
 interface TransactionsTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[]
@@ -24,19 +24,35 @@ export function TransactionsTable<TData, TValue>({
   const table = useReactTable({
     data,
     columns,
+    initialState: { pagination: { pageSize: 8 } }, // Adjusted to fit height better
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
   })
 
   return (
-    <div className="flex flex-col">
-      <div className="overflow-x-auto">
+    <div className="flex flex-col bg-white rounded-xl border border-gray-100 shadow-sm h-full">
+      {/* Table Toolbar */}
+      <div className="flex items-center justify-between p-5 border-b border-gray-100">
+        <h2 className="text-base font-bold text-gray-900">Recent Sales</h2>
+        <div className="flex items-center gap-3">
+            <div className="relative">
+                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-400" />
+                <Input placeholder="Search..." className="pl-9 h-9 w-[200px] text-sm bg-gray-50 border-transparent focus:bg-white transition-colors" />
+            </div>
+            <Button variant="outline" size="sm" className="h-9 gap-2 text-gray-600 border-gray-200">
+                <Filter className="h-3.5 w-3.5" />
+                Filter
+            </Button>
+        </div>
+      </div>
+
+      <div className="overflow-auto flex-1">
         <Table>
-          <TableHeader>
+          <TableHeader className="bg-white sticky top-0 z-10">
             {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id} className="border-b border-gray-200 bg-gray-50 hover:bg-gray-50">
+              <TableRow key={headerGroup.id} className="border-b border-gray-100 hover:bg-transparent">
                 {headerGroup.headers.map((header) => (
-                  <TableHead key={header.id} className="h-11 px-6 text-xs font-semibold text-gray-700 text-left">
+                  <TableHead key={header.id} className="h-10 px-6 text-xs font-semibold text-gray-400 uppercase tracking-wider">
                     {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
                   </TableHead>
                 ))}
@@ -46,9 +62,9 @@ export function TransactionsTable<TData, TValue>({
           <TableBody>
             {table.getRowModel().rows?.length ? (
               table.getRowModel().rows.map((row) => (
-                <TableRow key={row.id} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
+                <TableRow key={row.id} className="border-b border-gray-50 hover:bg-gray-50 transition-colors">
                   {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id} className="px-6 py-4">
+                    <TableCell key={cell.id} className="px-6 py-4 text-sm">
                       {flexRender(cell.column.columnDef.cell, cell.getContext())}
                     </TableCell>
                   ))}
@@ -57,33 +73,35 @@ export function TransactionsTable<TData, TValue>({
             ) : (
               <TableRow>
                 <TableCell colSpan={columns.length} className="h-24 text-center text-sm text-gray-500">
-                  No transactions.
+                  No transactions found.
                 </TableCell>
               </TableRow>
             )}
           </TableBody>
         </Table>
       </div>
-      <div className="flex items-center justify-between px-6 py-4 border-t border-gray-100">
-        <span className="text-xs text-gray-600 font-medium">
-          Page {table.getState().pagination.pageIndex + 1} of {table.getPageCount()}
-        </span>
+      
+      {/* Simple Footer */}
+      <div className="flex items-center justify-end px-6 py-3 border-t border-gray-100">
         <div className="flex items-center gap-2">
           <Button
             variant="ghost"
             size="sm"
             onClick={() => table.previousPage()}
             disabled={!table.getCanPreviousPage()}
-            className="h-8 w-8 p-0 text-gray-600 disabled:opacity-50"
+            className="h-8 w-8 p-0 text-gray-500"
           >
             <ChevronLeft className="h-4 w-4" />
           </Button>
+          <span className="text-xs text-gray-500">
+             {table.getState().pagination.pageIndex + 1} / {table.getPageCount()}
+          </span>
           <Button
             variant="ghost"
             size="sm"
             onClick={() => table.nextPage()}
             disabled={!table.getCanNextPage()}
-            className="h-8 w-8 p-0 text-gray-600 disabled:opacity-50"
+            className="h-8 w-8 p-0 text-gray-500"
           >
             <ChevronRight className="h-4 w-4" />
           </Button>

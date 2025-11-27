@@ -1,8 +1,10 @@
+// app/layout.tsx
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import "@vendly/ui/globals.css"
-import { SidebarProvider, SidebarTrigger } from "@vendly/ui/components/sidebar"
+import "@vendly/ui/globals.css";
+import { SidebarProvider, SidebarInset } from "@vendly/ui/components/sidebar";
 import { AppSidebar } from "./components/sidebar";
+import Header from "./(dashboard)/header"; // Make sure path is correct
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -34,10 +36,19 @@ export default function RootLayout({
       >
         <SidebarProvider>
           <AppSidebar />
-          <main className="flex-1">
-            <SidebarTrigger />
-            {children}
-          </main>
+          
+          {/* SidebarInset handles the remaining width next to sidebar */}
+          <SidebarInset className="flex flex-col h-screen overflow-hidden">
+            
+            {/* Header stays at the top */}
+            <Header />
+            
+            {/* Main takes remaining height and scrolls internally */}
+            <main className="flex-1 overflow-y-auto bg-gray-50 p-6">
+                {children}
+            </main>
+            
+          </SidebarInset>
         </SidebarProvider>
       </body>
     </html>
