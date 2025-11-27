@@ -16,7 +16,7 @@ export default function HeroSection({ id }: { id?: string }) {
 
     setLoading(true);
     try {
-      await joinWaitlist({ 
+      await joinWaitlist({
         storeName 
       });
       setSubmitted(true);
@@ -31,28 +31,11 @@ export default function HeroSection({ id }: { id?: string }) {
 
   return (
     <section
-      className="relative overflow-hidden bg-[#f8fafc] py-32 sm:py-40"
+      className="relative overflow-hidden bg-background py-32 sm:py-40"
       id={id}
     >
-      {/* Grid background with proper mask */}
-      <div
-        className="absolute inset-0 -z-20"
-        style={{
-          backgroundImage: `
-            linear-gradient(to right, #e2e8f0 1px, transparent 1px),
-            linear-gradient(to bottom, #e2e8f0 1px, transparent 1px)
-          `,
-          backgroundSize: "20px 30px",
-          WebkitMaskImage:
-            "radial-gradient(ellipse 70% 60% at 50% 0%, #000 60%, transparent 100%)",
-          maskImage:
-            "radial-gradient(ellipse 70% 60% at 50% 0%, #000 60%, transparent 100%)",
-        }}
-      />
-
-      {/* Subtle glow effects */}
-      <div className="absolute bottom-0 left-1/2 -translate-x-1/2 h-[700px] w-[1000px] rounded-full bg-primary/[0.08] blur-[140px] -z-10 pointer-events-none" />
-      <div className="absolute bottom-10 left-1/3 h-[600px] w-[700px] rounded-full bg-primary/[0.05] blur-[120px] -z-10 pointer-events-none" />
+      <div className="absolute bottom-0 left-1/2 -translate-x-1/2 h-[700px] w-[1000px] rounded-full bg-primary/[0.08] blur-[140px] -z-10" />
+      <div className="absolute bottom-10 left-1/3 h-[600px] w-[700px] rounded-full bg-primary/[0.05] blur-[120px] -z-10" />
 
       <div className="mx-auto max-w-3xl px-6 text-center relative z-10">
         <h1 className="text-4xl sm:text-5xl md:text-6xl font-semibold tracking-tight text-foreground">
@@ -63,8 +46,6 @@ export default function HeroSection({ id }: { id?: string }) {
           Sell anywhere. Vendly gives you the tools to sell products anywhere,
           manage everything in one place, and grow your business faster.
         </p>
-
-        {/* Form */}
         <form onSubmit={handleSubmit} className="mx-auto mt-8 max-w-md">
           <div className="flex gap-2">
             <Input
