@@ -11,7 +11,8 @@
       "@vendly/database": ["../../packages/database/src/index.ts"],
       "@vendly/typescript-config/*": ["../../packages/typescript-config/src/*"],
       "@vendly/ui": ["../../packages/ui/src/index.ts"],
-      "@vendly/ui/*": ["../../packages/ui/src/*"]
+      "@vendly/ui/*": ["../../packages/ui/src/*"],
+      "@/ui/*": ["../../packages/ui/src/components/*"]
     }
   },
   "include": [

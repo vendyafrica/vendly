@@ -7,7 +7,7 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select'
+} from '@vendly/ui/components/select'
 import { Textarea } from '@vendly/ui/components/textarea'
 import { cn } from '@/lib/utils'
 import type { ChatStatus } from 'ai'

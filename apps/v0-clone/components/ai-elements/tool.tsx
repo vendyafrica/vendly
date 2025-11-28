@@ -5,7 +5,7 @@ import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
-} from '@/components/ui/collapsible'
+} from '@/ui/collapsible'
 import { cn } from '@/lib/utils'
 import type { ToolUIPart } from 'ai'
 import {

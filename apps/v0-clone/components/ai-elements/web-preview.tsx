@@ -5,7 +5,7 @@ import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
-} from '@/components/ui/collapsible'
+} from '@/ui/collapsible'
 import { Input } from '@vendly/ui/components/input'
 import {
   Tooltip,
