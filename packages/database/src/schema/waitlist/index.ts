@@ -1,2 +1,2 @@
-export * from "./waitlist.schema";
-export * from "./waitlist.types";
+export * from "./waitlist-schema";
+export * from "./waitlist-query";

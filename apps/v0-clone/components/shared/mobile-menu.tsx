@@ -5,15 +5,8 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { Menu, X, Info } from 'lucide-react'
 import { Button } from '@vendly/ui/components/button'
-import { GitHubIcon, VercelIcon } from '@/components/ui/icons'
+// import { GitHubIcon, VercelIcon } from '@/components/ui/icons'
 import { DEPLOY_URL } from '@/lib/constants'
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from '@vendly/ui/components/dialog'
 
 interface MobileMenuProps {
   onInfoDialogOpen: () => void
@@ -145,7 +138,7 @@ export function MobileMenu({ onInfoDialogOpen }: MobileMenuProps) {
                       onClick={closeMenu}
                     >
                       <div className="flex items-center gap-3 w-full">
-                        <GitHubIcon size={16} />
+                        {/* <GitHubIcon size={16} /> */}
                         <div className="flex-1">
                           <div className="font-medium">GitHub</div>
                           <div className="text-sm text-muted-foreground">
@@ -168,7 +161,7 @@ export function MobileMenu({ onInfoDialogOpen }: MobileMenuProps) {
                       onClick={closeMenu}
                     >
                       <div className="flex items-center gap-3 w-full">
-                        <VercelIcon size={16} />
+                        {/* <VercelIcon size={16} /> */}
                         <div className="flex-1">
                           <div className="font-medium">Deploy with Vercel</div>
                           <div className="text-sm text-muted-foreground">
