@@ -1,0 +1,25 @@
+{
+  "extends": "../../packages/typescript-config/nextjs.json",
+  "compilerOptions": {
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ],
+    "paths": {
+      "@/*": ["./*"],
+      "@vendly/database": ["../../packages/database/src/index.ts"],
+      "@vendly/typescript-config/*": ["../../packages/typescript-config/src/*"],
+      "@vendly/ui": ["../../packages/ui/src/index.ts"],
+      "@vendly/ui/*": ["../../packages/ui/src/*"]
+    }
+  },
+  "include": [
+    "next-env.d.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    ".next/types/**/*.ts",
+    "types/**/*.d.ts"
+  ],
+  "exclude": ["node_modules"]
+}

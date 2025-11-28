@@ -5,6 +5,7 @@ export * from './stores';
 export * from './products';
 export * from './ai';
 export * from './waitlist';
+export * from './v0';
 
 export { sellersRelations } from './sellers/seller.schema';
 export { storesRelations, brandPalettesRelations, themesRelations, sellerPaymentMethodsRelations, cartsRelations, ordersRelations, sellerDeliveryMethodsRelations } from './stores/store.schema';
