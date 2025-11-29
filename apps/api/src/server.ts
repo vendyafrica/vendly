@@ -8,10 +8,6 @@ import { createRoutes } from "./routes/index.js";
 const app = express();
 const PORT = process.env.PORT || 8000;
 
-// Debug: Log Google credentials
-console.log("Google Client ID:", process.env.GOOGLE_CLIENT_ID);
-console.log("Google Client Secret:", process.env.GOOGLE_CLIENT_SECRET ? "Loaded" : "Not loaded");
-
 // MIDDLEWARE
 app.use(
   cors({
@@ -31,24 +27,20 @@ app.use(
 );
 
 // === HEALTH CHECK ===
-
 app.get("/", (_req, res) => {
   res.send("API is running");
 });
 
 // === AUTH ROUTES ===
-
 app.all("/api/auth/*splat", toNodeHandler(auth));
 
 // === API ROUTES ===
-
 app.use("/api", createRoutes());
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // === ERROR HANDLING ===
-
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
   console.error("Error:", err);
   res.status(err.status || 500).json({
@@ -58,7 +50,6 @@ app.use((err: any, req: express.Request, res: express.Response, next: express.Ne
 });
 
 // === 404 HANDLER ===
-
 app.use((req, res) => {
   res.status(404).json({
     message: "Route not found",
@@ -67,8 +58,6 @@ app.use((req, res) => {
 });
 
 // === START SERVER ===
-
 app.listen(PORT, () => {
   console.log(`✓ Server running on http://localhost:${PORT}`);
-  console.log(`✓ Environment: ${process.env.NODE_ENV || "development"}`);
 });
