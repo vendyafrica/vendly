@@ -37,7 +37,7 @@ app.get("/", (_req, res) => {
 
 // === AUTH ROUTES ===
 
-app.all("/api/auth/*", toNodeHandler(auth));
+app.use("/api/auth", toNodeHandler(auth));
 
 // === API ROUTES ===
 

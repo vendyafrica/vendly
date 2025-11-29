@@ -5,13 +5,26 @@
     "moduleResolution": "bundler",
     "outDir": "./dist",
     "paths": {
-      "@vendly/auth": ["../../packages/auth/src/index.ts"],
-      "@vendly/auth/*": ["../../packages/auth/src/*"],
-      "@vendly/database": ["../../packages/database/src/index.ts"],
-      "@vendly/database/*": ["../../packages/database/src/*"]
+      "@vendly/auth": [
+        "../../../packages/auth/src/index.ts"
+      ],
+      "@vendly/auth/*": [
+        "../../../packages/auth/src/*"
+      ],
+      "@vendly/database": [
+        "../../../packages/database/src/index.ts"
+      ],
+      "@vendly/database/*": [
+        "../../../packages/database/src/*"
+      ]
     }
   },
-  "include": ["src/**/*"],
-  "exclude": ["node_modules", "dist"],
+  "include": [
+    "src/**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist"
+  ],
   "references": []
 }
