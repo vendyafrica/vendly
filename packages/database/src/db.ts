@@ -4,7 +4,7 @@ import * as dotenv from "dotenv";
 import * as path from "path";
 import * as schema from "./schema";
 
-dotenv.config({ path: path.resolve(__dirname, "../../../.env") });
+dotenv.config({ path: path.resolve(process.cwd(), "../../.env") });
 
 if (!process.env.DATABASE_URL) {
     throw new Error("DATABASE_URL environment variable is not defined");
