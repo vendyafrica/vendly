@@ -9,6 +9,7 @@ export async function createStoreWaitlist(data: NewWaitlist) {
     throw new Error("storeName is required");
   }
 
+  // First check if store already exists
   const existing = await db
     .select()
     .from(waitlist)
@@ -19,6 +20,7 @@ export async function createStoreWaitlist(data: NewWaitlist) {
     throw new Error("Store already exists in waitlist");
   }
 
+  // Insert new record
   const [created] = await db
     .insert(waitlist)
     .values({ storeName: data.storeName })

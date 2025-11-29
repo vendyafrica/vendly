@@ -1,20 +1,24 @@
-import { Waitlist } from "@vendly/database/schema/waitlist";
 import { CLIENT_CONFIG } from "@vendly/typescript-config";
 
 const API_URL = CLIENT_CONFIG.BACKEND_URL;
 
-export async function joinWaitlist(data: Waitlist): Promise<{
+interface JoinWaitlistData {
+  storeName: string;
+  email?: string;
+}
+
+export async function joinWaitlist(data: JoinWaitlistData): Promise<{
   message: string;
   data: any;
 }> {
-  const response = await fetch(`${API_URL}/api/waitlist/join-waitlist`, {
+  const response = await fetch(`${API_URL}/api/waitlist/join`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
     body: JSON.stringify(data),
   });
-  
+
   const result = await response.json();
   if (!response.ok) {
     throw new Error(result.message || result.error || "Failed to join waitlist");
