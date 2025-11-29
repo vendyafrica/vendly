@@ -8,5 +8,5 @@ export * from './waitlist';
 export * from './v0';
 export * from './activity-logs';
 export * from './ai-requests';
-export { createStoreWaitlist } from './waitlist/waitlist-query';
+// export { createStoreWaitlist } from './waitlist/waitlist-query';
 
