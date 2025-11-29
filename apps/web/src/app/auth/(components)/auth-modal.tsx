@@ -16,6 +16,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
+import { signIn } from "@/lib/auth-client";
 
 interface AuthModalProps {
   defaultMode?: 'login' | 'signup';
@@ -119,7 +120,7 @@ export function AuthModal({ defaultMode = 'signup' }: AuthModalProps) {
         </div>
 
         <div className="grid gap-4">
-          <Button variant="outline" type="button" className="cursor-pointer">
+          <Button variant="outline" type="button" className="cursor-pointer" onClick={signIn}>
             <Google className="size-5 mr-2" />
             Continue with Google
           </Button>
