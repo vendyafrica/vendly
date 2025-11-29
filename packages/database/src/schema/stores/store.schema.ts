@@ -19,7 +19,7 @@ import {
 import { sellers } from '../sellers/seller.schema';
 import { products } from '../products/product.schema';
 import { mediaAssets } from '../products/product.schema';
-import { aiRequests } from '../ai/ai.schema';
+import { aiRequests } from '../ai-requests';
 
 
 export const stores = pgTable(

@@ -1,7 +1,4 @@
-import { pgTable, text, timestamp, boolean, uuid, jsonb } from "drizzle-orm/pg-core";
-import { relations } from 'drizzle-orm';
-import { sellers } from "../sellers/seller.schema";
-import { stores } from "../stores/store.schema";
+import { pgTable, text, timestamp, boolean } from "drizzle-orm/pg-core";
 
 export const user = pgTable("user", {
   id: text("id").primaryKey(),
@@ -11,7 +8,7 @@ export const user = pgTable("user", {
   image: text("image"),
   phoneNumber: text("phone_number"),
   whatsappEnabled: boolean("whatsapp_enabled").default(false).notNull(),
-  role: text("role").default("buyer").notNull(), 
+  role: text("role").default("buyer").notNull(),
   isActive: boolean("is_active").default(true).notNull(),
   phoneVerified: boolean("phone_verified").default(false).notNull(),
   lastLogin: timestamp("last_login"),
@@ -68,20 +65,4 @@ export const verification = pgTable("verification", {
     .$onUpdate(() => /* @__PURE__ */ new Date())
     .notNull(),
 });
-
-export const activityLogs = pgTable("activity_logs", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  sellerId: uuid("seller_id").references(() => sellers.id, { onDelete: "cascade" }),
-  storeId: uuid("store_id").references(() => stores.id, { onDelete: "cascade" }),
-  action: text("action").notNull(), // 'login', 'store_created', 'product_added', etc
-  details: jsonb("details"), // Additional context
-  ipAddress: text("ip_address"),
-  userAgent: text("user_agent"),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-});
-
-export const activityLogsRelations = relations(activityLogs, ({ one }) => ({
-  seller: one(sellers, { fields: [activityLogs.sellerId], references: [sellers.id] }),
-  store: one(stores, { fields: [activityLogs.storeId], references: [stores.id] }),
-}));
 

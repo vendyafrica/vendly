@@ -1,4 +1,6 @@
-import { db, waitlist, eq } from "@/index";
+import { db } from "../../db";
+import { waitlist } from "./waitlist-schema";
+import { eq } from "drizzle-orm";
 
 type NewWaitlist = typeof waitlist.$inferInsert;
 

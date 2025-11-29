@@ -10,7 +10,7 @@ import {
 import { relations } from 'drizzle-orm';
 import { roleEnum } from '../shared/shared.schema.enums';
 import { stores } from '../stores/store.schema';
-import { activityLogs } from '../auth/auth.schema';
+import { activityLogs } from '../activity-logs';
 import { sellerPaymentMethods, sellerDeliveryMethods } from '../stores/store.schema';
 
 export const sellers = pgTable(
