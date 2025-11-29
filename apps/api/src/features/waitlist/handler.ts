@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
-import { validateWaitlistInput } from "./validator";
-import { joinWaitlistService } from "./service";
+import { validateWaitlistInput } from "./validator.js";
+import { joinWaitlistService } from "./service.js";
 
 export async function joinWaitlistHandler(req: Request, res: Response) {
     try {

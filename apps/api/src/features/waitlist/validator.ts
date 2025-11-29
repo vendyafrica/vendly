@@ -1,4 +1,4 @@
-import { CreateWaitlistInput } from "./types";
+import { CreateWaitlistInput } from "./types.js";
 
 export function validateWaitlistInput(data: any): CreateWaitlistInput {
   if (!data.storeName || typeof data.storeName !== "string") {

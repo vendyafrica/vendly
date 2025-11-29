@@ -1,5 +1,5 @@
 import { createStoreWaitlist } from "@vendly/database";
-import { CreateWaitlistInput, WaitlistResponse } from "./types";
+import { CreateWaitlistInput, WaitlistResponse } from "./types.js";
 
 export async function joinWaitlistService(
     input: CreateWaitlistInput

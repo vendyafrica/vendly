@@ -2,7 +2,7 @@
 import express from "express";
 import cors from "cors";
 import { auth, toNodeHandler } from "@vendly/auth";
-import { createRoutes } from "./routes";
+import { createRoutes } from "./routes/index.js";
 
 const app = express();
 const PORT = process.env.PORT || 8000;

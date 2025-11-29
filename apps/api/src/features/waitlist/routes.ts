@@ -1,6 +1,6 @@
 import { Router } from "express";
-import { joinWaitlistHandler } from "./handler";
+import { joinWaitlistHandler } from "./handler.js";
 
-export const waitlistRoutes : Router = Router();
+export const waitlistRoutes: Router = Router();
 
 waitlistRoutes.post("/join", joinWaitlistHandler);
