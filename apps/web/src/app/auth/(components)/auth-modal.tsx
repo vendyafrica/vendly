@@ -16,41 +16,62 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
-import { signIn } from "@/lib/auth-client";
+import { signIn, signUpWithEmail, signInWithEmail } from "@/lib/auth-client";
 
 interface AuthModalProps {
-  defaultMode?: 'login' | 'signup';
+  defaultMode?: "login" | "signup";
 }
 
-export function AuthModal({ defaultMode = 'signup' }: AuthModalProps) {
+export function AuthModal({ defaultMode = "signup" }: AuthModalProps) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
-  const [mode, setMode] = useState<'login' | 'signup'>(defaultMode);
+  const [mode, setMode] = useState<"login" | "signup">(defaultMode);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [name, setName] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   const toggleMode = () => {
-    setMode(mode === 'login' ? 'signup' : 'login');
+    setMode(mode === "login" ? "signup" : "login");
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const data = mode === 'login' ? { email, password } : { email };
-    console.log(`${mode === 'login' ? 'Logging in' : 'Signing up'} with:`, data);
-    // Add your auth logic here
+    setLoading(true);
+    setError("");
 
-    setOpen(false);
-    if (mode === 'signup') {
-      router.push('/create-store');
-    } else {
-      router.push('/');
+    try {
+      if (mode === "login") {
+        const result = await signInWithEmail(email, password);
+        if (result.data) {
+          setOpen(false);
+          router.push("/");
+        } else if (result.error) {
+          setError(result.error.message || "Login failed");
+        }
+      } else {
+        const result = await signUpWithEmail(email, password, name);
+        if (result.data) {
+          setOpen(false);
+          router.push("/create-store");
+        } else if (result.error) {
+          setError(result.error.message || "Signup failed");
+        }
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "An error occurred");
+    } finally {
+      setLoading(false);
     }
   };
 
-  const title = mode === 'login' ? 'Sign in to your account' : 'Create your free account';
-  const buttonText = mode === 'login' ? 'Sign In' : 'Create Account';
-  const footerText = mode === 'login' ? 'Create an account' : 'Already have an account?';
-  const footerLink = mode === 'login' ? 'Join vendly.' : 'Sign in';
+  const title =
+    mode === "login" ? "Sign in to your account" : "Create your free account";
+  const buttonText = mode === "login" ? "Sign In" : "Create Account";
+  const footerText =
+    mode === "login" ? "Create an account" : "Already have an account?";
+  const footerLink = mode === "login" ? "Join vendly." : "Sign in";
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -81,6 +102,24 @@ export function AuthModal({ defaultMode = 'signup' }: AuthModalProps) {
           <DialogDescription>{title}</DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
+          {error && (
+            <div className="p-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-md">
+              {error}
+            </div>
+          )}
+          {mode === "signup" && (
+            <div className="space-y-2">
+              <Label htmlFor="name">Name</Label>
+              <Input
+                id="name"
+                type="text"
+                placeholder="John Doe"
+                required
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+              />
+            </div>
+          )}
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
             <Input
@@ -92,21 +131,23 @@ export function AuthModal({ defaultMode = 'signup' }: AuthModalProps) {
               onChange={(e) => setEmail(e.target.value)}
             />
           </div>
-          {mode === 'login' && (
-            <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
-              <Input
-                id="password"
-                type="password"
-                placeholder="Enter your password"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-              />
-            </div>
-          )}
-          <Button type="submit" className="w-full cursor-pointer">
-            {buttonText}
+          <div className="space-y-2">
+            <Label htmlFor="password">Password</Label>
+            <Input
+              id="password"
+              type="password"
+              placeholder="Enter your password"
+              required
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+          </div>
+          <Button
+            type="submit"
+            className="w-full cursor-pointer"
+            disabled={loading}
+          >
+            {loading ? "Loading..." : buttonText}
           </Button>
         </form>
 
@@ -120,7 +161,12 @@ export function AuthModal({ defaultMode = 'signup' }: AuthModalProps) {
         </div>
 
         <div className="grid gap-4">
-          <Button variant="outline" type="button" className="cursor-pointer" onClick={signIn}>
+          <Button
+            variant="outline"
+            type="button"
+            className="cursor-pointer"
+            onClick={signIn}
+          >
             <Google className="size-5 mr-2" />
             Continue with Google
           </Button>

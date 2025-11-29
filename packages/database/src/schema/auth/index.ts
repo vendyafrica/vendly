@@ -1,3 +1,3 @@
-export * from "./auth.schema";
-export * from "./auth.dto";
-export * from "./auth.types";
+export * from "./schema";
+export * from "./dto";
+export * from "./types";

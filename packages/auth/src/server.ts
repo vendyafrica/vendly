@@ -1,7 +1,7 @@
 import { betterAuth } from "better-auth";
 import { genericOAuth } from "better-auth/plugins";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
-import { db, user, session, account, verification } from "@vendly/database";
+import { db } from "@vendly/database";
 import { SERVER_CONFIG } from "@vendly/typescript-config";
 
 const baseURL = SERVER_CONFIG.BETTER_AUTH_URL || "http://localhost:8000";
@@ -12,12 +12,6 @@ export const auth = betterAuth({
 
   database: drizzleAdapter(db, {
     provider: "pg",
-    schema: {
-      user,
-      session,
-      account,
-      verification,
-    },
   }),
 
   emailAndPassword: {
