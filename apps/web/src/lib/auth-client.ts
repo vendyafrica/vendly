@@ -51,3 +51,15 @@ export const changePassword = async (newPassword: string, currentPassword: strin
   });
   return data;
 };
+
+export const signInWithInstagram = async () => {
+  const data = await authClient.signIn.oauth2({
+    providerId: "instagram",
+    callbackURL: "/",
+  })
+};
+
+export const getSession = async () => {
+  const data = await authClient.getSession();
+  return data;
+};

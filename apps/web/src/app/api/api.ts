@@ -1,6 +1,6 @@
-import { CLIENT_CONFIG } from "@vendly/typescript-config";
+import { BACKEND_URL } from "../../../config";
 
-const API_URL = CLIENT_CONFIG.BACKEND_URL;
+const API_URL = BACKEND_URL;
 
 interface JoinWaitlistData {
   storeName: string;
