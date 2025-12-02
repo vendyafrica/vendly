@@ -5,7 +5,7 @@
   "type": "module",
   "main": "dist/index.js",
   "scripts": {
-    "dev": "pnpm --filter @vendly/database build && pnpm --filter @vendly/auth build && cross-env PORT=8000 nodemon --watch src --ext ts --exec tsx src/server.ts",
+    "dev": "pnpm --filter @vendly/transactional build && pnpm --filter @vendly/database build && pnpm --filter @vendly/auth build && cross-env PORT=8000 nodemon --watch src --ext ts --exec tsx src/server.ts",
     "build": "tsc -b",
     "start": "node dist/index.js",
     "test": "vitest",
@@ -15,8 +15,10 @@
   },
   "dependencies": {
     "@clerk/express": "^1.7.33",
+    "@react-email/render": "^2.0.0",
     "@vendly/auth": "workspace:*",
     "@vendly/database": "workspace:*",
+    "@vendly/transactional": "workspace:*",
     "@vendly/typescript-config": "workspace:*",
     "axios": "^1.12.2",
     "bcryptjs": "^2.4.3",
@@ -26,6 +28,7 @@
     "express": "^5.1.0",
     "helmet": "^7.1.0",
     "morgan": "^1.10.0",
+    "resend": "^6.5.2",
     "v0-sdk": "^0.15.1",
     "zod": "^3.22.4"
   },

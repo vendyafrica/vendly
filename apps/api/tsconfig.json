@@ -4,6 +4,7 @@
     "module": "ES2020",
     "moduleResolution": "bundler",
     "outDir": "./dist",
+    "jsx": "react-jsx",
     "paths": {
       "@vendly/auth": [
         "../../../packages/auth/src/index.ts"

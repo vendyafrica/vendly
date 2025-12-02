@@ -1,7 +1,8 @@
 import "dotenv/config";
 import express from "express";
 import cors from "cors";
-import { auth, toNodeHandler } from "@vendly/auth";
+import { auth} from "./lib/auth";
+import { toNodeHandler } from "better-auth/node";
 import { createRoutes } from "./routes/index";
 import { Response, Request, NextFunction } from "express";
 

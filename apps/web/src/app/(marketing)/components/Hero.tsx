@@ -4,7 +4,6 @@ import { Button } from "@vendly/ui/components/button";
 import { Input } from "@vendly/ui/components/input";
 import { useState, useEffect } from "react";
 import { joinWaitlist } from "@/app/api/api";
-import { signInWithInstagram, getSession } from "@/lib/auth-client";
 
 export default function HeroSection({ id }: { id?: string }) {
   const [storeName, setStoreName] = useState("");
@@ -12,53 +11,10 @@ export default function HeroSection({ id }: { id?: string }) {
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    const checkAndJoinWaitlist = async () => {
-      const storedStoreName = localStorage.getItem("pendingWaitlistStoreName");
-      if (storedStoreName) {
-        try {
-          const session = await getSession();
-          if (session?.data?.user) {
-            await joinWaitlist({
-              storeName: storedStoreName,
-            });
-            localStorage.removeItem("pendingWaitlistStoreName");
-            setSubmitted(true);
-            setTimeout(() => setSubmitted(false), 3000);
-          }
-        } catch (err) {
-          console.error("Auto join waitlist error:", err);
-          localStorage.removeItem("pendingWaitlistStoreName");
-        }
-      }
-    };
-    checkAndJoinWaitlist();
-  }, []);
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!storeName.trim()) return;
-
     setLoading(true);
     setError(null);
-
-    try {
-      // Store storeName for after auth
-      localStorage.setItem("pendingWaitlistStoreName", storeName.trim());
-
-      // Trigger Instagram OAuth
-      await signInWithInstagram();
-
-      // Note: This won't execute due to redirect, but set loading to false just in case
-      setLoading(false);
-    } catch (err: any) {
-      console.error("OAuth error:", err);
-      setError(
-        err.message || "Failed to start authentication. Please try again."
-      );
-      localStorage.removeItem("pendingWaitlistStoreName");
-      setLoading(false);
-    }
   };
 
   return (

@@ -16,7 +16,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
-import { signIn, signUpWithEmail, signInWithEmail } from "@/lib/auth-client";
+import { authClient } from "@vendly/auth/client";
 
 interface AuthModalProps {
   defaultMode?: "login" | "signup";
@@ -43,24 +43,47 @@ export function AuthModal({ defaultMode = "signup" }: AuthModalProps) {
 
     try {
       if (mode === "login") {
-        const result = await signInWithEmail(email, password);
-        if (result.data) {
+        const { data, error } = await authClient.signIn.email({
+          email,
+          password,
+          callbackURL: "/",
+        });
+
+        if (error) return setError(error.message || "An error occurred");
+        if (data) {
           setOpen(false);
           router.push("/");
-        } else if (result.error) {
-          setError(result.error.message || "Login failed");
         }
       } else {
-        const result = await signUpWithEmail(email, password, name);
-        if (result.data) {
+        const { data, error } = await authClient.signUp.email({
+          email,
+          password,
+          name: name || "",
+          callbackURL: "/create-store",
+        });
+
+        if (error) return setError(error.message || "An error occurred");
+        if (data) {
           setOpen(false);
           router.push("/create-store");
-        } else if (result.error) {
-          setError(result.error.message || "Signup failed");
         }
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "An error occurred");
+      setError(err instanceof Error ? (err.message || "Something went wrong") : "Something went wrong");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGoogle = async () => {
+    try {
+      setLoading(true);
+      await authClient.signIn.social({
+        provider: "google",
+        callbackURL: "/",
+      });
+    } catch (err) {
+      setError("Google sign-in failed");
     } finally {
       setLoading(false);
     }
@@ -101,12 +124,14 @@ export function AuthModal({ defaultMode = "signup" }: AuthModalProps) {
           </DialogTitle>
           <DialogDescription>{title}</DialogDescription>
         </DialogHeader>
+
         <form onSubmit={handleSubmit} className="space-y-4">
           {error && (
             <div className="p-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-md">
               {error}
             </div>
           )}
+
           {mode === "signup" && (
             <div className="space-y-2">
               <Label htmlFor="name">Name</Label>
@@ -120,6 +145,7 @@ export function AuthModal({ defaultMode = "signup" }: AuthModalProps) {
               />
             </div>
           )}
+
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
             <Input
@@ -131,6 +157,7 @@ export function AuthModal({ defaultMode = "signup" }: AuthModalProps) {
               onChange={(e) => setEmail(e.target.value)}
             />
           </div>
+
           <div className="space-y-2">
             <Label htmlFor="password">Password</Label>
             <Input
@@ -142,6 +169,7 @@ export function AuthModal({ defaultMode = "signup" }: AuthModalProps) {
               onChange={(e) => setPassword(e.target.value)}
             />
           </div>
+
           <Button
             type="submit"
             className="w-full cursor-pointer"
@@ -165,12 +193,13 @@ export function AuthModal({ defaultMode = "signup" }: AuthModalProps) {
             variant="outline"
             type="button"
             className="cursor-pointer"
-            onClick={signIn}
+            onClick={handleGoogle}
           >
             <Google className="size-5 mr-2" />
             Continue with Google
           </Button>
         </div>
+
         <DialogDescription>
           {footerText}{" "}
           <button
@@ -181,6 +210,7 @@ export function AuthModal({ defaultMode = "signup" }: AuthModalProps) {
             {footerLink}
           </button>
         </DialogDescription>
+
         <p className="px-6 text-center text-xs text-muted-foreground">
           By clicking continue, you agree to our{" "}
           <a href="#" className="underline hover:text-primary">

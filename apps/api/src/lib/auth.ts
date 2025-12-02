@@ -2,6 +2,10 @@ import { betterAuth } from "better-auth";
 import { genericOAuth } from "better-auth/plugins";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { db } from "@vendly/database";
+import { sendEmail } from './email';
+import { render } from '@react-email/render';
+import  VerificationEmail  from '@vendly/transactional/emails/verification-email';
+
 
 const baseURL = process.env.BETTER_AUTH_URL || process.env.BACKEND_URL_PROD || "http://localhost:8000";
 
@@ -15,7 +19,18 @@ export const auth = betterAuth({
 
   emailAndPassword: {
     enabled: true,
-    requireEmailVerification: false,
+    requireEmailVerification: true,
+  },
+ emailVerification: {
+    sendOnSignUp: true,
+    sendVerificationEmail: async ({ user, url, token }, request) => {
+      const html = await render(VerificationEmail({ url, userName: user.name }));
+      void sendEmail({
+        to: user.email,
+        subject: 'Verify your email for Vendly',
+        html
+      })
+    }
   },
 
   trustedOrigins: [
