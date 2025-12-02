@@ -1,14 +1,13 @@
-// apps/api/src/server.ts
 import "dotenv/config";
 import express from "express";
 import cors from "cors";
 import { auth, toNodeHandler } from "@vendly/auth";
-import { createRoutes } from "./routes/index.js";
+import { createRoutes } from "./routes/index";
+import { Response, Request, NextFunction } from "express";
 
 const app = express();
 const PORT = process.env.PORT || 8000;
 
-// MIDDLEWARE
 app.use(
   cors({
     origin: [
@@ -26,22 +25,17 @@ app.use(
   })
 );
 
-// === HEALTH CHECK ===
 app.get("/", (_req, res) => {
   res.send("API is running");
 });
 
-// === AUTH ROUTES ===
 app.all("/api/auth/*splat", toNodeHandler(auth));
-
-// === API ROUTES ===
 app.use("/api", createRoutes());
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// === ERROR HANDLING ===
-app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
+app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
   console.error("Error:", err);
   res.status(err.status || 500).json({
     message: err.message || "Internal server error",
@@ -49,15 +43,13 @@ app.use((err: any, req: express.Request, res: express.Response, next: express.Ne
   });
 });
 
-// === 404 HANDLER ===
-app.use((req, res) => {
+app.use((_req, res) => {
   res.status(404).json({
     message: "Route not found",
     error: true,
   });
 });
 
-// === START SERVER ===
 app.listen(PORT, () => {
   console.log(`✓ Server running on http://localhost:${PORT}`);
 });

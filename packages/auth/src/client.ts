@@ -6,7 +6,7 @@ type AuthClientOptions = Omit<ClientOptions, "plugins"> & {
 };
 
 const _authClient: ReturnType<typeof createAuthClient<AuthClientOptions>> = createAuthClient<AuthClientOptions>({
-  baseURL: process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000",
+  baseURL: process.env.BACKEND_URL || "http://localhost:8000",
   basePath: "/api/auth",
   plugins: [genericOAuthClient()],
 });
