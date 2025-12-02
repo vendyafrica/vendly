@@ -2,7 +2,7 @@
 "use client";
 
 import { useSteps } from "./(components)/step-context";
-import { PersonalDetailsForm } from "./(components)/personal-details";
+import { PersonalDetailsForm } from "./(components)/store-connect";
 import { CreateStoreForm } from "./(components)/create-store";
 import { PaymentSetupForm } from "./(components)/payment-setup";
 import { DeliveryDetails } from "./(components)/delivery-details";

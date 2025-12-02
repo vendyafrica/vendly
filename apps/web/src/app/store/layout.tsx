@@ -5,7 +5,6 @@ import { ReactNode } from "react";
 import { StepProvider, useSteps } from "./(components)/step-context";
 import { Stepper } from "./(components)/stepper";
 
-// --- StepperSidebar component (No Change) ---
 function StepperSidebar() {
   const { currentStep, goToStep } = useSteps();
 
@@ -23,7 +22,7 @@ function StepperSidebar() {
   );
 }
 
-// --- MobileTimeline component (No Change) ---
+
 import { MobileStepper } from "./(components)/mobile-stepper";
 
 function MobileTimeline() {
@@ -48,8 +47,6 @@ export default function CreateStoreLayout({ children }: { children: ReactNode })
   return (
     <StepProvider>
       <div className="h-screen bg-background dark:bg-background overflow-hidden flex flex-col">
-
-        {/* --- Mobile Layout (Centered) --- */}
         <div className="flex md:hidden flex-col h-screen">
           <div className="flex-1 flex flex-col items-center justify-center px-6">
             <div className="w-full max-w-lg">
@@ -60,20 +57,13 @@ export default function CreateStoreLayout({ children }: { children: ReactNode })
             </div>
           </div>
         </div>
-
-        {/* --- Desktop Layout (CHANGED) --- */}
         <div className="hidden md:flex h-screen">
           <main className="flex-1 p-6">
             <div className="grid grid-cols-5 gap-8 h-full max-w-6xl mx-auto">
-              {/* Left Column - Stepper */}
               <div className="col-span-1 h-full flex items-center justify-center">
                 <StepperSidebar />
               </div>
-
-              {/* Right Column - Form */}
-              {/* --- 1. REMOVED overflow-y-auto --- */}
               <div className="col-span-3 col-start-2 h-full flex items-center justify-center">
-                {/* --- 2. REMOVED py-12 --- */}
                 <div className="w-full max-w-lg">
                   {children}
                 </div>

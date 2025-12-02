@@ -13,9 +13,6 @@ import {
 import { Input } from "@vendly/ui/components/input"
 import Link from "next/link"
 import Image from "next/image"
-import { ButtonGroup, ButtonGroupText } from "@vendly/ui/components/button-group"
-import { InputGroup, InputGroupInput } from "@vendly/ui/components/input-group"
-import { Label } from "@vendly/ui/components/label"
 import { useRouter } from "next/navigation"
 import { useSteps } from "./step-context"
 
@@ -37,21 +34,9 @@ export function CreateStoreForm({
   
   const [error, setError] = useState<string | null>(null)
 
-  const createSlug = (text: string) => {
-    return text.toLowerCase().replace(/\s+/g, "-")
-  }
-
-  // --- UPDATED HANDLESUBMIT ---
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     setError(null)
-
-    // Validation
-    // --- REMOVED storeName check ---
-    if (!formData.slug) {
-      setError("Please enter a store name.") // Error message is fine
-      return
-    }
     if (!formData.pickupCounty) {
       setError("Please enter your store's location.") // Simplified message
       return
@@ -60,23 +45,8 @@ export function CreateStoreForm({
       setError("Please enter your store's building or area.")
       return
     }
-
     onNext?.()
   }
-  
-  // --- REMOVED handleStoreNameChange ---
-  // This is no longer needed as there is no separate storeName input
-  
-  const handleSlugChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    // Also update slug here, but we can also update storeName
-    // to be the same value just in case we need it.
-    const newSlug = createSlug(e.target.value);
-    setFormData({ 
-      slug: newSlug,
-      storeName: e.target.value // Keep storeName in sync with the slug input
-    });
-  };
-
 
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
@@ -115,28 +85,7 @@ export function CreateStoreForm({
           <h1 className="!text-lg !font-semibold text-muted-foreground">
             Tell us about your store
           </h1>
-          <Field>
-            {/* This is your new "Store Name" field which is actually the slug */}
-            <FieldLabel htmlFor="slug">Store Name</FieldLabel>
-            <ButtonGroup>
-              <InputGroup>
-                <InputGroupInput
-                  id="slug"
-                  placeholder="zara-store"
-                  // Use formData.storeName so the user sees the non-slugified text
-                  value={formData.storeName || ""} 
-                  onChange={handleSlugChange}
-                />
-              </InputGroup>
-              <ButtonGroupText asChild>
-                <Label htmlFor="slug">.vendly.africa</Label>
-              </ButtonGroupText>
-            </ButtonGroup>
-            <FieldDescription>
-              {/* Show the resulting slug as a preview */}
-              Your unique store URL will be: {formData.slug ? <span className="text-primary cursor-pointer underline">{formData.slug}.vendly.africa</span> : "..."}
-            </FieldDescription>
-          </Field>
+         
           
           {/* ----- NEW LOCATION FIELDS ----- */}
           <Field>
