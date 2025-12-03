@@ -2,10 +2,11 @@
   "name": "@vendly/transactional",
   "version": "1.0.0",
   "private": true,
+  "type": "module", 
   "main": "index.ts",
-  "workspaces": [
-    "." 
-  ],
+  "exports": {
+    ".": "./index.ts"
+  },
   "scripts": {
     "dev": "email dev -p 3001",
     "export": "email export"
@@ -15,7 +16,7 @@
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-email": "^5.0.5",
-     "resend": "^6.5.2"
+    "resend": "^6.5.2"
   },
   "devDependencies": {
     "@types/react": "^18.2.43",
