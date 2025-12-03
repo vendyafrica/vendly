@@ -6,35 +6,32 @@ import {
   Html,
   Preview,
   Text,
-} from "@react-email/components";
-import * as React from "react";
+  Button,
+} from '@react-email/components';
+import * as React from 'react';
 
 interface VerificationEmailProps {
-  name?: string;
-  url?: string;
+  name: string;
+  url: string; // [!code ++]
 }
 
 export const VerificationEmail: React.FC<Readonly<VerificationEmailProps>> = ({
   name,
-  url,
+  url, // [!code ++]
 }) => (
   <Html>
     <Head />
-    <Preview>Thank you for joining vendly</Preview>
     <Body style={main}>
+      <Preview>Verify your email address</Preview>
       <Container style={container}>
-        <Heading style={h1}>Welcome</Heading>
+        <Heading style={h1}>Welcome to Vendly</Heading>
         <Text style={text}>
-          Thank you {name ?? "there"} for joining vendly. We are committed to
-          providing you with the best experience possible when selling online.
-          Please verify your email to get started.
+          Hi {name}, please verify your email address by clicking the button below.
         </Text>
-
-        {url ? (
-          <Text style={text}>
-            Verify here: <a href={url}>{url}</a>
-          </Text>
-        ) : null}
+        {/* [!code ++] Add the button component */}
+        <Button href={url} style={button}> 
+          Verify Email
+        </Button>
       </Container>
     </Body>
   </Html>
@@ -42,29 +39,20 @@ export const VerificationEmail: React.FC<Readonly<VerificationEmailProps>> = ({
 
 export default VerificationEmail;
 
+// Styles
 const main = {
-  backgroundColor: "#000000",
-  margin: "0 auto",
-  fontFamily:
-    "-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif",
+  backgroundColor: '#000000',
+  fontFamily: "system-ui, sans-serif",
 };
-
-const container = {
-  margin: "auto",
-  padding: "96px 20px 64px",
-};
-
-const h1 = {
-  color: "#ffffff",
-  fontSize: "24px",
-  fontWeight: "600",
-  lineHeight: "40px",
-  margin: "0 0 20px",
-};
-
-const text = {
-  color: "#aaaaaa",
-  fontSize: "14px",
-  lineHeight: "24px",
-  margin: "0 0 40px",
+const container = { margin: 'auto', padding: '40px 20px' };
+const h1 = { color: '#ffffff', fontSize: '24px', fontWeight: '600' };
+const text = { color: '#aaaaaa', fontSize: '14px', marginBottom: '24px' };
+const button = { // [!code ++]
+  backgroundColor: '#ffffff',
+  color: '#000000',
+  padding: '12px 20px',
+  borderRadius: '4px',
+  fontSize: '14px',
+  fontWeight: 'bold',
+  textDecoration: 'none',
 };
