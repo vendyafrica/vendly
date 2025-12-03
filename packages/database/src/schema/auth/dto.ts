@@ -1,4 +1,3 @@
-import { UserRole } from "../shared/shared.enums";
 
 export interface RegisterRequest {
   email: string;
@@ -20,7 +19,7 @@ export interface AuthUser {
   emailVerified: boolean;
   profileImage?: string;
   phoneNumber?: string;
-  role: UserRole;
+  role: string;
   whatsappEnabled: boolean;
   isActive: boolean;
   createdAt: Date;
