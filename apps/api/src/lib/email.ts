@@ -1,19 +1,32 @@
-import { Resend } from 'resend';
+// src/lib/sendEmail.ts
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+import { resend } from "./resend";
+import  VerificationEmail  from "@vendly/transactional/emails/verification";
 
-export async function sendEmail({ to, subject, html }: { to: string; subject: string; html: string }) {
-    const { data, error } = await resend.emails.send({
-        from: 'Vendly <noreply@vendlyafrica.store>',
-        to: [to],
-        subject,
-        html,
+interface EmailArgs {
+  to: string;
+  subject: string;
+  verificationUrl: string;
+  name?: string;
+}
+
+export default async function sendEmail({
+  to,
+  subject,
+  verificationUrl,
+  name,
+}: EmailArgs) {
+  try {
+    const data = await resend.emails.send({
+      from: "Vendly <noreply@vendly.dev>",
+      to: [to],
+      subject,
+      react: VerificationEmail({ url: verificationUrl, name }),
     });
 
-    if (error) {
-        console.error('Error sending email:', error);
-        throw error;
-    }
-
     return data;
+  } catch (error) {
+    console.error("Email send failed:", error);
+    throw error;
+  }
 }
