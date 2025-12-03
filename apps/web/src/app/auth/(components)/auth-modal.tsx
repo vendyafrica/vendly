@@ -49,7 +49,11 @@ export function AuthModal({ defaultMode = "signup" }: AuthModalProps) {
           callbackURL: "/",
         });
 
-        if (error) return setError(error.message || "An error occurred");
+        if (error) {
+          console.log("Login error:", error);
+          console.log("Error message:", error.message);
+          return setError((error.message || "An error occurred") as string);
+        }
         if (data) {
           setOpen(false);
           router.push("/");
@@ -59,17 +63,29 @@ export function AuthModal({ defaultMode = "signup" }: AuthModalProps) {
           email,
           password,
           name: name || "",
-          callbackURL: "/create-store",
+          callbackURL: "/store",
         });
 
-        if (error) return setError(error.message || "An error occurred");
+        if (error) {
+          console.log("Signup error:", error);
+          console.log("Error message:", error.message);
+          return setError(error.message || "An error occurred");
+        }
         if (data) {
           setOpen(false);
-          router.push("/create-store");
+          router.push("/store");
         }
       }
     } catch (err) {
-      setError(err instanceof Error ? (err.message || "Something went wrong") : "Something went wrong");
+      console.log("Catch error:", err);
+      if (err instanceof Error) {
+        console.log("Error message:", err.message);
+      }
+      setError(
+        err instanceof Error
+          ? err.message || "Something went wrong"
+          : "Something went wrong"
+      );
     } finally {
       setLoading(false);
     }
@@ -80,7 +96,7 @@ export function AuthModal({ defaultMode = "signup" }: AuthModalProps) {
       setLoading(true);
       await authClient.signIn.social({
         provider: "google",
-        callbackURL: "/",
+        callbackURL: "/store",
       });
     } catch (err) {
       setError("Google sign-in failed");

@@ -4,7 +4,7 @@ import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { db } from "@vendly/database";
 import { sendEmail } from './email';
 import { render } from '@react-email/render';
-import  VerificationEmail  from '@vendly/transactional/emails/verification-email';
+import VerificationEmail from '@vendly/transactional/emails/verification-email';
 
 
 const baseURL = process.env.BETTER_AUTH_URL || process.env.BACKEND_URL_PROD || "http://localhost:8000";
@@ -19,17 +19,25 @@ export const auth = betterAuth({
 
   emailAndPassword: {
     enabled: true,
-    requireEmailVerification: true,
+    requireEmailVerification: false,
   },
- emailVerification: {
+  emailVerification: {
     sendOnSignUp: true,
     sendVerificationEmail: async ({ user, url, token }, request) => {
-      const html = await render(VerificationEmail({ url, userName: user.name }));
-      void sendEmail({
-        to: user.email,
-        subject: 'Verify your email for Vendly',
-        html
-      })
+      console.log('Starting email verification send for user:', user.email);
+      try {
+        const html = await render(VerificationEmail({ url, userName: user.name }));
+        console.log('Email template rendered successfully for:', user.email);
+        await sendEmail({
+          to: user.email,
+          subject: 'Verify your email for Vendly',
+          html
+        });
+        console.log('Email sent successfully to:', user.email);
+      } catch (error) {
+        console.error('Failed to send verification email to:', user.email, error);
+        // Don't throw - allow signup to succeed even if email fails
+      }
     }
   },
 
