@@ -6,7 +6,7 @@
   "main": "dist/server.js",
   "scripts": {
     "dev": "pnpm --filter @vendly/transactional build && pnpm --filter @vendly/database build && pnpm --filter @vendly/auth build && cross-env PORT=8000 nodemon --watch src --ext ts --exec tsx src/server.ts",
-    "build": "tsc -b",
+    "build": "pnpm --filter @vendly/transactional build && pnpm --filter @vendly/database build && pnpm --filter @vendly/auth build && tsc -b",
     "start": "node dist/server.js",
     "test": "vitest",
     "lint": "eslint src/**/*.{ts,js}",
