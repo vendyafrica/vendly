@@ -2,7 +2,7 @@ import { betterAuth } from "better-auth";
 import { genericOAuth } from "better-auth/plugins";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { db } from "@vendly/database";
-import sendEmail from './email';
+import sendEmail from './email.js';
 
 const baseURL = process.env.BETTER_AUTH_URL || process.env.BACKEND_URL_PROD || "http://localhost:8000";
 

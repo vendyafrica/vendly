@@ -1,5 +1,5 @@
-import { resend } from './resend';
-import { renderVerificationEmail } from '@vendly/transactional'; 
+import { resend } from './resend.js';
+import { renderVerificationEmail } from '@vendly/transactional';
 
 interface SendVerificationProps {
   to: string;
@@ -9,12 +9,12 @@ interface SendVerificationProps {
 }
 
 const sendEmail = async ({ to, subject, verificationUrl, name }: SendVerificationProps) => {
-  const emailHtml = await renderVerificationEmail({ 
-    name, 
-    url: verificationUrl 
+  const emailHtml = await renderVerificationEmail({
+    name,
+    url: verificationUrl
   });
 
- 
+
   const data = await resend.emails.send({
     from: 'onboarding@vendlyafrica.store',
     to,
