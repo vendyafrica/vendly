@@ -8,6 +8,13 @@
       "when": 1764391526550,
       "tag": "0000_spotty_marauders",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1764738341250,
+      "tag": "0001_giant_sersi",
+      "breakpoints": true
     }
   ]
 }

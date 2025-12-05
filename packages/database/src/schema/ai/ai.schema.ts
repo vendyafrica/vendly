@@ -1,1 +1,0 @@
-// AI schema is now empty, but keeping the file for future AI-related tables

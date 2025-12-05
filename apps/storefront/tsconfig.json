@@ -11,7 +11,6 @@
     "noEmit": true,
     "module": "esnext",
     "moduleResolution": "bundler",
-    "jsx": "preserve",
     "incremental": true,
     "plugins": [
       {
@@ -35,7 +34,8 @@
         "../../packages/database/src/*"
       ]
     },
-    "isolatedModules": true
+    "isolatedModules": true,
+    "jsx": "preserve"
   },
   "include": [
     "next-env.d.ts",

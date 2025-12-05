@@ -2,7 +2,7 @@
 
 import { Button } from "@vendly/ui/components/button";
 import { Input } from "@vendly/ui/components/input";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { joinWaitlist } from "@/app/api/api";
 
 export default function HeroSection({ id }: { id?: string }) {
@@ -13,24 +13,8 @@ export default function HeroSection({ id }: { id?: string }) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!storeName.trim()) return;
-
     setLoading(true);
     setError(null);
-
-    try {
-      await joinWaitlist({
-        storeName: storeName.trim(),
-      });
-      setSubmitted(true);
-      setStoreName("");
-      setTimeout(() => setSubmitted(false), 3000);
-    } catch (err: any) {
-      console.error("Waitlist error:", err);
-      setError(err.message || "Failed to join waitlist. Please try again.");
-    } finally {
-      setLoading(false);
-    }
   };
 
   return (
@@ -62,7 +46,11 @@ export default function HeroSection({ id }: { id?: string }) {
               required
               disabled={loading || submitted}
             />
-            <Button type="submit" disabled={loading || submitted} className="cursor-pointer">
+            <Button
+              type="submit"
+              disabled={loading || submitted}
+              className="cursor-pointer"
+            >
               {loading ? "Joining..." : submitted ? "Joined" : "Join Waitlist"}
             </Button>
           </div>

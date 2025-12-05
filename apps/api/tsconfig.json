@@ -4,6 +4,7 @@
     "module": "nodenext",
     "moduleResolution": "nodenext",
     "outDir": "./dist",
+    "jsx": "react-jsx",
     "paths": {
       "@vendly/auth": [
         "../../../packages/auth/src/index.ts"

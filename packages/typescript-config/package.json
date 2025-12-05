@@ -21,9 +21,9 @@
   "scripts": {
     "clean": "rimraf dist tsconfig.tsbuildinfo",
     "build": "tsc -b"
-  },  
+  },
   "devDependencies": {
     "rimraf": "^6.0.1",
-    "typescript": "^5.0.0"
+    "typescript": "^5.9.3"
   }
 }

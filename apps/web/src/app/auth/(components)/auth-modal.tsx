@@ -16,40 +16,101 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
+import { authClient } from "@vendly/auth/client";
 
 interface AuthModalProps {
-  defaultMode?: 'login' | 'signup';
+  defaultMode?: "login" | "signup";
 }
 
-export function AuthModal({ defaultMode = 'signup' }: AuthModalProps) {
+export function AuthModal({ defaultMode = "signup" }: AuthModalProps) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
-  const [mode, setMode] = useState<'login' | 'signup'>(defaultMode);
+  const [mode, setMode] = useState<"login" | "signup">(defaultMode);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [name, setName] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   const toggleMode = () => {
-    setMode(mode === 'login' ? 'signup' : 'login');
+    setMode(mode === "login" ? "signup" : "login");
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const data = mode === 'login' ? { email, password } : { email };
-    console.log(`${mode === 'login' ? 'Logging in' : 'Signing up'} with:`, data);
-    // Add your auth logic here
+    setLoading(true);
+    setError("");
 
-    setOpen(false);
-    if (mode === 'signup') {
-      router.push('/create-store');
-    } else {
-      router.push('/');
+    try {
+      if (mode === "login") {
+        const { data, error } = await authClient.signIn.email({
+          email,
+          password,
+          callbackURL: "/",
+        });
+
+        if (error) {
+          console.log("Login error:", error);
+          console.log("Error message:", error.message);
+          return setError((error.message || "An error occurred") as string);
+        }
+        if (data) {
+          setOpen(false);
+          router.push("/");
+        }
+      } else {
+        const { data, error } = await authClient.signUp.email({
+          email,
+          password,
+          name: name || "",
+          callbackURL: "/store",
+        });
+
+        if (error) {
+          console.log("Signup error:", error);
+          console.log("Error message:", error.message);
+          return setError(error.message || "An error occurred");
+        }
+        if (data) {
+          setOpen(false);
+          router.push("/store");
+        }
+      }
+    } catch (err) {
+      console.log("Catch error:", err);
+      if (err instanceof Error) {
+        console.log("Error message:", err.message);
+      }
+      setError(
+        err instanceof Error
+          ? err.message || "Something went wrong"
+          : "Something went wrong"
+      );
+    } finally {
+      setLoading(false);
     }
   };
 
-  const title = mode === 'login' ? 'Sign in to your account' : 'Create your free account';
-  const buttonText = mode === 'login' ? 'Sign In' : 'Create Account';
-  const footerText = mode === 'login' ? 'Create an account' : 'Already have an account?';
-  const footerLink = mode === 'login' ? 'Join vendly.' : 'Sign in';
+  const handleGoogle = async () => {
+    try {
+      setLoading(true);
+      await authClient.signIn.social({
+        provider: "google",
+        callbackURL: "/store",
+      });
+    } catch (err) {
+      setError("Google sign-in failed");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const title =
+    mode === "login" ? "Sign in to your account" : "Create your free account";
+  const buttonText = mode === "login" ? "Sign In" : "Create Account";
+  const footerText =
+    mode === "login" ? "Create an account" : "Already have an account?";
+  const footerLink = mode === "login" ? "Join vendly." : "Sign in";
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -79,7 +140,28 @@ export function AuthModal({ defaultMode = 'signup' }: AuthModalProps) {
           </DialogTitle>
           <DialogDescription>{title}</DialogDescription>
         </DialogHeader>
+
         <form onSubmit={handleSubmit} className="space-y-4">
+          {error && (
+            <div className="p-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-md">
+              {error}
+            </div>
+          )}
+
+          {mode === "signup" && (
+            <div className="space-y-2">
+              <Label htmlFor="name">Name</Label>
+              <Input
+                id="name"
+                type="text"
+                placeholder="John Doe"
+                required
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+              />
+            </div>
+          )}
+
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
             <Input
@@ -91,21 +173,25 @@ export function AuthModal({ defaultMode = 'signup' }: AuthModalProps) {
               onChange={(e) => setEmail(e.target.value)}
             />
           </div>
-          {mode === 'login' && (
-            <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
-              <Input
-                id="password"
-                type="password"
-                placeholder="Enter your password"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-              />
-            </div>
-          )}
-          <Button type="submit" className="w-full cursor-pointer">
-            {buttonText}
+
+          <div className="space-y-2">
+            <Label htmlFor="password">Password</Label>
+            <Input
+              id="password"
+              type="password"
+              placeholder="Enter your password"
+              required
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+          </div>
+
+          <Button
+            type="submit"
+            className="w-full cursor-pointer"
+            disabled={loading}
+          >
+            {loading ? "Loading..." : buttonText}
           </Button>
         </form>
 
@@ -119,11 +205,17 @@ export function AuthModal({ defaultMode = 'signup' }: AuthModalProps) {
         </div>
 
         <div className="grid gap-4">
-          <Button variant="outline" type="button" className="cursor-pointer">
+          <Button
+            variant="outline"
+            type="button"
+            className="cursor-pointer"
+            onClick={handleGoogle}
+          >
             <Google className="size-5 mr-2" />
             Continue with Google
           </Button>
         </div>
+
         <DialogDescription>
           {footerText}{" "}
           <button
@@ -134,6 +226,7 @@ export function AuthModal({ defaultMode = 'signup' }: AuthModalProps) {
             {footerLink}
           </button>
         </DialogDescription>
+
         <p className="px-6 text-center text-xs text-muted-foreground">
           By clicking continue, you agree to our{" "}
           <a href="#" className="underline hover:text-primary">
