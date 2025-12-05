@@ -12,12 +12,12 @@ import * as React from 'react';
 
 interface VerificationEmailProps {
   name: string;
-  url: string; // [!code ++]
+  url: string;
 }
 
 export const VerificationEmail: React.FC<Readonly<VerificationEmailProps>> = ({
   name,
-  url, // [!code ++]
+  url,
 }) => (
   <Html>
     <Head />

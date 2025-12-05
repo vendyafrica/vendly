@@ -16,19 +16,19 @@
     "@vendly/auth": "workspace:*",
     "@vendly/database": "workspace:*",
     "next": "15.5.4",
-    "react": "19.1.0",
-    "react-dom": "19.1.0"
+    "react": "^19.1.1",
+    "react-dom": "^19.1.1"
   },
   "devDependencies": {
-    "@types/node": "^20",
+    "@types/node": "^20.19.9",
     "@vendly/typescript-config": "workspace:*",
-    "@types/react": "^19",
-    "@types/react-dom": "^19",
+    "@types/react": "^19.1.9",
+    "@types/react-dom": "^19.1.7",
     "@tailwindcss/postcss": "^4",
     "tailwindcss": "^4",
     "eslint": "^9",
     "eslint-config-next": "15.5.4",
     "@eslint/eslintrc": "^3.3.1",
-    "typescript": "^5"
+    "typescript": "^5.9.3"
   }
 }
