@@ -3,10 +3,10 @@
 > Transform social commerce: Turn Instagram/WhatsApp stores into real online businesses with AI-powered cataloging, payments, and delivery.
 
 ## Prerequisites
+
 - Git
 - Node.js 18+ installed
-- pnpm 10+ installed
-
+- pnpm 10.7.0+ installed
 
 ## 🚀 Quick Start
 
@@ -21,7 +21,8 @@ pnpm run dev
 
 # Access applications
 # 🏪 Seller Dashboard: http://localhost:3000
-# 🛒 Marketplace: http://localhost:4000  
+# 🏪 Admin Dashboard: http://localhost:5000
+# 🛒 Storefront: http://localhost:4000
 # 🔗 API Server: http://localhost:8000
 ```
 
@@ -30,84 +31,83 @@ pnpm run dev
 ```
 vendly-monorepo/
 ├── apps/                    # Main applications
-│   ├── web/                 # Seller dashboard & storefronts (Next.js)
-│   ├── marketplace/         # Buyer marketplace (Next.js)
+│   ├── web/                 # Seller dashboard & marketing site (Next.js)
+│   ├── admin/               # Admin dashboard (Next.js)
+│   ├── storefront/          # Buyer storefront (Next.js)
 │   └── api/                 # Backend API server (Express.js)
 │
 ├── packages/                # Shared libraries
-│   ├── ui/                  # React component library
-│   ├── types/               # TypeScript definitions
-│   ├── ai-catalog/          # AI product extraction
-│   ├── payments/            # M-Pesa & banking integrations
-│   ├── delivery/            # Courier API integrations
-│   ├── auth/                # Authentication utilities
-│   ├── database/            # drizzle schema & DB utilities
-│   └── utils/               # Shared helper functions
+│   ├── ai-engine/           # AI-powered product extraction
+│   ├── auth/                # Authentication utilities (Better Auth + Supabase)
+│   ├── database/            # Drizzle schema & DB utilities (Neon PostgreSQL)
+│   └── ui/                  # React component library
 │
-├── services/                # Microservices
-│   ├── image-processor/     # AI image analysis service
-│   ├── notifications/       # Real-time notification service
-│   └── analytics/           # Analytics & tracking service
-│
-├── libs/                    # External integrations
-│   ├── instagram/           # Instagram API client
-│   ├── whatsapp/           # WhatsApp Business API
-│   └── social-scraper/      # Generic social media scraping
-│
-├── tools/                   # Development tools & scripts
 ├── docs/                    # Documentation
-└── docker/                  # Container configurations
+└── docker-compose.yml       # Container configurations
 ```
 
 ## 🛠️ Tech Stack
 
-- **Frontend**: Next.js 14, React, TypeScript, Tailwind CSS
+- **Frontend**: Next.js 15, React 19, TypeScript, Tailwind CSS
 - **Backend**: Node.js, Express.js, TypeScript
-- **Database**: PostgreSQL with Drizzle ORM
-- **AI/ML**: OpenAI Vision API, Custom ML models
-- **Payments**: M-Pesa API, Banking integrations
+- **Database**: Neon PostgreSQL with Drizzle ORM
+- **AI/ML**: OpenAI GPT-4, Google Gemini, Vercel AI SDK
+- **Authentication**: Better Auth with Supabase
+- **Email**: Resend
 - **Build**: Turborepo for monorepo orchestration
-- **Deploy**: Docker, AWS/Vercel
+- **Deploy**: Docker, Vercel
 
 ## 📱 Applications
 
-### 🏪 apps/web - Seller Dashboard
-- Seller registration & onboarding
-- Product management with AI cataloging
-- Store customization & branding
-- Order management & tracking
-- Analytics & insights
+### 🏪 apps/web - Seller Dashboard & Marketing Site
 
-### 🛒 apps/marketplace - Buyer Platform  
+- Seller registration & onboarding
+- Store setup and configuration
+- Product management with AI cataloging
+- Instagram auto-catalog sync
+- Marketing pages and landing site
+
+### 🏪 apps/admin - Admin Dashboard
+
+- Customer management
+- Order management & tracking
+- Product catalog oversight
+- Sales analytics & insights
+- Transaction monitoring
+
+### 🛒 apps/storefront - Buyer Storefront
+
 - Product discovery & search
-- Seller profiles & ratings
+- Seller store pages
 - Shopping cart & checkout
 - Order tracking
 
 ### 🔗 apps/api - Backend API
+
 - User authentication & authorization
 - Product & store management
+- Instagram integration & AI cataloging
 - Payment processing
 - Order fulfillment
-- AI catalog integration
+- Email notifications
 
 ## 📦 Key Packages
 
+### 🤖 packages/ai-engine
+
+AI-powered product extraction from Instagram posts using OpenAI GPT-4 and Google Gemini.
+
+### 🔐 packages/auth
+
+Authentication utilities using Better Auth.
+
+### 🗄️ packages/database
+
+Drizzle ORM schema and database utilities for Neon PostgreSQL.
+
 ### 🎨 packages/ui
+
 Shared React component library with consistent design system.
-
-### 📋 packages/types  
-TypeScript interfaces and types used across all applications.
-
-### 🤖 packages/ai-catalog
-AI-powered product extraction from Instagram posts and WhatsApp images.
-
-### 💳 packages/payments
-M-Pesa integration, bank APIs, and payment processing logic.
-
-### 🚚 packages/delivery
-Courier service integrations for order delivery and tracking.
-
 
 ## 🔧 Development Commands
 
@@ -115,55 +115,37 @@ Courier service integrations for order delivery and tracking.
 # Development
 pnpm run dev                    # Start all apps
 pnpm run dev --filter=web       # Start seller dashboard only
+pnpm run dev --filter=admin     # Start admin dashboard only
+pnpm run dev --filter=storefront # Start storefront only
 pnpm run dev --filter=api       # Start API server only
 
 # Building
-npm run build                  # Build all apps
-npm run build --filter=web     # Build specific app
+pnpm run build                  # Build all apps
+pnpm run build --filter=web     # Build specific app
+
+# Database
+pnpm run db:generate             # Generate Drizzle migrations
+pnpm run db:push                 # Push schema changes to database
 
 # Testing
-npm run test                   # Run all tests
-npm run test --filter=api      # Test specific package
+pnpm run test                    # Run all tests
+pnpm run test --filter=api       # Test specific package
 
 # Code Quality
-npm run lint                   # Lint all code
-npm run type-check             # TypeScript validation
+pnpm run lint                    # Lint all code
+pnpm run type-check              # TypeScript validation
 ```
 
 ### Package Dependencies
+
 ```json
 // Internal packages use workspace: protocol
 {
   "dependencies": {
-    "@vendly/types": "workspace:*",     // Internal dependency
-    "@vendly/ui": "workspace:*",        // Internal dependency
-    "next": "^14.0.0"                   // External dependency
+    "@vendly/auth": "workspace:*", // Internal dependency
+    "@vendly/database": "workspace:*", // Internal dependency
+    "@vendly/ui": "workspace:*", // Internal dependency
+    "next": "^15.5.3" // External dependency
   }
 }
 ```
-## 2. Always sync with dev before you start
-```sh
-git fetch origin
-git checkout dev
-git pull --rebase origin dev
-# Optional: set upstream once so 'git pull' works on dev by default
-git branch --set-upstream-to=origin/dev dev
-```
-
-## 3. Create a sub-branch off dev
-```sh
-git checkout dev
-git pull --rebase origin dev
-git switch -c feature/short-desc
-# or: git checkout -b fix/short-desc
-```
-
-## 4. Push work and open a PR into dev
-- Commit regularly with small, descriptive messages.
-```sh
-git add -A
-git commit -m "feat: short description"
-git push -u origin feature/short-desc
-```
-- Open a Pull Request targeting `dev`.
-- Do not push to `main`. Only `dev` and your feature branches are allowed.
