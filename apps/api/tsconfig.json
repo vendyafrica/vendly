@@ -17,6 +17,12 @@
       ],
       "@vendly/database/*": [
         "../../../packages/database/src/*"
+      ],
+      "@vendly/transactional": [
+        "../../../packages/transactional/src/index.ts"
+      ],
+      "@vendly/transactional/*": [
+        "../../../packages/transactional/src/*"
       ]
     }
   },
