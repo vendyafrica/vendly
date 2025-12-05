@@ -7,22 +7,22 @@
     "jsx": "react-jsx",
     "paths": {
       "@vendly/auth": [
-        "../../../packages/auth/src/index.ts"
+        "../../../packages/auth/dist/index.js"
       ],
       "@vendly/auth/*": [
-        "../../../packages/auth/src/*"
+        "../../../packages/auth/dist/*"
       ],
       "@vendly/database": [
-        "../../../packages/database/src/index.ts"
+        "../../../packages/database/dist/index.js"
       ],
       "@vendly/database/*": [
-        "../../../packages/database/src/*"
+        "../../../packages/database/dist/*"
       ],
       "@vendly/transactional": [
-        "../../../packages/transactional/src/index.ts"
+        "../../../packages/transactional/dist/index.js"
       ],
       "@vendly/transactional/*": [
-        "../../../packages/transactional/src/*"
+        "../../../packages/transactional/dist/*"
       ]
     }
   },
