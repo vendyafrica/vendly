@@ -1,5 +1,5 @@
 {
-  "name": "storefront",
+  "name": "@vendly/storefront",
   "version": "1.0.0",
   "description": "Vendly seller storefront",
   "private": true,
