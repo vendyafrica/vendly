@@ -5,7 +5,8 @@
     "moduleResolution": "nodenext",
     "outDir": "./dist",
     "jsx": "react-jsx",
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "noEmit": false
   },
   "include": [
     "src/**/*"
