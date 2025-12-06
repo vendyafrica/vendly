@@ -1,5 +1,11 @@
 {
   "$schema": "https://turborepo.com/schema.json",
+  "globalPassThroughEnv": [
+    "BETTER_AUTH_URL",
+    "BETTER_AUTH_SECRET",
+    "NEXT_PUBLIC_BACKEND_URL",
+    "NODE_ENV"
+  ],
   "ui": "tui",
   "tasks": {
     "build": {
@@ -11,6 +17,9 @@
         "dist/**",
         ".next/**",
         "!.next/cache/**"
+      ],
+      "env": [
+        "NEXT_PUBLIC_BACKEND_URL" 
       ]
     },
     "test": {
