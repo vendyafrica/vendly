@@ -30,7 +30,9 @@ export const session = pgTable(
       .notNull()
       .references(() => user.id, { onDelete: "cascade" }),
   },
-  (table) => [index("session_userId_idx").on(table.userId)],
+ (table) => ({
+  sessionUserIdIdx: index("session_userId_idx").on(table.userId)
+}),
 );
 
 export const account = pgTable(
@@ -54,7 +56,9 @@ export const account = pgTable(
       .$onUpdate(() => /* @__PURE__ */ new Date())
       .notNull(),
   },
-  (table) => [index("account_userId_idx").on(table.userId)],
+ (table) => ({
+  accountUserIdIdx: index("account_userId_idx").on(table.userId)
+}),
 );
 
 export const verification = pgTable(
@@ -70,7 +74,9 @@ export const verification = pgTable(
       .$onUpdate(() => /* @__PURE__ */ new Date())
       .notNull(),
   },
-  (table) => [index("verification_identifier_idx").on(table.identifier)],
+  (table) => ({
+  verificationIdentifierIdx: index("verification_identifier_idx").on(table.identifier)
+}),
 );
 
 export const userRelations = relations(user, ({ many }) => ({

@@ -1,33 +1,19 @@
 {
+  "extends": "@vendly/typescript-config/base.json",
   "compilerOptions": {
-    "lib": [
-      "dom",
-      "dom.iterable",
-      "esnext"
-    ],
-    "allowJs": true,
-    "skipLibCheck": true,
-    "strict": false,
-    "forceConsistentCasingInFileNames": true,
-    "strictNullChecks": true,
     "noEmit": false,
-    "incremental": true,
-    "esModuleInterop": true,
-    "module": "nodenext",
-    "moduleResolution": "nodenext",
-    "resolveJsonModule": true,
-    "isolatedModules": true,
-    "jsx": "preserve",
-    "target": "ES2017",
+    "allowImportingTsExtensions": false, 
     "outDir": "./dist",
-    "declaration": true
+    "rootDir": ".",
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "jsx": "react-jsx",
+    "target": "ES2020",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "resolveJsonModule": true,
+    "declaration": true,
+    "declarationMap": true
   },
-  "include": [
-    "next-env.d.ts",
-    "**/*.ts",
-    "**/*.tsx"
-  ],
-  "exclude": [
-    "node_modules"
-  ]
+  "include": ["index.ts", "emails/**/*"],
+  "exclude": ["node_modules", "dist", ".turbo", ".react-email"]
 }

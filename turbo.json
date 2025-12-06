@@ -1,36 +1,32 @@
 {
-  "$schema": "https://turbo.build/schema.json",
+  "$schema": "https://turborepo.com/schema.json",
+  "ui": "tui",
   "tasks": {
     "build": {
+      "inputs": ["$TURBO_DEFAULT$", ".env*"],
       "dependsOn": ["^build"],
       "outputs": [
+        "build/**",
+        ".vercel/**",
         "dist/**",
         ".next/**",
-        "build/**"
+        "!.next/cache/**"
       ]
     },
-    "dev": {
-      "cache": false,
-      "persistent": true
-    },
-    "db:generate": {
-      "cache": false
-    },
-    "db:push": {
-      "cache": false
-    },
-    "type-check": {
-      "dependsOn": ["^build"]
+    "test": {
+      "outputs": ["coverage/**"],
+      "dependsOn": []
     },
     "lint": {
-      "dependsOn": ["^build"]
+      "dependsOn": ["^build", "^lint"]
     },
-    "test": {
+    "check-types": {
+      "dependsOn": ["^build", "^check-types"]
+    },
+    "dev": {
       "dependsOn": ["^build"],
-      "outputs": ["coverage/**"]
-    },
-    "clean": {
-      "cache": false
+      "cache": false,
+      "persistent": true
     }
   }
 }

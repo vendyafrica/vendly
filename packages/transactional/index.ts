@@ -1,5 +1,5 @@
 import { render } from '@react-email/components';
-import { VerificationEmail } from './emails/verification.jsx';
+import { VerificationEmail } from './emails/verification.js';
 import * as React from 'react';
 
 export { VerificationEmail };

@@ -1,43 +1,21 @@
 {
   "extends": "@vendly/typescript-config/nextjs.json",
   "compilerOptions": {
+    "outDir": "dist",
+    "paths": {
+      "@/*": ["./src/*"]
+    },
     "plugins": [
       {
         "name": "next"
       }
-    ],
-    "paths": {
-      "@/*": [
-        "./src/*"
-      ],
-      "@vendly/auth": [
-        "../../packages/auth/src/index.ts"
-      ],
-      "@vendly/auth/*": [
-        "../../packages/auth/src/*"
-      ],
-      "@vendly/database": [
-        "../../packages/database/src/index.ts"
-      ],
-      "@vendly/database/*": [
-        "../../packages/database/src/*"
-      ],
-      "@vendly/ui": [
-        "../../packages/ui/src/index.ts"
-      ],
-      "@vendly/ui/*": [
-        "../../packages/ui/src/*"
-      ]
-    },
-    "jsx": "preserve"
+    ]
   },
   "include": [
+    "src",
+    "next.config.ts",
     "next-env.d.ts",
-    "**/*.ts",
-    "**/*.tsx",
     ".next/types/**/*.ts"
   ],
-  "exclude": [
-    "node_modules"
-  ]
+  "exclude": ["node_modules"]
 }

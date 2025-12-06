@@ -1,14 +1,14 @@
 {
-  "name": "@vendly/storefront",
+  "name": "storefront",
   "version": "1.0.0",
-  "description": "Vendly seller storefront ",
+  "description": "Vendly seller storefront",
   "private": true,
   "scripts": {
     "dev": "next dev --port 4000 --turbopack",
     "build": "next build",
     "start": "next start --port 4000",
-    "lint": "next lint",
-    "type-check": "tsc --noEmit",
+    "lint": "eslint --max-warnings 0",
+    "check-types": "next typegen && tsc --noEmit",
     "clean": "rimraf .next dist",
     "test": "vitest"
   },
@@ -20,15 +20,16 @@
     "react-dom": "^19.1.1"
   },
   "devDependencies": {
-    "@types/node": "^20.19.9",
-    "@vendly/typescript-config": "workspace:*",
+    "@eslint/eslintrc": "^3.3.1",
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^22.19.1",
     "@types/react": "^19.1.9",
     "@types/react-dom": "^19.1.7",
-    "@tailwindcss/postcss": "^4",
-    "tailwindcss": "^4",
+    "@vendly/typescript-config": "workspace:*",
     "eslint": "^9",
     "eslint-config-next": "15.5.4",
-    "@eslint/eslintrc": "^3.3.1",
+    "rimraf": "^6.0.0",
+    "tailwindcss": "^4",
     "typescript": "^5.9.3"
   }
 }

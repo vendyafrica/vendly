@@ -3,14 +3,23 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "main": "dist/index.js",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "exports": {
-    ".": "./dist/index.js"
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./emails/*": {
+      "types": "./dist/emails/*.d.ts",
+      "import": "./dist/emails/*.js"
+    }
   },
   "scripts": {
-    "build": "tsc -b",
+    "build": "tsc",
     "dev": "email dev -p 3001",
-    "export": "email export"
+    "export": "email export",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@react-email/components": "^1.0.1",
@@ -22,6 +31,8 @@
   "devDependencies": {
     "@types/react": "^19.1.9",
     "@types/react-dom": "^19.1.7",
+    "@vendly/typescript-config": "workspace:*",
     "typescript": "^5.2.2"
-  }
+  },
+  "files": ["dist"]
 }

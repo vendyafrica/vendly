@@ -1,29 +1,27 @@
 {
-  "extends": "@vendly/typescript-config/tsconfig.json",
+  "extends": "@vendly/typescript-config/base.json",
   "compilerOptions": {
-    "module": "esnext",
-    "moduleResolution": "bundler",
     "lib": [
       "ES2020",
-      "dom"
+      "DOM",
+      "DOM.Iterable"
     ],
     "jsx": "preserve",
     "paths": {
       "@vendly/ui/*": [
         "./src/*"
       ]
-    },
-    "outDir": "./dist",
-    "rootDir": "./src",
-    "composite": true
+    }
   },
   "include": [
-    "src"
+    "src/**/*"
   ],
   "exclude": [
     "node_modules",
     "dist",
     "**/*.test.ts",
-    "**/*.spec.ts"
+    "**/*.test.tsx",
+    "**/*.spec.ts",
+    "**/*.spec.tsx"
   ]
 }
