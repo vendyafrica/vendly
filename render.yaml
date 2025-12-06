@@ -2,24 +2,12 @@ services:
   - type: web
     name: vendly-api
     runtime: node
-    plan: free # or starter
-    region: oregon # or your preferred region
+    plan: free 
+    region: oregon 
 
-    # ---------------------------------------------------------
-    # BUILD & START COMMANDS
-    # ---------------------------------------------------------
-    # 1. Install all dependencies using pnpm
-    # 2. Use turbo to build ONLY the api and its internal dependencies
-    buildCommand: pnpm install && pnpm build --filter @vendly/api
-
-    # Run the compiled server file from the root
+    buildCommand: pnpm install && pnpm build --filter api
     startCommand: node apps/api/dist/server.js
 
-    # ---------------------------------------------------------
-    # BUILD FILTERS (Monorepo Optimization)
-    # ---------------------------------------------------------
-    # Only deploy if files in api or shared packages change.
-    # We explicitly ignore the other Next.js apps to save build minutes.
     buildFilter:
       paths:
         - apps/api/**
@@ -33,9 +21,6 @@ services:
         - apps/admin/**
         - README.md
 
-    # ---------------------------------------------------------
-    # ENVIRONMENT VARIABLES
-    # ---------------------------------------------------------
     envVars:
       - key: NODE_ENV
         value: production
