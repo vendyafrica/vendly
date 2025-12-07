@@ -6,7 +6,8 @@
     "outDir": "./dist",
     "jsx": "react-jsx",
     "skipLibCheck": true,
-    "noEmit": false
+    "noEmit": false,
+    "allowImportingTsExtensions": false
   },
   "include": [
     "src/**/*"
