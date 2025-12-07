@@ -5,6 +5,8 @@
     "rootDir": "src",
     "module": "esnext",
     "moduleResolution": "bundler",
+    "noEmit": false,
+    "allowImportingTsExtensions": false,
     "target": "es2017",
     "lib": [
       "dom",
