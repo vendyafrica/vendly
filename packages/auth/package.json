@@ -22,7 +22,6 @@
   },
   "devDependencies": {
     "@types/node": "^22.19.1",
-    "@vendly/typescript-config": "workspace:*",
     "eslint": "^9.21.0",
     "rimraf": "^6.0.0",
     "typescript": "^5.9.3"

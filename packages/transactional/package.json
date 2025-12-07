@@ -31,8 +31,9 @@
   "devDependencies": {
     "@types/react": "^19.1.9",
     "@types/react-dom": "^19.1.7",
-    "@vendly/typescript-config": "workspace:*",
     "typescript": "^5.2.2"
   },
-  "files": ["dist"]
+  "files": [
+    "dist"
+  ]
 }

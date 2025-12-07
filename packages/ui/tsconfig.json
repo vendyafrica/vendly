@@ -1,5 +1,5 @@
 {
-  "extends": "@vendly/typescript-config/base.json",
+  "extends": "../typescript-config/base.json",
   "compilerOptions": {
     "lib": [
       "ES2020",
