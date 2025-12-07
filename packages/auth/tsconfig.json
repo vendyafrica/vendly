@@ -1,31 +1,10 @@
 {
-  "extends": "../typescript-config/base.json",
+  "extends": "../../packages/typescript-config/base.json",
   "compilerOptions": {
-    "outDir": "dist",
     "rootDir": "src",
+    "noEmit": true,   
     "module": "esnext",
-    "moduleResolution": "bundler",
-    "noEmit": false,
-    "allowImportingTsExtensions": false,
-    "target": "es2017",
-    "lib": [
-      "dom",
-      "dom.iterable",
-      "esnext"
-    ],
-    "skipLibCheck": true,
-    "esModuleInterop": true,
-    "declaration": true,
-    "declarationMap": true,
-    "types": [
-      "node"
-    ]
+    "moduleResolution": "bundler"
   },
-  "include": [
-    "src/**/*"
-  ],
-  "exclude": [
-    "node_modules",
-    "dist"
-  ]
+  "include": ["src/**/*"]
 }
