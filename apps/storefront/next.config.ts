@@ -2,8 +2,9 @@ import type { NextConfig } from "next";
 import path from "path";
 
 const nextConfig: NextConfig = {
-  transpilePackages: ["@vendly/auth", "@vendly/database"],
+  transpilePackages: ["@vendly/auth", "@vendly/database", "@vendly/ui"],
   outputFileTracingRoot: path.join(__dirname, "../../"),
+
   typescript: {
     ignoreBuildErrors: true,
   },
