@@ -14,6 +14,7 @@ import {
   FieldLabel,
 } from "@vendly/ui/components/field"
 import { Input } from "@vendly/ui/components/input"
+import Link from "next/link"
 
 export function LoginForm({
   className,
@@ -58,7 +59,8 @@ export function LoginForm({
                   Login with Google
                 </Button>
                 <FieldDescription className="text-center">
-                  Don&apos;t have an account? <a href="#">Sign up</a>
+                  Don&apos;t have an account?
+                  <Link href="/sign-in">Sign up</Link>
                 </FieldDescription>
               </Field>
             </FieldGroup>

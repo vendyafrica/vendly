@@ -9,7 +9,6 @@ import {
 import { ThemeToggle } from "@vendly/ui/components/theme-toggle";
 import Image from "next/image";
 import Link from "next/link";
-import { AuthModal } from "@/app/auth/(components)/auth-modal";
 
 const navigationLinks = [
   { id: "hero", label: "Overview" },
@@ -66,7 +65,7 @@ export default function NavBar() {
         {/* Right - Actions */}
         <div className="flex items-center gap-2">
           <ThemeToggle />
-          <AuthModal  />
+          
         </div>
       </div>
     </header>
