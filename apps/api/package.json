@@ -20,7 +20,7 @@
     "@vendly/auth": "workspace:*",
     "@vendly/database": "workspace:*",
     "@vendly/transactional": "workspace:*",
-    "axios": "^1.12.2",
+    "axios": "^1.13.2",
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",

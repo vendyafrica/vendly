@@ -8,3 +8,15 @@ export interface Session{
     createdAt: Date;
     updatedAt: Date;
 }
+
+export interface signIn{
+    email: string;
+    password: string;
+}
+
+export interface signUp{
+    email: string;
+    password: string;
+    name: string;
+    image?: string;
+}

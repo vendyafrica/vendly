@@ -30,6 +30,7 @@
     "@stepperize/react": "^5.1.9",
     "@vendly/auth": "workspace:*",
     "@vendly/ui": "workspace:*",
+    "@vendly/database": "workspace:*",
     "@vercel/analytics": "^1.5.0",
     "axios": "^1.12.2",
     "class-variance-authority": "^0.7.1",

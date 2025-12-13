@@ -184,7 +184,7 @@ importers:
         specifier: workspace:*
         version: link:../../packages/transactional
       axios:
-        specifier: ^1.12.2
+        specifier: ^1.13.2
         version: 1.13.2
       bcryptjs:
         specifier: ^2.4.3
@@ -368,6 +368,9 @@ importers:
       '@vendly/auth':
         specifier: workspace:*
         version: link:../../packages/auth
+      '@vendly/database':
+        specifier: workspace:*
+        version: link:../../packages/database
       '@vendly/ui':
         specifier: workspace:*
         version: link:../../packages/ui
