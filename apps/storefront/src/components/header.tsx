@@ -1,0 +1,37 @@
+import Search from "./search";
+import { Button } from "@vendly/ui/components/button";
+import { HugeiconsIcon } from "@hugeicons/react";
+import {
+  FavouriteIcon,
+  ShoppingBasket01Icon,
+} from "@hugeicons/core-free-icons";
+import Image from "next/image";
+import Link from "next/link";
+
+export default function Header() {
+  return (
+    <header className="relative flex items-center justify-between px-6 py-4 border-b">
+      {/* Logo Section */}
+      <Link
+        href="/"
+        className="flex items-center gap-2 shrink-0 hover:opacity-80 transition-opacity cursor-pointer"
+      >
+        <Image src="/apple-icon.png" alt="vendly logo" width={32} height={32} />
+        <span className="font-medium text-foreground">vendly.</span>
+      </Link>
+
+      {/* Search bar */}
+      <div className="absolute left-1/2 -translate-x-1/2 w-full max-w-xl">
+        <Search />
+      </div>
+
+      {/* User Profile Section */}
+      <div className="flex items-center gap-4 shrink-0  cursor-pointer">
+        <HugeiconsIcon icon={FavouriteIcon} className="w-5 h-5" />
+        <HugeiconsIcon icon={ShoppingBasket01Icon} className="w-5 h-5" />
+        <Button className=" cursor-pointer">Sell</Button>
+        <Button className=" cursor-pointer">Login</Button>
+      </div>
+    </header>
+  );
+}
