@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist } from "next/font/google";
+import { Geist , DM_Sans  } from "next/font/google";
 import "@vendly/ui/globals.css"
 import { Analytics } from '@vercel/analytics/next';
 import { ThemeProvider } from "@vendly/ui/components/theme-provider"
@@ -9,6 +9,8 @@ const geist = Geist({
   subsets: ["latin"],
   weight: ["100", "200", "300", "400", "500", "600", "700", "800", "900"],
 });
+
+const dmSans = DM_Sans({subsets:['latin'],variable:'--font-sans'});
 
 export const metadata: Metadata = {
   title: "Vendly: Launch Your Online Store in Minutes | E-commerce Platform for Africa",
@@ -150,7 +152,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-      <html lang="en" suppressHydrationWarning>
+      <html lang="en" suppressHydrationWarning  className={dmSans.variable}>
         <head>
           <meta charSet="utf-8" />
           <meta name="viewport" content="width=device-width, initial-scale=1" />
