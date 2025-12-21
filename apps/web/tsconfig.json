@@ -18,7 +18,7 @@
     "next.config.ts",
     "next-env.d.ts",
     ".next/types/**/*.ts"
-  ],
+, "../../packages/ui/src/components/svgs/apple.tsx", "../../packages/ui/src/components/svgs/appleDark.tsx"  ],
   "exclude": [
     "node_modules"
   ]
