@@ -1,4 +1,4 @@
-import Search from "./search";
+import SearchBar from "@/features/hero/search-bar";
 import { Button } from "@vendly/ui/components/button";
 import { HugeiconsIcon } from "@hugeicons/react";
 import {
@@ -13,6 +13,7 @@ interface HeaderProps {
 }
 
 export default function Header({ showSearch = true }: HeaderProps) {
+
   return (
     <header className="sticky top-0 z-50 flex items-center justify-between px-6 py-4 bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60">
       {/* Logo Section */}
@@ -20,14 +21,14 @@ export default function Header({ showSearch = true }: HeaderProps) {
         href="/"
         className="flex items-center gap-2 shrink-0 hover:opacity-80 transition-opacity cursor-pointer"
       >
-        <Image src="/apple-icon.png" alt="vendly logo" width={32} height={32} />
+        <Image src="/icon.png" alt="vendly logo" width={32} height={32} />
         <span className="font-medium text-foreground">vendly.</span>
       </Link>
 
       {/* Search bar - only show on desktop when showSearch is true, never on mobile */}
       {showSearch && (
         <div className="absolute left-1/2 -translate-x-1/2 w-full max-w-xl hidden md:block">
-          <Search />
+          <SearchBar />
         </div>
       )}
 

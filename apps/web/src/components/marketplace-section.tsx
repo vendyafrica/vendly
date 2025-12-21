@@ -5,7 +5,7 @@ import ShopCard from "./shop-card";
 interface Shop {
   id: string;
   name: string;
-  images: string[]; // Array of product images
+  images: string[];
   pfp: string;
   rating: number;
   reviewCount?: number;
@@ -26,7 +26,7 @@ const MarketplaceSection = ({ title, slug, shops }: MarketplaceSectionProps) => 
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-2xl font-semibold">{title}</h2>
         <Link 
-          href={`/marketplace/${slug}`}
+          href={`/categories/${slug}`}
           className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors"
         >
           See more

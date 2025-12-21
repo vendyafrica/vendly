@@ -1,0 +1,54 @@
+"use client";
+
+import "@/styles/home.css";
+import { useFavouriteShops } from "./hooks/useFavouriteShops";
+
+export default function FavoriteShops() {
+  const shops = useFavouriteShops();
+
+  return (
+    <section className="mt-[45vh] md:mt-[45vh] w-full overflow-hidden">
+      <h2 className="text-xl font-semibold mb-4 px-6">Favourite Shops</h2>
+      <div className="carousel-container relative overflow-x-auto overflow-y-hidden">
+        <div className="carousel-track flex gap-6 pb-6 px-6 md:px-6" style={{ width: "max-content" }}>
+          {shops.map((shop, index) => (
+            <div
+              key={index}
+              className="flex flex-col items-center min-w-[140px] cursor-pointer group shrink-0"
+            >
+              <div className="w-36 h-36 rounded-full overflow-hidden mb-3 group-hover:scale-105 transition-transform shadow-lg">
+                <img
+                  src={shop.image}
+                  alt={shop.name}
+                  className="w-full h-full object-cover"
+                  loading="lazy"
+                />
+              </div>
+              <span className="text-sm text-center text-muted-foreground group-hover:text-foreground transition-colors">
+                {shop.name}
+              </span>
+            </div>
+          ))}
+          {shops.map((shop, index) => (
+            <div
+              key={`duplicate-${index}`}
+              className="flex flex-col items-center min-w-[140px] cursor-pointer group shrink-0"
+            >
+              <div className="w-36 h-36 rounded-full overflow-hidden mb-3 group-hover:scale-105 transition-transform shadow-lg">
+                <img
+                  src={shop.image}
+                  alt={shop.name}
+                  className="w-full h-full object-cover"
+                  loading="lazy"
+                />
+              </div>
+              <span className="text-sm text-center text-muted-foreground group-hover:text-foreground transition-colors">
+                {shop.name}
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}

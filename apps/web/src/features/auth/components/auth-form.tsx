@@ -1,15 +1,15 @@
-import { cn } from "@/lib/utils"
-import { Button } from "@vendly/ui/components/button"
+import { cn } from "@/lib/utils";
+import { Button } from "@vendly/ui/components/button";
 import {
   Field,
   FieldDescription,
   FieldGroup,
   FieldLabel,
   FieldSeparator,
-} from "@vendly/ui/components/field"
-import { Input } from "@vendly/ui/components/input"
-import Image from "next/image"
-import { Google } from "@vendly/ui/components/svgs/google"
+} from "@vendly/ui/components/field";
+import { Input } from "@vendly/ui/components/input";
+import Image from "next/image";
+import { Google } from "@vendly/ui/components/svgs/google";
 
 export function AuthForm({
   className,
@@ -20,10 +20,7 @@ export function AuthForm({
       <form>
         <FieldGroup>
           <div className="flex flex-col items-center gap-2 text-center">
-            <a
-              href="#"
-              className="flex flex-col items-center gap-2 font-medium"
-            >
+            <a href="#" className="flex flex-col items-center gap-2 font-medium">
               <div className="flex size-8 items-center justify-center rounded-md">
                 <Image src="/icon.png" alt="vendly logo" width={32} height={32} />
               </div>
@@ -36,15 +33,12 @@ export function AuthForm({
           </div>
           <Field>
             <FieldLabel htmlFor="email">Email</FieldLabel>
-            <Input
-              id="email"
-              type="email"
-              placeholder="m@example.com"
-              required
-            />
+            <Input id="email" type="email" placeholder="m@example.com" required />
           </Field>
           <Field>
-            <Button type="submit" className="cursor-pointer">Create Account</Button>
+            <Button type="submit" className="cursor-pointer">
+              Create Account
+            </Button>
           </Field>
           <FieldSeparator>Or</FieldSeparator>
           <Field className="w-full">
@@ -56,5 +50,5 @@ export function AuthForm({
         </FieldGroup>
       </form>
     </div>
-  )
+  );
 }

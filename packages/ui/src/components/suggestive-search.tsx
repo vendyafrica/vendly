@@ -37,11 +37,11 @@ export interface SuggestiveSearchProps {
   onChange?: (val: string) => void;
   suggestions?: string[];
   className?: string;
-  Leading?: () => JSX.Element;
+  Leading?: () => React.ReactElement;
   /** show/hide leading icon */
   showLeading?: boolean;
   /** trailing icon component */
-  Trailing?: () => JSX.Element;
+  Trailing?: () => React.ReactElement;
   /** show/hide trailing icon */
   showTrailing?: boolean;
   /** convenience selection of built-in effects */

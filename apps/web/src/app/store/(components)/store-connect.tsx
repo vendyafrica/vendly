@@ -21,7 +21,6 @@ import Image from "next/image";
 import { HTMLAttributes } from "react";
 import { useSteps } from "./step-context";
 import { useState } from "react";
-import { InstagramIcon } from "@vendly/ui/components/svgs/instagramIcon";
 
 interface PersonalDetailsFormProps extends HTMLAttributes<HTMLDivElement> {
   onNext?: () => void;
