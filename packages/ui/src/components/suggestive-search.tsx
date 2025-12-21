@@ -421,7 +421,7 @@ export const FadeEffect: React.FC<EffectRendererProps> = ({
     ----------------------------*/
 export const SuggestiveSearch: React.FC<SuggestiveSearchProps> = ({
   onChange,
-  suggestions = ["Search your favourite movie", "Search user from connection"],
+  suggestions = ["Search your favorite movie", "Search user from connection"],
   className,
   Leading = () => <Search className="size-4 text-muted-foreground" />,
   showLeading = true,

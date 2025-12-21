@@ -1,10 +1,11 @@
 import { ChevronRight } from "lucide-react";
 import Link from "next/link";
-import ShopCard from "./shop-card";
+import ShopCard from "@/features/shop-card/shop-card";
 
 interface Shop {
   id: string;
   name: string;
+  slug: string;
   images: string[];
   pfp: string;
   rating: number;
@@ -38,11 +39,7 @@ const MarketplaceSection = ({ title, slug, shops }: MarketplaceSectionProps) => 
         {displayedShops.map((shop) => (
           <ShopCard
             key={shop.id}
-            name={shop.name}
-            images={shop.images}
-            pfp={shop.pfp}
-            rating={shop.rating}
-            reviewCount={shop.reviewCount}
+            shop={shop}
           />
         ))}
       </div>

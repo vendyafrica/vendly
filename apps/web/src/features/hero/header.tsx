@@ -1,4 +1,5 @@
-import SearchBar from "@/features/hero/search-bar";
+"use client";
+
 import { Button } from "@vendly/ui/components/button";
 import { HugeiconsIcon } from "@hugeicons/react";
 import {
@@ -7,16 +8,31 @@ import {
 } from "@hugeicons/core-free-icons";
 import Image from "next/image";
 import Link from "next/link";
+import { useState, useEffect } from "react";
 
-interface HeaderProps {
-  showSearch?: boolean;
-}
+export default function Header() {
+  const [isVisible, setIsVisible] = useState(true);
+  const [lastScrollY, setLastScrollY] = useState(0);
 
-export default function Header({ showSearch = true }: HeaderProps) {
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+      
+      if (currentScrollY > lastScrollY && currentScrollY > 100) {
+        setIsVisible(false);
+      } else {
+        setIsVisible(true);
+      }
+      
+      setLastScrollY(currentScrollY);
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [lastScrollY]);
 
   return (
-    <header className="sticky top-0 z-50 flex items-center justify-between px-6 py-4 bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60">
-      {/* Logo Section */}
+    <header className={`fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 py-4 bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60 transition-transform duration-300 ${isVisible ? "translate-y-0" : "-translate-y-full"}`}>
       <Link
         href="/"
         className="flex items-center gap-2 shrink-0 hover:opacity-80 transition-opacity cursor-pointer"
@@ -24,19 +40,10 @@ export default function Header({ showSearch = true }: HeaderProps) {
         <Image src="/icon.png" alt="vendly logo" width={32} height={32} />
         <span className="font-medium text-foreground">vendly.</span>
       </Link>
-
-      {/* Search bar - only show on desktop when showSearch is true, never on mobile */}
-      {showSearch && (
-        <div className="absolute left-1/2 -translate-x-1/2 w-full max-w-xl hidden md:block">
-          <SearchBar />
-        </div>
-      )}
-
-      {/* User Profile Section */}
       <div className="flex items-center gap-4 shrink-0  cursor-pointer">
         <HugeiconsIcon icon={FavouriteIcon} className="w-5 h-5" />
         <HugeiconsIcon icon={ShoppingBasket01Icon} className="w-5 h-5" />
-        <Button className=" cursor-pointer">Sell</Button>
+        <Button className=" cursor-pointer">Sell Now</Button>
         <Button className=" cursor-pointer">Login</Button>
       </div>
     </header>

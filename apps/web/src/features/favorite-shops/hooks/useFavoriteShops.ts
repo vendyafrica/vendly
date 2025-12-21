@@ -1,10 +1,10 @@
-export type FavouriteShop = {
+export type favoriteShop = {
   name: string;
   image: string;
 };
 
-export function useFavouriteShops(): FavouriteShop[] {
-  // TODO: fetch personalised/curated favourite shops.
+export function usefavoriteShops(): favoriteShop[] {
+  // TODO: fetch personalised/curated favorite shops.
   return [
     { name: "Women's Clothing", image: "https://picsum.photos/300/300?women" },
     { name: "Men's Clothing", image: "https://picsum.photos/300/300?men" },

@@ -1,14 +1,14 @@
 "use client";
 
 import "@/styles/home.css";
-import { useFavouriteShops } from "./hooks/useFavouriteShops";
+import { usefavoriteShops } from "./hooks/useFavoriteShops";
 
 export default function FavoriteShops() {
-  const shops = useFavouriteShops();
+  const shops = usefavoriteShops();
 
   return (
     <section className="mt-[45vh] md:mt-[45vh] w-full overflow-hidden">
-      <h2 className="text-xl font-semibold mb-4 px-6">Favourite Shops</h2>
+      <h2 className="text-xl font-semibold mb-4 px-6">Favorite Shops</h2>
       <div className="carousel-container relative overflow-x-auto overflow-y-hidden">
         <div className="carousel-track flex gap-6 pb-6 px-6 md:px-6" style={{ width: "max-content" }}>
           {shops.map((shop, index) => (
