@@ -6,9 +6,10 @@ export default function HomePage() {
   return (
     <div className="min-h-screen bg-background">
       <Header />
-      <main className="relative">
-        <HeroSearch />
-        <div className="h-[85vh]" />
+      <main className="relative pt-20">
+        <section className="relative bg-background py-12">
+          <HeroSearch />
+        </section>
         <div className="bg-muted/30">
           <CategorySection title="Women" slug="women" />
           <CategorySection title="Men" slug="men" />
