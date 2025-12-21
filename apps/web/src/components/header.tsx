@@ -24,9 +24,9 @@ export default function Header({ showSearch = true }: HeaderProps) {
         <span className="font-medium text-foreground">vendly.</span>
       </Link>
 
-      {/* Search bar - only show when showSearch is true */}
+      {/* Search bar - only show on desktop when showSearch is true, never on mobile */}
       {showSearch && (
-        <div className="absolute left-1/2 -translate-x-1/2 w-full max-w-xl transition-all duration-300 ease-out">
+        <div className="absolute left-1/2 -translate-x-1/2 w-full max-w-xl hidden md:block">
           <Search />
         </div>
       )}

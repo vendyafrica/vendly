@@ -1,0 +1,45 @@
+/* Home page styles */
+
+@keyframes scroll {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.carousel-track {
+  animation: scroll 30s linear infinite;
+}
+
+.carousel-track:hover {
+  animation-play-state: paused;
+}
+
+.carousel-container::-webkit-scrollbar {
+  display: none;
+}
+
+.carousel-container {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Show scrollbar on mobile for better UX */
+@media (max-width: 768px) {
+  .carousel-container::-webkit-scrollbar {
+    display: block;
+    height: 4px;
+  }
+  
+  .carousel-container::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+  }
+  
+  .carousel-container::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 10px;
+  }
+}
