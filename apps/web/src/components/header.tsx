@@ -8,9 +8,13 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 
-export default function Header() {
+interface HeaderProps {
+  showSearch?: boolean;
+}
+
+export default function Header({ showSearch = true }: HeaderProps) {
   return (
-    <header className="relative flex items-center justify-between px-6 py-4 border-b">
+    <header className="sticky top-0 z-50 flex items-center justify-between px-6 py-4 bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60">
       {/* Logo Section */}
       <Link
         href="/"
@@ -20,10 +24,12 @@ export default function Header() {
         <span className="font-medium text-foreground">vendly.</span>
       </Link>
 
-      {/* Search bar */}
-      <div className="absolute left-1/2 -translate-x-1/2 w-full max-w-xl">
-        <Search />
-      </div>
+      {/* Search bar - only show when showSearch is true */}
+      {showSearch && (
+        <div className="absolute left-1/2 -translate-x-1/2 w-full max-w-xl transition-all duration-300 ease-out">
+          <Search />
+        </div>
+      )}
 
       {/* User Profile Section */}
       <div className="flex items-center gap-4 shrink-0  cursor-pointer">

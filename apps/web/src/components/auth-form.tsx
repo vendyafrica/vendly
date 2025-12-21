@@ -10,7 +10,6 @@ import {
 import { Input } from "@vendly/ui/components/input"
 import Image from "next/image"
 import { Google } from "@vendly/ui/components/svgs/google"
-import { Apple } from "@vendly/ui/components/svgs/apple"
 
 export function AuthForm({
   className,
@@ -45,25 +44,17 @@ export function AuthForm({
             />
           </Field>
           <Field>
-            <Button type="submit">Create Account</Button>
+            <Button type="submit" className="cursor-pointer">Create Account</Button>
           </Field>
           <FieldSeparator>Or</FieldSeparator>
-          <Field className="grid gap-4 sm:grid-cols-2">
-            <Button variant="outline" type="button">
-              <Apple />
-              Continue with Apple
-            </Button>
-            <Button variant="outline" type="button">
+          <Field className="w-full">
+            <Button variant="outline" type="button" className="cursor-pointer">
               <Google />
               Continue with Google
             </Button>
           </Field>
         </FieldGroup>
       </form>
-      <FieldDescription className="px-6 text-center">
-        By clicking continue, you agree to our <a href="#">Terms of Service</a>{" "}
-        and <a href="#">Privacy Policy</a>.
-      </FieldDescription>
     </div>
   )
 }
