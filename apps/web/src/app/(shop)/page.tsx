@@ -1,3 +1,3 @@
 export default function ShopRootPage() {
-  return null;
+  return <div>Shop</div>;
 }

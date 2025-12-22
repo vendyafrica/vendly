@@ -1,3 +1,5 @@
+"use client";
+
 import { useMemo } from "react";
 import ShopGrid from "@/features/category-sections/components/ShopGrid";
 import { useCategoryShops, type CategoryShops } from "@/features/category-sections/hooks/useCategoryShops";
