@@ -43,8 +43,8 @@ export default function Header() {
       <div className="flex items-center gap-4 shrink-0  cursor-pointer">
         <HugeiconsIcon icon={FavouriteIcon} className="w-5 h-5" />
         <HugeiconsIcon icon={ShoppingBasket01Icon} className="w-5 h-5" />
-        <Button className=" cursor-pointer">Sell Now</Button>
-        <Button className=" cursor-pointer">Login</Button>
+        <Button size="sm" className=" cursor-pointer">Sell Now</Button>
+        <Button size="sm" className=" cursor-pointer">Login</Button>
       </div>
     </header>
   );

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, DM_Sans } from "next/font/google";
 import "@vendly/ui/globals.css";
 import { ThemeProvider } from "@vendly/ui/components/theme-provider";
+import Footer from "@/components/footer";
 
 const geist = Geist({
   variable: "--font-geist",
@@ -34,6 +35,7 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <main>{children}</main>
+          <Footer />
         </ThemeProvider>
       </body>
     </html>
