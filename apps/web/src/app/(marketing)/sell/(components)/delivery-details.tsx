@@ -68,7 +68,7 @@ export function DeliveryDetails({
             />
             <span className="font-bold text-lg text-foreground">vendly.</span>
           </Link>
-          <h1 className="!text-lg !font-semibold text-muted-foreground">
+          <h1 className="text-lg font-semibold text-muted-foreground">
             Delivery Setup
           </h1>
 
