@@ -5,6 +5,9 @@ import { useCategoryShops, type CategoryShops } from "@/features/category-sectio
 export type ShopListingPageProps = {
   slug: string;
 };
+//changes
+
+
 
 export default function ShopListingPage({ slug }: ShopListingPageProps) {
   const allCategories = useCategoryShops();
