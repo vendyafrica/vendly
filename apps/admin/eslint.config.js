@@ -1,4 +1,3 @@
-/** @type {import("eslint").Linter.Config} */
-import { config } from "@vendly/eslint-config";
+import { eslintConfig } from '@vendly/eslint-config'
 
-export default config;
+export default eslintConfig
