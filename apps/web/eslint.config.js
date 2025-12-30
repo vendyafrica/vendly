@@ -1,4 +1,4 @@
-import { config } from "@vendly/eslint-config";
+import { config } from "@vendly/eslint-config/next";
 
 /** @type {import("eslint").Linter.Config} */
 export default config;

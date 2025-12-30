@@ -1,0 +1,1 @@
+export { default } from "@vendly/ui/postcss.config";

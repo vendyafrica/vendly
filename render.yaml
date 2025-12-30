@@ -1,0 +1,29 @@
+services:
+  - type: web
+    name: @vendly-api
+    runtime: node
+    plan: free 
+    region: oregon 
+
+    buildCommand: pnpm install && pnpm turbo build --filter=@@vendly/api
+    startCommand: node apps/api/dist/server.js
+
+    buildFilter:
+      paths:
+        - apps/api/**
+        - packages/**
+        - package.json
+        - pnpm-lock.yaml
+        - turbo.json
+      ignoredPaths:
+        - apps/web/**
+        - apps/web/**
+        - apps/admin/**
+        - README.md
+
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+   

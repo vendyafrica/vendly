@@ -1,22 +1,48 @@
-import { json, urlencoded } from "body-parser";
-import express, { type Express } from "express";
-import morgan from "morgan";
+
+import express from "express";
 import cors from "cors";
+import { Response, Request, NextFunction } from "express";
 
-export const createServer = (): Express => {
-  const app = express();
-  app
-    .disable("x-powered-by")
-    .use(morgan("dev"))
-    .use(urlencoded({ extended: true }))
-    .use(json())
-    .use(cors())
-    .get("/message/:name", (req, res) => {
-      return res.json({ message: `hello ${req.params.name}` });
-    })
-    .get("/status", (_, res) => {
-      return res.json({ ok: true });
-    });
+const app = express();
+const PORT = process.env.PORT || 8000;
 
-  return app;
-};
+app.use(
+  cors({
+    origin: [
+      "http://localhost:3000",
+      "https://vendly-web.vercel.app",
+      "https://www.vendlyafrica.store",
+      "https://vendlyafrica.store",
+      /\.vercel\.app$/,
+    ],
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  })
+);
+
+app.get("/", (_req, res) => {
+  res.send("API is running");
+});
+
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
+  console.error("Error:", err);
+  res.status(err.status || 500).json({
+    message: err.message || "Internal server error",
+    error: true,
+  });
+});
+
+app.use((_req, res) => {
+  res.status(404).json({
+    message: "Route not found",
+    error: true,
+  });
+});
+
+app.listen(PORT, () => {
+  console.log(`✓ Server running on http://localhost:${PORT}`);
+});

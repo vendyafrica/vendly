@@ -5,18 +5,18 @@
   "private": true,
   "scripts": {
     "build": "vite build",
-    "dev": "vite --host 0.0.0.0 --port 3001 --clearScreen false",
+    "dev": "vite --host 0.0.0.0 --port 4000 --clearScreen false",
     "check-types": "tsc --noEmit",
     "lint": "eslint src/ --max-warnings 0"
   },
   "dependencies": {
-    "@repo/ui": "workspace:*",
+    "@vendly/ui": "workspace:*",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
   },
   "devDependencies": {
-    "@repo/eslint-config": "workspace:*",
-    "@repo/typescript-config": "workspace:*",
+    "@vendly/eslint-config": "workspace:*",
+    "@vendly/typescript-config": "workspace:*",
     "@types/react": "^18.3.18",
     "@types/react-dom": "^18.3.5",
     "@vitejs/plugin-react": "^4.7.0",
