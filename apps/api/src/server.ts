@@ -1,7 +1,7 @@
 
 import express from "express";
 import cors from "cors";
-import { Response, Request, NextFunction } from "express";
+import { Response, Request } from "express";
 
 const app = express();
 const PORT = process.env.PORT || 8000;
@@ -28,17 +28,17 @@ app.get("/", (_req, res) => {
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
-  console.error("Error:", err);
-  res.status(err.status || 500).json({
-    message: err.message || "Internal server error",
+app.use((_req, res) => {
+  res.status(404).json({
+    message: "Route not found",
     error: true,
   });
 });
 
-app.use((_req, res) => {
-  res.status(404).json({
-    message: "Route not found",
+app.use((err: Error & { status?: number }, _req: Request, res: Response) => {
+  console.error("Error:", err);
+  res.status(err.status || 500).json({
+    message: err.message || "Internal server error",
     error: true,
   });
 });
