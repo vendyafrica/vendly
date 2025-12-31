@@ -1,4 +1,5 @@
 import { NextConfig } from "next";
+import path from "path";
 
 const nextConfig: NextConfig = {
   typescript: {
@@ -13,6 +14,7 @@ const nextConfig: NextConfig = {
     return config;
   },
   turbopack: {
+    root: path.resolve(__dirname, "../../.."),
     // Turbopack configuration
     resolveAlias: {
       "@vendly/ui": "../../packages/ui/src",
