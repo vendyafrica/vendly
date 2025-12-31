@@ -1,18 +1,20 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import path from 'path'
+// @ts-ignore
+import sharedConfig from '@vendly/ui/postcss.config'
 
-// https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
   server: {
     port: 4000,
   },
   css: {
-    postcss: {
-      plugins: [
-        require('@vendly/ui/postcss.config'),
-      ],
+    postcss: sharedConfig,
+  },
+  build: {
+    rollupOptions: {
+      external: ['react', 'react-dom', 'react/jsx-runtime'],
     },
   },
   resolve: {
