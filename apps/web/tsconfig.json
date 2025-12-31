@@ -4,6 +4,7 @@
     "node_modules"
   ],
   "compilerOptions": {
+    "jsx": "react-jsx",
     "outDir": "dist",
     "plugins": [
       {
@@ -11,12 +12,17 @@
       }
     ],
     "paths": {
-      "@vendly/ui/*": ["../../packages/ui/src/*"],
-      "@/*": ["./src/*"]
+      "@vendly/ui/*": [
+        "../../packages/ui/src/*"
+      ],
+      "@/*": [
+        "./src/*"
+      ]
     }
   },
   "include": [
     "src",
+    "../../packages/ui/src",
     "next.config.ts",
     "next-env.d.ts",
     ".next/types/**/*.ts"
