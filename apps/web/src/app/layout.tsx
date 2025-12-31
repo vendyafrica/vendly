@@ -1,11 +1,13 @@
 import "@vendly/ui/globals.css";
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Barlow } from "next/font/google";
 import type { ReactNode } from "react";
 
-const inter = Inter({
+const barlow = Barlow({
   subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
   display: "swap",
+  variable: "--font-sans",
 });
 
 export const metadata: Metadata = {
@@ -22,8 +24,8 @@ export default function RootLayout({
   children: ReactNode;
 }) {
   return (
-    <html lang="en">
-      <body className={inter.className}>{children}</body>
+    <html lang="en" className={barlow.variable}>
+      <body className="font-sans">{children}</body>
     </html>
   );
 }
