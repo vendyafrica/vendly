@@ -8,11 +8,7 @@
     "dev": "tsup --watch --onSuccess \"node dist/server.cjs\"",
     "build": "tsup",
     "check-types": "tsc --noEmit",
-    "lint": "eslint src/ --max-warnings 0",
-    "db:generate": "drizzle-kit generate",
-    "db:push": "drizzle-kit push",
-    "db:migrate": "drizzle-kit migrate",
-    "db:seed": "npx tsx src/db/seed/seed.ts"
+    "lint": "eslint src/ --max-warnings 0"
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.0.2",
@@ -20,6 +16,7 @@
     "body-parser": "^1.20.3",
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",
+    "@vendly/db": "workspace:*",
     "drizzle-orm": "^0.45.1",
     "drizzle-seed": "^0.3.1",
     "express": "5.2.1",

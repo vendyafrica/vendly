@@ -1,15 +1,13 @@
 import 'dotenv/config';
-import { drizzle } from 'drizzle-orm/neon-http';
 import { seed, reset } from 'drizzle-seed';
-import { usersTable } from '../schema/users';
+import { db } from '@vendly/db/server';
+import { user } from '@vendly/db';
   
-const db = drizzle(process.env.DATABASE_URL!);
-
 async function main() {
-  await reset(db, { users: usersTable });
+  await reset(db, { user });
   console.log('Database reset completed!');
 
-  await seed(db, { users: usersTable }, { 
+  await seed(db, { user }, { 
     count: 10,
     seed: 12345
   });

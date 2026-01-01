@@ -1,0 +1,28 @@
+{
+    "name": "@vendly/db",
+    "version": "0.0.0",
+    "type": "module",
+    "private": true,
+    "scripts": {
+        "db:generate": "drizzle-kit generate",
+        "db:push": "drizzle-kit push",
+        "db:migrate": "drizzle-kit migrate",
+        "db:seed": "npx tsx src/db/seed/seed.ts"
+    },
+    "dependencies": {
+        "@neondatabase/serverless": "^1.0.2",
+        "drizzle-orm": "^0.45.1",
+        "dotenv": "^17.2.3"
+    },
+    "devDependencies": {
+        "@types/node": "^22.15.3",
+        "typescript": "5.9.3",
+        "drizzle-kit": "^0.30.1"
+    },
+    "exports": {
+        ".": "./src/index.ts",
+        "./db": "./src/db.ts",
+        "./schema": "./src/schema/index.ts",
+        "./schema/*": "./src/schema/*.ts"
+    }
+}
