@@ -2,6 +2,8 @@
 import express from "express";
 import cors from "cors";
 import { Response, Request } from "express";
+import { toNodeHandler } from "better-auth/node";
+import { auth } from "./config/auth";
 
 const app = express();
 const PORT = process.env.PORT || 8000;
@@ -20,6 +22,9 @@ app.use(
     allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
+
+
+app.all("/api/auth/*", toNodeHandler(auth));
 
 app.get("/", (_req, res) => {
   res.send("API is running");
