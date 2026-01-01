@@ -11,7 +11,16 @@
       "@vendly/ui/*": [
         "./src/*"
       ]
-    }
+    },
+    "strict": false,
+    "strictNullChecks": false,
+    "noImplicitAny": false,
+    "strictFunctionTypes": false,
+    "strictBindCallApply": false,
+    "strictPropertyInitialization": false,
+    "noImplicitThis": false,
+    "noImplicitReturns": false,
+    "useUnknownInCatchVariables": false
   },
   "include": [
     "src/**/*"

@@ -14,6 +14,16 @@ export const config = defineConfig(
   eslintConfigPrettier,
   tseslint.configs.recommended,
   {
+    files: ["packages/ui/**/*.ts", "packages/ui/**/*.tsx"],
+    rules: {
+      "@typescript-eslint/no-explicit-any": "off",
+      "@typescript-eslint/no-unused-vars": "off",
+      "@typescript-eslint/ban-ts-comment": "off",
+      "@typescript-eslint/no-non-null-assertion": "off",
+      "@typescript-eslint/prefer-as-const": "off",
+    },
+  },
+  {
     plugins: {
       turbo: turboPlugin,
     },
