@@ -1,10 +1,4 @@
-import { createAuthClient } from "better-auth/client";
-import { genericOAuthClient } from "better-auth/client/plugins";
+import { authClient } from "@vendly/auth/client";
 
-export const authClient = createAuthClient({
-  baseURL: process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000",
-  basePath: "/api/auth",
-  plugins: [genericOAuthClient()],
-});
-
+export { authClient };
 export type MyAuthClient = typeof authClient;
