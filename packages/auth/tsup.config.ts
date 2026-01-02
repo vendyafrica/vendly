@@ -8,12 +8,12 @@ export default defineConfig([
     clean: true,
   },
   {
-    entry: ["src/server.ts"],
+    entry: ["src/auth.ts"],
     format: ["esm"],
     dts: true,
   },
   {
-    entry: ["src/client.ts"],
+    entry: ["src/auth-client.ts"],
     format: ["esm"],
     dts: true,
   },

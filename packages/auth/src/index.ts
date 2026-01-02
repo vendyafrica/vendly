@@ -1,2 +1,2 @@
-export * from "./server";
-export * from "./client";
+export * from "./auth";
+export * from "./auth-client";

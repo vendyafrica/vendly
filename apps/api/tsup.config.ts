@@ -3,8 +3,9 @@ import { defineConfig, type Options } from "tsup";
 export default defineConfig((options: Options) => ({
   entry: ["src/server.ts"],
   clean: true,
-  format: ["cjs"],
+  format: ["esm"],
   outDir: "dist",
-  outExtension: () => ({ js: ".cjs" }),
+  outExtension: () => ({ js: ".mjs" }),
+  external: ["better-auth/node"],
   ...options,
 }));

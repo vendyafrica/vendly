@@ -14,7 +14,8 @@ import {
 } from 'drizzle-orm'
 
 import {
-  users,
+  user,
+  account,
   chat_ownerships,
   anonymous_chat_logs,
   type User,
@@ -27,7 +28,7 @@ import { db } from '@vendly/db'
 
 export async function getUser(email: string): Promise<Array<User>> {
   try {
-    return await db.select().from(users).where(eq(users.email, email))
+    return await db.select().from(user).where(eq(user.email, email))
   } catch (error) {
     console.error('Failed to get user from database')
     throw error
@@ -40,13 +41,30 @@ export async function createUser(
 ): Promise<User[]> {
   try {
     const hashedPassword = generateHashedPassword(password)
-    return await db
-      .insert(users)
+    const userId = generateUUID()
+    
+    // Create user first
+    const [newUser] = await db
+      .insert(user)
       .values({
+        id: userId,
+        name: email.split('@')[0], // Use part of email as name
         email,
-        password: hashedPassword,
       })
       .returning()
+    
+    // Then create account with password
+    await db
+      .insert(account)
+      .values({
+        id: generateUUID(),
+        accountId: userId,
+        providerId: 'credential',
+        userId: userId,
+        password: hashedPassword,
+      })
+    
+    return [newUser]
   } catch (error) {
     console.error('Failed to create user in database')
     throw error
@@ -59,10 +77,11 @@ export async function createGuestUser(): Promise<User[]> {
     const guestEmail = `guest-${guestId}@example.com`
 
     return await db
-      .insert(users)
+      .insert(user)
       .values({
+        id: guestId,
+        name: 'Guest',
         email: guestEmail,
-        password: null,
       })
       .returning()
   } catch (error) {

@@ -4,18 +4,12 @@ import {
   varchar,
   timestamp,
   uuid,
-  primaryKey,
   unique,
 } from 'drizzle-orm/pg-core'
+import { user, account } from './auth-schema'
 
-export const users = pgTable('users', {
-  id: uuid('id').primaryKey().notNull().defaultRandom(),
-  email: varchar('email', { length: 64 }).notNull(),
-  password: varchar('password', { length: 64 }),
-  created_at: timestamp('created_at').notNull().defaultNow(),
-})
-
-export type User = InferSelectModel<typeof users>
+export { user, account } // Re-export the user and account tables
+export type User = InferSelectModel<typeof user>
 
 // Simple ownership mapping for v0 chats
 // The actual chat data lives in v0 API, we just track who owns what
@@ -24,9 +18,9 @@ export const chat_ownerships = pgTable(
   {
     id: uuid('id').primaryKey().notNull().defaultRandom(),
     v0_chat_id: varchar('v0_chat_id', { length: 255 }).notNull(), // v0 API chat ID
-    user_id: uuid('user_id')
+    user_id: varchar('user_id', { length: 255 })
       .notNull()
-      .references(() => users.id),
+      .references(() => user.id),
     created_at: timestamp('created_at').notNull().defaultNow(),
   },
   (table) => ({

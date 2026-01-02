@@ -1,9 +1,8 @@
-
 import express from "express";
 import cors from "cors";
 import { Response, Request } from "express";
 import { toNodeHandler } from "better-auth/node";
-import { auth } from "@vendly/auth/server";
+import { auth } from "@vendly/auth";
 
 const app = express();
 const PORT = process.env.PORT || 8000;
