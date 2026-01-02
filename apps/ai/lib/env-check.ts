@@ -1,3 +1,9 @@
+import { config } from 'dotenv'
+import { resolve } from 'path'
+
+// Load environment variables from root directory
+config({ path: resolve(__dirname, '../../../.env') })
+
 export interface MissingEnvVar {
   name: string
   description: string
@@ -20,9 +26,9 @@ export function checkRequiredEnvVars(): MissingEnvVar[] {
       required: true,
     },
     {
-      name: 'POSTGRES_URL',
-      description: 'PostgreSQL database connection string',
-      example: '', // No example - user needs to provide their own
+      name: 'DATABASE_URL',
+      description: 'Neon database connection string',
+      example: 'postgresql://user:password@host/db?sslmode=require',
       required: true,
     },
   ]
@@ -42,5 +48,5 @@ export function hasAllRequiredEnvVars(): boolean {
 export const hasEnvVars = !!(
   process.env.V0_API_KEY &&
   process.env.AUTH_SECRET &&
-  process.env.POSTGRES_URL
+  process.env.DATABASE_URL
 )

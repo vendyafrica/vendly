@@ -20,10 +20,10 @@ import {
   type User,
   type ChatOwnership,
   type AnonymousChatLog,
-} from './schema'
+} from '@vendly/db/schema'
 import { generateUUID } from '../utils'
 import { generateHashedPassword } from './utils'
-import db from './connection'
+import { db } from '@vendly/db'
 
 export async function getUser(email: string): Promise<Array<User>> {
   try {
