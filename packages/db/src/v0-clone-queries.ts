@@ -8,6 +8,7 @@ import {
   eq,
   gt,
   gte,
+  getTableColumns,
   inArray,
   lt,
   type SQL,
@@ -25,9 +26,18 @@ import {
 import { generateHashedPassword } from "./utils";
 import { db } from "./db";
 
-export async function getUser(email: string): Promise<Array<User>> {
+export async function getUser(email: string): Promise<Array<User & { password: string | null }>> {
   try {
-    return await db.select().from(user).where(eq(user.email, email));
+    const users = await db
+      .select({
+        ...getTableColumns(user),
+        password: account.password,
+      })
+      .from(user)
+      .leftJoin(account, eq(user.id, account.userId))
+      .where(eq(user.email, email));
+    
+    return users;
   } catch (error) {
     console.error("Failed to get user from database");
     throw error;

@@ -81,15 +81,13 @@ export const auth = betterAuth({
     cookiePrefix: "vendly",
     useSecureCookies: true,
     defaultCookieAttributes: {
-      sameSite: 'none', // Enable cross-site cookies
-      secure: true, // Required for SameSite=None
+     sameSite:"none",
+     secure:true
     },
     crossSubDomainCookies: {
       enabled: false,
     },
   },
 });
-
-
 
 export type Auth = typeof auth;
