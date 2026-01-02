@@ -19,6 +19,15 @@ import {
   Menu01Icon,
 } from "@hugeicons/core-free-icons";
 import { useState } from "react";
+import { signInWithGoogle } from "@/lib/auth";
+
+const handleGoogleSignIn = async () => {
+  try {
+    await signInWithGoogle();
+  } catch (error) {
+    console.error("Google sign-in failed", error);
+  }
+};
 
 const categories = [
   "Women",
@@ -46,7 +55,7 @@ export default function Header() {
         <div className="flex flex-1 justify-center">
           <div className="relative w-full max-w-2xl">
             <div className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
-              <HugeiconsIcon icon={Search01Icon} size={15}/>
+              <HugeiconsIcon icon={Search01Icon} size={15} />
             </div>
             <Input
               type="search"
@@ -58,15 +67,23 @@ export default function Header() {
 
         {/* Actions */}
         <div className="flex items-center gap-2">
-             <DropdownMenu>
+          <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon-lg" aria-label="Categories" className="cursor-pointer">
+              <Button
+                variant="ghost"
+                size="icon-lg"
+                aria-label="Categories"
+                className="cursor-pointer"
+              >
                 <HugeiconsIcon icon={Menu01Icon} size={28} />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-56" align="end">
               <DropdownMenuLabel>Categories</DropdownMenuLabel>
-              <DropdownMenuRadioGroup value={selectedCategory} onValueChange={setSelectedCategory}>
+              <DropdownMenuRadioGroup
+                value={selectedCategory}
+                onValueChange={setSelectedCategory}
+              >
                 {categories.map((category) => (
                   <DropdownMenuRadioItem key={category} value={category}>
                     {category}
@@ -74,17 +91,26 @@ export default function Header() {
                 ))}
               </DropdownMenuRadioGroup>
             </DropdownMenuContent>
-          </DropdownMenu> 
-          
+          </DropdownMenu>
+
           <Button variant="ghost" size="icon-lg" className="cursor-pointer">
             <HugeiconsIcon icon={FavouriteIcon} size={28} />
           </Button>
 
-          <Button variant="ghost" size="icon-lg" aria-label="Cart" className="cursor-pointer">
+          <Button
+            variant="ghost"
+            size="icon-lg"
+            aria-label="Cart"
+            className="cursor-pointer"
+          >
             <HugeiconsIcon icon={ShoppingCart01Icon} size={28} />
           </Button>
 
-          <Button size="lg" className="ml-2 px-5 text-sm font-semibold cursor-pointer">
+          <Button
+            size="lg"
+            className="ml-2 px-5 text-sm font-semibold cursor-pointer"
+            onClick={handleGoogleSignIn}
+          >
             Sign in
           </Button>
         </div>

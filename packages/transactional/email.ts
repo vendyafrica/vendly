@@ -1,5 +1,7 @@
 import { resend } from './resend.js';
-import { renderVerificationEmail } from '@vendly/transactional';
+import { render } from '@react-email/components';
+import { VerificationEmail } from './emails/verification.js';
+import * as React from 'react';
 
 interface SendVerificationProps {
   to: string;
@@ -9,10 +11,10 @@ interface SendVerificationProps {
 }
 
 const sendEmail = async ({ to, subject, verificationUrl, name }: SendVerificationProps) => {
-  const emailHtml = await renderVerificationEmail({
+  const emailHtml = await render(React.createElement(VerificationEmail, {
     name,
-    url: verificationUrl
-  });
+    url: verificationUrl,
+  }));
 
 
   const data = await resend.emails.send({

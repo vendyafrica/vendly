@@ -5,7 +5,7 @@
   "private": true,
   "scripts": {
     "start": "node dist/index.js",
-    "dev": "pnpm build:auth && pnpm build:transactional && tsx watch src/server.ts",
+    "dev": "pnpm build:transactional && pnpm build:auth && tsx watch src/server.ts",
     "build": "tsup",
     "build:auth": "cd ../../packages/auth && pnpm build",
     "build:transactional": "cd ../../packages/transactional && pnpm build",

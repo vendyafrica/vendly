@@ -1,9 +1,16 @@
-import { createAuthClient } from "better-auth/react";
+import { ClientOptions, createAuthClient } from "better-auth/client";
+import { genericOAuthClient } from "better-auth/client/plugins";
 
-const baseURL = process.env.NEXT_PUBLIC_BETTER_AUTH_URL || "http://localhost:8000";
+type AuthClientOptions = Omit<ClientOptions, "plugins"> & {
+  plugins: [ReturnType<typeof genericOAuthClient>];
+};
 
-export const authClient = createAuthClient({
-  baseURL: `${baseURL}/api/auth`,
+const _authClient: ReturnType<typeof createAuthClient<AuthClientOptions>> = createAuthClient<AuthClientOptions>({
+  baseURL: process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000",
+  basePath: "/api/auth",
+  plugins: [genericOAuthClient()],
 });
 
-export type AuthClient = typeof authClient;
+export type MyAuthClient = typeof _authClient;
+
+export const authClient: MyAuthClient = _authClient;

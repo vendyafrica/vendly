@@ -20,6 +20,8 @@
   },
   "include": [
     "index.ts",
+    "email.ts",
+    "resend.ts",
     "emails/**/*"
   ],
   "exclude": [

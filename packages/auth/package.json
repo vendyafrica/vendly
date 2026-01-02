@@ -35,6 +35,7 @@
   },
   "dependencies": {
     "@vendly/db": "workspace:*",
+    "@vendly/transactional": "workspace:*",
     "better-auth": "^1.4.10"
   },
   "devDependencies": {
