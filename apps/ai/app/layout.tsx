@@ -16,9 +16,9 @@ const geistMono = Geist_Mono({
 })
 
 export const metadata: Metadata = {
-  title: 'v0 Clone',
+  title: 'Vendly',
   description:
-    'A clone of v0.dev built with the v0 SDK - Generate and preview React components with AI',
+    'Vendly - AI-powered React component generator and preview tool for building modern web applications',
 }
 
 export default function RootLayout({

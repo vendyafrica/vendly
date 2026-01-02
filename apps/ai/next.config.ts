@@ -1,7 +1,10 @@
 import type { NextConfig } from 'next'
 
 const nextConfig: NextConfig = {
-  reactStrictMode: true, // Enable strict mode for better development experience
+  reactStrictMode: true,
+  turbopack: {
+    root: '../../'
+  }
 }
 
 export default nextConfig
