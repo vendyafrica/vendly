@@ -1,18 +1,42 @@
 'use client'
 
 import { signOut } from 'next-auth/react'
-import { Avatar, AvatarFallback } from '@/components/ui/avatar'
-import { Button } from '@/components/ui/button'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
+import { Avatar, AvatarFallback } from '@vendly/ui/components/ui/avatar'
+import { Button } from '@vendly/ui/components/ui/button'
+import dynamic from 'next/dynamic'
 import { LogOut, User } from 'lucide-react'
 import { Session } from 'next-auth'
+
+// Dynamically import DropdownMenu to avoid SSR hydration issues
+const DropdownMenu = dynamic(
+  () => import('@vendly/ui/components/ui/dropdown-menu').then(mod => ({ default: mod.DropdownMenu })),
+  { ssr: false }
+)
+
+const DropdownMenuTrigger = dynamic(
+  () => import('@vendly/ui/components/ui/dropdown-menu').then(mod => ({ default: mod.DropdownMenuTrigger })),
+  { ssr: false }
+)
+
+const DropdownMenuContent = dynamic(
+  () => import('@vendly/ui/components/ui/dropdown-menu').then(mod => ({ default: mod.DropdownMenuContent })),
+  { ssr: false }
+)
+
+const DropdownMenuItem = dynamic(
+  () => import('@vendly/ui/components/ui/dropdown-menu').then(mod => ({ default: mod.DropdownMenuItem })),
+  { ssr: false }
+)
+
+const DropdownMenuLabel = dynamic(
+  () => import('@vendly/ui/components/ui/dropdown-menu').then(mod => ({ default: mod.DropdownMenuLabel })),
+  { ssr: false }
+)
+
+const DropdownMenuSeparator = dynamic(
+  () => import('@vendly/ui/components/ui/dropdown-menu').then(mod => ({ default: mod.DropdownMenuSeparator })),
+  { ssr: false }
+)
 
 interface UserNavProps {
   session: Session | null

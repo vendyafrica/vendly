@@ -7,8 +7,8 @@ import { ChatSelector } from './chat-selector'
 import { MobileMenu } from './mobile-menu'
 import { useSession } from 'next-auth/react'
 import { UserNav } from '@/components/user-nav'
-import { Button } from '@/components/ui/button'
-import { VercelIcon, GitHubIcon } from '@/components/ui/icons'
+import { Button } from '@vendly/ui/components/ui/button'
+import { VercelIcon, GitHubIcon } from '@vendly/ui/components/ui/icons'
 import { DEPLOY_URL } from '@/lib/constants'
 import { Info } from 'lucide-react'
 import {
@@ -17,7 +17,7 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog'
+} from '@vendly/ui/components/ui/dialog'
 
 interface AppHeaderProps {
   className?: string

@@ -1,7 +1,7 @@
 'use client'
 
-import { Button } from '@/components/ui/button'
-import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area'
+import { Button } from '@vendly/ui/components/ui/button'
+import { ScrollArea, ScrollBar } from '@vendly/ui/components/ui/scroll-area'
 import { cn } from '@/lib/utils'
 import { useEffect, useRef, useState } from 'react'
 import type { ComponentProps } from 'react'
@@ -54,12 +54,12 @@ export const Suggestions = ({
     <div className="relative">
       {/* Left fade overlay */}
       {canScrollLeft && (
-        <div className="absolute -left-px -top-px z-10 h-[calc(100%+1px)] w-12 bg-gradient-to-r from-gray-50 dark:from-black to-transparent pointer-events-none" />
+        <div className="absolute -left-px -top-px z-10 h-[calc(100%+1px)] w-12 bg-linear-to-r from-gray-50 dark:from-black to-transparent pointer-events-none" />
       )}
 
       {/* Right fade overlay */}
       {canScrollRight && (
-        <div className="absolute -right-px -top-px z-10 h-[calc(100%+1px)] w-12 bg-gradient-to-l from-gray-50 dark:from-black to-transparent pointer-events-none" />
+        <div className="absolute -right-px -top-px z-10 h-[calc(100%+1px)] w-12 bg-linear-to-l from-gray-50 dark:from-black to-transparent pointer-events-none" />
       )}
 
       <ScrollArea

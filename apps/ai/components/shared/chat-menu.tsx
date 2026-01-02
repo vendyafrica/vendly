@@ -9,7 +9,7 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
+} from '@vendly/ui/components/ui/dropdown-menu'
 import {
   Dialog,
   DialogContent,
@@ -18,8 +18,8 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from '@/components/ui/dialog'
-import { Button } from '@/components/ui/button'
+} from '@vendly/ui/components/ui/dialog'
+import { Button } from '@vendly/ui/components/ui/button'
 
 interface ChatMenuProps {
   chatId: string

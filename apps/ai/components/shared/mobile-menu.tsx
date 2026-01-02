@@ -5,8 +5,8 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import { Menu, X, Info } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { GitHubIcon, VercelIcon } from '@/components/ui/icons'
+import { Button } from '@vendly/ui/components/ui/button'
+import { GitHubIcon, VercelIcon } from '@vendly/ui/components/ui/icons'
 import { DEPLOY_URL } from '@/lib/constants'
 import { ChatSelector } from './chat-selector'
 import {
@@ -15,7 +15,7 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog'
+} from '@vendly/ui/components/ui/dialog'
 
 interface MobileMenuProps {
   onInfoDialogOpen: () => void
@@ -138,7 +138,7 @@ export function MobileMenu({ onInfoDialogOpen }: MobileMenuProps) {
                     }}
                   >
                     <div className="flex items-center gap-3 w-full">
-                      <Info className="h-4 w-4 flex-shrink-0" />
+                      <Info className="h-4 w-4 shrink-0" />
                       <div className="flex-1">
                         <div className="font-medium">What's This?</div>
                         <div className="text-sm text-muted-foreground">

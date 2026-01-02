@@ -1,22 +1,22 @@
 'use client'
 
-import { Button } from '@/components/ui/button'
+import type { ComponentProps, ReactNode } from 'react'
+import { createContext, useContext, useState } from 'react'
+import { Button } from '@vendly/ui/components/ui/button'
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
-} from '@/components/ui/collapsible'
-import { Input } from '@/components/ui/input'
+} from '@vendly/ui/components/ui/collapsible'
+import { Input } from '@vendly/ui/components/ui/input'
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from '@/components/ui/tooltip'
+} from '@vendly/ui/components/ui/tooltip'
 import { cn } from '@/lib/utils'
 import { ChevronDownIcon } from 'lucide-react'
-import type { ComponentProps, ReactNode } from 'react'
-import { createContext, useContext, useState } from 'react'
 
 export type WebPreviewContextValue = {
   url: string

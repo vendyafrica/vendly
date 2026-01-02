@@ -2,8 +2,8 @@
 
 import { useActionState } from 'react'
 import { signInAction, signUpAction } from '@/app/(auth)/actions'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
+import { Button } from '@vendly/ui/components/ui/button'
+import { Input } from '@vendly/ui/components/ui/input'
 import Link from 'next/link'
 
 interface AuthFormProps {

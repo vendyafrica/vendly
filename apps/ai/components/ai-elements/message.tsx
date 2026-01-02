@@ -1,7 +1,7 @@
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { cn } from '@/lib/utils'
-import type { UIMessage } from 'ai'
 import type { ComponentProps, HTMLAttributes } from 'react'
+import type { UIMessage } from 'ai'
+import { Avatar, AvatarFallback, AvatarImage } from '@vendly/ui/components/ui/avatar'
+import { cn } from '@/lib/utils'
 
 export type MessageProps = HTMLAttributes<HTMLDivElement> & {
   from: UIMessage['role']
@@ -51,7 +51,7 @@ export const MessageAvatar = ({
   ...props
 }: MessageAvatarProps) => (
   <Avatar
-    className={cn('size-8 ring ring-1 ring-border', className)}
+    className={cn('size-8 ring ring-border', className)}
     {...props}
   >
     <AvatarImage alt="" className="mt-0 mb-0" src={src} />
