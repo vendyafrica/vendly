@@ -12,6 +12,7 @@ interface Chat {
     role: 'user' | 'assistant'
     content: string
     experimental_content?: any
+    finishReason?: string
   }>
 }
 
@@ -29,6 +30,9 @@ export function useChat(chatId: string) {
   const [isLoading, setIsLoading] = useState(false)
   const [isStreaming, setIsStreaming] = useState(false)
   const [chatHistory, setChatHistory] = useState<ChatMessage[]>([])
+  const [isResuming, setIsResuming] = useState(false)
+  const resumedMessageIdsRef = (globalThis as any).__v0ResumedMessageIdsRef ||
+    ((globalThis as any).__v0ResumedMessageIdsRef = new Set<string>())
 
   // Use SWR to fetch chat data
   const {
@@ -59,6 +63,86 @@ export function useChat(chatId: string) {
       }
     },
   })
+
+  useEffect(() => {
+    if (!chatId) return
+    if (!currentChat?.messages || currentChat.messages.length === 0) return
+    if (isStreaming || isResuming) return
+
+    const last = currentChat.messages[currentChat.messages.length - 1]
+
+    // When v0 returns finishReason 'tool-calls', generation is paused and must be resumed.
+    if (last.role !== 'assistant') return
+    if (last.finishReason !== 'tool-calls') return
+    if (!last.id) return
+    if (resumedMessageIdsRef.has(last.id)) return
+
+    let cancelled = false
+
+    const run = async () => {
+      setIsResuming(true)
+      setIsLoading(true)
+      resumedMessageIdsRef.add(last.id)
+
+      try {
+        const resumeResponse = await fetch('/api/chat/resume', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ chatId, messageId: last.id }),
+        })
+
+        if (!resumeResponse.ok) {
+          let msg = 'Failed to resume generation'
+          try {
+            const data = await resumeResponse.json()
+            if (data?.error) msg = data.error
+          } catch {}
+          throw new Error(msg)
+        }
+
+        // Poll chat details briefly until the assistant message finishes.
+        for (let i = 0; i < 10 && !cancelled; i++) {
+          await new Promise((r) => setTimeout(r, 1200))
+          const res = await fetch(`/api/chats/${chatId}`)
+          if (!res.ok) continue
+
+          const updated = (await res.json()) as Chat
+          const updatedLast = updated?.messages?.[updated.messages.length - 1]
+          const demoUrl = (updated as any)?.latestVersion?.demoUrl || updated?.demo
+
+          mutate(
+            `/api/chats/${chatId}`,
+            {
+              ...(updated as any),
+              demo: demoUrl,
+            },
+            false,
+          )
+
+          if (
+            updatedLast?.role === 'assistant' &&
+            updatedLast.finishReason &&
+            updatedLast.finishReason !== 'tool-calls'
+          ) {
+            break
+          }
+        }
+      } catch (e) {
+        console.error('Auto-resume failed:', e)
+      } finally {
+        if (!cancelled) {
+          setIsResuming(false)
+          setIsLoading(false)
+        }
+      }
+    }
+
+    run()
+
+    return () => {
+      cancelled = true
+    }
+  }, [chatId, currentChat, isStreaming, isResuming, resumedMessageIdsRef])
 
   // Handle streaming from context (when redirected from homepage)
   useEffect(() => {

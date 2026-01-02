@@ -52,6 +52,7 @@
     "swr": "^2.3.6",
     "tsx": "^4.19.2",
     "use-stick-to-bottom": "^1.1.1",
+    "v0-sdk": "^0.15.3",
     "zod": "^4.1.1"
   },
   "devDependencies": {

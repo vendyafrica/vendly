@@ -167,6 +167,8 @@ export const WebPreviewBody = ({
     <div className="flex-1">
       <iframe
         className={cn('size-full', className)}
+        allow="clipboard-read; clipboard-write; fullscreen; geolocation; microphone; camera"
+        referrerPolicy="no-referrer-when-downgrade"
         sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-presentation"
         src={(src ?? url) || undefined}
         title="Preview"
@@ -177,7 +179,7 @@ export const WebPreviewBody = ({
   )
 }
 
-export type WebPreviewConsoleProps = ComponentProps<'div'> & {
+export type WebPreviewConsoleProps = ComponentProps<typeof Collapsible> & {
   logs?: Array<{
     level: 'log' | 'warn' | 'error'
     message: string

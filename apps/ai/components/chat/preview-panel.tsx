@@ -5,7 +5,7 @@ import {
   WebPreviewUrl,
   WebPreviewBody,
 } from '@/components/ai-elements/web-preview'
-import { RefreshCw, Monitor, Maximize, Minimize } from 'lucide-react'
+import { RefreshCw, Maximize, Minimize, ExternalLink } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 interface Chat {
@@ -29,6 +29,8 @@ export function PreviewPanel({
   refreshKey,
   setRefreshKey,
 }: PreviewPanelProps) {
+  const demoUrl = currentChat?.demo || ''
+
   return (
     <div
       className={cn(
@@ -37,7 +39,8 @@ export function PreviewPanel({
       )}
     >
       <WebPreview
-        defaultUrl={currentChat?.demo || ''}
+        key={demoUrl}
+        defaultUrl={demoUrl}
         onUrlChange={(url) => {
           // Optional: Handle URL changes if needed
           console.log('Preview URL changed:', url)
@@ -50,19 +53,29 @@ export function PreviewPanel({
               setRefreshKey((prev) => prev + 1)
             }}
             tooltip="Refresh preview"
-            disabled={!currentChat?.demo}
+            disabled={!demoUrl}
           >
             <RefreshCw className="h-4 w-4" />
+          </WebPreviewNavigationButton>
+          <WebPreviewNavigationButton
+            onClick={() => {
+              if (!demoUrl) return
+              window.open(demoUrl, '_blank', 'noopener,noreferrer')
+            }}
+            tooltip="Open preview in new tab"
+            disabled={!demoUrl}
+          >
+            <ExternalLink className="h-4 w-4" />
           </WebPreviewNavigationButton>
           <WebPreviewUrl
             readOnly
             placeholder="Your app will appear here..."
-            value={currentChat?.demo || ''}
+            value={demoUrl}
           />
           <WebPreviewNavigationButton
             onClick={() => setIsFullscreen(!isFullscreen)}
             tooltip={isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}
-            disabled={!currentChat?.demo}
+            disabled={!demoUrl}
           >
             {isFullscreen ? (
               <Minimize className="h-4 w-4" />
@@ -71,8 +84,8 @@ export function PreviewPanel({
             )}
           </WebPreviewNavigationButton>
         </WebPreviewNavigation>
-        {currentChat?.demo ? (
-          <WebPreviewBody key={refreshKey} src={currentChat.demo} />
+        {demoUrl ? (
+          <WebPreviewBody key={refreshKey} src={demoUrl} />
         ) : (
           <div className="flex-1 flex items-center justify-center bg-gray-50 dark:bg-black">
             <div className="text-center">

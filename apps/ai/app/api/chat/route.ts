@@ -18,6 +18,9 @@ const v0 = createClient(
   process.env.V0_API_URL ? { baseUrl: process.env.V0_API_URL } : {},
 )
 
+const defaultSystem =
+  'Temporary constraint: Do not use Supabase or any external database/service. Do not reference @supabase/* packages or require any environment variables. Build the app using local in-memory state only (React state).'
+
 function getClientIP(request: NextRequest): string {
   const forwarded = request.headers.get('x-forwarded-for')
   const realIP = request.headers.get('x-real-ip')
@@ -102,9 +105,10 @@ export async function POST(request: NextRequest) {
         chat = await v0.chats.sendMessage({
           chatId: chatId,
           message,
+          system: defaultSystem,
           responseMode: 'experimental_stream',
           ...(attachments && attachments.length > 0 && { attachments }),
-        })
+        } as any)
         console.log('Streaming message sent to existing chat successfully')
 
         // Return the stream directly
@@ -120,8 +124,9 @@ export async function POST(request: NextRequest) {
         chat = await v0.chats.sendMessage({
           chatId: chatId,
           message,
+          system: defaultSystem,
           ...(attachments && attachments.length > 0 && { attachments }),
-        })
+        } as any)
       }
     } else {
       // create new chat
@@ -133,9 +138,10 @@ export async function POST(request: NextRequest) {
         })
         chat = await v0.chats.create({
           message,
+          system: defaultSystem,
           responseMode: 'experimental_stream',
           ...(attachments && attachments.length > 0 && { attachments }),
-        })
+        } as any)
         console.log('Streaming chat created successfully')
 
         // Return the stream directly
@@ -154,9 +160,10 @@ export async function POST(request: NextRequest) {
         })
         chat = await v0.chats.create({
           message,
+          system: defaultSystem,
           responseMode: 'sync',
           ...(attachments && attachments.length > 0 && { attachments }),
-        })
+        } as any)
         console.log('Sync chat created successfully')
       }
     }

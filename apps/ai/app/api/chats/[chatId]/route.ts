@@ -46,7 +46,14 @@ export async function GET(
 
     console.log('Chat details fetched:', chatDetails)
 
-    return NextResponse.json(chatDetails)
+    const demo =
+      (chatDetails as any)?.latestVersion?.demoUrl || (chatDetails as any)?.demo
+
+    return NextResponse.json({
+      ...(chatDetails as any),
+      demo,
+      url: (chatDetails as any)?.webUrl || (chatDetails as any)?.url,
+    })
   } catch (error) {
     console.error('Error fetching chat details:', error)
 
