@@ -22,8 +22,7 @@ app.use(
   })
 );
 
-
-app.all("/api/auth/*", toNodeHandler(auth));
+app.all("/api/auth/*splat", toNodeHandler(auth));
 
 app.get("/", (_req, res) => {
   res.send("API is running");
