@@ -7,3 +7,9 @@ export async function signInWithGoogle() {
       console.log("Signing in with Google...", data);
       return data;
   }
+
+export async function SignOut() {
+  const data = await authClient.signOut();
+  console.log("Signing out...", data);
+  return data;
+}

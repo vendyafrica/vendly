@@ -39,6 +39,7 @@ export const auth = betterAuth({
     process.env.STOREFRONT_URL_PROD || process.env.STOREFRONT_URL_DEV,
     "http://localhost:3000",
     "http://localhost:4000",
+    process.env.NGROK_URL,
   ].filter((origin): origin is string => Boolean(origin)),
 
   socialProviders: {

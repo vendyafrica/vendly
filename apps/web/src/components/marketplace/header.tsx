@@ -19,7 +19,7 @@ import {
   Menu01Icon,
 } from "@hugeicons/core-free-icons";
 import { useState } from "react";
-import { signInWithGoogle } from "@/lib/auth";
+import { signInWithGoogle, SignOut } from "@/lib/auth";
 
 const handleGoogleSignIn = async () => {
   try {
@@ -28,6 +28,14 @@ const handleGoogleSignIn = async () => {
     console.error("Google sign-in failed", error);
   }
 };
+
+const handleSignOut = async () =>{
+  try {
+    await SignOut();
+  } catch (error) {
+    console.error("Sign-out failed", error);
+  }
+}
 
 const categories = [
   "Women",
@@ -112,6 +120,9 @@ export default function Header() {
             onClick={handleGoogleSignIn}
           >
             Sign in
+          </Button>
+          <Button onClick={handleSignOut}>
+            sign out
           </Button>
         </div>
       </div>
