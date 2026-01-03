@@ -1,11 +1,11 @@
 "use client"
 
 import * as React from "react"
-import { useForm, Controller, useFormContext, type FieldPath, type FormFieldProps } from "react-hook-form"
+import { useForm, Controller, useFormContext, type FieldPath, type ControllerProps } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
 
-import { cn } from "@vendly/ui/lib/utils"
+import { cn } from "../lib/utils"
 
 const Form = useForm
 
@@ -25,7 +25,7 @@ const FormField = <
   TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>
 >({
   ...props
-}: FormFieldProps<TFieldValues, TName>) => {
+}: ControllerProps<TFieldValues, TName>) => {
   return (
     <FormFieldContext.Provider value={{ name: props.name }}>
       <Controller {...props} />
