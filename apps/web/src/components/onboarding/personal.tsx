@@ -1,50 +1,56 @@
-import type { ComponentProps } from "react";
+import { Button } from "@vendly/ui/components/button"
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@vendly/ui/components/card"
+import { Input } from "@vendly/ui/components/input"
+import { Label } from "@vendly/ui/components/label"
 
-import { cn } from "@vendly/ui/lib/utils";
-import { Button } from "@vendly/ui/components/button";
-import { Field, FieldGroup, FieldLabel } from "@vendly/ui/components/field";
-import { Input } from "@vendly/ui/components/input";
-import Link from "next/link";
-
-import OnboardingShell from "@/components/onboarding/OnboardingShell";
-
-export function PersonalForm({
-  className,
-  ...props
- }: ComponentProps<"form">) {
+export function PersonalForm() {
   return (
-    <OnboardingShell
-      title="Personal Information"
-      description="Enter your details to continue"
-    >
-      <form className={cn("flex flex-col gap-6", className)} {...props}>
-        <FieldGroup>
-          <Field>
-            <FieldLabel htmlFor="name">Name</FieldLabel>
-            <Input id="name" type="text" placeholder="John Doe" required />
-          </Field>
-          <Field>
-            <FieldLabel htmlFor="phone">Phone Number</FieldLabel>
-            <Input
-              id="phone"
-              type="tel"
-              placeholder="+1 (555) 000-0000"
-              required
-            />
-          </Field>
-          <Field>
-            <FieldLabel htmlFor="city">City</FieldLabel>
-            <Input id="city" type="text" placeholder="San Francisco" required />
-          </Field>
-          <Field>
-            <Link href="/sell/business">
-              <Button type="button" className="w-full">
-                Continue
-              </Button>
-            </Link>
-          </Field>
-        </FieldGroup>
-      </form>
-    </OnboardingShell>
-  );
+    <Card className="w-full max-w-4xl rounded-2xl py-10 gap-10">
+      <CardHeader className="px-10">
+        <CardTitle className="text-2xl">Personal details</CardTitle>
+        <CardDescription>
+          Tell us a bit about yourself to get started.
+        </CardDescription>
+      </CardHeader>
+
+      <CardContent className="px-10">
+        <form>
+          <div className="grid gap-6 md:grid-cols-2">
+            <div className="grid gap-2">
+              <Label htmlFor="fullName">Full name</Label>
+              <Input
+                id="fullName"
+                type="text"
+                placeholder="Jeremiah Sentomero"
+                required
+              />
+            </div>
+
+            <div className="grid gap-2">
+              <Label htmlFor="phone">Phone number</Label>
+              <Input
+                id="phone"
+                type="tel"
+                placeholder="+254 7XX XXX XXX"
+                required
+              />
+            </div>
+          </div>
+        </form>
+      </CardContent>
+
+      <CardFooter className="px-10 justify-end">
+        <Button type="submit" className="px-8">
+          Continue
+        </Button>
+      </CardFooter>
+    </Card>
+  )
 }
