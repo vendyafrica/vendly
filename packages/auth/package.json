@@ -1,0 +1,49 @@
+{
+  "name": "@vendly/auth",
+  "version": "0.0.0",
+  "type": "module",
+  "private": true,
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./client": {
+      "types": "./dist/auth-client.d.ts",
+      "import": "./dist/auth-client.js"
+    },
+    "./server": {
+      "types": "./dist/auth.d.ts",
+      "import": "./dist/auth.js"
+    },
+    "./auth": {
+      "types": "./dist/auth.d.ts",
+      "import": "./dist/auth.js"
+    },
+    "./auth-client": {
+      "types": "./dist/auth-client.d.ts",
+      "import": "./dist/auth-client.js"
+    }
+  },
+  "scripts": {
+    "build": "tsup",
+    "check-types": "tsc --noEmit",
+    "lint": "eslint src/ --max-warnings 0"
+  },
+  "dependencies": {
+    "@vendly/db": "workspace:*",
+    "@vendly/transactional": "workspace:*",
+    "better-auth": "^1.4.10"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.3",
+    "@vendly/eslint-config": "workspace:*",
+    "@vendly/typescript-config": "workspace:*",
+    "eslint": "^9.39.0",
+    "tsup": "^8.5.0",
+    "typescript": "5.9.3"
+  }
+}
