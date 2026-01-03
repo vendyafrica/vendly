@@ -4,12 +4,16 @@
   "scripts": {
     "build": "turbo run build",
     "clean": "turbo run clean",
-    "dev": "turbo run dev",
+    "dev": "turbo run dev --filter=web --filter=admin --filter=ai",
+    "dev:web": "turbo run dev --filter=web",
+    "dev:admin": "turbo run dev --filter=admin",
+    "dev:ai": "turbo run dev --filter=ai",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
     "lint": "turbo run lint",
     "test": "turbo run test",
     "check-types": "turbo run check-types"
   },
+
   "devDependencies": {
     "@types/node": "^25.0.3",
     "prettier": "^3.6.0",

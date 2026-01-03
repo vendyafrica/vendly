@@ -30,6 +30,7 @@
   },
   "scripts": {
     "build": "tsup",
+    "dev": "tsup --watch",
     "check-types": "tsc --noEmit",
     "lint": "eslint src/ --max-warnings 0"
   },
