@@ -1,11 +1,11 @@
 services:
   - type: web
-    name: @vendly-api
+    name: api
     runtime: node
     plan: free 
     region: oregon 
 
-    buildCommand: pnpm install && pnpm turbo build --filter=@@vendly/api
+    buildCommand: pnpm install && pnpm turbo build --filter=api
     startCommand: node apps/api/dist/server.js
 
     buildFilter:
