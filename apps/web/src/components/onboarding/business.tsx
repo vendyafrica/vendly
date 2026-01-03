@@ -1,47 +1,70 @@
-import type { ComponentProps } from "react";
-
-import { cn } from "@vendly/ui/lib/utils";
-import { Field, FieldGroup, FieldLabel } from "@vendly/ui/components/field";
+import { Button } from "@vendly/ui/components/button";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@vendly/ui/components/card";
 import { Input } from "@vendly/ui/components/input";
+import { Label } from "@vendly/ui/components/label";
+import * as Checkbox from "@radix-ui/react-checkbox";
+import { CheckIcon } from "@radix-ui/react-icons";
 
-export function BusinessForm({
-  className,
-  ...props
-}: ComponentProps<"form">) {
+export function BusinessForm() {
   return (
-    <div className="w-full max-w-4xl rounded-2xl py-10 gap-10">
-      <div className="px-10">
-        <div className="flex flex-col">
-          <h1 className="text-2xl font-bold tracking-tight">Business Information</h1>
-          <p className="text-muted-foreground text-sm text-balance mt-1">
-            Tell us about your business
-          </p>
-        </div>
-      </div>
-      <div className="px-10">
-        <form className={cn("flex flex-col gap-6", className)} {...props}>
-          <FieldGroup>
-            <Field>
-              <FieldLabel htmlFor="businessName">Business Name</FieldLabel>
-              <Input
-                id="businessName"
-                type="text"
-                placeholder="Acme Ltd"
-                required
-              />
-            </Field>
-            <Field>
-              <FieldLabel htmlFor="businessType">Business Type</FieldLabel>
-              <Input
-                id="businessType"
-                type="text"
-                placeholder="Retail"
-                required
-              />
-            </Field>
-          </FieldGroup>
+    <Card className="w-full max-w-4xl rounded-2xl py-10 gap-10">
+      <CardHeader className="px-10">
+        <CardTitle className="text-xl">Business Information</CardTitle>
+        <CardDescription>
+          Tell us about your business
+        </CardDescription>
+      </CardHeader>
+
+      <CardContent className="px-10">
+        <form>
+          <div className="space-y-4 mt-6">
+            <Label>Product Categories</Label>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+              {[
+                "Fashion",
+                "Beauty", 
+                "Home & Living",
+                "Electronics",
+                "Sports",
+                "Books",
+                "Toys",
+                "Food",
+                "Health"
+              ].map((category) => (
+                <div key={category} className="flex items-center space-x-2">
+                  <Checkbox.Root
+                    id={category}
+                    className="h-4 w-4 rounded border border-gray-300 data-[state=checked]:bg-primary data-[state=checked]:border-primary"
+                  >
+                    <Checkbox.Indicator className="flex items-center justify-center text-white">
+                      <CheckIcon className="h-3 w-3" />
+                    </Checkbox.Indicator>
+                  </Checkbox.Root>
+                  <label
+                    htmlFor={category}
+                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                  >
+                    {category}
+                  </label>
+                </div>
+              ))}
+            </div>
+          </div>
         </form>
-      </div>
-    </div>
+      </CardContent>
+
+      <CardFooter className="px-10 justify-end">
+        <Button type="submit" className="px-8">
+          Connect Instagram
+        </Button>
+      </CardFooter>
+    </Card>
   );
 }

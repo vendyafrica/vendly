@@ -20,7 +20,6 @@ const steps = [
   { title: 'Personal', href: '/sell/personal' },
   { title: 'Business', href: '/sell/business' },
   { title: 'Store Setup', href: '/sell/store-setup' },
-  { title: 'Payments', href: '/sell/payments' },
   { title: 'Success', href: '/sell/success' },
 ];
 
