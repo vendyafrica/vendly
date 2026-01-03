@@ -1,3 +1,5 @@
-export default function Payments() {
-    return <div>Payments</div>;
+import { PaymentsForm } from "@/components/onboarding/payments";
+
+export default function PaymentsPage() {
+  return <PaymentsForm />;
 }

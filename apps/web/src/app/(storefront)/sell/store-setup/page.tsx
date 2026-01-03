@@ -1,3 +1,5 @@
-export default function StoreSetup() {
-    return <div>Store Setup</div>;
+import { StoreSetupForm } from "@/components/onboarding/store-setup";
+
+export default function StoreSetupPage() {
+  return <StoreSetupForm />;
 }

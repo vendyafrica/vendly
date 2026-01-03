@@ -10,22 +10,30 @@ import {
 const steps = [
   {
     step: 1,
-    title: "Step One",
+    title: "Personal",
   },
   {
     step: 2,
-    title: "Step Two", 
+    title: "Business", 
   },
   {
     step: 3,
-    title: "Step Three",
+    title: "Store Setup",
+  },
+  {
+    step: 4,
+    title: "Payments",
+  },
+  {
+    step: 5,
+    title: "Success",
   },
 ];
 
-function Component() {
+function Steps({ currentStep = 1 }: { currentStep?: number }) {
   return (
     <div className="space-y-8 text-center min-w-[500px]">
-      <Stepper defaultValue={2}>
+      <Stepper defaultValue={currentStep}>
         {steps.map(({ step, title }) => (
           <StepperItem
             key={step}
@@ -49,4 +57,4 @@ function Component() {
   );
 }
 
-export { Component };
+export { Steps };

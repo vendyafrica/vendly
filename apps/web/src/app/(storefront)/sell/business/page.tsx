@@ -1,3 +1,5 @@
-export default function Business() {
-    return <div>Business</div>;
+import { BusinessForm } from "@/components/onboarding/business";
+
+export default function BusinessPage() {
+  return <BusinessForm />;
 }

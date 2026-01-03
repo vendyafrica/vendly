@@ -1,3 +1,7 @@
-export default function Personal() {
-    return <div>Personal</div>;
+import { PersonalForm } from "@/components/onboarding/personal"
+
+export default function PersonalPage() {
+  return (
+    <PersonalForm />
+  )
 }
