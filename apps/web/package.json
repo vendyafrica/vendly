@@ -16,6 +16,7 @@
     "@vendly/auth": "workspace:*",
     "@vendly/db": "workspace:*",
     "@vendly/ui": "workspace:*",
+    "embla-carousel-react": "^8.6.0",
     "lucide-react": "^0.540.0",
     "next": "16.1.1",
     "react": "^19.2.3",

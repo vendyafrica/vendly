@@ -65,6 +65,7 @@ export default function Header() {
               <HugeiconsIcon icon={Search01Icon} size={15} />
             </div>
             <Input
+              id="marketplace-search"
               type="search"
               placeholder="Search products, stores, creators…"
               className="h-10 pl-9 pr-4 text-md transition-shadow focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-0"
