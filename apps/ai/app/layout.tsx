@@ -4,6 +4,8 @@ import '@vendly/ui/globals.css'
 import { StreamingProvider } from '@/contexts/streaming-context'
 import { SWRProvider } from '@/components/providers/swr-provider'
 import { SessionProvider } from '@/components/providers/session-provider'
+import { AiSidebar } from '@/components/ai-sidebar'
+import { SidebarInset, SidebarProvider } from '@vendly/ui/components/sidebar'
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -57,7 +59,12 @@ export default function RootLayout({
       >
         <SessionProvider>
           <SWRProvider>
-            <StreamingProvider>{children}</StreamingProvider>
+            <StreamingProvider>
+              <SidebarProvider defaultOpen={false}>
+                <AiSidebar />
+                <SidebarInset>{children}</SidebarInset>
+              </SidebarProvider>
+            </StreamingProvider>
           </SWRProvider>
         </SessionProvider>
       </body>

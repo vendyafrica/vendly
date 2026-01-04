@@ -82,12 +82,21 @@ importers:
       '@ai-sdk/react':
         specifier: ^2.0.22
         version: 2.0.119(react@19.2.3)(zod@4.1.13)
+      '@hugeicons/core-free-icons':
+        specifier: ^2.0.0
+        version: 2.0.0
+      '@hugeicons/react':
+        specifier: ^1.1.1
+        version: 1.1.4(react@19.2.3)
       '@radix-ui/react-use-controllable-state':
         specifier: ^1.2.2
         version: 1.2.2(@types/react@19.2.7)(react@19.2.3)
       '@v0-sdk/react':
         specifier: ^0.4.1
         version: 0.4.1(react@19.2.3)
+      '@vendly/auth':
+        specifier: workspace:*
+        version: link:../../packages/auth
       '@vendly/db':
         specifier: workspace:*
         version: link:../../packages/db
