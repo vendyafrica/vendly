@@ -79,26 +79,31 @@ const items: SidebarNavItem[] = [
   },
 ];
 
-export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+function joinPaths(basePath: string, href: string) {
+  if (!basePath) return href;
+  if (href === "/") return basePath;
+  return `${basePath}${href}`;
+}
+
+export function AppSidebar({
+  basePath = "",
+  ...props
+}: React.ComponentProps<typeof Sidebar> & { basePath?: string }) {
   return (
     <Sidebar variant="inset" collapsible="icon" {...props}>
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton size="lg" asChild>
-              <a href="#">
-                <div className="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
-                  <Image
-                    src="/vendly.png"
-                    alt="Vendly"
-                    width={24}
-                    height={24}
-                  />
-                </div>
-                <div className="flex flex-col gap-0.5 leading-none">
-                  <span className="font-medium">Vendly</span>
-                </div>
-              </a>
+            <SidebarMenuButton
+              size="lg"
+              render={<a href={joinPaths(basePath, "/")} />}
+            >
+              <div className="flex aspect-square size-6 items-center justify-center rounded-lg">
+                <Image src="/vendly.png" alt="Vendly" width={24} height={24} />
+              </div>
+              <div className="grid flex-1 text-left text-sm leading-tight">
+                <span className="truncate font-semibold">Vendly</span>
+              </div>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
@@ -110,18 +115,23 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             <SidebarMenu>
               {items.map((item) => (
                 <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild tooltip={item.title}>
-                    <a href={item.url}>
-                      <HugeiconsIcon icon={item.icon} />
-                      <span>{item.title}</span>
-                    </a>
+                  <SidebarMenuButton
+                    tooltip={item.title}
+                    render={<a href={joinPaths(basePath, item.url)} />}
+                  >
+                    <HugeiconsIcon icon={item.icon} />
+                    <span>{item.title}</span>
                   </SidebarMenuButton>
                   {item.items?.length ? (
                     <SidebarMenuSub className="ml-0 border-l-0 px-1.5">
                       {item.items.map((subItem) => (
                         <SidebarMenuSubItem key={subItem.title}>
-                          <SidebarMenuSubButton asChild>
-                            <a href={subItem.url}>{subItem.title}</a>
+                          <SidebarMenuSubButton
+                            render={
+                              <a href={joinPaths(basePath, subItem.url)} />
+                            }
+                          >
+                            {subItem.title}
                           </SidebarMenuSubButton>
                         </SidebarMenuSubItem>
                       ))}
@@ -136,27 +146,26 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
       <SidebarFooter>
         <SidebarMenu>
-         <SidebarMenuItem>
-            <SidebarMenuButton size="lg" asChild>
-              <a href="/settings">
-                <div className="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
-                  <HugeiconsIcon icon={Settings01Icon} className="size-4" />
-                </div>
-                <span className="font-medium">Settings</span>
-              </a>
+          <SidebarMenuItem>
+            <SidebarMenuButton
+              size="lg"
+              render={<a href={joinPaths(basePath, "/settings")} />}
+            >
+              <div>
+                <HugeiconsIcon icon={Settings01Icon} className="size-4" />
+              </div>
+              <span className="font-medium">Settings</span>
             </SidebarMenuButton>
           </SidebarMenuItem>
           <SidebarMenuItem>
-            <SidebarMenuButton size="lg" asChild>
-              <a href="#">
-                <div className="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
-                  <HugeiconsIcon icon={UserGroupIcon} className="size-4" />
-                </div>
-                <div className="flex flex-col gap-0.5 leading-none">
-                  <span className="font-medium">Admin User</span>
-                  <span className="">admin@vendly.com</span>
-                </div>
-              </a>
+            <SidebarMenuButton size="lg" render={<a href="#" />}>
+              <div>
+                <HugeiconsIcon icon={UserGroupIcon} className="size-4" />
+              </div>
+              <div className="flex flex-col gap-0.5 leading-none">
+                <span className="font-medium">Admin User</span>
+                <span className="">admin@vendly.com</span>
+              </div>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>

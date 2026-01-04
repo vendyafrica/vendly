@@ -17,7 +17,7 @@ const footerSections = [
       { name: "All Products", href: "#" },
       { name: "Trending", href: "#" },
       { name: "New Arrivals", href: "#" },
-      { name: "Sell with Us", href: "seller-onboarding" },
+      { name: "Sell with Us", href: "/demo" },
     ],
   },
   {

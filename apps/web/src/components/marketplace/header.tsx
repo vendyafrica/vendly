@@ -3,22 +3,21 @@
 import Image from "next/image";
 import { Button } from "@vendly/ui/components/button";
 import { Input } from "@vendly/ui/components/input";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuLabel,
-  DropdownMenuRadioGroup,
-  DropdownMenuRadioItem,
-  DropdownMenuTrigger,
-} from "@vendly/ui/components/dropdown-menu";
+// import {
+//   DropdownMenu,
+//   DropdownMenuContent,
+//   DropdownMenuLabel,
+//   DropdownMenuRadioGroup,
+//   DropdownMenuRadioItem,
+//   DropdownMenuTrigger,
+// } from "@vendly/ui/components/dropdown-menu";
 import { HugeiconsIcon } from "@hugeicons/react";
 import {
   FavouriteIcon,
   ShoppingCart01Icon,
   Search01Icon,
-  Menu01Icon,
 } from "@hugeicons/core-free-icons";
-import { useState } from "react";
+// import { useState } from "react";
 import { signInWithGoogle, SignOut } from "@/lib/auth";
 
 const handleGoogleSignIn = async () => {
@@ -37,19 +36,19 @@ const handleSignOut = async () =>{
   }
 }
 
-const categories = [
-  "Women",
-  "Men",
-  "Beauty",
-  "Food & drinks",
-  "Baby & toddler",
-  "Home",
-  "Fitness & nutrition",
-  "Accessories",
-];
+// const categories = [
+//   "Women",
+//   "Men",
+//   "Beauty",
+//   "Food & drinks",
+//   "Baby & toddler",
+//   "Home",
+//   "Fitness & nutrition",
+//   "Accessories",
+// ];
 
 export default function Header() {
-  const [selectedCategory, setSelectedCategory] = useState("Women");
+  // const [selectedCategory, setSelectedCategory] = useState("Women");
   return (
     <header className="sticky top-0 z-50 w-full bg-background/80 backdrop-blur">
       <div className="mx-auto flex h-20 max-w-7xl items-center gap-6 px-6">
@@ -66,6 +65,7 @@ export default function Header() {
               <HugeiconsIcon icon={Search01Icon} size={15} />
             </div>
             <Input
+              id="marketplace-search"
               type="search"
               placeholder="Search products, stores, creators…"
               className="h-10 pl-9 pr-4 text-md transition-shadow focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-0"
@@ -75,13 +75,14 @@ export default function Header() {
 
         {/* Actions */}
         <div className="flex items-center gap-2">
-          <DropdownMenu>
+          {/* <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
                 variant="ghost"
                 size="icon-lg"
                 aria-label="Categories"
                 className="cursor-pointer"
+                suppressHydrationWarning
               >
                 <HugeiconsIcon icon={Menu01Icon} size={28} />
               </Button>
@@ -99,7 +100,7 @@ export default function Header() {
                 ))}
               </DropdownMenuRadioGroup>
             </DropdownMenuContent>
-          </DropdownMenu>
+          </DropdownMenu> */}
 
           <Button variant="ghost" size="icon-lg" className="cursor-pointer">
             <HugeiconsIcon icon={FavouriteIcon} size={28} />

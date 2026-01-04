@@ -1,8 +1,8 @@
 'use client'
 
 import React, { useState, useRef, useCallback, useEffect } from 'react'
-import { cn } from '@/lib/utils'
-import { useIsMobile } from '@/lib/client-utils'
+import { cn } from '../../lib/utils'
+import { useIsMobile } from '../../lib/client-utils'
 
 interface ResizableLayoutProps {
   leftPanel: React.ReactNode

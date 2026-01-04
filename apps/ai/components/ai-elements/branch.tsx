@@ -1,7 +1,7 @@
 'use client'
 
-import { Button } from '@vendly/ui/components/ui/button'
-import { cn } from '@/lib/utils'
+import { Button } from '@vendly/ui/components/button'
+import { cn } from '@vendly/ui/lib/utils'
 import type { UIMessage } from 'ai'
 import { ChevronLeftIcon, ChevronRightIcon } from 'lucide-react'
 import type { ComponentProps, HTMLAttributes, ReactElement } from 'react'
@@ -154,7 +154,6 @@ export const BranchPrevious = ({
       disabled={totalBranches <= 1}
       onClick={goToPrevious}
       size="icon"
-      type="button"
       variant="ghost"
       {...props}
     >
@@ -184,7 +183,6 @@ export const BranchNext = ({
       disabled={totalBranches <= 1}
       onClick={goToNext}
       size="icon"
-      type="button"
       variant="ghost"
       {...props}
     >

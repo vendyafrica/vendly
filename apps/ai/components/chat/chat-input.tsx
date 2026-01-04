@@ -13,8 +13,10 @@ import {
   loadPromptFromStorage,
   clearPromptFromStorage,
   type ImageAttachment,
-} from '@/components/ai-elements/prompt-input'
-import { Suggestions, Suggestion } from '@/components/ai-elements/suggestion'
+  type PromptInputMessage,
+} from '../ai-elements/prompt-input'
+import type { FileUIPart } from 'ai'
+import { Suggestions, Suggestion } from '../ai-elements/suggestion'
 import { useState, useCallback, useEffect } from 'react'
 
 interface ChatInputProps {
@@ -106,14 +108,14 @@ export function ChatInput({
   }, [message, attachments, setMessage, onAttachmentsChange])
 
   const handleSubmit = useCallback(
-    (e: React.FormEvent<HTMLFormElement>) => {
+    (message: PromptInputMessage, event: React.FormEvent<HTMLFormElement>) => {
       // Clear sessionStorage immediately upon submission
       clearPromptFromStorage()
 
-      const attachmentUrls = attachments.map((att) => ({ url: att.dataUrl }))
-      onSubmit(e, attachmentUrls.length > 0 ? attachmentUrls : undefined)
+      const attachmentUrls = message.files.map((file: FileUIPart) => ({ url: file.url }))
+      onSubmit(event, attachmentUrls.length > 0 ? attachmentUrls : undefined)
     },
-    [onSubmit, attachments],
+    [onSubmit],
   )
 
   return (
@@ -122,11 +124,6 @@ export function ChatInput({
         <PromptInput
           onSubmit={handleSubmit}
           className="w-full max-w-2xl mx-auto relative"
-          onImageDrop={handleImageFiles}
-          isDragOver={isDragOver}
-          onDragOver={handleDragOver}
-          onDragLeave={handleDragLeave}
-          onDrop={handleDrop}
         >
           <PromptInputImagePreview
             attachments={attachments}

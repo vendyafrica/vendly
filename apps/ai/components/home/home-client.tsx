@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
+import { nanoid } from 'nanoid'
 import {
   PromptInput,
   PromptInputImageButton,
@@ -18,14 +19,16 @@ import {
   loadPromptFromStorage,
   clearPromptFromStorage,
   type ImageAttachment,
-} from '@/components/ai-elements/prompt-input'
-import { Suggestions, Suggestion } from '@/components/ai-elements/suggestion'
-import { AppHeader } from '@/components/shared/app-header'
-import { ChatMessages } from '@/components/chat/chat-messages'
-import { ChatInput } from '@/components/chat/chat-input'
-import { PreviewPanel } from '@/components/chat/preview-panel'
-import { ResizableLayout } from '@/components/shared/resizable-layout'
-import { BottomToolbar } from '@/components/shared/bottom-toolbar'
+  type PromptInputMessage,
+} from '../ai-elements/prompt-input'
+import type { FileUIPart } from 'ai'
+import { Suggestions, Suggestion } from '../ai-elements/suggestion'
+import { AppHeader } from '../shared/app-header'
+import { ChatMessages } from '../chat/chat-messages'
+import { ChatInput } from '../chat/chat-input'
+import { PreviewPanel } from '../chat/preview-panel'
+import { ResizableLayout } from '../shared/resizable-layout'
+import { BottomToolbar } from '../shared/bottom-toolbar'
 
 // Component that uses useSearchParams - needs to be wrapped in Suspense
 function SearchParamsHandler({ onReset }: { onReset: () => void }) {
@@ -152,12 +155,18 @@ export function HomeClient() {
     setIsDragOver(false)
   }
 
-  const handleSendMessage = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
-    if (!message.trim() || isLoading) return
+  const handleSendMessage = async (messageData: PromptInputMessage, event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    if (!messageData.text.trim() || isLoading) return
 
-    const userMessage = message.trim()
-    const currentAttachments = [...attachments]
+    const userMessage = messageData.text.trim()
+    const currentAttachments = messageData.files.map((file: FileUIPart) => ({
+      id: nanoid(),
+      dataUrl: file.url,
+      name: file.filename,
+      size: undefined,
+      type: file.mediaType,
+    }))
 
     // Clear sessionStorage immediately upon submission
     clearPromptFromStorage()
@@ -500,11 +509,6 @@ export function HomeClient() {
             <PromptInput
               onSubmit={handleSendMessage}
               className="w-full relative"
-              onImageDrop={handleImageFiles}
-              isDragOver={isDragOver}
-              onDragOver={handleDragOver}
-              onDragLeave={handleDragLeave}
-              onDrop={handleDrop}
             >
               <PromptInputImagePreview
                 attachments={attachments}

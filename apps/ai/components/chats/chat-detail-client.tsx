@@ -2,19 +2,19 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { useParams } from 'next/navigation'
-import { AppHeader } from '@/components/shared/app-header'
-import { ChatMessages } from '@/components/chat/chat-messages'
-import { ChatInput } from '@/components/chat/chat-input'
-import { PreviewPanel } from '@/components/chat/preview-panel'
-import { ResizableLayout } from '@/components/shared/resizable-layout'
-import { BottomToolbar } from '@/components/shared/bottom-toolbar'
-import { useChat } from '@/hooks/use-chat'
-import { useStreaming } from '@/contexts/streaming-context'
-import { cn } from '@/lib/utils'
+import { AppHeader } from '../shared/app-header'
+import { ChatMessages } from '../chat/chat-messages'
+import { ChatInput } from '../chat/chat-input'
+import { PreviewPanel } from '../chat/preview-panel'
+import { ResizableLayout } from '../shared/resizable-layout'
+import { BottomToolbar } from '../shared/bottom-toolbar'
+import { useChat } from '../../hooks/use-chat'
+import { useStreaming } from '../../contexts/streaming-context'
+import { cn } from '@vendly/ui/lib/utils'
 import {
   type ImageAttachment,
   clearPromptFromStorage,
-} from '@/components/ai-elements/prompt-input'
+} from '../ai-elements/prompt-input'
 
 export function ChatDetailClient() {
   const params = useParams()

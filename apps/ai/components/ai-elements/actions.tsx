@@ -1,13 +1,13 @@
 'use client'
 
-import { Button } from '@vendly/ui/components/ui/button'
+import { Button } from '@vendly/ui/components/button'
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from '@vendly/ui/components/ui/tooltip'
-import { cn } from '@/lib/utils'
+} from '@vendly/ui/components/tooltip'
+import { cn } from '@vendly/ui/lib/utils'
 import type { ComponentProps } from 'react'
 
 export type ActionsProps = ComponentProps<'div'>
@@ -39,7 +39,6 @@ export const Action = ({
         className,
       )}
       size={size}
-      type="button"
       variant={variant}
       {...props}
     >
@@ -52,7 +51,7 @@ export const Action = ({
     return (
       <TooltipProvider>
         <Tooltip>
-          <TooltipTrigger asChild>{button}</TooltipTrigger>
+          <TooltipTrigger>{button}</TooltipTrigger>
           <TooltipContent>
             <p>{tooltip}</p>
           </TooltipContent>

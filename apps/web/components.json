@@ -1,6 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema.json",
-  "style": "radix-mira",
+  "style": "base-mira",
   "rsc": true,
   "tsx": true,
   "tailwind": {
@@ -18,6 +18,6 @@
     "utils": "@vendly/ui/lib/utils",
     "ui": "@vendly/ui/components"
   },
-  "menuColor": "inverted",
+  "menuColor": "default",
   "menuAccent": "subtle"
 }

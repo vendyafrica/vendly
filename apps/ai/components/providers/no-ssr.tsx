@@ -12,6 +12,6 @@ export function NoSSR({ children }: NoSSRProps) {
 
 // Create a dynamic version of DropdownMenu that skips SSR
 export const DynamicDropdownMenu = dynamic(
-  () => import('@vendly/ui/components/ui/dropdown-menu').then(mod => ({ default: mod.DropdownMenu })),
+  () => import('@vendly/ui/components/dropdown-menu').then(mod => ({ default: mod.DropdownMenu })),
   { ssr: false }
 )

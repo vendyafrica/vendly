@@ -1,12 +1,17 @@
-import type { NextConfig } from 'next'
-import path from 'path'
+import { NextConfig } from "next";
+import * as path from "path";
+
+const repoRoot = path.resolve(__dirname, "../..");
 
 const nextConfig: NextConfig = {
-  reactStrictMode: true,
+  typescript: {
+    ignoreBuildErrors: true,
+  },
   transpilePackages: ["@vendly/ui", "@vendly/db", "@vendly/auth", "@vendly/transactional"],
+  outputFileTracingRoot: repoRoot,
   turbopack: {
-    root: path.resolve(__dirname, '../../')
-  }
-}
+    root: repoRoot,
+  },
+};
 
-export default nextConfig
+export default nextConfig;

@@ -1,40 +1,39 @@
 'use client'
 
 import { signOut } from 'next-auth/react'
-import { Avatar, AvatarFallback } from '@vendly/ui/components/ui/avatar'
-import { Button } from '@vendly/ui/components/ui/button'
+import { Avatar, AvatarFallback } from '@vendly/ui/components/avatar'
 import dynamic from 'next/dynamic'
 import { LogOut, User } from 'lucide-react'
 import { Session } from 'next-auth'
 
 // Dynamically import DropdownMenu to avoid SSR hydration issues
 const DropdownMenu = dynamic(
-  () => import('@vendly/ui/components/ui/dropdown-menu').then(mod => ({ default: mod.DropdownMenu })),
+  () => import('@vendly/ui/components/dropdown-menu').then(mod => ({ default: mod.DropdownMenu })),
   { ssr: false }
 )
 
 const DropdownMenuTrigger = dynamic(
-  () => import('@vendly/ui/components/ui/dropdown-menu').then(mod => ({ default: mod.DropdownMenuTrigger })),
+  () => import('@vendly/ui/components/dropdown-menu').then(mod => ({ default: mod.DropdownMenuTrigger })),
   { ssr: false }
 )
 
 const DropdownMenuContent = dynamic(
-  () => import('@vendly/ui/components/ui/dropdown-menu').then(mod => ({ default: mod.DropdownMenuContent })),
+  () => import('@vendly/ui/components/dropdown-menu').then(mod => ({ default: mod.DropdownMenuContent })),
   { ssr: false }
 )
 
 const DropdownMenuItem = dynamic(
-  () => import('@vendly/ui/components/ui/dropdown-menu').then(mod => ({ default: mod.DropdownMenuItem })),
+  () => import('@vendly/ui/components/dropdown-menu').then(mod => ({ default: mod.DropdownMenuItem })),
   { ssr: false }
 )
 
 const DropdownMenuLabel = dynamic(
-  () => import('@vendly/ui/components/ui/dropdown-menu').then(mod => ({ default: mod.DropdownMenuLabel })),
+  () => import('@vendly/ui/components/dropdown-menu').then(mod => ({ default: mod.DropdownMenuLabel })),
   { ssr: false }
 )
 
 const DropdownMenuSeparator = dynamic(
-  () => import('@vendly/ui/components/ui/dropdown-menu').then(mod => ({ default: mod.DropdownMenuSeparator })),
+  () => import('@vendly/ui/components/dropdown-menu').then(mod => ({ default: mod.DropdownMenuSeparator })),
   { ssr: false }
 )
 
@@ -51,16 +50,14 @@ export function UserNav({ session }: UserNavProps) {
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-          <Avatar className="h-8 w-8">
-            <AvatarFallback className="bg-primary text-primary-foreground">
-              {isSignedOut ? <User className="h-4 w-4" /> : initials}
-            </AvatarFallback>
-          </Avatar>
-        </Button>
+      <DropdownMenuTrigger className="relative h-8 w-8 rounded-full border border-input bg-background hover:bg-accent hover:text-accent-foreground">
+        <Avatar className="h-8 w-8">
+          <AvatarFallback className="bg-primary text-primary-foreground">
+            {isSignedOut ? <User className="h-4 w-4" /> : initials}
+          </AvatarFallback>
+        </Avatar>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-56" align="end" forceMount>
+      <DropdownMenuContent className="w-56" align="end">
         <DropdownMenuLabel className="font-normal">
           <div className="flex flex-col space-y-1">
             <p className="text-sm font-medium leading-none">
@@ -76,15 +73,11 @@ export function UserNav({ session }: UserNavProps) {
         <DropdownMenuSeparator />
         {(isGuest || isSignedOut) && (
           <>
-            <DropdownMenuItem asChild>
-              <a href="/register" className="cursor-pointer">
-                <span>Create Account</span>
-              </a>
+            <DropdownMenuItem className="cursor-pointer" onClick={() => window.location.href = '/register'}>
+              <span>Create Account</span>
             </DropdownMenuItem>
-            <DropdownMenuItem asChild>
-              <a href="/login" className="cursor-pointer">
-                <span>Sign In</span>
-              </a>
+            <DropdownMenuItem className="cursor-pointer" onClick={() => window.location.href = '/login'}>
+              <span>Sign In</span>
             </DropdownMenuItem>
             {!isSignedOut && <DropdownMenuSeparator />}
           </>

@@ -1,15 +1,20 @@
 import "@vendly/ui/globals.css";
 import type { Metadata } from "next";
-import { Barlow } from "next/font/google";
+import { Roboto,Geist_Mono,Geist } from "next/font/google";
 import type { ReactNode } from "react";
 
-const barlow = Barlow({
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
-  display: "swap",
-  variable: "--font-sans",
-});
+const roboto = Roboto({subsets:['latin'],variable:'--font-sans'});
 
+
+const geistSans = Geist({
+  variable: "--font-geist-sans",
+  subsets: ["latin"],
+});
+    
+const geistMono = Geist_Mono({
+  variable: "--font-geist-mono",
+  subsets: ["latin"],
+});
 export const metadata: Metadata = {
   title: {
     default: "Vendly",
@@ -23,9 +28,13 @@ export default function RootLayout({
 }: {
   children: ReactNode;
 }) {
-  return (
-    <html lang="en" className={barlow.variable}>
-      <body className="font-sans">{children}</body>
+   return (
+    <html lang="en" className={roboto.variable}>
+      <body
+        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+      >
+        {children}
+      </body>
     </html>
   );
 }

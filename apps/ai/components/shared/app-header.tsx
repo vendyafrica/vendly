@@ -6,18 +6,16 @@ import { usePathname, useSearchParams } from 'next/navigation'
 import { ChatSelector } from './chat-selector'
 import { MobileMenu } from './mobile-menu'
 import { useSession } from 'next-auth/react'
-import { UserNav } from '@/components/user-nav'
-import { Button } from '@vendly/ui/components/ui/button'
-import { VercelIcon, GitHubIcon } from '@vendly/ui/components/ui/icons'
-import { DEPLOY_URL } from '@/lib/constants'
+import { UserNav } from '../user-nav'
+import { Button } from '@vendly/ui/components/button'
+import { DEPLOY_URL } from '../../lib/constants'
 import { Info } from 'lucide-react'
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogHeader,
   DialogTitle,
-} from '@vendly/ui/components/ui/dialog'
+} from '@vendly/ui/components/dialog'
 
 interface AppHeaderProps {
   className?: string
@@ -101,14 +99,12 @@ export function AppHeader({ className = '' }: AppHeaderProps) {
             <Button
               variant="outline"
               className="py-1.5 px-2 h-fit text-sm"
-              asChild
             >
               <Link
                 href="https://github.com/vercel/v0-sdk"
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                <GitHubIcon size={16} />
                 vercel/v0-sdk
               </Link>
             </Button>
@@ -116,10 +112,8 @@ export function AppHeader({ className = '' }: AppHeaderProps) {
             {/* Deploy with Vercel button - hidden on mobile */}
             <Button
               className="bg-zinc-900 dark:bg-zinc-100 hover:bg-zinc-800 dark:hover:bg-zinc-200 text-zinc-50 dark:text-zinc-900 py-1.5 px-2 h-fit text-sm"
-              asChild
             >
               <Link href={DEPLOY_URL} target="_blank" rel="noopener noreferrer">
-                <VercelIcon size={16} />
                 Deploy with Vercel
               </Link>
             </Button>

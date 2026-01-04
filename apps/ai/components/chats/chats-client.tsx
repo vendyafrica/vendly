@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { Plus } from 'lucide-react'
-import { AppHeader } from '@/components/shared/app-header'
+import { AppHeader } from '../shared/app-header'
 import useSWR from 'swr'
 
 interface V0Chat {
