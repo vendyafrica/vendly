@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
+import dynamic from 'next/dynamic'
 import { nanoid } from 'nanoid'
 import {
   PromptInput,
@@ -23,6 +24,7 @@ import {
 } from '../ai-elements/prompt-input'
 import type { FileUIPart } from 'ai'
 import { Suggestions, Suggestion } from '../ai-elements/suggestion'
+const DynamicSuggestions = dynamic(() => import('../ai-elements/suggestion').then(mod => ({ default: mod.Suggestions })), { ssr: false })
 import { AppHeader } from '../shared/app-header'
 import { ChatMessages } from '../chat/chat-messages'
 import { ChatInput } from '../chat/chat-input'
@@ -552,7 +554,7 @@ export function HomeClient() {
 
           {/* Suggestions */}
           <div className="mt-4 max-w-2xl mx-auto">
-            <Suggestions>
+            <DynamicSuggestions>
               <Suggestion
                 onClick={() => {
                   setMessage('Landing page')
@@ -657,7 +659,7 @@ export function HomeClient() {
                 }}
                 suggestion="Calculator"
               />
-            </Suggestions>
+            </DynamicSuggestions>
           </div>
 
           {/* Footer */}
