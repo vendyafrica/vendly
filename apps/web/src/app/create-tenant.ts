@@ -57,5 +57,5 @@ export async function createTenant(
   });
 
   const rootDomain = process.env.NEXT_PUBLIC_ROOT_DOMAIN ?? 'vendlyafrica.store';
-  redirect(`https://${subdomain}.${rootDomain}`);
+  redirect(`https://admin.${rootDomain}/${subdomain}`);
 }
