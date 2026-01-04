@@ -4,9 +4,9 @@ import {
   WebPreviewNavigationButton,
   WebPreviewUrl,
   WebPreviewBody,
-} from '@/components/ai-elements/web-preview'
+} from '../ai-elements/web-preview'
 import { RefreshCw, Maximize, Minimize, ExternalLink } from 'lucide-react'
-import { cn } from '@/lib/utils'
+import { cn } from '@vendly/ui/lib/utils'
 
 interface Chat {
   id: string

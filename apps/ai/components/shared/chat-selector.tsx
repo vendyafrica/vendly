@@ -21,14 +21,14 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@vendly/ui/components/ui/select'
+} from '@vendly/ui/components/select'
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@vendly/ui/components/ui/dropdown-menu'
+} from '@vendly/ui/components/dropdown-menu'
 import {
   Dialog,
   DialogContent,
@@ -36,9 +36,9 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@vendly/ui/components/ui/dialog'
-import { Button } from '@vendly/ui/components/ui/button'
-import { Input } from '@vendly/ui/components/ui/input'
+} from '@vendly/ui/components/dialog'
+import { Button } from '@vendly/ui/components/button'
+import { Input } from '@vendly/ui/components/input'
 
 interface Chat {
   id: string
@@ -134,8 +134,10 @@ export function ChatSelector() {
     fetchChats()
   }, [session?.user?.id])
 
-  const handleValueChange = (chatId: string) => {
-    router.push(`/chats/${chatId}`)
+  const handleValueChange = (value: string | null) => {
+    if (value) {
+      router.push(`/chats/${value}`)
+    }
   }
 
   const handleRenameChat = async () => {
@@ -281,7 +283,7 @@ export function ChatSelector() {
             className="w-fit min-w-[150px] max-w-[250px]"
             size="sm"
           >
-            <SelectValue placeholder="Select chat">
+            <SelectValue>
               <div className="flex items-center gap-2">
                 <MessageSquare className="h-4 w-4" />
                 <span className="truncate">
@@ -313,7 +315,7 @@ export function ChatSelector() {
         {/* Chat Context Menu */}
         {currentChat && (
           <DropdownMenu>
-            <DropdownMenuTrigger asChild>
+            <DropdownMenuTrigger>
               <Button
                 variant="ghost"
                 size="sm"
@@ -330,7 +332,7 @@ export function ChatSelector() {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem asChild>
+              <DropdownMenuItem>
                 <a
                   href={`https://v0.app/chat/${currentChatId}`}
                   target="_blank"
@@ -519,8 +521,10 @@ export function ChatSelector() {
             <Select
               value={selectedVisibility}
               onValueChange={(
-                value: 'public' | 'private' | 'team' | 'team-edit' | 'unlisted',
-              ) => setSelectedVisibility(value)}
+                value: 'public' | 'private' | 'team' | 'team-edit' | 'unlisted' | null,
+              ) => {
+                if (value) setSelectedVisibility(value)
+              }}
             >
               <SelectTrigger>
                 <SelectValue>

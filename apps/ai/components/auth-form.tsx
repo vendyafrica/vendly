@@ -1,9 +1,9 @@
 'use client'
 
 import { useActionState } from 'react'
-import { signInAction, signUpAction } from '@/app/(auth)/actions'
-import { Button } from '@vendly/ui/components/ui/button'
-import { Input } from '@vendly/ui/components/ui/input'
+import { signInAction, signUpAction } from '../app/(auth)/actions'
+import { Button } from '@vendly/ui/components/button'
+import { Input } from '@vendly/ui/components/input'
 import Link from 'next/link'
 
 interface AuthFormProps {

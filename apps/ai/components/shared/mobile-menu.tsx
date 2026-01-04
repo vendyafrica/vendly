@@ -5,17 +5,16 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import { Menu, X, Info } from 'lucide-react'
-import { Button } from '@vendly/ui/components/ui/button'
-import { GitHubIcon, VercelIcon } from '@vendly/ui/components/ui/icons'
-import { DEPLOY_URL } from '@/lib/constants'
+import { Button } from '@vendly/ui/components/button'
+import { DEPLOY_URL } from '../../lib/constants'
 import { ChatSelector } from './chat-selector'
 import {
   Dialog,
-  DialogContent,
+  DialogContent,  
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from '@vendly/ui/components/ui/dialog'
+} from '@vendly/ui/components/dialog'
 
 interface MobileMenuProps {
   onInfoDialogOpen: () => void
@@ -151,7 +150,7 @@ export function MobileMenu({ onInfoDialogOpen }: MobileMenuProps) {
                   <Button
                     variant="ghost"
                     className="w-full justify-start h-auto p-3 text-left"
-                    asChild
+                    
                   >
                     <Link
                       href="https://github.com/vercel/v0-sdk"
@@ -159,22 +158,13 @@ export function MobileMenu({ onInfoDialogOpen }: MobileMenuProps) {
                       rel="noopener noreferrer"
                       onClick={closeMenu}
                     >
-                      <div className="flex items-center gap-3 w-full">
-                        <GitHubIcon size={16} />
-                        <div className="flex-1">
-                          <div className="font-medium">GitHub</div>
-                          <div className="text-sm text-muted-foreground">
-                            vercel/v0-sdk
-                          </div>
-                        </div>
-                      </div>
+                  
                     </Link>
                   </Button>
 
                   <Button
                     variant="ghost"
                     className="w-full justify-start h-auto p-3 text-left"
-                    asChild
                   >
                     <Link
                       href={DEPLOY_URL}
@@ -182,15 +172,7 @@ export function MobileMenu({ onInfoDialogOpen }: MobileMenuProps) {
                       rel="noopener noreferrer"
                       onClick={closeMenu}
                     >
-                      <div className="flex items-center gap-3 w-full">
-                        <VercelIcon size={16} />
-                        <div className="flex-1">
-                          <div className="font-medium">Deploy with Vercel</div>
-                          <div className="text-sm text-muted-foreground">
-                            Get your own v0 clone
-                          </div>
-                        </div>
-                      </div>
+                  
                     </Link>
                   </Button>
                 </div>

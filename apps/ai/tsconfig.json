@@ -4,7 +4,7 @@
     "node_modules"
   ],
   "compilerOptions": {
-    "jsx": "react-jsx",
+    "jsx": "preserve",
     "outDir": "dist",
     "plugins": [
       {
@@ -16,12 +16,17 @@
         "../../packages/ui/src/*"
       ],
       "@/*": [
-        "./src/*"
+        "./*"
       ]
     }
   },
   "include": [
-    "src",
+    "app",
+    "components",
+    "contexts",
+    "hooks",
+    "lib",
+    "types",
     "../../packages/ui/src",
     "next.config.ts",
     "next-env.d.ts",

@@ -7,7 +7,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@vendly/ui/components/tooltip'
-import { cn } from '@/lib/utils'
+import { cn } from '@vendly/ui/lib/utils'
 import type { ComponentProps } from 'react'
 
 export type ActionsProps = ComponentProps<'div'>
@@ -39,7 +39,6 @@ export const Action = ({
         className,
       )}
       size={size}
-      type="button"
       variant={variant}
       {...props}
     >
@@ -52,7 +51,7 @@ export const Action = ({
     return (
       <TooltipProvider>
         <Tooltip>
-          <TooltipTrigger asChild>{button}</TooltipTrigger>
+          <TooltipTrigger>{button}</TooltipTrigger>
           <TooltipContent>
             <p>{tooltip}</p>
           </TooltipContent>

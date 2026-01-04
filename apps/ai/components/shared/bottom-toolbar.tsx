@@ -1,8 +1,8 @@
 'use client'
 
 import { MessageSquare, Monitor } from 'lucide-react'
-import { Button } from '@vendly/ui/components/ui/button'
-import { cn } from '@/lib/utils'
+import { Button } from '@vendly/ui/components/button'
+import { cn } from '../../lib/utils'
 
 interface BottomToolbarProps {
   activePanel: 'chat' | 'preview'

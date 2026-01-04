@@ -2,8 +2,8 @@
 
 import { useState } from 'react'
 import { Copy, Check } from 'lucide-react'
-import { Button } from '@vendly/ui/components/ui/button'
-import type { MissingEnvVar } from '@/lib/env-check'
+import { Button } from '@vendly/ui/components/button'
+import type { MissingEnvVar } from '../lib/env-check'
 
 interface EnvSetupProps {
   missingVars: MissingEnvVar[]

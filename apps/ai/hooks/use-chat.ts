@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { useStreaming } from '@/contexts/streaming-context'
+import { useStreaming } from '../contexts/streaming-context'
 import useSWR, { mutate } from 'swr'
 
 interface Chat {

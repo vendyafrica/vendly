@@ -11,14 +11,14 @@ import {
   Reasoning,
   ReasoningTrigger,
   ReasoningContent,
-} from '@/components/ai-elements/reasoning'
+} from './ai-elements/reasoning'
 import {
   Task,
   TaskTrigger,
   TaskContent,
   TaskItem,
   TaskItemFile,
-} from '@/components/ai-elements/task'
+} from './ai-elements/task'
 
 // Wrapper component to adapt AI Elements Reasoning to @v0-sdk/react ThinkingSection
 export const ThinkingSectionWrapper = ({

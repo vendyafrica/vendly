@@ -9,7 +9,7 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@vendly/ui/components/ui/dropdown-menu'
+} from '@vendly/ui/components/dropdown-menu'
 import {
   Dialog,
   DialogContent,
@@ -18,8 +18,8 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from '@vendly/ui/components/ui/dialog'
-import { Button } from '@vendly/ui/components/ui/button'
+} from '@vendly/ui/components/dialog'
+import { Button } from '@vendly/ui/components/button'
 
 interface ChatMenuProps {
   chatId: string
@@ -88,7 +88,7 @@ export function ChatMenu({ chatId }: ChatMenuProps) {
   return (
     <>
       <DropdownMenu>
-        <DropdownMenuTrigger asChild>
+        <DropdownMenuTrigger>
           <Button
             variant="ghost"
             size="sm"
@@ -100,7 +100,7 @@ export function ChatMenu({ chatId }: ChatMenuProps) {
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
-          <DropdownMenuItem asChild>
+          <DropdownMenuItem>
             <a
               href={`https://v0.app/chat/${chatId}`}
               target="_blank"

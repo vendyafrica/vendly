@@ -5,8 +5,8 @@ import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
-} from '@vendly/ui/components/ui/collapsible'
-import { cn } from '@/lib/utils'
+} from '@vendly/ui/components/collapsible'
+import { cn } from '@vendly/ui/lib/utils'
 import { BookIcon, ChevronDownIcon } from 'lucide-react'
 
 export type SourcesProps = ComponentProps<'div'>

@@ -1,12 +1,12 @@
 import React, { useRef, useEffect } from 'react'
-import { Message, MessageContent } from '@/components/ai-elements/message'
+import { Message, MessageContent } from '../ai-elements/message'
 import {
   Conversation,
   ConversationContent,
-} from '@/components/ai-elements/conversation'
-import { Loader } from '@/components/ai-elements/loader'
-import { MessageRenderer } from '@/components/message-renderer'
-import { sharedComponents } from '@/components/shared-components'
+} from '../ai-elements/conversation'
+import { Loader } from '../ai-elements/loader'
+import { MessageRenderer } from '../message-renderer'
+import { sharedComponents } from '../shared-components'
 import { StreamingMessage } from '@v0-sdk/react'
 
 interface ChatMessage {
