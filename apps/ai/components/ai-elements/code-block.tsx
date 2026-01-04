@@ -1,6 +1,6 @@
 'use client'
 
-import { Button } from '@vendly/ui/components/ui/button'
+import { Button } from '@vendly/ui/components/button'
 import { cn } from '@/lib/utils'
 import { CheckIcon, CopyIcon } from 'lucide-react'
 import type { ComponentProps, HTMLAttributes, ReactNode } from 'react'

@@ -1,12 +1,12 @@
 'use client'
 
-import { Button } from '@vendly/ui/components/ui/button'
+import { Button } from '@vendly/ui/components/button'
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from '@vendly/ui/components/ui/tooltip'
+} from '@vendly/ui/components/tooltip'
 import { cn } from '@/lib/utils'
 import type { ComponentProps } from 'react'
 
