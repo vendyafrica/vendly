@@ -4,7 +4,7 @@
     "node_modules"
   ],
   "compilerOptions": {
-    "jsx": "preserve",
+    "jsx": "react-jsx",
     "outDir": "dist",
     "plugins": [
       {

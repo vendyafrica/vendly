@@ -1,5 +1,5 @@
 import { NextConfig } from "next";
-import path from "path";
+import * as path from "path";
 
 const repoRoot = path.resolve(__dirname, "../..");
 
