@@ -26,7 +26,7 @@ function getSubdomain(req: NextRequest) {
   return null;
 }
 
-export function middleware(req: NextRequest) {
+export function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
   const subdomain = getSubdomain(req);
 
