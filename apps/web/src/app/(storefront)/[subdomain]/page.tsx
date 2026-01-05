@@ -26,12 +26,6 @@ export default async function TenantPage({ params }: Props) {
   const error = tenant.error ?? undefined;
   const config = (tenant.storefrontConfig ?? undefined) as any;
   const demoUrl = tenant.demoUrl as string | undefined;
-  
-  // Debug logging
-  console.log('[TenantPage] subdomain:', subdomain);
-  console.log('[TenantPage] status:', status);
-  console.log('[TenantPage] demoUrl:', demoUrl);
-  console.log('[TenantPage] tenant:', JSON.stringify(tenant, null, 2));
 
   if (status !== 'ready' && status !== 'deployed') {
     return (
