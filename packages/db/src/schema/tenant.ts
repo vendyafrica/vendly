@@ -10,6 +10,8 @@ export const tenants = pgTable(
     storefrontConfig: jsonb("storefront_config"),
     demoUrl: text("demo_url"), // v0 generated preview URL for iframe embedding
     v0ChatId: text("v0_chat_id"), // v0 chat ID for future updates
+    generatedFiles: jsonb("generated_files"), // v0 generated code files for deployment
+    vercelDeploymentUrl: text("vercel_deployment_url"), // Deployed URL on Vercel
     error: text("error"),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at")

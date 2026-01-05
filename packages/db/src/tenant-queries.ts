@@ -57,3 +57,40 @@ export async function saveTenantDemoUrl({
     .set({ demoUrl, v0ChatId: v0ChatId ?? null, status: "ready", error: null })
     .where(eq(tenants.slug, slug));
 }
+
+export async function saveTenantGeneratedFiles({
+  slug,
+  generatedFiles,
+  v0ChatId,
+}: {
+  slug: string;
+  generatedFiles: Array<{ name: string; content: string }>;
+  v0ChatId?: string;
+}): Promise<void> {
+  await db
+    .update(tenants)
+    .set({ generatedFiles, v0ChatId: v0ChatId ?? null })
+    .where(eq(tenants.slug, slug));
+}
+
+export async function saveTenantDeploymentUrl({
+  slug,
+  vercelDeploymentUrl,
+}: {
+  slug: string;
+  vercelDeploymentUrl: string;
+}): Promise<void> {
+  await db
+    .update(tenants)
+    .set({ vercelDeploymentUrl, status: "deployed", error: null })
+    .where(eq(tenants.slug, slug));
+}
+
+export async function getAllTenants(): Promise<Tenant[]> {
+  return db.select().from(tenants);
+}
+
+export async function getTenantsWithV0ChatId(): Promise<Tenant[]> {
+  const allTenants = await db.select().from(tenants);
+  return allTenants.filter(t => t.v0ChatId);
+}
