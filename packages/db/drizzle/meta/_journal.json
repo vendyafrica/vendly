@@ -22,6 +22,27 @@
       "when": 1767519994147,
       "tag": "0002_chilly_omega_sentinel",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1767601792464,
+      "tag": "0003_glossy_next_avengers",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1767626351924,
+      "tag": "0004_zippy_spiral",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1767627788094,
+      "tag": "0005_tricky_clint_barton",
+      "breakpoints": true
     }
   ]
 }

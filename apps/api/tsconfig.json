@@ -4,12 +4,21 @@
     "lib": [
       "ES2015"
     ],
-    "outDir": "./dist"
+    "outDir": "./dist",
+    "baseUrl": ".",
+    "paths": {
+      "@vendly/db/tenant-queries": ["../../packages/db/src/tenant-queries.ts"],
+      "@vendly/db/schema": ["../../packages/db/src/schema/index.ts"],
+      "@vendly/db/v0-clone-queries": ["../../packages/db/src/v0-clone-queries.ts"],
+      "@vendly/db": ["../../packages/db/src/index.ts"]
+    }
   },
   "exclude": [
     "node_modules"
   ],
   "include": [
-    "."
-, "../../packages/db/drizzle.config.ts", "../../packages/db/src/seed"  ]
+    ".",
+    "../../packages/db/drizzle.config.ts",
+    "../../packages/db/src/seed"
+  ]
 }

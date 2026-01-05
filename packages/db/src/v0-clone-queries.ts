@@ -1,4 +1,3 @@
-import "server-only";
 
 import {
   and,
@@ -20,13 +19,11 @@ import {
   chat_ownerships,
   anonymous_chat_logs,
   type User,
-  type ChatOwnership,
-  type AnonymousChatLog,
 } from "./schema/v0-clone";
 import { generateHashedPassword } from "./utils";
 import { db } from "./db";
 
-export async function getUser(email: string): Promise<Array<User & { password: string | null }>> {
+export async function getUser(email: string): Promise<Array<{ id: string; name: string; email: string } & { password: string | null }>> {
   try {
     const users = await db
       .select({

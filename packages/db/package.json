@@ -48,6 +48,11 @@
             "types": "./dist/v0-clone-queries.d.ts",
             "import": "./dist/v0-clone-queries.js",
             "require": "./dist/v0-clone-queries.cjs"
+        },
+        "./tenant-queries": {
+            "types": "./dist/tenant-queries.d.ts",
+            "import": "./dist/tenant-queries.js",
+            "require": "./dist/tenant-queries.cjs"
         }
     }
 }
