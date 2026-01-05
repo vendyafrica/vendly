@@ -9,9 +9,10 @@ const nextConfig: NextConfig = {
   },
   transpilePackages: ["@vendly/ui", "@vendly/db", "@vendly/auth", "@vendly/transactional"],
   outputFileTracingRoot: repoRoot,
-  turbopack: {
-    root: repoRoot,
-  },
+  // Disable Turbopack for production builds to fix middleware.js.nft.json error
+  // turbopack: {
+  //   root: repoRoot,
+  // },
 };
 
 export default nextConfig;
