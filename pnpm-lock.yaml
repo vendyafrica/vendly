@@ -92,6 +92,9 @@ importers:
       '@vendly/transactional':
         specifier: workspace:*
         version: link:../../packages/transactional
+      '@vendly/typescript-config':
+        specifier: workspace:*
+        version: link:../../packages/config-typescript
       better-auth:
         specifier: ^1.4.10
         version: 1.4.10(drizzle-kit@0.31.8)(drizzle-orm@0.45.1)
@@ -147,9 +150,6 @@ importers:
       '@vendly/eslint-config':
         specifier: workspace:*
         version: link:../../packages/config-eslint
-      '@vendly/typescript-config':
-        specifier: workspace:*
-        version: link:../../packages/config-typescript
       drizzle-kit:
         specifier: ^0.31.8
         version: 0.31.8
