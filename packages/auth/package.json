@@ -37,14 +37,14 @@
   "dependencies": {
     "@vendly/db": "workspace:*",
     "@vendly/transactional": "workspace:*",
-    "better-auth": "^1.4.10"
+    "better-auth": "^1.4.10",
+    "tsup": "^8.5.0",
+    "typescript": "5.9.3"
   },
   "devDependencies": {
     "@types/node": "^22.15.3",
     "@vendly/eslint-config": "workspace:*",
     "@vendly/typescript-config": "workspace:*",
-    "eslint": "^9.39.0",
-    "tsup": "^8.5.0",
-    "typescript": "5.9.3"
+    "eslint": "^9.39.0"
   }
 }
