@@ -5,14 +5,16 @@ import { notFound } from 'next/navigation';
 export const dynamic = 'force-dynamic';
 
 type Props = {
-  params: { subdomain: string };
+  params: Promise<{ subdomain: string }>;
 };
 
 export default async function TenantPage({ params }: Props) {
+  const { subdomain } = await params;
+  
   const [tenant] = await db
     .select()
     .from(tenants)
-    .where(eq(tenants.slug, params.subdomain))
+    .where(eq(tenants.slug, subdomain))
     .limit(1);
 
   if (!tenant) {
@@ -23,12 +25,18 @@ export default async function TenantPage({ params }: Props) {
   const status = tenant.status;
   const error = tenant.error ?? undefined;
   const config = (tenant.storefrontConfig ?? undefined) as any;
-  const demoUrl = (tenant as any).demoUrl as string | undefined;
+  const demoUrl = tenant.demoUrl as string | undefined;
+  
+  // Debug logging
+  console.log('[TenantPage] subdomain:', subdomain);
+  console.log('[TenantPage] status:', status);
+  console.log('[TenantPage] demoUrl:', demoUrl);
+  console.log('[TenantPage] tenant:', JSON.stringify(tenant, null, 2));
 
-  if (status !== 'ready') {
+  if (status !== 'ready' && status !== 'deployed') {
     return (
       <main className="min-h-screen flex flex-col items-center justify-center px-6">
-        <h1 className="text-2xl font-semibold">{params.subdomain}.{rootDomain}</h1>
+        <h1 className="text-2xl font-semibold">{subdomain}.{rootDomain}</h1>
         {status === 'failed' ? (
           <p className="text-muted-foreground mt-3 text-center max-w-xl">
             Store generation failed{error ? `: ${error}` : '.'}
@@ -50,7 +58,7 @@ export default async function TenantPage({ params }: Props) {
           src={demoUrl}
           className="w-full h-screen border-0"
           sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-presentation"
-          title={`${params.subdomain} Storefront`}
+          title={`${subdomain} Storefront`}
         />
       </main>
     );
@@ -60,7 +68,7 @@ export default async function TenantPage({ params }: Props) {
   if (!config) {
     return (
       <main className="min-h-screen flex flex-col items-center justify-center px-6">
-        <h1 className="text-2xl font-semibold">{params.subdomain}.{rootDomain}</h1>
+        <h1 className="text-2xl font-semibold">{subdomain}.{rootDomain}</h1>
         <p className="text-muted-foreground mt-3 text-center max-w-xl">
           Storefront configuration not found.
         </p>
@@ -82,7 +90,7 @@ export default async function TenantPage({ params }: Props) {
       style={{ backgroundColor, color: textColor }}
     >
       <header className="max-w-6xl mx-auto px-6 py-6 flex items-center justify-between">
-        <div className="font-semibold text-lg">{params.subdomain}.{rootDomain}</div>
+        <div className="font-semibold text-lg">{subdomain}.{rootDomain}</div>
         <nav className="flex items-center gap-4 text-sm">
           <a className="opacity-80 hover:opacity-100" href="#">Home</a>
           <a className="opacity-80 hover:opacity-100" href="#">Shop</a>
@@ -234,7 +242,7 @@ export default async function TenantPage({ params }: Props) {
                     className="pt-10 mt-10 border-t text-sm opacity-70"
                     style={{ borderColor: 'rgba(0,0,0,0.08)' }}
                   >
-                    <div>© {new Date().getFullYear()} {props.brandName ?? params.subdomain}</div>
+                    <div>© {new Date().getFullYear()} {props.brandName ?? subdomain}</div>
                   </footer>
                 );
               }
