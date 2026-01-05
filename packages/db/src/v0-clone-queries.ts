@@ -18,6 +18,7 @@ import {
   account,
   chat_ownerships,
   anonymous_chat_logs,
+  type User,
 } from "./schema/v0-clone";
 import { generateHashedPassword } from "./utils";
 import { db } from "./db";

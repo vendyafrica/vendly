@@ -3,6 +3,7 @@ import { createClient } from "v0-sdk";
 import {
   createTenantIfNotExists,
   saveTenantStorefrontConfig,
+  saveTenantDemoUrl,
   setTenantStatus,
 } from "@vendly/db/tenant-queries";
 
@@ -29,6 +30,28 @@ function safeJsonParse(input: string): unknown {
   return JSON.parse(input);
 }
 
+function extractTextRecursively(obj: any, depth = 0): string[] {
+  const results: string[] = [];
+  if (depth > 10) return results; // Prevent infinite recursion
+  
+  if (typeof obj === "string") {
+    results.push(obj);
+  } else if (Array.isArray(obj)) {
+    for (const item of obj) {
+      results.push(...extractTextRecursively(item, depth + 1));
+    }
+  } else if (obj && typeof obj === "object") {
+    // Check common text field names and numeric keys (for tuples)
+    const keys = Object.keys(obj);
+    for (const key of keys) {
+      if (["text", "content", "value", "message", "0", "1", "2"].includes(key)) {
+        results.push(...extractTextRecursively(obj[key], depth + 1));
+      }
+    }
+  }
+  return results;
+}
+
 function extractAssistantText(chat: any): string {
   const messages = chat?.messages;
   console.log(`[SiteBuilder] extractAssistantText - messages count: ${Array.isArray(messages) ? messages.length : 'not array'}`);
@@ -40,68 +63,58 @@ function extractAssistantText(chat: any): string {
   
   if (!lastAssistant) return "";
   
-  // Log the full assistant message structure to understand the format
-  console.log(`[SiteBuilder] extractAssistantText - assistant message keys:`, Object.keys(lastAssistant));
+  // Check content field FIRST - it's usually a clean string with the JSON
+  if (typeof lastAssistant.content === "string" && lastAssistant.content.trim()) {
+    console.log(`[SiteBuilder] extractAssistantText - using content string (first 200 chars):`, lastAssistant.content.substring(0, 200));
+    return lastAssistant.content;
+  }
   
-  // Try different possible content locations
-  const content = lastAssistant?.experimental_content 
-    ?? lastAssistant?.content 
-    ?? lastAssistant?.text
-    ?? lastAssistant?.message;
-
-  console.log(`[SiteBuilder] extractAssistantText - content type: ${typeof content}`);
-
-  if (typeof content === "string") return content;
-
-  // v0 can return structured content arrays; try to find text blocks.
-  if (Array.isArray(content)) {
-    console.log(`[SiteBuilder] extractAssistantText - content is array with ${content.length} items`);
-    const textParts: string[] = [];
-    for (const part of content) {
-      if (typeof part === "string") textParts.push(part);
-      if (part && typeof part === "object") {
-        // Log the structure of each part
-        console.log(`[SiteBuilder] extractAssistantText - part keys:`, Object.keys(part));
-        if (typeof (part as any).text === "string") textParts.push((part as any).text);
-        if (typeof (part as any).content === "string") textParts.push((part as any).content);
-        if (typeof (part as any).value === "string") textParts.push((part as any).value);
-      }
+  // Fallback to experimental_content if content is not a string
+  const expContent = lastAssistant?.experimental_content;
+  if (expContent) {
+    console.log(`[SiteBuilder] extractAssistantText - trying experimental_content`);
+    if (typeof expContent === "string") return expContent;
+    
+    // Recursively extract all text from the content structure
+    const textParts = extractTextRecursively(expContent);
+    console.log(`[SiteBuilder] extractAssistantText - extracted ${textParts.length} text parts`);
+    if (textParts.length > 0) {
+      const result = textParts.filter(t => t && t.trim()).join("\n");
+      console.log(`[SiteBuilder] extractAssistantText - combined text (first 500 chars):`, result.substring(0, 500));
+      return result;
     }
-    return textParts.join("\n");
   }
-
-  if (content && typeof content === "object") {
-    console.log(`[SiteBuilder] extractAssistantText - content is object with keys:`, Object.keys(content));
-    if (typeof (content as any).text === "string") return (content as any).text;
-    if (typeof (content as any).value === "string") return (content as any).value;
-  }
-
-  // Last resort: stringify the whole assistant message to see what we have
-  console.log(`[SiteBuilder] extractAssistantText - full assistant message:`, JSON.stringify(lastAssistant, null, 2).substring(0, 1000));
 
   return "";
 }
 
 function buildStorefrontPrompt(input: any): string {
-  const storeName = input?.storeName ?? "";
-  const category = input?.category ?? "";
-  const brandVibe = input?.brandVibe ?? "";
+  const storeName = input?.storeName ?? "My Store";
+  const category = input?.category ?? "General";
+  const brandVibe = input?.brandVibe ?? "Modern";
   const colors = input?.colors ?? "";
 
   return [
-    "You are generating a JSON configuration for an ecommerce storefront.",
-    "Return ONLY valid JSON. No markdown. No backticks.",
-    "The JSON must include:",
-    "- theme: { primaryColor, accentColor, backgroundColor, textColor, font, radius }",
-    "- homepage: { sections: Array<{ type, variant, props }> }",
-    "Allowed section types: hero, categoryGrid, featuredProducts, testimonials, newsletter, footer.",
-    "Variants should be short strings like A, B, C.",
-    "Keep it mobile-first and modern.",
+    `Create a beautiful, modern ecommerce storefront landing page for "${storeName}".`,
     "",
-    `Store name: ${storeName}`,
-    `Category: ${category}`,
-    `Brand vibe: ${brandVibe}`,
-    `Preferred colors (optional): ${colors}`,
+    "Requirements:",
+    "- Hero section with store name, tagline, and call-to-action button",
+    "- Featured products grid (use placeholder product cards)",
+    "- Category showcase section",
+    "- Testimonials section",
+    "- Newsletter signup section",
+    "- Footer with navigation links",
+    "",
+    "Design specifications:",
+    `- Store name: ${storeName}`,
+    `- Category: ${category}`,
+    `- Brand vibe/style: ${brandVibe}`,
+    colors ? `- Color palette: ${colors}` : "- Use a modern, clean color palette",
+    "- Mobile-first responsive design",
+    "- Use Tailwind CSS for styling",
+    "- Make it visually stunning and professional",
+    "",
+    "Generate a complete, functional React component for this storefront.",
   ].join("\n");
 }
 
@@ -162,21 +175,73 @@ export class SiteBuilderService {
         responseMode: "sync",
       } as any);
       console.log(`[SiteBuilder] Job ${jobId} - v0 API response received`);
-      console.log(`[SiteBuilder] Job ${jobId} - Chat response:`, JSON.stringify(chat, null, 2).substring(0, 500));
+      console.log(`[SiteBuilder] Job ${jobId} - Chat response keys:`, Object.keys(chat as any));
 
-      const assistantText = extractAssistantText(chat as any);
-      console.log(`[SiteBuilder] Job ${jobId} - Extracted assistant text:`, assistantText.substring(0, 300) + '...');
+      // Extract demo URL from v0 response
+      const chatData = chat as any;
+      const v0ChatId = chatData?.id;
       
-      console.log(`[SiteBuilder] Job ${jobId} - Parsing JSON...`);
-      const configJson = safeJsonParse(assistantText);
-      console.log(`[SiteBuilder] Job ${jobId} - Parsed config:`, JSON.stringify(configJson, null, 2).substring(0, 300));
+      // v0 provides multiple URL formats - try to get the demo/preview URL
+      // The demo URL is typically at latestVersion.demoUrl or can be constructed from the chat URL
+      let demoUrl = chatData?.latestVersion?.demoUrl 
+        || chatData?.demo 
+        || chatData?.webUrl
+        || chatData?.url;
+      
+      console.log(`[SiteBuilder] Job ${jobId} - v0 Chat ID: ${v0ChatId}`);
+      console.log(`[SiteBuilder] Job ${jobId} - Demo URL: ${demoUrl}`);
+      console.log(`[SiteBuilder] Job ${jobId} - Full chat data:`, JSON.stringify(chatData, null, 2).substring(0, 1000));
 
-      console.log(`[SiteBuilder] Job ${jobId} - Saving storefront config...`);
-      await saveTenantStorefrontConfig({ slug: tenantSlug, storefrontConfig: configJson });
+      if (!demoUrl && v0ChatId) {
+        // Construct the demo URL from chat ID if not directly available
+        demoUrl = `https://v0.dev/chat/${v0ChatId}`;
+        console.log(`[SiteBuilder] Job ${jobId} - Constructed demo URL: ${demoUrl}`);
+      }
 
-      job.status = "ready";
-      jobs.set(jobId, job);
-      console.log(`[SiteBuilder] Job ${jobId} - COMPLETED SUCCESSFULLY`);
+      if (demoUrl) {
+        // Save the demo URL for iframe embedding
+        console.log(`[SiteBuilder] Job ${jobId} - Saving demo URL...`);
+        await saveTenantDemoUrl({ 
+          slug: tenantSlug, 
+          demoUrl, 
+          v0ChatId 
+        });
+        
+        job.status = "ready";
+        jobs.set(jobId, job);
+        console.log(`[SiteBuilder] Job ${jobId} - COMPLETED SUCCESSFULLY with demo URL`);
+      } else {
+        // Fallback: try to extract JSON config from the response (legacy approach)
+        console.log(`[SiteBuilder] Job ${jobId} - No demo URL found, falling back to JSON config extraction...`);
+        
+        const assistantText = extractAssistantText(chatData);
+        if (assistantText) {
+          console.log(`[SiteBuilder] Job ${jobId} - Extracted assistant text:`, assistantText.substring(0, 300) + '...');
+          
+          try {
+            const configJson = safeJsonParse(assistantText);
+            console.log(`[SiteBuilder] Job ${jobId} - Parsed config, saving...`);
+            await saveTenantStorefrontConfig({ slug: tenantSlug, storefrontConfig: configJson });
+            
+            job.status = "ready";
+            jobs.set(jobId, job);
+            console.log(`[SiteBuilder] Job ${jobId} - COMPLETED SUCCESSFULLY with JSON config`);
+          } catch {
+            // If JSON parsing fails, still save the raw response as config
+            console.log(`[SiteBuilder] Job ${jobId} - JSON parse failed, saving raw response...`);
+            await saveTenantStorefrontConfig({ 
+              slug: tenantSlug, 
+              storefrontConfig: { rawResponse: assistantText, v0ChatId } 
+            });
+            
+            job.status = "ready";
+            jobs.set(jobId, job);
+            console.log(`[SiteBuilder] Job ${jobId} - COMPLETED with raw response saved`);
+          }
+        } else {
+          throw new Error("No demo URL or content found in v0 response");
+        }
+      }
     } catch (err) {
       const message = err instanceof Error ? err.message : "Unknown error";
       console.error(`[SiteBuilder] Job ${jobId} - FAILED:`, message);

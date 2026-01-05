@@ -42,3 +42,18 @@ export async function saveTenantStorefrontConfig({
     .set({ storefrontConfig, status: "ready", error: null })
     .where(eq(tenants.slug, slug));
 }
+
+export async function saveTenantDemoUrl({
+  slug,
+  demoUrl,
+  v0ChatId,
+}: {
+  slug: string;
+  demoUrl: string;
+  v0ChatId?: string;
+}): Promise<void> {
+  await db
+    .update(tenants)
+    .set({ demoUrl, v0ChatId: v0ChatId ?? null, status: "ready", error: null })
+    .where(eq(tenants.slug, slug));
+}

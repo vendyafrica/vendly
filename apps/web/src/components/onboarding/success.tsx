@@ -35,9 +35,18 @@ export function SuccessScreen() {
 
   const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000';
   const rootDomain = process.env.NEXT_PUBLIC_ROOT_DOMAIN ?? 'vendlyafrica.store';
+  const isDev = typeof window !== 'undefined' && window.location.hostname === 'localhost';
 
-  const storeUrl = `https://${subdomain}.${rootDomain}`;
-  const adminUrl = `https://admin.${rootDomain}/${subdomain}`;
+  // For localhost development, use localhost URLs with proper ports
+  const storeUrl = isDev 
+    ? `http://${subdomain}.localhost:3000`
+    : `https://${subdomain}.${rootDomain}`;
+  const adminUrl = isDev 
+    ? `http://localhost:4000/${subdomain}`
+    : `https://admin.${rootDomain}/${subdomain}`;
+  
+  // Fallback localhost path-based URL for browsers that don't support *.localhost
+  const storeUrlFallback = `http://localhost:3000/${subdomain}`;
 
   useEffect(() => {
     if (!jobId) return;
@@ -193,6 +202,13 @@ export function SuccessScreen() {
                 View Your Store
               </Button>
             </a>
+            {isDev && (
+              <a href={storeUrlFallback} target="_blank" rel="noreferrer">
+                <Button className="w-full" variant="secondary">
+                  View Store (Fallback)
+                </Button>
+              </a>
+            )}
             <a href={adminUrl} target="_blank" rel="noreferrer">
               <Button className="w-full" variant="outline">
                 Go to Admin Dashboard

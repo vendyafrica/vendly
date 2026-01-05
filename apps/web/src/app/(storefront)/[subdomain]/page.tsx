@@ -23,8 +23,9 @@ export default async function TenantPage({ params }: Props) {
   const status = tenant.status;
   const error = tenant.error ?? undefined;
   const config = (tenant.storefrontConfig ?? undefined) as any;
+  const demoUrl = (tenant as any).demoUrl as string | undefined;
 
-  if (status !== 'ready' || !config) {
+  if (status !== 'ready') {
     return (
       <main className="min-h-screen flex flex-col items-center justify-center px-6">
         <h1 className="text-2xl font-semibold">{params.subdomain}.{rootDomain}</h1>
@@ -37,6 +38,32 @@ export default async function TenantPage({ params }: Props) {
             Your storefront is being generated. Refresh in a moment.
           </p>
         )}
+      </main>
+    );
+  }
+
+  // If we have a demo URL, render the storefront in an iframe
+  if (demoUrl) {
+    return (
+      <main className="min-h-screen w-full">
+        <iframe
+          src={demoUrl}
+          className="w-full h-screen border-0"
+          sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-presentation"
+          title={`${params.subdomain} Storefront`}
+        />
+      </main>
+    );
+  }
+
+  // Fallback: If no demo URL but we have config, render the config-based UI
+  if (!config) {
+    return (
+      <main className="min-h-screen flex flex-col items-center justify-center px-6">
+        <h1 className="text-2xl font-semibold">{params.subdomain}.{rootDomain}</h1>
+        <p className="text-muted-foreground mt-3 text-center max-w-xl">
+          Storefront configuration not found.
+        </p>
       </main>
     );
   }
