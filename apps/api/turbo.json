@@ -12,7 +12,8 @@
         "INSTAGRAM_CLIENT_ID",
         "INSTAGRAM_CLIENT_SECRET",
         "RESEND_API_KEY",
-        "V0_API_URL"
+        "V0_API_URL",
+        "ROOT_DOMAIN"
       ],
       "outputs": ["dist/**"]
     }

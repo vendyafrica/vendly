@@ -1,7 +1,7 @@
  import { Router } from "express";
  import { aiController } from "../controllers/ai-controller";
  
- const router = Router();
+ const router:Router = Router();
  
  router.post("/chat", (req, res) => aiController.chat(req, res));
  router.get("/chats", (req, res) => aiController.getChats(req, res));

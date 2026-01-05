@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 
 import SellOnboardingSteps from "@/components/onboarding/steps";
+import { OnboardingProvider } from "@/contexts/OnboardingContext";
 
 export default function StorefrontLayout({
   children,
@@ -32,7 +33,9 @@ export default function StorefrontLayout({
       {/* Stepper + form content */}
       <div className="relative z-10 flex min-h-screen items-center justify-center p-6 md:p-10">
         <div className="w-full max-w-4xl">
-          <SellOnboardingSteps>{children}</SellOnboardingSteps>
+          <OnboardingProvider>
+            <SellOnboardingSteps>{children}</SellOnboardingSteps>
+          </OnboardingProvider>
         </div>
       </div>
     </div>

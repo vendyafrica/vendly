@@ -39,13 +39,14 @@ export default function SellOnboardingSteps({
   const currentStep = getCurrentStep(pathname);
 
   const goToStep = (step: number) => {
+    // Don't allow navigating to success step directly or going forward
+    if (step >= steps.length || step > currentStep) return;
     const next = steps[step - 1];
     if (!next) return;
     router.push(next.href);
   };
 
-  const canGoBack = currentStep > 1;
-  const canGoNext = currentStep < steps.length;
+  const canGoBack = currentStep > 1 && currentStep < steps.length;
 
   return (
     <div className="w-full">
@@ -68,19 +69,18 @@ export default function SellOnboardingSteps({
 
       <div className="mt-4">{children}</div>
 
-      {currentStep !== steps.length ? (
+      {canGoBack && (
         <div className="mt-6 flex items-center justify-between">
           <Button
             variant="outline"
             size="sm"
             onClick={() => goToStep(currentStep - 1)}
-            disabled={!canGoBack}
           >
             <HugeiconsIcon icon={ArrowLeft02Icon} />
             Back
           </Button>
         </div>
-      ) : null}
+      )}
     </div>
   );
 }
