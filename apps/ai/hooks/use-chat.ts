@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useStreaming } from '../contexts/streaming-context'
 import useSWR, { mutate } from 'swr'
+import { API_URL } from '@/lib/constants'
 
 interface Chat {
   id: string
@@ -39,7 +40,7 @@ export function useChat(chatId: string) {
     data: currentChat,
     error,
     isLoading: isLoadingChat,
-  } = useSWR<Chat>(chatId ? `/api/chats/${chatId}` : null, {
+  } = useSWR<Chat>(chatId ? `${API_URL}/chats/${chatId}` : null, {
     onError: (error) => {
       console.error('Error loading chat:', error)
       // Redirect to home if chat not found
@@ -85,9 +86,10 @@ export function useChat(chatId: string) {
       resumedMessageIdsRef.add(last.id)
 
       try {
-        const resumeResponse = await fetch('/api/chat/resume', {
+        const resumeResponse = await fetch(`${API_URL}/chat/resume`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
           body: JSON.stringify({ chatId, messageId: last.id }),
         })
 
@@ -103,7 +105,7 @@ export function useChat(chatId: string) {
         // Poll chat details briefly until the assistant message finishes.
         for (let i = 0; i < 10 && !cancelled; i++) {
           await new Promise((r) => setTimeout(r, 1200))
-          const res = await fetch(`/api/chats/${chatId}`)
+          const res = await fetch(`${API_URL}/chats/${chatId}`, { credentials: 'include' })
           if (!res.ok) continue
 
           const updated = (await res.json()) as Chat
@@ -111,7 +113,7 @@ export function useChat(chatId: string) {
           const demoUrl = (updated as any)?.latestVersion?.demoUrl || updated?.demo
 
           mutate(
-            `/api/chats/${chatId}`,
+            `${API_URL}/chats/${chatId}`,
             {
               ...(updated as any),
               demo: demoUrl,
@@ -190,11 +192,12 @@ export function useChat(chatId: string) {
 
     try {
       // Use streaming mode
-      const response = await fetch('/api/chat', {
+      const response = await fetch(`${API_URL}/chat`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include',
         body: JSON.stringify({
           message: userMessage,
           chatId: chatId,
@@ -274,7 +277,7 @@ export function useChat(chatId: string) {
     // Always try to fetch updated chat details after streaming completes
     // This ensures we get the latest demoUrl even for existing chats
     try {
-      const response = await fetch(`/api/chats/${chatId}`)
+      const response = await fetch(`${API_URL}/chats/${chatId}`, { credentials: 'include' })
       if (response.ok) {
         const chatDetails = await response.json()
 
@@ -282,7 +285,7 @@ export function useChat(chatId: string) {
 
         // Update SWR cache with the latest chat data
         mutate(
-          `/api/chats/${chatId}`,
+          `${API_URL}/chats/${chatId}`,
           {
             ...chatDetails,
             demo: demoUrl,
@@ -292,12 +295,12 @@ export function useChat(chatId: string) {
       } else {
         console.warn('Failed to fetch updated chat details:', response.status)
         // Fallback to just refreshing the cache
-        mutate(`/api/chats/${chatId}`)
+        mutate(`${API_URL}/chats/${chatId}`)
       }
     } catch (error) {
       console.error('Error fetching updated chat details:', error)
       // Fallback to just refreshing the cache
-      mutate(`/api/chats/${chatId}`)
+      mutate(`${API_URL}/chats/${chatId}`)
     }
 
     // Try to extract chat ID from the final content if we don't have one yet
@@ -345,7 +348,7 @@ export function useChat(chatId: string) {
 
         try {
           // Fetch the full chat details to get the demo URL
-          const response = await fetch(`/api/chats/${newChatId}`)
+          const response = await fetch(`${API_URL}/chats/${newChatId}`, { credentials: 'include' })
           if (response.ok) {
             const chatDetails = await response.json()
             console.log('Chat details:', chatDetails)
@@ -356,7 +359,7 @@ export function useChat(chatId: string) {
 
             // Update SWR cache with new chat data
             mutate(
-              `/api/chats/${newChatId}`,
+              `${API_URL}/chats/${newChatId}`,
               {
                 id: newChatId,
                 demo: demoUrl || `Generated Chat ${newChatId}`,
@@ -367,7 +370,7 @@ export function useChat(chatId: string) {
             console.warn('Failed to fetch chat details:', response.status)
             // Update SWR cache with new chat data
             mutate(
-              `/api/chats/${newChatId}`,
+              `${API_URL}/chats/${newChatId}`,
               {
                 id: newChatId,
                 demo: `Generated Chat ${newChatId}`,
@@ -379,13 +382,13 @@ export function useChat(chatId: string) {
           console.error('Error fetching chat details:', error)
           // Update SWR cache with new chat data
           mutate(
-            `/api/chats/${newChatId}`,
+            `${API_URL}/chats/${newChatId}`,
             {
               id: newChatId,
               demo: `Generated Chat ${newChatId}`,
             },
             false,
-          )
+            )
         }
       } else {
         console.log('No chat ID found in final content')
@@ -413,7 +416,7 @@ export function useChat(chatId: string) {
       // Only update with basic chat data, without demo URL
       // The demo URL will be fetched in handleStreamingComplete
       mutate(
-        `/api/chats/${chatData.id}`,
+        `${API_URL}/chats/${chatData.id}`,
         {
           id: chatData.id,
           url: chatData.webUrl || chatData.url,

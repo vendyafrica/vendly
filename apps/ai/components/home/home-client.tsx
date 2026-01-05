@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { ChatMessages } from '../chat/chat-messages'
-import { ChatInput } from '../chat/chat-input'
+import { ChatInput } from '../chat/chat-input-wrapper'
 import { AiTopbar } from '../ai-topbar'
 import {
   type ImageAttachment,
@@ -36,7 +36,7 @@ export function HomeClient() {
   const [chatHistory, setChatHistory] = useState<
     Array<{
       type: 'user' | 'assistant'
-      content: string | any
+      content: string | unknown
       isStreaming?: boolean
       stream?: ReadableStream<Uint8Array> | null
     }>
@@ -155,7 +155,7 @@ export function HomeClient() {
     }
   }
 
-  const handleChatData = (chatData: any) => {
+  const handleChatData = (chatData: { id?: string; object?: string }) => {
     if (chatData.id && chatData.object === 'chat') {
       window.history.pushState(null, '', `/chats/${chatData.id}`)
 
@@ -179,7 +179,7 @@ export function HomeClient() {
     }
   }
 
-  const handleStreamingComplete = (finalContent: any) => {
+  const handleStreamingComplete = (finalContent: unknown) => {
     setIsLoading(false)
 
     setChatHistory((prev) => {
@@ -217,16 +217,19 @@ export function HomeClient() {
           />
         </div>
 
-        <ChatInput
-          message={message}
-          setMessage={setMessage}
-          onSubmit={handleSendMessage}
-          isLoading={isLoading}
-          showSuggestions={false}
-          attachments={attachments}
-          onAttachmentsChange={setAttachments}
-          textareaRef={textareaRef}
-        />
+        <div className={chatHistory.length === 0 ? "flex-1 flex items-center justify-center" : ""}>
+          <div className="w-full">
+            <ChatInput
+              message={message}
+              setMessage={setMessage}
+              onSubmit={handleSendMessage}
+              isLoading={isLoading}
+              attachments={attachments}
+              onAttachmentsChange={setAttachments}
+              textareaRef={textareaRef}
+            />
+          </div>
+        </div>
       </div>
     </div>
   )

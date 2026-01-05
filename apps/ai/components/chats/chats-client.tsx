@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { Plus } from 'lucide-react'
 import { AppHeader } from '../shared/app-header'
 import useSWR from 'swr'
+import { API_URL } from '@/lib/constants'
 
 interface V0Chat {
   id: string
@@ -23,7 +24,7 @@ interface ChatsResponse {
 }
 
 export function ChatsClient() {
-  const { data, error, isLoading } = useSWR<ChatsResponse>('/api/chats')
+  const { data, error, isLoading } = useSWR<ChatsResponse>(`${API_URL}/chats`)
   const chats = data?.data || []
 
   const getFirstUserMessage = (chat: V0Chat) => {

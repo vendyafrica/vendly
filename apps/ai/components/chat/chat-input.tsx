@@ -1,272 +1,283 @@
+"use client";
+
+import {
+  ModelSelector,
+  ModelSelectorContent,
+  ModelSelectorEmpty,
+  ModelSelectorGroup,
+  ModelSelectorInput,
+  ModelSelectorItem,
+  ModelSelectorList,
+  ModelSelectorLogo,
+  ModelSelectorLogoGroup,
+  ModelSelectorName,
+  ModelSelectorTrigger,
+} from "@/components/ai-elements/model-selector";
 import {
   PromptInput,
-  PromptInputImageButton,
-  PromptInputImagePreview,
-  PromptInputMicButton,
+  PromptInputActionAddAttachments,
+  PromptInputActionMenu,
+  PromptInputActionMenuContent,
+  PromptInputActionMenuTrigger,
+  PromptInputAttachment,
+  PromptInputAttachments,
+  PromptInputBody,
+  PromptInputButton,
+  PromptInputFooter,
+  type PromptInputMessage,
+  PromptInputProvider,
+  PromptInputSpeechButton,
   PromptInputSubmit,
   PromptInputTextarea,
-  PromptInputToolbar,
   PromptInputTools,
-  createImageAttachment,
-  createImageAttachmentFromStored,
-  savePromptToStorage,
-  loadPromptFromStorage,
-  clearPromptFromStorage,
-  type ImageAttachment,
-  type PromptInputMessage,
-} from '../ai-elements/prompt-input'
-import type { FileUIPart } from 'ai'
-import { Suggestions, Suggestion } from '../ai-elements/suggestion'
-import { useState, useCallback, useEffect } from 'react'
+  usePromptInputController,
+} from "@/components/ai-elements/prompt-input";
+import { Button } from "@/components/ui/button";
+import { ButtonGroup } from "@vendly/ui/components/button-group";
+import { CheckIcon, GlobeIcon, Paperclip } from "lucide-react";
+import { useRef, useState } from "react";
 
-interface ChatInputProps {
-  message: string
-  setMessage: (message: string) => void
-  onSubmit: (
-    e: React.FormEvent<HTMLFormElement>,
-    attachments?: Array<{ url: string }>,
-  ) => void
-  isLoading: boolean
-  showSuggestions: boolean
-  attachments?: ImageAttachment[]
-  onAttachmentsChange?: (attachments: ImageAttachment[]) => void
-  textareaRef?: React.RefObject<HTMLTextAreaElement | null>
-}
+const models = [
+  {
+    id: "gpt-4o",
+    name: "GPT-4o",
+    chef: "OpenAI",
+    chefSlug: "openai",
+    providers: ["openai", "azure"],
+  },
+  {
+    id: "gpt-4o-mini",
+    name: "GPT-4o Mini",
+    chef: "OpenAI",
+    chefSlug: "openai",
+    providers: ["openai", "azure"],
+  },
+  {
+    id: "claude-opus-4-20250514",
+    name: "Claude 4 Opus",
+    chef: "Anthropic",
+    chefSlug: "anthropic",
+    providers: ["anthropic", "azure", "google", "amazon-bedrock"],
+  },
+  {
+    id: "claude-sonnet-4-20250514",
+    name: "Claude 4 Sonnet",
+    chef: "Anthropic",
+    chefSlug: "anthropic",
+    providers: ["anthropic", "azure", "google", "amazon-bedrock"],
+  },
+  {
+    id: "gemini-2.0-flash-exp",
+    name: "Gemini 2.0 Flash",
+    chef: "Google",
+    chefSlug: "google",
+    providers: ["google"],
+  },
+];
 
-export function ChatInput({
-  message,
-  setMessage,
-  onSubmit,
-  isLoading,
-  showSuggestions,
-  attachments = [],
-  onAttachmentsChange,
-  textareaRef,
-}: ChatInputProps) {
-  const [isDragOver, setIsDragOver] = useState(false)
+const SUBMITTING_TIMEOUT = 200;
+const STREAMING_TIMEOUT = 2000;
 
-  const handleImageFiles = useCallback(
-    async (files: File[]) => {
-      if (!onAttachmentsChange) return
-
-      try {
-        const newAttachments = await Promise.all(
-          files.map((file) => createImageAttachment(file)),
-        )
-        onAttachmentsChange([...attachments, ...newAttachments])
-      } catch (error) {
-        console.error('Error processing image files:', error)
-      }
-    },
-    [attachments, onAttachmentsChange],
-  )
-
-  const handleRemoveAttachment = useCallback(
-    (id: string) => {
-      if (!onAttachmentsChange) return
-      onAttachmentsChange(attachments.filter((att) => att.id !== id))
-    },
-    [attachments, onAttachmentsChange],
-  )
-
-  const handleDragOver = useCallback(() => {
-    setIsDragOver(true)
-  }, [])
-
-  const handleDragLeave = useCallback(() => {
-    setIsDragOver(false)
-  }, [])
-
-  const handleDrop = useCallback(() => {
-    setIsDragOver(false)
-  }, [])
-
-  // Save to sessionStorage when message or attachments change
-  useEffect(() => {
-    if (message.trim() || attachments.length > 0) {
-      savePromptToStorage(message, attachments)
-    } else {
-      // Clear sessionStorage if both message and attachments are empty
-      clearPromptFromStorage()
-    }
-  }, [message, attachments])
-
-  // Restore from sessionStorage on mount (only if no existing data)
-  useEffect(() => {
-    if (!message && attachments.length === 0) {
-      const storedData = loadPromptFromStorage()
-      if (storedData) {
-        setMessage(storedData.message)
-        if (storedData.attachments.length > 0 && onAttachmentsChange) {
-          const restoredAttachments = storedData.attachments.map(
-            createImageAttachmentFromStored,
-          )
-          onAttachmentsChange(restoredAttachments)
-        }
-      }
-    }
-  }, [message, attachments, setMessage, onAttachmentsChange])
-
-  const handleSubmit = useCallback(
-    (message: PromptInputMessage, event: React.FormEvent<HTMLFormElement>) => {
-      // Clear sessionStorage immediately upon submission
-      clearPromptFromStorage()
-
-      const attachmentUrls = message.files.map((file: FileUIPart) => ({ url: file.url }))
-      onSubmit(event, attachmentUrls.length > 0 ? attachmentUrls : undefined)
-    },
-    [onSubmit],
-  )
+const HeaderControls = () => {
+  const controller = usePromptInputController();
 
   return (
-    <div className="px-4 md:pb-4">
-      <div className="flex gap-2">
-        <PromptInput
-          onSubmit={handleSubmit}
-          className="w-full max-w-2xl mx-auto relative"
+    <header className="mt-8 flex items-center justify-between">
+      <p className="text-sm">
+        Header Controls via{" "}
+        <code className="rounded-md bg-muted p-1 font-bold">
+          PromptInputProvider
+        </code>
+      </p>
+      <ButtonGroup>
+        <Button
+          onClick={() => {
+            controller.textInput.clear();
+          }}
+          size="sm"
+          type="button"
+          variant="outline"
         >
-          <PromptInputImagePreview
-            attachments={attachments}
-            onRemove={handleRemoveAttachment}
-          />
-          <PromptInputTextarea
-            ref={textareaRef}
-            onChange={(e) => setMessage(e.target.value)}
-            value={message}
-            className="min-h-[60px]"
-            placeholder="Continue the conversation..."
-          />
-          <PromptInputToolbar>
+          Clear input
+        </Button>
+        <Button
+          onClick={() => {
+            controller.textInput.setInput("Inserted via PromptInputProvider");
+          }}
+          size="sm"
+          type="button"
+          variant="outline"
+        >
+          Set input
+        </Button>
+
+        <Button
+          onClick={() => {
+            controller.attachments.clear();
+          }}
+          size="sm"
+          type="button"
+          variant="outline"
+        >
+          Clear attachments
+        </Button>
+      </ButtonGroup>
+    </header>
+  );
+};
+
+const Example = () => {
+  const [model, setModel] = useState<string>(models[0].id);
+  const [modelSelectorOpen, setModelSelectorOpen] = useState(false);
+  const [status, setStatus] = useState<"submitted" | "streaming" | "ready" | "error">("ready");
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  const selectedModelData = models.find((m) => m.id === model);
+
+  const handleSubmit = (message: PromptInputMessage) => {
+    const hasText = Boolean(message.text);
+    const hasAttachments = Boolean(message.files?.length);
+
+    if (!(hasText || hasAttachments)) {
+      return;
+    }
+
+    setStatus("submitted");
+
+    console.log("Submitting message:", message);
+
+    setTimeout(() => {
+      setStatus("streaming");
+    }, SUBMITTING_TIMEOUT);
+
+    setTimeout(() => {
+      setStatus("ready");
+    }, STREAMING_TIMEOUT);
+  };
+
+  const handleRemoveAttachment = (id: string) => {
+    console.log("Removing attachment:", id);
+  };
+
+  return (
+    <div className="size-full">
+      <PromptInputProvider>
+        <PromptInput globalDrop multiple onSubmit={handleSubmit}>
+          <PromptInputAttachments>
+            {(attachment) => (
+              <PromptInputAttachment data={attachment}>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => handleRemoveAttachment(attachment.id)}
+                  className="h-4 w-4 rounded p-0 hover:bg-gray-200 dark:hover:bg-gray-700"
+                >
+                  ×
+                </Button>
+                {attachment.url && (
+                  <img
+                    src={attachment.url}
+                    alt={attachment.id}
+                    className="h-6 w-6 rounded object-cover"
+                  />
+                )}
+                <span className="text-xs text-gray-600 dark:text-gray-400">
+                  {attachment.id}
+                </span>
+              </PromptInputAttachment>
+            )}
+          </PromptInputAttachments>
+          <PromptInputBody>
+            <PromptInputTextarea ref={textareaRef} />
+          </PromptInputBody>
+          <PromptInputFooter>
             <PromptInputTools>
-              <PromptInputImageButton onImageSelect={handleImageFiles} />
-            </PromptInputTools>
-            <PromptInputTools>
-              <PromptInputMicButton
-                onTranscript={(transcript) => {
-                  setMessage(message + (message ? ' ' : '') + transcript)
-                }}
-                onError={(error) => {
-                  console.error('Speech recognition error:', error)
-                }}
+              <PromptInputActionMenu>
+                <PromptInputActionMenuTrigger>
+                  <PromptInputButton type="button" variant="ghost" size="sm" className="h-8 rounded-lg px-3 py-0 hover:bg-gray-200 dark:hover:bg-gray-700">
+                    <Paperclip className="h-4 w-4 mr-2" />
+                    <span className="text-sm">Attach</span>
+                  </PromptInputButton>
+                </PromptInputActionMenuTrigger>
+                <PromptInputActionMenuContent>
+                  <PromptInputActionAddAttachments />
+                </PromptInputActionMenuContent>
+              </PromptInputActionMenu>
+              <PromptInputSpeechButton
+                onTranscriptionChange={() => {}}
+                textareaRef={textareaRef}
               />
-              <PromptInputSubmit
-                disabled={!message}
-                status={isLoading ? 'streaming' : 'ready'}
-              />
+              <PromptInputButton>
+                <GlobeIcon size={16} />
+                <span>Search</span>
+              </PromptInputButton>
+              <ModelSelector
+                onOpenChange={setModelSelectorOpen}
+                open={modelSelectorOpen}
+              >
+                <ModelSelectorTrigger>
+                  <PromptInputButton>
+                    {selectedModelData?.chefSlug && (
+                      <ModelSelectorLogo
+                        provider={selectedModelData.chefSlug}
+                      />
+                    )}
+                    {selectedModelData?.name && (
+                      <ModelSelectorName>
+                        {selectedModelData.name}
+                      </ModelSelectorName>
+                    )}
+                  </PromptInputButton>
+                </ModelSelectorTrigger>
+                <ModelSelectorContent>
+                  <ModelSelectorInput placeholder="Search models..." />
+                  <ModelSelectorList>
+                    <ModelSelectorEmpty>No models found.</ModelSelectorEmpty>
+                    {["OpenAI", "Anthropic", "Google"].map((chef) => (
+                      <ModelSelectorGroup heading={chef} key={chef}>
+                        {models
+                          .filter((m) => m.chef === chef)
+                          .map((m) => (
+                            <ModelSelectorItem
+                              key={m.id}
+                              onSelect={() => {
+                                setModel(m.id);
+                                setModelSelectorOpen(false);
+                              }}
+                              value={m.id}
+                            >
+                              <ModelSelectorLogo provider={m.chefSlug} />
+                              <ModelSelectorName>{m.name}</ModelSelectorName>
+                              <ModelSelectorLogoGroup>
+                                {m.providers.map((provider) => (
+                                  <ModelSelectorLogo
+                                    key={provider}
+                                    provider={provider}
+                                  />
+                                ))}
+                              </ModelSelectorLogoGroup>
+                              {model === m.id ? (
+                                <CheckIcon className="ml-auto size-4" />
+                              ) : (
+                                <div className="ml-auto size-4" />
+                              )}
+                            </ModelSelectorItem>
+                          ))}
+                      </ModelSelectorGroup>
+                    ))}
+                  </ModelSelectorList>
+                </ModelSelectorContent>
+              </ModelSelector>
             </PromptInputTools>
-          </PromptInputToolbar>
+            <PromptInputSubmit disabled={!text && !status} status={status} />
+          </PromptInputFooter>
         </PromptInput>
-      </div>
-      {showSuggestions && (
-        <div className="max-w-2xl mx-auto mt-2">
-          <Suggestions>
-            <Suggestion
-              onClick={() => {
-                setMessage('Landing page')
-                // Submit after setting message
-                setTimeout(() => {
-                  const form = textareaRef?.current?.form
-                  if (form) {
-                    form.requestSubmit()
-                  }
-                }, 0)
-              }}
-              suggestion="Landing page"
-            />
-            <Suggestion
-              onClick={() => {
-                setMessage('Todo app')
-                // Submit after setting message
-                setTimeout(() => {
-                  const form = textareaRef?.current?.form
-                  if (form) {
-                    form.requestSubmit()
-                  }
-                }, 0)
-              }}
-              suggestion="Todo app"
-            />
-            <Suggestion
-              onClick={() => {
-                setMessage('Dashboard')
-                // Submit after setting message
-                setTimeout(() => {
-                  const form = textareaRef?.current?.form
-                  if (form) {
-                    form.requestSubmit()
-                  }
-                }, 0)
-              }}
-              suggestion="Dashboard"
-            />
-            <Suggestion
-              onClick={() => {
-                setMessage('Blog')
-                // Submit after setting message
-                setTimeout(() => {
-                  const form = textareaRef?.current?.form
-                  if (form) {
-                    form.requestSubmit()
-                  }
-                }, 0)
-              }}
-              suggestion="Blog"
-            />
-            <Suggestion
-              onClick={() => {
-                setMessage('E-commerce')
-                // Submit after setting message
-                setTimeout(() => {
-                  const form = textareaRef?.current?.form
-                  if (form) {
-                    form.requestSubmit()
-                  }
-                }, 0)
-              }}
-              suggestion="E-commerce"
-            />
-            <Suggestion
-              onClick={() => {
-                setMessage('Portfolio')
-                // Submit after setting message
-                setTimeout(() => {
-                  const form = textareaRef?.current?.form
-                  if (form) {
-                    form.requestSubmit()
-                  }
-                }, 0)
-              }}
-              suggestion="Portfolio"
-            />
-            <Suggestion
-              onClick={() => {
-                setMessage('Chat app')
-                // Submit after setting message
-                setTimeout(() => {
-                  const form = textareaRef?.current?.form
-                  if (form) {
-                    form.requestSubmit()
-                  }
-                }, 0)
-              }}
-              suggestion="Chat app"
-            />
-            <Suggestion
-              onClick={() => {
-                setMessage('Calculator')
-                // Submit after setting message
-                setTimeout(() => {
-                  const form = textareaRef?.current?.form
-                  if (form) {
-                    form.requestSubmit()
-                  }
-                }, 0)
-              }}
-              suggestion="Calculator"
-            />
-          </Suggestions>
-        </div>
-      )}
+
+        <HeaderControls />
+      </PromptInputProvider>
     </div>
-  )
-}
+  );
+};
+
+export default Example;

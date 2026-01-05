@@ -88,6 +88,9 @@ importers:
       '@hugeicons/react':
         specifier: ^1.1.1
         version: 1.1.4(react@19.2.3)
+      '@radix-ui/react-slot':
+        specifier: ^1.2.4
+        version: 1.2.4(@types/react@19.2.7)(react@19.2.3)
       '@radix-ui/react-use-controllable-state':
         specifier: ^1.2.2
         version: 1.2.2(@types/react@19.2.7)(react@19.2.3)
@@ -269,6 +272,9 @@ importers:
       resend:
         specifier: ^6.5.2
         version: 6.6.0
+      v0-sdk:
+        specifier: ^0.15.3
+        version: 0.15.3
     devDependencies:
       '@types/body-parser':
         specifier: ^1.19.5

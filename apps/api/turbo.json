@@ -11,7 +11,8 @@
         "GOOGLE_CLIENT_SECRET",
         "INSTAGRAM_CLIENT_ID",
         "INSTAGRAM_CLIENT_SECRET",
-        "RESEND_API_KEY"
+        "RESEND_API_KEY",
+        "V0_API_URL"
       ],
       "outputs": ["dist/**"]
     }

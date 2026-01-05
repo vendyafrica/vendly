@@ -3,14 +3,19 @@ import cors from "cors";
 import { Response, Request } from "express";
 import { toNodeHandler } from "better-auth/node";
 import { auth } from "@vendly/auth";
+import aiRouter from "./routes/ai";
 
 const app = express();
 const PORT = process.env.PORT || 8000;
+
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 app.use(
   cors({
     origin: [
       "http://localhost:3000",
+      "http://localhost:5000",
       "https://vendly-web.vercel.app",
       "https://www.vendlyafrica.store",
       "https://vendlyafrica.store",
@@ -24,12 +29,11 @@ app.use(
 
 app.all("/api/auth/*splat", toNodeHandler(auth));
 
+app.use("/api/ai", aiRouter);
+
 app.get("/", (_req, res) => {
   res.send("API is running");
 });
-
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
 
 app.use((_req, res) => {
   res.status(404).json({

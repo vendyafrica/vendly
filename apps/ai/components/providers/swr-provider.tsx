@@ -17,7 +17,7 @@ export function SWRProvider({ children }: SWRProviderProps) {
     <SWRConfig
       value={{
         fetcher: (url: string) =>
-          fetch(url).then((res) => {
+          fetch(url, { credentials: 'include' }).then((res) => {
             if (!res.ok) {
               const error = new Error(
                 'An error occurred while fetching the data.',

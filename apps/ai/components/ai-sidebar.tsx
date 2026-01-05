@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import useSWR from 'swr'
+import { API_URL } from '@/lib/constants'
 import { AddSquareIcon, Message01Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from "@hugeicons/react";
 
@@ -72,7 +73,7 @@ export function AiSidebar() {
     data,
     isLoading,
     error,
-  } = useSWR<ChatsResponse>('/api/chats')
+  } = useSWR<ChatsResponse>(`${API_URL}/chats`)
 
   const chats = sortByRecent(data?.data || [])
 
