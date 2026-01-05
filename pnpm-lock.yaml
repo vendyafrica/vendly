@@ -313,6 +313,9 @@ importers:
       '@neondatabase/serverless':
         specifier: ^1.0.2
         version: 1.0.2
+      '@types/node':
+        specifier: ^22.15.3
+        version: 22.19.3
       bcrypt-ts:
         specifier: ^7.1.0
         version: 7.1.0
@@ -335,9 +338,6 @@ importers:
         specifier: 5.9.3
         version: 5.9.3
     devDependencies:
-      '@types/node':
-        specifier: ^22.15.3
-        version: 22.19.3
       drizzle-kit:
         specifier: ^0.30.1
         version: 0.30.6
