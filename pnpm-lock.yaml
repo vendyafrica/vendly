@@ -241,6 +241,9 @@ importers:
 
   packages/auth:
     dependencies:
+      '@types/node':
+        specifier: ^22.15.3
+        version: 22.19.3
       '@vendly/db':
         specifier: workspace:*
         version: link:../db
@@ -257,9 +260,6 @@ importers:
         specifier: 5.9.3
         version: 5.9.3
     devDependencies:
-      '@types/node':
-        specifier: ^22.15.3
-        version: 22.19.3
       '@vendly/eslint-config':
         specifier: workspace:*
         version: link:../config-eslint
