@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 const ROOT_DOMAIN = process.env.NEXT_PUBLIC_ROOT_DOMAIN ?? 'vendlyafrica.store';
+const RESERVED_SUBDOMAINS = new Set(['www', 'admin', 'api', 'ai', 'support', 'docs']);
 
 function getSubdomain(req: NextRequest) {
   const host = (req.headers.get('x-forwarded-host') ?? req.headers.get('host'))?.split(':')[0];
@@ -11,11 +12,15 @@ function getSubdomain(req: NextRequest) {
   }
 
   if (host.endsWith(`.${ROOT_DOMAIN}`)) {
-    return host.replace(`.${ROOT_DOMAIN}`, '');
+    const subdomain = host.replace(`.${ROOT_DOMAIN}`, '');
+    if (RESERVED_SUBDOMAINS.has(subdomain)) return null;
+    return subdomain;
   }
 
   if (host.endsWith('.localhost')) {
-    return host.replace('.localhost', '');
+    const subdomain = host.replace('.localhost', '');
+    if (RESERVED_SUBDOMAINS.has(subdomain)) return null;
+    return subdomain;
   }
 
   return null;
@@ -31,12 +36,13 @@ export function middleware(req: NextRequest) {
       return NextResponse.redirect(new URL('/', req.url));
     }
 
-    // Rewrite root to tenant page
-    if (pathname === '/') {
-      return NextResponse.rewrite(
-        new URL(`/${subdomain}`, req.url)
-      );
+    if (pathname.startsWith(`/${subdomain}`)) {
+      return NextResponse.next();
     }
+
+    const url = req.nextUrl.clone();
+    url.pathname = `/${subdomain}${pathname === '/' ? '' : pathname}`;
+    return NextResponse.rewrite(url);
   }
 
   return NextResponse.next();

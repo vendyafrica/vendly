@@ -1,0 +1,44 @@
+import { eq } from "drizzle-orm";
+
+import { db } from "./db";
+import { tenants, type Tenant } from "./schema/tenant";
+
+export async function getTenantBySlug(slug: string): Promise<Tenant | undefined> {
+  const [tenant] = await db.select().from(tenants).where(eq(tenants.slug, slug));
+  return tenant;
+}
+
+export async function createTenantIfNotExists(slug: string): Promise<void> {
+  await db
+    .insert(tenants)
+    .values({ slug })
+    .onConflictDoNothing({ target: tenants.slug });
+}
+
+export async function setTenantStatus({
+  slug,
+  status,
+  error,
+}: {
+  slug: string;
+  status: string;
+  error?: string | null;
+}): Promise<void> {
+  await db
+    .update(tenants)
+    .set({ status, error: error ?? null })
+    .where(eq(tenants.slug, slug));
+}
+
+export async function saveTenantStorefrontConfig({
+  slug,
+  storefrontConfig,
+}: {
+  slug: string;
+  storefrontConfig: unknown;
+}): Promise<void> {
+  await db
+    .update(tenants)
+    .set({ storefrontConfig, status: "ready", error: null })
+    .where(eq(tenants.slug, slug));
+}

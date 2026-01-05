@@ -1,7 +1,7 @@
 'use server';
 
 import { db } from '@vendly/db';
-import { demo } from '@vendly/db';
+import { tenants } from '@vendly/db';
 import { eq } from 'drizzle-orm';
 import { redirect } from 'next/navigation';
 
@@ -42,20 +42,38 @@ export async function createTenant(
 
   const existing = await db
     .select()
-    .from(demo)
-    .where(eq(demo.subdomain, subdomain))
+    .from(tenants)
+    .where(eq(tenants.slug, subdomain))
     .limit(1);
 
   if (existing.length) {
     return { error: 'Subdomain already taken' };
   }
 
-  await db.insert(demo).values({
-    name,
-    subdomain,
-    category,
+  const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000';
+  const res = await fetch(`${apiBaseUrl}/api/site-builder/start`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      tenantSlug: subdomain,
+      input: {
+        storeName: name,
+        category,
+      },
+    }),
+    cache: 'no-store',
   });
 
+  if (!res.ok) {
+    const message = await res.text();
+    return { error: message || 'Failed to start storefront generation' };
+  }
+
+  const data = (await res.json()) as { jobId?: string };
+  if (!data.jobId) {
+    return { error: 'Missing jobId from API' };
+  }
+
   const rootDomain = process.env.NEXT_PUBLIC_ROOT_DOMAIN ?? 'vendlyafrica.store';
-  redirect(`https://admin.${rootDomain}/${subdomain}`);
+  redirect(`https://admin.${rootDomain}/${subdomain}/store?jobId=${data.jobId}`);
 }

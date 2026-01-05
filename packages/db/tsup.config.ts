@@ -1,7 +1,13 @@
 import { defineConfig } from "tsup";
 
 export default defineConfig({
-  entry: ["src/index.ts", "src/db.ts", "src/schema/index.ts", "src/v0-clone-queries.ts"],
+  entry: [
+    "src/index.ts",
+    "src/db.ts",
+    "src/schema/index.ts",
+    "src/v0-clone-queries.ts",
+    "src/tenant-queries.ts",
+  ],
   format: ["esm", "cjs"],
   dts: true,
   clean: true,
