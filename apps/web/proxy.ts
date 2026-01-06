@@ -32,6 +32,11 @@ export function proxy(req: NextRequest) {
 
   // Handle subdomain-based routing (e.g., fenty.localhost:3000 or fenty.vendlyafrica.store)
   if (subdomain) {
+    // Skip static assets - let Next.js serve them directly
+    if (pathname.startsWith('/_next') || pathname.startsWith('/favicon')) {
+      return NextResponse.next();
+    }
+    
     // Prevent admin routes on tenant domains
     if (pathname.startsWith('/admin')) {
       return NextResponse.redirect(new URL('/', req.url));
