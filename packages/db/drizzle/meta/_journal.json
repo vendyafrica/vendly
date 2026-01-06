@@ -43,6 +43,13 @@
       "when": 1767627788094,
       "tag": "0005_tricky_clint_barton",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1767689434192,
+      "tag": "0006_stiff_thena",
+      "breakpoints": true
     }
   ]
 }

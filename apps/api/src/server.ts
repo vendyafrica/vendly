@@ -6,6 +6,7 @@ import { auth } from "@vendly/auth";
 import aiRouter from "./routes/ai";
 import siteBuilderRouter from "./routes/site-builder";
 import vercelDeploymentRouter from "./routes/vercel-deployment";
+import storefrontRouter from "./routes/storefront";
 
 const app = express();
 const PORT = process.env.PORT || 8000;
@@ -37,6 +38,7 @@ app.all("/api/auth/*splat", toNodeHandler(auth));
 app.use("/api/ai", aiRouter);
 app.use("/api/site-builder", siteBuilderRouter);
 app.use("/api/vercel", vercelDeploymentRouter);
+app.use("/api/storefront", storefrontRouter);
 
 app.get("/", (_req, res) => {
   res.send("API is running");

@@ -4,6 +4,7 @@ import {
   createTenantIfNotExists,
   saveTenantStorefrontConfig,
   saveTenantDemoUrl,
+  saveTenantGeneratedFiles,
   setTenantStatus,
 } from "@vendly/db/tenant-queries";
 
@@ -90,6 +91,7 @@ function extractAssistantText(chat: any): string {
 
 function buildStorefrontPrompt(input: any): string {
   const storeName = input?.storeName ?? "My Store";
+  const storeSlug = input?.storeSlug ?? "mystore";
   const category = input?.category ?? "General";
   const brandVibe = input?.brandVibe ?? "Modern";
   const colors = input?.colors ?? "";
@@ -97,10 +99,22 @@ function buildStorefrontPrompt(input: any): string {
   return [
     `Create a beautiful, modern ecommerce storefront landing page for "${storeName}".`,
     "",
+    "IMPORTANT: This storefront MUST use real data from our API. Use the exact components specified below:",
+    "",
+    "For the products section, use this exact component:",
+    `<ProductGrid storeSlug="${storeSlug}" />`,
+    "Import it from '@/components/storefront/ProductGrid'",
+    "",
+    "For categories section, use:",
+    `<CategoryGrid storeSlug="${storeSlug}" />`,
+    "Import it from '@/components/storefront/CategoryGrid'",
+    "",
+    "These components will automatically fetch and display real products and categories from the store.",
+    "",
     "Requirements:",
     "- Hero section with store name, tagline, and call-to-action button",
-    "- Featured products grid (use placeholder product cards)",
-    "- Category showcase section",
+    "- Featured products section using the ProductGrid component",
+    "- Categories section using the CategoryGrid component",
     "- Testimonials section",
     "- Newsletter signup section",
     "- Footer with navigation links",
@@ -116,6 +130,32 @@ function buildStorefrontPrompt(input: any): string {
     "",
     "Generate a complete, functional React component for this storefront.",
   ].join("\n");
+}
+
+// Post-processor function for future use when fetching generated files from v0
+// This will ensure proper component injection and store slug replacement
+function injectStorefrontComponents(code: string, storeSlug: string): string {
+  // Ensure imports are present
+  if (!code.includes('import { ProductGrid }')) {
+    code = `import { ProductGrid } from '@/components/storefront/ProductGrid';\n${code}`;
+  }
+  if (!code.includes('import { CategoryGrid }')) {
+    code = `import { CategoryGrid } from '@/components/storefront/CategoryGrid';\n${code}`;
+  }
+  
+  // Replace any placeholder product sections with ProductGrid
+  code = code.replace(
+    /<div[^>]*products[^>]*>[\s\S]*?<\/div>/gi,
+    `<ProductGrid storeSlug="${storeSlug}" />`
+  );
+  
+  // Replace any placeholder category sections with CategoryGrid
+  code = code.replace(
+    /<div[^>]*categories[^>]*>[\s\S]*?<\/div>/gi,
+    `<CategoryGrid storeSlug="${storeSlug}" />`
+  );
+  
+  return code;
 }
 
 export class SiteBuilderService {
@@ -206,6 +246,22 @@ export class SiteBuilderService {
           demoUrl, 
           v0ChatId 
         });
+        
+        // Also save the generated files if available
+        const files = chatData?.latestVersion?.files;
+        if (Array.isArray(files) && files.length > 0) {
+          console.log(`[SiteBuilder] Job ${jobId} - Saving ${files.length} generated files...`);
+          const formattedFiles = files.map((f: any) => ({
+            name: f.name,
+            content: f.content
+          }));
+          await saveTenantGeneratedFiles({
+            slug: tenantSlug,
+            generatedFiles: formattedFiles,
+            v0ChatId
+          });
+          console.log(`[SiteBuilder] Job ${jobId} - Generated files saved`);
+        }
         
         job.status = "ready";
         jobs.set(jobId, job);

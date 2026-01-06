@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { siteBuilderService } from "../services/site-builder-service";
+import { siteBuilderServiceV2 } from "../services/site-builder-service-v2";
 
 const ROOT_DOMAIN = process.env.ROOT_DOMAIN ?? "vendlyafrica.store";
 
@@ -12,7 +12,7 @@ export class SiteBuilderController {
       return;
     }
 
-    const job = siteBuilderService.startJob({ tenantSlug, input });
+    const job = siteBuilderServiceV2.startJob({ tenantSlug, input });
 
     res.json({
       jobId: job.id,
@@ -28,7 +28,7 @@ export class SiteBuilderController {
       return;
     }
 
-    const job = siteBuilderService.getJob(jobId);
+    const job = siteBuilderServiceV2.getJob(jobId);
 
     if (!job) {
       res.status(404).json({ error: "Job not found" });

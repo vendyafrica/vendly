@@ -7,6 +7,7 @@ export default defineConfig({
     "src/schema/index.ts",
     "src/v0-clone-queries.ts",
     "src/tenant-queries.ts",
+    "src/storefront-queries.ts",
   ],
   format: ["esm", "cjs"],
   dts: true,

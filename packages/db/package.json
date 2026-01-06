@@ -9,21 +9,22 @@
         "db:generate": "drizzle-kit generate",
         "db:push": "drizzle-kit push",
         "db:migrate": "drizzle-kit migrate",
-        "db:seed": "npx tsx src/db/seed/seed.ts"
+        "db:seed": "npx tsx src/seed/fenty-store.ts"
     },
     "dependencies": {
         "@neondatabase/serverless": "^1.0.2",
-        "@types/node": "^22.15.3",
         "bcrypt-ts": "^7.1.0",
         "drizzle-orm": "^0.45.1",
         "dotenv": "^17.2.3",
         "postgres": "^3.4.7",
         "server-only": "^0.0.1",
-        "tsup": "^8.5.0",
-        "typescript": "5.9.3"
+        "tsup": "^8.5.0"
     },
     "devDependencies": {
-        "drizzle-kit": "^0.30.1"
+        "@types/node": "^22.15.3",
+        "drizzle-kit": "^0.30.2",
+        "tsx": "^4.19.2",
+        "typescript": "^5.9.3"
     },
     "main": "./dist/index.js",
     "module": "./dist/index.mjs",
@@ -53,6 +54,11 @@
             "types": "./dist/tenant-queries.d.ts",
             "import": "./dist/tenant-queries.js",
             "require": "./dist/tenant-queries.cjs"
+        },
+        "./storefront-queries": {
+            "types": "./dist/storefront-queries.d.ts",
+            "import": "./dist/storefront-queries.js",
+            "require": "./dist/storefront-queries.cjs"
         }
     }
 }
