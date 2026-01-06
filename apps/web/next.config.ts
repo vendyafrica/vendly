@@ -9,6 +9,16 @@ const nextConfig: NextConfig = {
   },
   transpilePackages: ["@vendly/ui", "@vendly/db", "@vendly/auth", "@vendly/transactional"],
   outputFileTracingRoot: repoRoot,
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "images.unsplash.com",
+        port: "",
+        pathname: "/**",
+      },
+    ],
+  },
   // Disable Turbopack for production builds to fix middleware.js.nft.json error
   // turbopack: {
   //   root: repoRoot,
