@@ -8,11 +8,18 @@ export async function getTenantBySlug(slug: string): Promise<Tenant | undefined>
   return tenant;
 }
 
-export async function createTenantIfNotExists(slug: string): Promise<void> {
+export async function createTenantIfNotExists(slug: string): Promise<Tenant> {
   await db
     .insert(tenants)
     .values({ slug })
     .onConflictDoNothing({ target: tenants.slug });
+  
+  // Fetch and return the tenant (either newly created or existing)
+  const tenant = await getTenantBySlug(slug);
+  if (!tenant) {
+    throw new Error(`Failed to create or find tenant: ${slug}`);
+  }
+  return tenant;
 }
 
 export async function setTenantStatus({

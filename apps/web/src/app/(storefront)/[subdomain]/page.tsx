@@ -14,6 +14,7 @@ import { ProductGrid } from '@/components/storefront';
 import { CartProvider } from '@/components/storefront';
 import { CartDrawer } from '@/components/storefront';
 import { Footer } from '@/components/storefront';
+import { FeaturedSections } from '@/components/storefront';
 
 export const dynamic = 'force-dynamic';
 
@@ -108,8 +109,9 @@ export default async function TenantPage({ params }: Props) {
         <Header storeSlug={subdomain} storeName={storeData.name} />
         <HeroSection store={storeData} storeSlug={subdomain} />
         <CategoryTabs storeSlug={subdomain} categories={categories} />
-        <main className="flex-1">
+        <main className="flex-1 bg-white">
           <ProductGrid storeSlug={subdomain} products={productsWithImages} />
+          <FeaturedSections storeSlug={subdomain} storeName={storeData.name} />
         </main>
         <Footer 
           storeSlug={subdomain} 

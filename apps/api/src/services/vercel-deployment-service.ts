@@ -30,9 +30,14 @@ interface V0ChatResponse {
 export class VercelDeploymentService {
   /**
    * Fetch files from an existing v0 chat using direct API call
+   * @deprecated - v0 integration disabled, using default template
    */
   async fetchFilesFromV0Chat(chatId: string): Promise<V0File[]> {
-    console.log(`[VercelDeploy] Fetching files from v0 chat: ${chatId}`);
+    console.log(`[VercelDeploy] Fetching files from v0 chat: ${chatId} - DISABLED`);
+    return [];
+    
+    // Original v0 code commented out
+    /*
     
     try {
       // Use direct API call to get chat details with files
@@ -72,13 +77,18 @@ export class VercelDeploymentService {
       console.error(`[VercelDeploy] Error fetching files from v0:`, error);
       throw error;
     }
+    */
   }
 
   /**
    * Fetch and save files for a tenant from their v0 chat
+   * @deprecated - v0 integration disabled
    */
   async fetchAndSaveFilesForTenant(slug: string): Promise<V0File[]> {
-    console.log(`[VercelDeploy] Fetching files for tenant: ${slug}`);
+    console.log(`[VercelDeploy] Fetching files for tenant: ${slug} - DISABLED`);
+    return [];
+    
+    /*
     
     const tenant = await getTenantBySlug(slug);
     if (!tenant) {
@@ -101,6 +111,7 @@ export class VercelDeploymentService {
     }
     
     return files;
+    */
   }
 
   /**
@@ -208,9 +219,9 @@ export class VercelDeploymentService {
 
   /**
    * Full deployment flow for a tenant:
-   * 1. Fetch files from v0
-   * 2. Add subdomain to Vercel
-   * 3. Update tenant record
+   * 1. Add subdomain to Vercel
+   * 2. Update tenant record
+   * Note: v0 file fetching disabled - using default template
    */
   async deployTenant(slug: string): Promise<{
     success: boolean;
@@ -221,29 +232,23 @@ export class VercelDeploymentService {
     console.log(`[VercelDeploy] Starting deployment for tenant: ${slug}`);
     
     try {
-      // Step 1: Fetch files from v0 (if tenant has v0ChatId)
+      // Step 1: Get tenant info
       const tenant = await getTenantBySlug(slug);
       if (!tenant) {
         return { success: false, error: `Tenant not found: ${slug}` };
       }
       
+      // Step 2: Skip v0 file fetching - using default template
       let files: V0File[] = [];
-      if (tenant.v0ChatId) {
-        try {
-          files = await this.fetchAndSaveFilesForTenant(slug);
-        } catch (err) {
-          console.warn(`[VercelDeploy] Could not fetch files from v0:`, err);
-          // Continue anyway - we can still add the subdomain
-        }
-      }
+      console.log(`[VercelDeploy] Using default template - skipping v0 file fetching`);
       
-      // Step 2: Add subdomain to Vercel project
+      // Step 3: Add subdomain to Vercel project
       const domainResult = await this.addSubdomainToVercel(slug);
       if (!domainResult.success) {
         return { success: false, files, error: domainResult.error };
       }
       
-      // Step 3: Update tenant with deployment URL
+      // Step 4: Update tenant with deployment URL
       const deploymentUrl = `https://${slug}.${ROOT_DOMAIN}`;
       await saveTenantDeploymentUrl({ slug, vercelDeploymentUrl: deploymentUrl });
       
@@ -265,7 +270,7 @@ export class VercelDeploymentService {
   }
 
   /**
-   * Deploy all tenants that have v0ChatId
+   * Deploy all tenants (v0 integration disabled)
    */
   async deployAllTenants(): Promise<{
     total: number;
@@ -273,7 +278,7 @@ export class VercelDeploymentService {
     failed: number;
     results: Array<{ slug: string; success: boolean; error?: string }>;
   }> {
-    console.log(`[VercelDeploy] Deploying all tenants...`);
+    console.log(`[VercelDeploy] Deploying all tenants (using default template)...`);
     
     const tenants = await getAllTenants();
     const results: Array<{ slug: string; success: boolean; error?: string }> = [];

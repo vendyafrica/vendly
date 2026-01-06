@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { createClient } from "v0-sdk";
+// import { createClient } from "v0-sdk";
 import {
   createTenantIfNotExists,
   saveTenantStorefrontConfig,
@@ -17,7 +17,9 @@ type SiteBuilderJob = {
   error?: string;
 };
 
-const v0 = createClient(process.env.V0_API_URL ? { baseUrl: process.env.V0_API_URL } : {});
+// const v0 = createClient(
+//   process.env.V0_API_URL ? { baseUrl: process.env.V0_API_URL } : {}
+// );
 
 const jobs = new Map<string, SiteBuilderJob>();
 
@@ -204,100 +206,101 @@ export class SiteBuilderService {
       console.log(`[SiteBuilder] Job ${jobId} - Setting tenant status to generating...`);
       await setTenantStatus({ slug: tenantSlug, status: "generating" });
 
-      const prompt = buildStorefrontPrompt(input);
-      console.log(`[SiteBuilder] Job ${jobId} - Built prompt:`, prompt.substring(0, 200) + '...');
+      // V0 API calls commented out - using default template
+      // const prompt = buildStorefrontPrompt(input);
+      // console.log(`[SiteBuilder] Job ${jobId} - Built prompt:`, prompt.substring(0, 200) + '...');
 
-      console.log(`[SiteBuilder] Job ${jobId} - Calling v0 API...`);
-      console.log(`[SiteBuilder] V0_API_KEY present: ${!!process.env.V0_API_KEY}`);
+      // console.log(`[SiteBuilder] Job ${jobId} - Calling v0 API...`);
+      // console.log(`[SiteBuilder] V0_API_KEY present: ${!!process.env.V0_API_KEY}`);
       
-      const chat = await v0.chats.create({
-        message: prompt,
-        responseMode: "sync",
-      } as any);
-      console.log(`[SiteBuilder] Job ${jobId} - v0 API response received`);
-      console.log(`[SiteBuilder] Job ${jobId} - Chat response keys:`, Object.keys(chat as any));
+      // const chat = await v0.chats.create({
+      //   message: prompt,
+      //   responseMode: "sync",
+      // } as any);
+      // console.log(`[SiteBuilder] Job ${jobId} - v0 API response received`);
+      // console.log(`[SiteBuilder] Job ${jobId} - Chat response keys:`, Object.keys(chat as any));
 
-      // Extract demo URL from v0 response
-      const chatData = chat as any;
-      const v0ChatId = chatData?.id;
+      // // Extract demo URL from v0 response
+      // const chatData = chat as any;
+      // const v0ChatId = chatData?.id;
       
-      // v0 provides multiple URL formats - try to get the demo/preview URL
-      // The demo URL is typically at latestVersion.demoUrl or can be constructed from the chat URL
-      let demoUrl = chatData?.latestVersion?.demoUrl 
-        || chatData?.demo 
-        || chatData?.webUrl
-        || chatData?.url;
+      // // v0 provides multiple URL formats - try to get the demo/preview URL
+      // // The demo URL is typically at latestVersion.demoUrl or can be constructed from the chat URL
+      // let demoUrl = chatData?.latestVersion?.demoUrl 
+      //   || chatData?.demo 
+      //   || chatData?.webUrl
+      //   || chatData?.url;
       
-      console.log(`[SiteBuilder] Job ${jobId} - v0 Chat ID: ${v0ChatId}`);
-      console.log(`[SiteBuilder] Job ${jobId} - Demo URL: ${demoUrl}`);
-      console.log(`[SiteBuilder] Job ${jobId} - Full chat data:`, JSON.stringify(chatData, null, 2).substring(0, 1000));
+      // console.log(`[SiteBuilder] Job ${jobId} - v0 Chat ID: ${v0ChatId}`);
+      // console.log(`[SiteBuilder] Job ${jobId} - Demo URL: ${demoUrl}`);
+      // console.log(`[SiteBuilder] Job ${jobId} - Full chat data:`, JSON.stringify(chatData, null, 2).substring(0, 1000));
 
-      if (!demoUrl && v0ChatId) {
-        // Construct the demo URL from chat ID if not directly available
-        demoUrl = `https://v0.dev/chat/${v0ChatId}`;
-        console.log(`[SiteBuilder] Job ${jobId} - Constructed demo URL: ${demoUrl}`);
-      }
+      // if (!demoUrl && v0ChatId) {
+      //   // Construct the demo URL from chat ID if not directly available
+      //   demoUrl = `https://v0.dev/chat/${v0ChatId}`;
+      //   console.log(`[SiteBuilder] Job ${jobId} - Constructed demo URL: ${demoUrl}`);
+      // }
 
-      if (demoUrl) {
-        // Save the demo URL for iframe embedding
-        console.log(`[SiteBuilder] Job ${jobId} - Saving demo URL...`);
-        await saveTenantDemoUrl({ 
-          slug: tenantSlug, 
-          demoUrl, 
-          v0ChatId 
-        });
+      // if (demoUrl) {
+      //   // Save the demo URL for iframe embedding
+      //   console.log(`[SiteBuilder] Job ${jobId} - Saving demo URL...`);
+      //   await saveTenantDemoUrl({ 
+      //     slug: tenantSlug, 
+      //     demoUrl, 
+      //     v0ChatId 
+      //   });
         
-        // Also save the generated files if available
-        const files = chatData?.latestVersion?.files;
-        if (Array.isArray(files) && files.length > 0) {
-          console.log(`[SiteBuilder] Job ${jobId} - Saving ${files.length} generated files...`);
-          const formattedFiles = files.map((f: any) => ({
-            name: f.name,
-            content: f.content
-          }));
-          await saveTenantGeneratedFiles({
-            slug: tenantSlug,
-            generatedFiles: formattedFiles,
-            v0ChatId
-          });
-          console.log(`[SiteBuilder] Job ${jobId} - Generated files saved`);
-        }
+      //   // Also save the generated files if available
+      //   const files = chatData?.latestVersion?.files;
+      //   if (Array.isArray(files) && files.length > 0) {
+      //     console.log(`[SiteBuilder] Job ${jobId} - Saving ${files.length} generated files...`);
+      //     const formattedFiles = files.map((f: any) => ({
+      //       name: f.name,
+      //       content: f.content
+      //     }));
+      //     await saveTenantGeneratedFiles({
+      //       slug: tenantSlug,
+      //       generatedFiles: formattedFiles,
+      //       v0ChatId
+      //     });
+      //     console.log(`[SiteBuilder] Job ${jobId} - Generated files saved`);
+      //   }
         
-        job.status = "ready";
-        jobs.set(jobId, job);
-        console.log(`[SiteBuilder] Job ${jobId} - COMPLETED SUCCESSFULLY with demo URL`);
-      } else {
-        // Fallback: try to extract JSON config from the response (legacy approach)
-        console.log(`[SiteBuilder] Job ${jobId} - No demo URL found, falling back to JSON config extraction...`);
+      //   job.status = "ready";
+      //   jobs.set(jobId, job);
+      //   console.log(`[SiteBuilder] Job ${jobId} - COMPLETED SUCCESSFULLY with demo URL`);
+      // } else {
+      //   // Fallback: try to extract JSON config from the response (legacy approach)
+      //   console.log(`[SiteBuilder] Job ${jobId} - No demo URL found, falling back to JSON config extraction...`);
         
-        const assistantText = extractAssistantText(chatData);
-        if (assistantText) {
-          console.log(`[SiteBuilder] Job ${jobId} - Extracted assistant text:`, assistantText.substring(0, 300) + '...');
+      //   const assistantText = extractAssistantText(chatData);
+      //   if (assistantText) {
+      //     console.log(`[SiteBuilder] Job ${jobId} - Extracted assistant text:`, assistantText.substring(0, 300) + '...');
           
-          try {
-            const configJson = safeJsonParse(assistantText);
-            console.log(`[SiteBuilder] Job ${jobId} - Parsed config, saving...`);
-            await saveTenantStorefrontConfig({ slug: tenantSlug, storefrontConfig: configJson });
-            
-            job.status = "ready";
-            jobs.set(jobId, job);
-            console.log(`[SiteBuilder] Job ${jobId} - COMPLETED SUCCESSFULLY with JSON config`);
-          } catch {
-            // If JSON parsing fails, still save the raw response as config
-            console.log(`[SiteBuilder] Job ${jobId} - JSON parse failed, saving raw response...`);
-            await saveTenantStorefrontConfig({ 
-              slug: tenantSlug, 
-              storefrontConfig: { rawResponse: assistantText, v0ChatId } 
-            });
-            
-            job.status = "ready";
-            jobs.set(jobId, job);
-            console.log(`[SiteBuilder] Job ${jobId} - COMPLETED with raw response saved`);
-          }
-        } else {
-          throw new Error("No demo URL or content found in v0 response");
-        }
-      }
+      //     try {
+      //       const configJson = safeJsonParse(assistantText);
+      //       console.log(`[SiteBuilder] Job ${jobId} - Parsed config, saving...`);
+      //       await saveTenantStorefrontConfig({ slug: tenantSlug, storefrontConfig: configJson });
+          
+      //       job.status = "ready";
+      //       jobs.set(jobId, job);
+      //       console.log(`[SiteBuilder] Job ${jobId} - COMPLETED SUCCESSFULLY with JSON config`);
+      //     } catch {
+      //       // If JSON parsing fails, still save the raw response as config
+      //       console.log(`[SiteBuilder] Job ${jobId} - JSON parse failed, saving raw response...`);
+      //       await saveTenantStorefrontConfig({ 
+      //         slug: tenantSlug, 
+      //         storefrontConfig: { rawResponse: assistantText, v0ChatId } 
+      //       });
+          
+      //       job.status = "ready";
+      //       jobs.set(jobId, job);
+      //       console.log(`[SiteBuilder] Job ${jobId} - COMPLETED with raw response saved`);
+      //     }
+      //   } else {
+      //     throw new Error("No demo URL or content found in v0 response");
+      //   }
+      // }
     } catch (err) {
       const message = err instanceof Error ? err.message : "Unknown error";
       console.error(`[SiteBuilder] Job ${jobId} - FAILED:`, message);

@@ -1,11 +1,12 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { createClient } from "v0-sdk";
+// import { createClient } from "v0-sdk";
 import {
   createTenantIfNotExists,
   saveTenantDemoUrl,
   saveTenantGeneratedFiles,
   setTenantStatus,
 } from "@vendly/db/tenant-queries";
+import { createStore } from "@vendly/db/storefront-queries";
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
@@ -22,9 +23,9 @@ type SiteBuilderJob = {
   error?: string;
 };
 
-const v0 = createClient(
-  process.env.V0_API_URL ? { baseUrl: process.env.V0_API_URL } : {}
-);
+// const v0 = createClient(
+//   process.env.V0_API_URL ? { baseUrl: process.env.V0_API_URL } : {}
+// );
 
 const jobs = new Map<string, SiteBuilderJob>();
 
@@ -203,99 +204,113 @@ export class SiteBuilderServiceV2 {
       console.log(
         `[SiteBuilderV2] Job ${jobId} - Creating tenant if not exists...`
       );
-      await createTenantIfNotExists(tenantSlug);
+      const tenant = await createTenantIfNotExists(tenantSlug);
 
       console.log(
         `[SiteBuilderV2] Job ${jobId} - Setting tenant status to generating...`
       );
       await setTenantStatus({ slug: tenantSlug, status: "generating" });
 
-      // 1. Create v0 project with environment variables
-      console.log(`[SiteBuilderV2] Job ${jobId} - Creating v0 project...`);
-      const project = await v0.projects.create({
-        name: `${tenantSlug}-storefront`,
-        description: `Ecommerce storefront for ${input.storeName}`,
-        environmentVariables: [
-          {
-            key: "NEXT_PUBLIC_STORE_SLUG",
-            value: tenantSlug,
-          },
-          {
-            key: "NEXT_PUBLIC_STORE_NAME",
-            value: input.storeName || tenantSlug,
-          },
-          {
-            key: "NEXT_PUBLIC_API_URL",
-            value:
-              process.env.NEXT_PUBLIC_API_URL ||
-              "https://api.vendlyafrica.store",
-          },
-        ],
-      });
-      console.log(
-        `[SiteBuilderV2] Job ${jobId} - Created project: ${project.id}`
-      );
-
-      // 2. Initialize chat with locked components
-      console.log(
-        `[SiteBuilderV2] Job ${jobId} - Initializing chat with locked components...`
-      );
-      const baseFiles = getBaseFiles();
-      const chat = await v0.chats.init({
-        type: "files",
-        projectId: project.id,
-        files: Object.entries(baseFiles).map(([name, content]) => ({
-          name,
-          content,
-          locked: name.includes("components/storefront"), // Lock our components
-        })),
-        name: `${input.storeName} Storefront`,
-      });
-      console.log(
-        `[SiteBuilderV2] Job ${jobId} - Initialized chat: ${chat.id}`
-      );
-
-      // 3. Generate the storefront design
-      console.log(
-        `[SiteBuilderV2] Job ${jobId} - Generating storefront design...`
-      );
-      const prompt = buildStorefrontPrompt(input);
-      const result = await v0.chats.sendMessage({
-        chatId: chat.id,
-        message: prompt,
-      });
-      console.log(`[SiteBuilderV2] Job ${jobId} - Design generated`);
-
-      // 4. Save the demo URL
-      const chatData = result as any;
-      const demoUrl =
-        chatData?.latestVersion?.demoUrl ||
-        `https://v0.dev/chat/${chatData.id}`;
-
-      console.log(`[SiteBuilderV2] Job ${jobId} - Saving demo URL: ${demoUrl}`);
-      await saveTenantDemoUrl({
+      // Create store record for the tenant
+      console.log(`[SiteBuilderV2] Job ${jobId} - Creating store record...`);
+      const store = await createStore({
+        tenantId: tenant.id, // Use actual tenant UUID
+        name: input?.storeName || tenantSlug,
         slug: tenantSlug,
-        demoUrl,
-        v0ChatId: chatData.id,
+        description: `Store for ${input?.category || 'General'} category`,
       });
+      console.log(`[SiteBuilderV2] Job ${jobId} - Created store with ID: ${store.id}`);
 
-      // 5. Save generated files
-      const files = chatData?.latestVersion?.files;
-      if (Array.isArray(files) && files.length > 0) {
-        console.log(
-          `[SiteBuilderV2] Job ${jobId} - Saving ${files.length} generated files...`
-        );
-        const formattedFiles = files.map((f: any) => ({
-          name: f.name,
-          content: f.content,
-        }));
-        await saveTenantGeneratedFiles({
-          slug: tenantSlug,
-          generatedFiles: formattedFiles,
-          v0ChatId: chatData.id,
-        });
-        console.log(`[SiteBuilderV2] Job ${jobId} - Generated files saved`);
-      }
+      // Set tenant status to ready (using default template, no v0 generation needed)
+      console.log(`[SiteBuilderV2] Job ${jobId} - Setting tenant status to ready...`);
+      await setTenantStatus({ slug: tenantSlug, status: "ready" });
+
+// 1. Create v0 project with environment variables
+// console.log(`[SiteBuilderV2] Job ${jobId} - Creating v0 project...`);
+// const project = await v0.projects.create({
+//   name: `${tenantSlug}-storefront`,
+//   description: `Ecommerce storefront for ${input.storeName}`,
+//   environmentVariables: [
+//     {
+//       key: "NEXT_PUBLIC_STORE_SLUG",
+//       value: tenantSlug,
+//     },
+//     {
+//       key: "NEXT_PUBLIC_STORE_NAME",
+//       value: input.storeName || tenantSlug,
+//     },
+//     {
+//       key: "NEXT_PUBLIC_API_URL",
+//       value:
+//         process.env.NEXT_PUBLIC_API_URL ||
+//         "https://api.vendlyafrica.store",
+//     },
+//   ],
+// });
+// console.log(
+//   `[SiteBuilderV2] Job ${jobId} - Created project: ${project.id}`
+// );
+
+// 2. Initialize chat with locked components
+// console.log(
+//   `[SiteBuilderV2] Job ${jobId} - Initializing chat with locked components...`
+// );
+// const baseFiles = getBaseFiles();
+// const chat = await v0.chats.init({
+//   type: "files",
+//   projectId: project.id,
+//   files: Object.entries(baseFiles).map(([name, content]) => ({
+//     name,
+//     content,
+//     locked: name.includes("components/storefront"), // Lock our components
+//   })),
+//   name: `${input.storeName} Storefront`,
+// });
+// console.log(
+//   `[SiteBuilderV2] Job ${jobId} - Initialized chat: ${chat.id}`
+// );
+
+// 3. Generate the storefront design
+// console.log(
+//   `[SiteBuilderV2] Job ${jobId} - Generating storefront design...`
+// );
+// const prompt = buildStorefrontPrompt(input);
+// const result = await v0.chats.sendMessage({
+//   chatId: chat.id,
+//   message: prompt,
+// });
+// console.log(`[SiteBuilderV2] Job ${jobId} - Design generated`);
+
+// 4. Save the demo URL (skipped - using default template)
+// const chatData = result as any;
+// const demoUrl =
+//   chatData?.latestVersion?.demoUrl ||
+//   `https://v0.dev/chat/${chatData.id}`;
+
+// console.log(`[SiteBuilderV2] Job ${jobId} - Saving demo URL: ${demoUrl}`);
+// await saveTenantDemoUrl({
+//   slug: tenantSlug,
+//   demoUrl,
+//   v0ChatId: chatData.id,
+// });
+
+// 5. Save generated files (skipped - using default template)
+// const files = chatData?.latestVersion?.files;
+// if (Array.isArray(files) && files.length > 0) {
+//   console.log(
+//     `[SiteBuilderV2] Job ${jobId} - Saving ${files.length} generated files...`
+//   );
+//   const formattedFiles = files.map((f: any) => ({
+//     name: f.name,
+//     content: f.content,
+//   }));
+//   await saveTenantGeneratedFiles({
+//     slug: tenantSlug,
+//     generatedFiles: formattedFiles,
+//     v0ChatId: chatData.id,
+//   });
+//   console.log(`[SiteBuilderV2] Job ${jobId} - Generated files saved`);
+// }
 
       job.status = "ready";
       jobs.set(jobId, job);

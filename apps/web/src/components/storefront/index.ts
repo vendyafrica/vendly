@@ -7,3 +7,4 @@ export { ProductCard } from "./ProductCard";
 export { ProductGrid } from "./ProductGrid";
 export { StoreLayout } from "./StoreLayout";
 export { Footer } from "./Footer";
+export { FeaturedSections } from "./FeaturedSections";

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useCart } from "./CartProvider";
-import { Search, ShoppingCart, Menu, X } from "lucide-react";
+import { Search, ShoppingCart, Menu, X, User, ChevronDown, Heart } from "lucide-react";
 
 interface HeaderProps {
   storeSlug?: string;
@@ -14,46 +14,64 @@ export function Header({ storeSlug, storeName }: HeaderProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { toggleCart, totalItems } = useCart();
 
+  const navItems = [
+    { label: "Home", href: `/${storeSlug}`, hasDropdown: false },
+    { label: "Pages", href: `/${storeSlug}/pages`, hasDropdown: true },
+    { label: "Blog", href: `/${storeSlug}/blog`, hasDropdown: true },
+    { label: "Shop", href: `/${storeSlug}/products`, hasDropdown: true },
+  ];
+
   return (
-    <header className="sticky top-0 z-50 border-b border-border bg-background">
-      <div className="container mx-auto px-4">
+    <header className="sticky top-0 z-50 bg-[#1a1a2e] text-white">
+      <div className="container mx-auto px-4 lg:px-8">
         <div className="flex h-16 items-center justify-between">
-          {/* Logo */}
-          <Link href={`/${storeSlug}`} className="text-2xl font-bold text-foreground">
+          {/* Left Navigation */}
+          <nav className="hidden lg:flex items-center space-x-8">
+            {navItems.map((item) => (
+              <Link
+                key={item.label}
+                href={item.href}
+                className="flex items-center gap-1 text-sm font-medium text-white/90 hover:text-white transition-colors"
+              >
+                {item.label}
+                {item.hasDropdown && <ChevronDown className="h-3.5 w-3.5" />}
+              </Link>
+            ))}
+          </nav>
+
+          {/* Center Logo */}
+          <Link 
+            href={`/${storeSlug}`} 
+            className="absolute left-1/2 transform -translate-x-1/2 text-2xl font-serif italic tracking-wide text-white"
+          >
             {storeName || "Store"}
           </Link>
 
-          {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center space-x-8">
-            <Link href={`/${storeSlug}`} className="text-sm font-medium text-foreground hover:text-muted-foreground">
-              Home
-            </Link>
-            <Link href={`/${storeSlug}/products`} className="text-sm font-medium text-foreground hover:text-muted-foreground">
-              Products
-            </Link>
-            <Link href={`/${storeSlug}/categories`} className="text-sm font-medium text-foreground hover:text-muted-foreground">
-              Categories
-            </Link>
-            <Link href={`/${storeSlug}/about`} className="text-sm font-medium text-foreground hover:text-muted-foreground">
-              About
-            </Link>
-          </nav>
-
           {/* Right Actions */}
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-5 ml-auto">
             {/* Search */}
-            <button className="p-2 text-foreground hover:bg-muted rounded-lg transition-colors">
+            <button className="text-white/90 hover:text-white transition-colors">
               <Search className="h-5 w-5" />
+            </button>
+
+            {/* Wishlist */}
+            <button className="hidden sm:block text-white/90 hover:text-white transition-colors">
+              <Heart className="h-5 w-5" />
+            </button>
+
+            {/* User */}
+            <button className="hidden sm:block text-white/90 hover:text-white transition-colors">
+              <User className="h-5 w-5" />
             </button>
 
             {/* Cart */}
             <button 
               onClick={toggleCart}
-              className="relative p-2 text-foreground hover:bg-muted rounded-lg transition-colors"
+              className="relative text-white/90 hover:text-white transition-colors"
             >
               <ShoppingCart className="h-5 w-5" />
               {totalItems > 0 && (
-                <span className="absolute -top-1 -right-1 h-5 w-5 bg-primary text-primary-foreground text-xs rounded-full flex items-center justify-center">
+                <span className="absolute -top-2 -right-2 h-5 w-5 bg-white text-[#1a1a2e] text-xs font-semibold rounded-full flex items-center justify-center">
                   {totalItems}
                 </span>
               )}
@@ -62,7 +80,7 @@ export function Header({ storeSlug, storeName }: HeaderProps) {
             {/* Mobile Menu Toggle */}
             <button 
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="md:hidden p-2 text-foreground hover:bg-muted rounded-lg transition-colors"
+              className="lg:hidden text-white/90 hover:text-white transition-colors"
             >
               {isMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
             </button>
@@ -71,20 +89,19 @@ export function Header({ storeSlug, storeName }: HeaderProps) {
 
         {/* Mobile Navigation */}
         {isMenuOpen && (
-          <nav className="md:hidden py-4 border-t border-border">
+          <nav className="lg:hidden py-4 border-t border-white/10">
             <div className="flex flex-col space-y-3">
-              <Link href={`/${storeSlug}`} className="text-sm font-medium text-foreground hover:text-muted-foreground">
-                Home
-              </Link>
-              <Link href={`/${storeSlug}/products`} className="text-sm font-medium text-foreground hover:text-muted-foreground">
-                Products
-              </Link>
-              <Link href={`/${storeSlug}/categories`} className="text-sm font-medium text-foreground hover:text-muted-foreground">
-                Categories
-              </Link>
-              <Link href={`/${storeSlug}/about`} className="text-sm font-medium text-foreground hover:text-muted-foreground">
-                About
-              </Link>
+              {navItems.map((item) => (
+                <Link
+                  key={item.label}
+                  href={item.href}
+                  className="flex items-center justify-between text-sm font-medium text-white/90 hover:text-white py-2"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  {item.label}
+                  {item.hasDropdown && <ChevronDown className="h-4 w-4" />}
+                </Link>
+              ))}
             </div>
           </nav>
         )}

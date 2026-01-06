@@ -223,3 +223,16 @@ export async function getProductsByCategorySlug(
   
   return categoryProducts;
 }
+
+// Delete functions
+export async function deleteStore(storeId: string): Promise<void> {
+  await db.delete(stores).where(eq(stores.id, storeId));
+}
+
+export async function deleteProductsByStoreId(storeId: string): Promise<void> {
+  await db.delete(products).where(eq(products.storeId, storeId));
+}
+
+export async function deleteCategoriesByStoreId(storeId: string): Promise<void> {
+  await db.delete(categories).where(eq(categories.storeId, storeId));
+}
