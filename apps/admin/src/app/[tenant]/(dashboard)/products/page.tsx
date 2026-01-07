@@ -49,13 +49,13 @@ export default async function ProductsPage({
     return {
       id: p.id,
       name: p.title,
-      variant: "", // Not currently in DB schema
+      variant: "", 
       price: p.priceAmount / 100,
-      sales: "0", // Not currently in DB schema
-      revenue: "$0.00", // Not currently in DB schema
+      sales: "0", 
+      revenue: "$0.00", 
       stock: p.inventoryQuantity,
       status: p.status,
-      rating: 0, // Not currently in DB schema
+      rating: 0, 
       selected: false,
       image: mainImage
     }

@@ -1,7 +1,7 @@
 import { eq } from "drizzle-orm";
 
-import { db } from "./db";
-import { tenants, type Tenant } from "./schema/tenant";
+import { db } from "../db";
+import { tenants, type Tenant } from "../schema/core-schema";
 
 export async function getTenantBySlug(slug: string): Promise<Tenant | undefined> {
   const [tenant] = await db.select().from(tenants).where(eq(tenants.slug, slug));
@@ -11,9 +11,13 @@ export async function getTenantBySlug(slug: string): Promise<Tenant | undefined>
 export async function createTenantIfNotExists(slug: string): Promise<Tenant> {
   await db
     .insert(tenants)
-    .values({ slug })
+    .values({
+      slug,
+      name: slug, // Fallback name
+      status: "onboarding"
+    })
     .onConflictDoNothing({ target: tenants.slug });
-  
+
   // Fetch and return the tenant (either newly created or existing)
   const tenant = await getTenantBySlug(slug);
   if (!tenant) {
@@ -28,7 +32,7 @@ export async function setTenantStatus({
   error,
 }: {
   slug: string;
-  status: string;
+  status: "active" | "suspended" | "onboarding"; // Strict enum
   error?: string | null;
 }): Promise<void> {
   await db
@@ -37,6 +41,7 @@ export async function setTenantStatus({
     .where(eq(tenants.slug, slug));
 }
 
+// Legacy helpers mapped to jsonb or new fields
 export async function saveTenantStorefrontConfig({
   slug,
   storefrontConfig,
@@ -46,7 +51,7 @@ export async function saveTenantStorefrontConfig({
 }): Promise<void> {
   await db
     .update(tenants)
-    .set({ storefrontConfig, status: "ready", error: null })
+    .set({ storefrontConfig, status: "active", error: null }) // Map ready -> active
     .where(eq(tenants.slug, slug));
 }
 
@@ -61,7 +66,7 @@ export async function saveTenantDemoUrl({
 }): Promise<void> {
   await db
     .update(tenants)
-    .set({ demoUrl, v0ChatId: v0ChatId ?? null, status: "ready", error: null })
+    .set({ demoUrl, v0ChatId: v0ChatId ?? null, status: "active", error: null })
     .where(eq(tenants.slug, slug));
 }
 
@@ -76,7 +81,8 @@ export async function saveTenantGeneratedFiles({
 }): Promise<void> {
   await db
     .update(tenants)
-    .set({ generatedFiles, v0ChatId: v0ChatId ?? null })
+    // Cast strict type if needed, or Drizzle handles jsonb
+    .set({ generatedFiles: generatedFiles as any, v0ChatId: v0ChatId ?? null })
     .where(eq(tenants.slug, slug));
 }
 
@@ -89,7 +95,7 @@ export async function saveTenantDeploymentUrl({
 }): Promise<void> {
   await db
     .update(tenants)
-    .set({ vercelDeploymentUrl, status: "deployed", error: null })
+    .set({ vercelDeploymentUrl, status: "active", error: null }) // Map deployed -> active
     .where(eq(tenants.slug, slug));
 }
 

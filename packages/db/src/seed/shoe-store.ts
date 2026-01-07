@@ -1,13 +1,12 @@
-import { db } from "../db";
-import { 
-  createStore, 
-  createProduct, 
-  createCategory, 
-  addProductToCategory, 
+import {
+  createStore,
+  createProduct,
+  createCategory,
+  addProductToCategory,
   addProductImage,
-  getStoreByTenantId 
-} from "../storefront-queries";
-import { createTenantIfNotExists, getTenantBySlug, setTenantStatus } from "../tenant-queries";
+  getStoreByTenantId
+} from "../queries/storefront-queries";
+import { createTenantIfNotExists, getTenantBySlug, setTenantStatus } from "../queries/tenant-queries";
 import { fileURLToPath } from "url";
 
 const SHOE_PRODUCTS = [
@@ -112,7 +111,7 @@ const SHOE_CATEGORIES = [
 
 export async function seedShoeStore() {
   console.log("👟 Starting Shoe Store seed...");
-  
+
   try {
     // Create tenant for shoe store
     const tenantSlug = "shoemart";
@@ -122,14 +121,14 @@ export async function seedShoeStore() {
       throw new Error(`Failed to load tenant after creation: ${tenantSlug}`);
     }
     console.log("✅ Created tenant:", tenantSlug);
-    
+
     // Check if store already exists
     const existingStore = await getStoreByTenantId(tenant.id);
     if (existingStore) {
       console.log("ℹ️  Shoe store already exists. Skipping seed.");
       return;
     }
-    
+
     // Create the store
     const store = await createStore({
       tenantId: tenant.id,
@@ -139,7 +138,7 @@ export async function seedShoeStore() {
       logoUrl: "https://images.unsplash.com/photo-1544966503-7e3c4c4c9b94?w=64&h=64&fit=crop&crop=face"
     });
     console.log("✅ Created store:", store.name);
-    
+
     // Create categories
     const createdCategories = [];
     for (const categoryData of SHOE_CATEGORIES) {
@@ -150,7 +149,7 @@ export async function seedShoeStore() {
       createdCategories.push(category);
       console.log(`✅ Created category: ${category.name}`);
     }
-    
+
     // Create products
     for (const productData of SHOE_PRODUCTS) {
       // Create product
@@ -162,7 +161,7 @@ export async function seedShoeStore() {
         currency: productData.currency,
         status: "active"
       });
-      
+
       // Add product images
       for (let i = 0; i < productData.images.length; i++) {
         await addProductImage({
@@ -171,22 +170,22 @@ export async function seedShoeStore() {
           sortOrder: i
         });
       }
-      
+
       // Add to category
       const category = createdCategories.find(c => c.name === productData.category);
       if (category) {
         await addProductToCategory(product.id, category.id);
       }
-      
+
       console.log(`✅ Created product: ${product.title}`);
     }
-    
+
     // Update tenant status to ready
-    await setTenantStatus({ slug: tenantSlug, status: "ready" });
+    await setTenantStatus({ slug: tenantSlug, status: "active" });
     console.log("✅ Set tenant status to ready");
-    
+
     console.log("🎉 Shoe Store seeded successfully!");
-    
+
   } catch (error) {
     console.error("❌ Error seeding Shoe Store:", error);
     throw error;

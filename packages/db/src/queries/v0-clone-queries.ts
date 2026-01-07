@@ -1,27 +1,25 @@
 
 import {
   and,
-  asc,
   count,
   desc,
   eq,
-  gt,
   gte,
   getTableColumns,
-  inArray,
-  lt,
-  type SQL,
 } from "drizzle-orm";
 
 import {
-  user,
+  users as user,
   account,
+  type User,
+} from "../schema/core-schema";
+
+import {
   chat_ownerships,
   anonymous_chat_logs,
-  type User,
-} from "./schema/v0-clone";
-import { generateHashedPassword } from "./utils";
-import { db } from "./db";
+} from "../schema/v0-clone";
+import { generateHashedPassword } from "../utils";
+import { db } from "../db";
 
 export async function getUser(email: string): Promise<Array<{ id: string; name: string; email: string } & { password: string | null }>> {
   try {
@@ -33,7 +31,7 @@ export async function getUser(email: string): Promise<Array<{ id: string; name: 
       .from(user)
       .leftJoin(account, eq(user.id, account.userId))
       .where(eq(user.email, email));
-    
+
     return users;
   } catch (error) {
     console.error("Failed to get user from database");
@@ -48,7 +46,7 @@ export async function createUser(
   try {
     const hashedPassword = generateHashedPassword(password);
     const userId = crypto.randomUUID();
-    
+
     // Create user first
     const [newUser] = await db
       .insert(user)
@@ -58,7 +56,7 @@ export async function createUser(
         email,
       })
       .returning();
-    
+
     // Then create account with password
     await db
       .insert(account)
@@ -69,7 +67,7 @@ export async function createUser(
         userId: userId,
         password: hashedPassword,
       });
-    
+
     return [newUser];
   } catch (error) {
     console.error("Failed to create user in database");

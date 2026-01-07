@@ -3,7 +3,7 @@ import { config } from "dotenv";
 import * as schema from "./schema/index";
 import path from "path";
 
-let _db: ReturnType<typeof drizzle> | undefined;
+let _db: NeonHttpDatabase<typeof schema> | undefined;
 
 function getDatabaseUrl(): string {
   if (!process.env.DATABASE_URL) {
