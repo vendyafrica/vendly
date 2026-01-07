@@ -3,7 +3,8 @@ import {
   getStoreBySlug, 
   getProductsByStoreSlug, 
   getCategoriesByStoreSlug,
-  getProductImages 
+  getProductImages,
+  getStoreCustomization
 } from '@vendly/db';
 import { eq } from 'drizzle-orm';
 import { notFound } from 'next/navigation';
@@ -15,11 +16,34 @@ import { CartProvider } from '@/components/storefront';
 import { CartDrawer } from '@/components/storefront';
 import { Footer } from '@/components/storefront';
 import { FeaturedSections } from '@/components/storefront';
+import { Render } from '@measured/puck';
+import { puckConfig } from '@/lib/puck-config';
 
 export const dynamic = 'force-dynamic';
 
 type Props = {
   params: Promise<{ subdomain: string }>;
+};
+
+// Default theme values
+const defaultTheme = {
+  primaryColor: "#1a1a2e",
+  secondaryColor: "#4a6fa5",
+  accentColor: "#ffffff",
+  backgroundColor: "#ffffff",
+  textColor: "#1a1a2e",
+  headingFont: "Inter",
+  bodyFont: "Inter",
+};
+
+// Default content values
+const defaultContent = {
+  heroLabel: "Urban Style",
+  heroTitle: null as string | null,
+  heroSubtitle: "Explore our curated selection of premium products designed for the modern lifestyle.",
+  heroCta: "Discover Now",
+  newsletterTitle: "Subscribe to our newsletter",
+  newsletterSubtitle: "Get the latest updates on new products and upcoming sales",
 };
 
 export default async function TenantPage({ params }: Props) {
@@ -58,21 +82,6 @@ export default async function TenantPage({ params }: Props) {
     );
   }
 
-  // NOTE: demoUrl/iframe logic commented out - using default template instead
-  // const demoUrl = tenant.demoUrl as string | undefined;
-  // if (demoUrl) {
-  //   return (
-  //     <main className="min-h-screen w-full">
-  //       <iframe
-  //         src={demoUrl}
-  //         className="w-full h-screen border-0"
-  //         sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-presentation"
-  //         title={`${subdomain} Storefront`}
-  //       />
-  //     </main>
-  //   );
-  // }
-
   // Fetch store data from database
   const store = await getStoreBySlug(subdomain);
   
@@ -85,11 +94,47 @@ export default async function TenantPage({ params }: Props) {
     logoUrl: null,
   };
 
-  // Fetch products and categories
-  const [products, categories] = await Promise.all([
+  // Fetch products, categories, and customization
+  const [products, categories, customization] = await Promise.all([
     store ? getProductsByStoreSlug(subdomain) : Promise.resolve([]),
     store ? getCategoriesByStoreSlug(subdomain) : Promise.resolve([]),
+    store ? getStoreCustomization(store.id) : Promise.resolve({ theme: null, content: null }),
   ]);
+
+  // Check if we have Puck page data - if so, render with Puck
+  const pageData = customization.content?.pageData;
+  
+  if (pageData && pageData.content && pageData.content.length > 0) {
+    // Render using Puck with saved page data
+    return (
+      <CartProvider>
+        <Render config={puckConfig} data={pageData} />
+        <CartDrawer />
+      </CartProvider>
+    );
+  }
+
+  // Fallback: Use traditional component-based rendering
+  // Merge with defaults
+  const theme = {
+    primaryColor: customization.theme?.primaryColor || defaultTheme.primaryColor,
+    secondaryColor: customization.theme?.secondaryColor || defaultTheme.secondaryColor,
+    accentColor: customization.theme?.accentColor || defaultTheme.accentColor,
+    backgroundColor: customization.theme?.backgroundColor || defaultTheme.backgroundColor,
+    textColor: customization.theme?.textColor || defaultTheme.textColor,
+    headingFont: customization.theme?.headingFont || defaultTheme.headingFont,
+    bodyFont: customization.theme?.bodyFont || defaultTheme.bodyFont,
+  };
+
+  const content = {
+    heroLabel: customization.content?.heroLabel || defaultContent.heroLabel,
+    heroTitle: customization.content?.heroTitle || defaultContent.heroTitle,
+    heroSubtitle: customization.content?.heroSubtitle || defaultContent.heroSubtitle,
+    heroCta: customization.content?.heroCta || defaultContent.heroCta,
+    heroImageUrl: customization.content?.heroImageUrl || null,
+    newsletterTitle: customization.content?.newsletterTitle || defaultContent.newsletterTitle,
+    newsletterSubtitle: customization.content?.newsletterSubtitle || defaultContent.newsletterSubtitle,
+  };
 
   // Fetch first image for each product
   const productsWithImages = await Promise.all(
@@ -102,21 +147,43 @@ export default async function TenantPage({ params }: Props) {
     })
   );
 
+  // CSS variables for theme
+  const themeStyles = {
+    '--theme-primary': theme.primaryColor,
+    '--theme-secondary': theme.secondaryColor,
+    '--theme-accent': theme.accentColor,
+    '--theme-background': theme.backgroundColor,
+    '--theme-text': theme.textColor,
+    '--theme-heading-font': theme.headingFont,
+    '--theme-body-font': theme.bodyFont,
+  } as React.CSSProperties;
+
   // Default Template: Use storefront components with database data
   return (
     <CartProvider>
-      <div className="min-h-screen flex flex-col">
-        <Header storeSlug={subdomain} storeName={storeData.name} />
-        <HeroSection store={storeData} storeSlug={subdomain} />
+      <div className="min-h-screen flex flex-col" style={themeStyles}>
+        <Header 
+          storeSlug={subdomain} 
+          storeName={storeData.name}
+          theme={theme}
+        />
+        <HeroSection 
+          store={storeData} 
+          storeSlug={subdomain}
+          theme={theme}
+          content={content}
+        />
         <CategoryTabs storeSlug={subdomain} categories={categories} />
-        <main className="flex-1 bg-white">
+        <main className="flex-1" style={{ backgroundColor: theme.backgroundColor }}>
           <ProductGrid storeSlug={subdomain} products={productsWithImages} />
           <FeaturedSections storeSlug={subdomain} storeName={storeData.name} />
         </main>
         <Footer 
           storeSlug={subdomain} 
           storeName={storeData.name} 
-          storeDescription={storeData.description ?? undefined} 
+          storeDescription={storeData.description ?? undefined}
+          theme={theme}
+          content={content}
         />
         <CartDrawer />
       </div>

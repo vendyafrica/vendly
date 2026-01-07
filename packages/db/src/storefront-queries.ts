@@ -1,15 +1,20 @@
 import { eq, and, desc, asc } from "drizzle-orm";
 import { db } from "./db";
-import { 
-  stores, 
-  products, 
-  productImages, 
-  categories, 
+import {
+  stores,
+  products,
+  productImages,
+  categories,
   productCategories,
+  storeThemes,
+  storeContent,
   type Store,
   type Product,
   type Category,
-  type ProductImage
+  type ProductImage,
+  type StoreTheme,
+  type StoreContent,
+  type FeaturedSectionConfig
 } from "./schema/storefront-schema";
 import { tenants } from "./schema/tenant";
 
@@ -20,7 +25,7 @@ export async function getStoreBySlug(slug: string): Promise<Store | undefined> {
     .from(stores)
     .where(eq(stores.slug, slug))
     .limit(1);
-  
+
   return store;
 }
 
@@ -30,7 +35,7 @@ export async function getStoreByTenantId(tenantId: string): Promise<Store | unde
     .from(stores)
     .where(eq(stores.tenantId, tenantId))
     .limit(1);
-  
+
   return store;
 }
 
@@ -45,7 +50,7 @@ export async function createStore(data: {
     .insert(stores)
     .values(data)
     .returning();
-  
+
   return store;
 }
 
@@ -56,7 +61,7 @@ export async function getProductsByStoreSlug(slug: string, options?: {
   status?: "active" | "archived" | "draft";
 }): Promise<Product[]> {
   const { limit = 50, offset = 0, status = "active" } = options || {};
-  
+
   const storeProducts = await db
     .select({
       id: products.id,
@@ -78,7 +83,7 @@ export async function getProductsByStoreSlug(slug: string, options?: {
     .orderBy(desc(products.createdAt))
     .limit(limit)
     .offset(offset);
-  
+
   return storeProducts;
 }
 
@@ -100,9 +105,9 @@ export async function getProductById(id: string): Promise<Product & { images: Pr
     .leftJoin(productImages, eq(products.id, productImages.productId))
     .where(eq(products.id, id))
     .orderBy(asc(productImages.sortOrder));
-  
+
   if (productWithImages.length === 0) return undefined;
-  
+
   // Group images by product
   const product = {
     ...productWithImages[0],
@@ -110,7 +115,7 @@ export async function getProductById(id: string): Promise<Product & { images: Pr
       .filter(row => row.images)
       .map(row => row.images!)
   };
-  
+
   return product;
 }
 
@@ -126,7 +131,7 @@ export async function createProduct(data: {
     .insert(products)
     .values(data)
     .returning();
-  
+
   return product;
 }
 
@@ -148,7 +153,7 @@ export async function addProductImage(data: {
     .insert(productImages)
     .values(data)
     .returning();
-  
+
   return image;
 }
 
@@ -168,7 +173,7 @@ export async function getCategoriesByStoreSlug(slug: string): Promise<Category[]
     .innerJoin(stores, eq(categories.storeId, stores.id))
     .where(eq(stores.slug, slug))
     .orderBy(asc(categories.name));
-  
+
   return storeCategories;
 }
 
@@ -182,7 +187,7 @@ export async function createCategory(data: {
     .insert(categories)
     .values(data)
     .returning();
-  
+
   return category;
 }
 
@@ -195,7 +200,7 @@ export async function addProductToCategory(productId: string, categoryId: string
 }
 
 export async function getProductsByCategorySlug(
-  storeSlug: string, 
+  storeSlug: string,
   categorySlug: string
 ): Promise<Product[]> {
   const categoryProducts = await db
@@ -220,7 +225,7 @@ export async function getProductsByCategorySlug(
       eq(products.status, "active")
     ))
     .orderBy(desc(products.createdAt));
-  
+
   return categoryProducts;
 }
 
@@ -235,4 +240,154 @@ export async function deleteProductsByStoreId(storeId: string): Promise<void> {
 
 export async function deleteCategoriesByStoreId(storeId: string): Promise<void> {
   await db.delete(categories).where(eq(categories.storeId, storeId));
+}
+
+// Store Theme queries
+export async function getStoreTheme(storeId: string): Promise<StoreTheme | undefined> {
+  const [theme] = await db
+    .select()
+    .from(storeThemes)
+    .where(eq(storeThemes.storeId, storeId))
+    .limit(1);
+
+  return theme;
+}
+
+export async function getStoreThemeBySlug(slug: string): Promise<StoreTheme | undefined> {
+  const store = await getStoreBySlug(slug);
+  if (!store) return undefined;
+  return getStoreTheme(store.id);
+}
+
+export async function upsertStoreTheme(data: {
+  storeId: string;
+  primaryColor?: string;
+  secondaryColor?: string;
+  accentColor?: string;
+  backgroundColor?: string;
+  textColor?: string;
+  headingFont?: string;
+  bodyFont?: string;
+}): Promise<StoreTheme> {
+  const existing = await getStoreTheme(data.storeId);
+
+  if (existing) {
+    const [updated] = await db
+      .update(storeThemes)
+      .set(data)
+      .where(eq(storeThemes.storeId, data.storeId))
+      .returning();
+    return updated;
+  }
+
+  const [created] = await db
+    .insert(storeThemes)
+    .values(data)
+    .returning();
+
+  return created;
+}
+
+// Store Content queries
+export async function getStoreContent(storeId: string): Promise<StoreContent | undefined> {
+  const [content] = await db
+    .select()
+    .from(storeContent)
+    .where(eq(storeContent.storeId, storeId))
+    .limit(1);
+
+  return content;
+}
+
+export async function getStoreContentBySlug(slug: string): Promise<StoreContent | undefined> {
+  const store = await getStoreBySlug(slug);
+  if (!store) return undefined;
+  return getStoreContent(store.id);
+}
+
+export async function upsertStoreContent(data: {
+  storeId: string;
+  heroLabel?: string;
+  heroTitle?: string;
+  heroSubtitle?: string;
+  heroCta?: string;
+  heroImageUrl?: string;
+  featuredSections?: FeaturedSectionConfig[];
+  footerDescription?: string;
+  newsletterTitle?: string;
+  newsletterSubtitle?: string;
+}): Promise<StoreContent> {
+  const existing = await getStoreContent(data.storeId);
+
+  if (existing) {
+    const [updated] = await db
+      .update(storeContent)
+      .set(data)
+      .where(eq(storeContent.storeId, data.storeId))
+      .returning();
+    return updated;
+  }
+
+  const [created] = await db
+    .insert(storeContent)
+    .values(data)
+    .returning();
+
+  return created;
+}
+
+// Combined store customization data
+export interface StoreCustomization {
+  theme: StoreTheme | null;
+  content: StoreContent | null;
+}
+
+export async function getStoreCustomization(storeId: string): Promise<StoreCustomization> {
+  const [theme, content] = await Promise.all([
+    getStoreTheme(storeId),
+    getStoreContent(storeId),
+  ]);
+
+  return { theme: theme ?? null, content: content ?? null };
+}
+
+export async function getStoreCustomizationBySlug(slug: string): Promise<StoreCustomization | null> {
+  const store = await getStoreBySlug(slug);
+  if (!store) return null;
+  return getStoreCustomization(store.id);
+}
+
+// Page Data functions for Puck editor
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export async function getStorePageData(storeId: string): Promise<any | null> {
+  const content = await getStoreContent(storeId);
+  return content?.pageData ?? null;
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export async function getStorePageDataBySlug(slug: string): Promise<any | null> {
+  const store = await getStoreBySlug(slug);
+  if (!store) return null;
+  return getStorePageData(store.id);
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export async function upsertStorePageData(storeId: string, pageData: any): Promise<StoreContent> {
+  const existing = await getStoreContent(storeId);
+
+  if (existing) {
+    const [updated] = await db
+      .update(storeContent)
+      .set({ pageData })
+      .where(eq(storeContent.storeId, storeId))
+      .returning();
+    return updated;
+  }
+
+  const [created] = await db
+    .insert(storeContent)
+    .values({ storeId, pageData })
+    .returning();
+
+  return created;
 }

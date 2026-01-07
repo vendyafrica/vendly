@@ -10,6 +10,7 @@ import {
   index,
   unique,
   primaryKey,
+  jsonb,
 } from "drizzle-orm/pg-core";
 
 export const storeStatus = pgEnum("store_status", ["active", "suspended", "draft"]);
@@ -114,10 +115,111 @@ export const productCategories = pgTable(
   ],
 );
 
+// Store Theme - colors, typography settings
+export const storeThemes = pgTable(
+  "store_themes",
+  {
+    id: uuid("id").primaryKey().notNull().defaultRandom(),
+    storeId: uuid("store_id")
+      .notNull()
+      .unique()
+      .references(() => stores.id, { onDelete: "cascade" }),
+
+    // Colors
+    primaryColor: text("primary_color").default("#1a1a2e"),
+    secondaryColor: text("secondary_color").default("#4a6fa5"),
+    accentColor: text("accent_color").default("#ffffff"),
+    backgroundColor: text("background_color").default("#ffffff"),
+    textColor: text("text_color").default("#1a1a2e"),
+
+    // Typography
+    headingFont: text("heading_font").default("Inter"),
+    bodyFont: text("body_font").default("Inter"),
+
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at")
+      .defaultNow()
+      .$onUpdate(() => new Date())
+      .notNull(),
+  },
+  (table) => [
+    index("store_themes_store_idx").on(table.storeId),
+  ],
+);
+
+// Store Content - editable text and images
+export const storeContent = pgTable(
+  "store_content",
+  {
+    id: uuid("id").primaryKey().notNull().defaultRandom(),
+    storeId: uuid("store_id")
+      .notNull()
+      .unique()
+      .references(() => stores.id, { onDelete: "cascade" }),
+
+    // Hero Section
+    heroLabel: text("hero_label").default("Urban Style"),
+    heroTitle: text("hero_title"),
+    heroSubtitle: text("hero_subtitle"),
+    heroCta: text("hero_cta").default("Discover Now"),
+    heroImageUrl: text("hero_image_url"),
+
+    // Featured Sections (JSON array)
+    featuredSections: jsonb("featured_sections").$type<FeaturedSectionConfig[]>(),
+
+    // Footer
+    footerDescription: text("footer_description"),
+    newsletterTitle: text("newsletter_title").default("Subscribe to our newsletter"),
+    newsletterSubtitle: text("newsletter_subtitle").default("Get the latest updates on new products and upcoming sales"),
+
+    // Puck page data (JSON)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    pageData: jsonb("page_data").$type<any>(),
+
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at")
+      .defaultNow()
+      .$onUpdate(() => new Date())
+      .notNull(),
+  },
+  (table) => [
+    index("store_content_store_idx").on(table.storeId),
+  ],
+);
+
+// Featured section configuration type
+export interface FeaturedSectionConfig {
+  id: number;
+  label: string;
+  title: string;
+  cta: string;
+  bgColor: string;
+  textColor: string;
+  size: "tall" | "normal" | "wide";
+  imageUrl?: string;
+  href?: string;
+}
+
 // Relations
-export const storesRelations = relations(stores, ({ many }) => ({
+export const storesRelations = relations(stores, ({ many, one }) => ({
   products: many(products),
   categories: many(categories),
+  theme: one(storeThemes),
+  content: one(storeContent),
+}));
+
+export const storeThemesRelations = relations(storeThemes, ({ one }) => ({
+  store: one(stores, {
+    fields: [storeThemes.storeId],
+    references: [stores.id],
+  }),
+}));
+
+export const storeContentRelations = relations(storeContent, ({ one }) => ({
+  store: one(stores, {
+    fields: [storeContent.storeId],
+    references: [stores.id],
+  }),
 }));
 
 export const productsRelations = relations(products, ({ one, many }) => ({
@@ -163,3 +265,5 @@ export type Store = typeof stores.$inferSelect;
 export type Product = typeof products.$inferSelect;
 export type ProductImage = typeof productImages.$inferSelect;
 export type Category = typeof categories.$inferSelect;
+export type StoreTheme = typeof storeThemes.$inferSelect;
+export type StoreContent = typeof storeContent.$inferSelect;
