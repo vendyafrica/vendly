@@ -2,6 +2,7 @@ import "@vendly/ui/globals.css";
 import type { Metadata } from "next";
 import { Roboto,Geist_Mono,Geist } from "next/font/google";
 import type { ReactNode } from "react";
+import { SpeedInsights } from "@vercel/speed-insights/next"
 
 const roboto = Roboto({subsets:['latin'],variable:'--font-sans'});
 
