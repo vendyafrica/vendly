@@ -15,7 +15,7 @@ import {
 
 // Enums
 export const tenantRole = pgEnum("tenant_role", ["owner", "admin", "member"]);
-export const tenantStatus = pgEnum("tenant_status", ["active", "suspended", "onboarding"]);
+export const tenantStatus = pgEnum("tenant_status", ["active", "suspended", "onboarding", "generating", "failed", "ready"]);
 
 /**
  * Users table

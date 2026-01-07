@@ -17,11 +17,11 @@ import {
 import { Textarea } from "@vendly/ui/components/textarea";
 import { Slider } from "@vendly/ui/components/slider";
 import { Switch } from "@vendly/ui/components/switch";
-import { 
-  Monitor, 
-  Tablet, 
-  Smartphone, 
-  Save, 
+import {
+  Monitor,
+  Tablet,
+  Smartphone,
+  Save,
   RefreshCw,
   Palette,
   Layout,
@@ -86,7 +86,7 @@ export default function StoreEditorPage() {
   const params = useParams<{ tenant: string }>();
   const tenant = params.tenant || "";
   const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
-  
+
   // State
   const [pageData, setPageData] = useState<PuckData | null>(null);
   const [originalData, setOriginalData] = useState<PuckData | null>(null);
@@ -96,7 +96,7 @@ export default function StoreEditorPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
   const [iframeKey, setIframeKey] = useState(0);
-  
+
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const storefrontUrl = `http://${tenant}.localhost:3000`;
 
@@ -135,8 +135,8 @@ export default function StoreEditorPage() {
       if (!prev) return prev;
       return {
         ...prev,
-        content: prev.content.map(block => 
-          block.props.id === blockId 
+        content: prev.content.map(block =>
+          block.props.id === blockId
             ? { ...block, props: { ...block.props, ...props } }
             : block
         ),
@@ -201,10 +201,75 @@ export default function StoreEditorPage() {
 
   if (!pageData) {
     return (
-      <div className="flex items-center justify-center h-screen">
-        <div className="text-center">
-          <p className="text-muted-foreground mb-4">No storefront data found</p>
-          <Button onClick={() => window.location.reload()}>Refresh</Button>
+      <div className="flex h-screen bg-gray-50">
+        {/* Left Sidebar - AI Mode Info */}
+        <div className="w-80 bg-white border-r flex flex-col">
+          <div className="p-4 border-b flex items-center justify-between">
+            <h1 className="font-semibold text-lg">Store Editor</h1>
+          </div>
+          <div className="p-6">
+            <div className="bg-blue-50 border border-blue-100 rounded-lg p-4 text-sm text-blue-900">
+              <h3 className="font-medium mb-1">AI Generated Storefront</h3>
+              <p className="text-blue-700/80 mb-4">
+                This store is currently using the raw AI-generated code. Visual editing is not yet initialized for this version.
+              </p>
+              <p className="text-blue-700/80">
+                You can view the live preview on the right.
+              </p>
+            </div>
+            <Button className="w-full mt-6" onClick={() => window.open(storefrontUrl, "_blank")}>
+              <Eye className="w-4 h-4 mr-2" />
+              Open Live Site
+            </Button>
+          </div>
+        </div>
+
+        {/* Preview Area */}
+        <div className="flex-1 flex flex-col bg-gray-100">
+          <div className="bg-white border-b px-4 py-2 flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <span className="text-sm text-gray-500">Preview</span>
+              <div className="flex bg-gray-100 rounded-lg p-0.5">
+                {(["desktop", "tablet", "mobile"] as DevicePreview[]).map((device) => (
+                  <button
+                    key={device}
+                    onClick={() => setDevicePreview(device)}
+                    className={`p-2 rounded-md transition-colors ${devicePreview === device ? "bg-white shadow-sm" : "hover:bg-gray-200"
+                      }`}
+                  >
+                    {device === "desktop" && <Monitor className="w-4 h-4" />}
+                    {device === "tablet" && <Tablet className="w-4 h-4" />}
+                    {device === "mobile" && <Smartphone className="w-4 h-4" />}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <Button variant="ghost" size="sm" onClick={() => setIframeKey(prev => prev + 1)}>
+                <RefreshCw className="w-4 h-4 mr-2" />
+                Refresh
+              </Button>
+            </div>
+          </div>
+
+          <div className="flex-1 p-4 overflow-auto flex justify-center">
+            <div
+              className="bg-white shadow-xl rounded-lg overflow-hidden transition-all"
+              style={{
+                width: deviceWidths[devicePreview],
+                maxWidth: "100%",
+                height: "calc(100vh - 120px)",
+              }}
+            >
+              <iframe
+                key={iframeKey}
+                ref={iframeRef}
+                src={storefrontUrl}
+                className="w-full h-full"
+                title="Storefront Preview"
+              />
+            </div>
+          </div>
         </div>
       </div>
     );
@@ -251,11 +316,10 @@ export default function StoreEditorPage() {
                 <button
                   key={block.props.id}
                   onClick={() => setSelectedBlock(block.props.id)}
-                  className={`w-full p-3 rounded-lg border text-left transition-all ${
-                    selectedBlock === block.props.id 
-                      ? "border-primary bg-primary/5 ring-1 ring-primary" 
+                  className={`w-full p-3 rounded-lg border text-left transition-all ${selectedBlock === block.props.id
+                      ? "border-primary bg-primary/5 ring-1 ring-primary"
                       : "border-gray-200 hover:border-gray-300"
-                  }`}
+                    }`}
                 >
                   <div className="flex items-center gap-3">
                     <div className="w-8 h-8 rounded bg-gray-100 flex items-center justify-center">
@@ -296,7 +360,7 @@ export default function StoreEditorPage() {
                         className="h-9"
                       />
                     </div>
-                    
+
                     <div className="space-y-2">
                       <Label className="text-xs text-gray-500">Header Elements</Label>
                       <div className="space-y-2">
@@ -310,7 +374,7 @@ export default function StoreEditorPage() {
                           <span className="flex items-center gap-2 text-sm">
                             <User className="w-4 h-4" /> Sign In
                           </span>
-                          <Switch 
+                          <Switch
                             checked={selectedBlockData.props.showSignIn as boolean}
                             onCheckedChange={(v) => updateBlockProps(selectedBlock!, { showSignIn: v })}
                           />
@@ -319,7 +383,7 @@ export default function StoreEditorPage() {
                           <span className="flex items-center gap-2 text-sm">
                             <ShoppingCart className="w-4 h-4" /> Cart
                           </span>
-                          <Switch 
+                          <Switch
                             checked={selectedBlockData.props.showCart as boolean}
                             onCheckedChange={(v) => updateBlockProps(selectedBlock!, { showCart: v })}
                           />
@@ -484,7 +548,7 @@ export default function StoreEditorPage() {
 
                     <label className="flex items-center justify-between p-2 rounded border">
                       <span className="text-sm">Show Title</span>
-                      <Switch 
+                      <Switch
                         checked={selectedBlockData.props.showTitle as boolean}
                         onCheckedChange={(v) => updateBlockProps(selectedBlock!, { showTitle: v })}
                       />
@@ -502,11 +566,11 @@ export default function StoreEditorPage() {
                           <span className="w-20 text-sm">Instagram</span>
                           <Input
                             value={(selectedBlockData.props.socialLinks as any)?.instagram || ""}
-                            onChange={(e) => updateBlockProps(selectedBlock!, { 
-                              socialLinks: { 
-                                ...(selectedBlockData.props.socialLinks as any), 
-                                instagram: e.target.value 
-                              } 
+                            onChange={(e) => updateBlockProps(selectedBlock!, {
+                              socialLinks: {
+                                ...(selectedBlockData.props.socialLinks as any),
+                                instagram: e.target.value
+                              }
                             })}
                             className="h-9 flex-1"
                             placeholder="https://instagram.com/..."
@@ -516,11 +580,11 @@ export default function StoreEditorPage() {
                           <span className="w-20 text-sm">Twitter</span>
                           <Input
                             value={(selectedBlockData.props.socialLinks as any)?.twitter || ""}
-                            onChange={(e) => updateBlockProps(selectedBlock!, { 
-                              socialLinks: { 
-                                ...(selectedBlockData.props.socialLinks as any), 
-                                twitter: e.target.value 
-                              } 
+                            onChange={(e) => updateBlockProps(selectedBlock!, {
+                              socialLinks: {
+                                ...(selectedBlockData.props.socialLinks as any),
+                                twitter: e.target.value
+                              }
                             })}
                             className="h-9 flex-1"
                             placeholder="https://twitter.com/..."
@@ -530,11 +594,11 @@ export default function StoreEditorPage() {
                           <span className="w-20 text-sm">Facebook</span>
                           <Input
                             value={(selectedBlockData.props.socialLinks as any)?.facebook || ""}
-                            onChange={(e) => updateBlockProps(selectedBlock!, { 
-                              socialLinks: { 
-                                ...(selectedBlockData.props.socialLinks as any), 
-                                facebook: e.target.value 
-                              } 
+                            onChange={(e) => updateBlockProps(selectedBlock!, {
+                              socialLinks: {
+                                ...(selectedBlockData.props.socialLinks as any),
+                                facebook: e.target.value
+                              }
                             })}
                             className="h-9 flex-1"
                             placeholder="https://facebook.com/..."
@@ -545,7 +609,7 @@ export default function StoreEditorPage() {
 
                     <label className="flex items-center justify-between p-2 rounded border">
                       <span className="text-sm">Show Newsletter</span>
-                      <Switch 
+                      <Switch
                         checked={selectedBlockData.props.showNewsletter as boolean}
                         onCheckedChange={(v) => updateBlockProps(selectedBlock!, { showNewsletter: v })}
                       />
@@ -578,7 +642,7 @@ export default function StoreEditorPage() {
             {/* Colors */}
             <div className="space-y-3">
               <h3 className="font-medium text-sm text-gray-700">Colors</h3>
-              
+
               <div className="space-y-2">
                 <Label className="text-xs text-gray-500">Primary Color</Label>
                 <div className="flex gap-2">
@@ -743,9 +807,8 @@ export default function StoreEditorPage() {
                 <button
                   key={device}
                   onClick={() => setDevicePreview(device)}
-                  className={`p-2 rounded-md transition-colors ${
-                    devicePreview === device ? "bg-white shadow-sm" : "hover:bg-gray-200"
-                  }`}
+                  className={`p-2 rounded-md transition-colors ${devicePreview === device ? "bg-white shadow-sm" : "hover:bg-gray-200"
+                    }`}
                 >
                   {device === "desktop" && <Monitor className="w-4 h-4" />}
                   {device === "tablet" && <Tablet className="w-4 h-4" />}
@@ -768,9 +831,9 @@ export default function StoreEditorPage() {
 
         {/* Iframe */}
         <div className="flex-1 p-4 overflow-auto flex justify-center">
-          <div 
+          <div
             className="bg-white shadow-xl rounded-lg overflow-hidden transition-all"
-            style={{ 
+            style={{
               width: deviceWidths[devicePreview],
               maxWidth: "100%",
               height: "calc(100vh - 120px)",

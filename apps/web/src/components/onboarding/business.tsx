@@ -18,14 +18,11 @@ import { useOnboarding } from '@/contexts/OnboardingContext';
 
 const CATEGORIES = [
   "Fashion",
-  "Beauty",
+  "Shoes",
   "Home & Living",
-  "Electronics",
-  "Sports",
-  "Books",
-  "Toys",
-  "Food",
-  "Health",
+  "Beauty & Health",
+  "Gifts",
+  "Accessories",
 ];
 
 export function BusinessForm() {

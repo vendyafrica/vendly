@@ -64,8 +64,11 @@ export default async function TenantPage({ params }: Props) {
   const rootDomain = process.env.NEXT_PUBLIC_ROOT_DOMAIN ?? 'vendlyafrica.store';
   const status = tenant.status;
 
+  // Valid statuses for rendering the storefront
+  const validStatuses = ['active', 'ready'];
+
   // Show pending/failed status pages
-  if (status !== 'active') {
+  if (!validStatuses.includes(status)) {
     return (
       <main className="min-h-screen flex flex-col items-center justify-center px-6">
         <h1 className="text-2xl font-semibold">{subdomain}.{rootDomain}</h1>
@@ -126,6 +129,59 @@ export default async function TenantPage({ params }: Props) {
         <CartDrawer />
       </CartProvider>
     );
+  }
+
+  // Check for AI Generated Files (Blob Storage) and render them if available
+  // This logic runs if no custom Puck editor data exists
+  interface GeneratedFile { name: string; url: string; }
+  const generatedFiles = tenant.generatedFiles as unknown as GeneratedFile[] | null;
+
+  if (generatedFiles && Array.isArray(generatedFiles) && generatedFiles.length > 0) {
+    const indexFile = generatedFiles.find(f => f.name === 'index.html');
+    const cssFile = generatedFiles.find(f => f.name === 'styles.css');
+    const jsFile = generatedFiles.find(f => f.name === 'app.js');
+
+    if (indexFile?.url) {
+      try {
+        const response = await fetch(indexFile.url);
+        if (response.ok) {
+          let htmlContent = await response.text();
+
+          // Inject CSS Blob URL
+          if (cssFile?.url) {
+            // Replace link tag if it exists (assuming specific filename match)
+            htmlContent = htmlContent.replace('href="styles.css"', `href="${cssFile.url}"`);
+
+            // Or inject if not found
+            if (!htmlContent.includes(cssFile.url)) {
+              htmlContent = htmlContent.replace('</head>', `<link rel="stylesheet" href="${cssFile.url}"></head>`);
+            }
+          }
+
+          // Inject JS Blob URL
+          if (jsFile?.url) {
+            // Replace script src if it exists
+            htmlContent = htmlContent.replace('src="app.js"', `src="${jsFile.url}"`);
+
+            // Or inject if not found
+            if (!htmlContent.includes(jsFile.url)) {
+              htmlContent = htmlContent.replace('</body>', `<script src="${jsFile.url}"></script></body>`);
+            }
+          }
+
+          // Render the fetched HTML
+          // Note: This renders inside the existing layout (Header/Footer from layout.tsx might still apply 
+          // if it's in the root layout, but [subdomain] doesn't have its own layout).
+          // We wrap it in a div to avoid hydration mismatch if possible, though full HTML injection is risky.
+          return (
+            <div dangerouslySetInnerHTML={{ __html: htmlContent }} />
+          );
+        }
+      } catch (err) {
+        console.error("Failed to fetch generated storefront:", err);
+        // Fallthrough to default template
+      }
+    }
   }
 
   // Fallback: Use traditional component-based rendering

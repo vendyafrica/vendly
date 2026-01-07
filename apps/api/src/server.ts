@@ -1,4 +1,6 @@
 import express from "express";
+import dotenv from "dotenv";
+dotenv.config({ path: "../../.env" });
 import cors from "cors";
 import { Response, Request } from "express";
 import { toNodeHandler } from "better-auth/node";
@@ -8,6 +10,7 @@ import siteBuilderRouter from "./routes/site-builder";
 import vercelDeploymentRouter from "./routes/vercel-deployment";
 import storefrontRouter from "./routes/storefront";
 import instagramRouter from "./routes/instagram";
+import uploadRouter from "./routes/upload";
 
 const app = express();
 const PORT = process.env.PORT || 8000;
@@ -42,6 +45,7 @@ app.use("/api/site-builder", siteBuilderRouter);
 app.use("/api/vercel", vercelDeploymentRouter);
 app.use("/api/storefront", storefrontRouter);
 app.use("/api/instagram", instagramRouter);
+app.use("/api/upload", uploadRouter);
 
 app.get("/", (_req, res) => {
   res.send("API is running");

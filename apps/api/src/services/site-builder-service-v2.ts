@@ -9,6 +9,8 @@ import {
   getStoreBySlug,
   upsertStoreTheme
 } from "@vendly/db/storefront-queries";
+// v0-sdk integration commented out - migrating to AI Gateway
+// import { createClient } from "v0-sdk";
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
@@ -25,16 +27,47 @@ type SiteBuilderJob = {
   error?: string;
 };
 
-// const v0 = createClient(
-//   process.env.V0_API_URL ? { baseUrl: process.env.V0_API_URL } : {}
-// );
+// v0 client initialization commented out - migrating to AI Gateway
+// const v0 = createClient({
+//   apiKey: process.env.V0_API_KEY,
+// });
 
 const jobs = new Map<string, SiteBuilderJob>();
 
 // Read the locked storefront components
 function getBaseFiles() {
-  // Go up from apps/api to monorepo root
-  const monorepoRoot = path.join(__dirname, "../../../../");
+  // Find monorepo root - try multiple approaches
+  let monorepoRoot: string;
+
+  // When running from apps/api with tsx watch, __dirname is the source dir
+  // Go up: services -> src -> api -> apps -> root
+  const fromDirname = path.resolve(__dirname, "../../../../");
+
+  // When running from apps/api (cwd is apps/api)
+  const fromCwd = path.resolve(process.cwd(), "../../");
+
+  // Check which path has the apps/web directory
+  if (fs.existsSync(path.join(fromDirname, "apps/web"))) {
+    monorepoRoot = fromDirname;
+  } else if (fs.existsSync(path.join(fromCwd, "apps/web"))) {
+    monorepoRoot = fromCwd;
+  } else {
+    // Fallback: try to find it by walking up from cwd
+    let current = process.cwd();
+    while (current !== path.dirname(current)) {
+      if (fs.existsSync(path.join(current, "apps/web"))) {
+        monorepoRoot = current;
+        break;
+      }
+      current = path.dirname(current);
+    }
+    if (!monorepoRoot!) {
+      throw new Error(`Could not find monorepo root. __dirname: ${__dirname}, cwd: ${process.cwd()}`);
+    }
+  }
+
+  console.log(`[SiteBuilderV2] Monorepo root: ${monorepoRoot}`);
+
   const baseDir = path.join(
     monorepoRoot,
     "apps/web/src/components/storefront/base-files"
@@ -94,10 +127,63 @@ function getBaseFiles() {
       path.join(baseDir, "package.json"),
       "utf-8"
     ),
-    "tailwind.config.ts": fs.readFileSync(
-      path.join(monorepoRoot, "apps/web/tailwind.config.ts"),
-      "utf-8"
-    ),
+    "tailwind.config.ts": `import type { Config } from "tailwindcss";
+
+const config: Config = {
+  darkMode: ["class"],
+  content: [
+    "./app/**/*.{js,ts,jsx,tsx,mdx}",
+    "./components/**/*.{js,ts,jsx,tsx,mdx}",
+  ],
+  theme: {
+    extend: {
+      colors: {
+        background: "hsl(var(--background))",
+        foreground: "hsl(var(--foreground))",
+        card: {
+          DEFAULT: "hsl(var(--card, var(--background)))",
+          foreground: "hsl(var(--card-foreground, var(--foreground)))",
+        },
+        popover: {
+          DEFAULT: "hsl(var(--popover, var(--background)))",
+          foreground: "hsl(var(--popover-foreground, var(--foreground)))",
+        },
+        primary: {
+          DEFAULT: "hsl(var(--primary))",
+          foreground: "hsl(var(--primary-foreground))",
+        },
+        secondary: {
+          DEFAULT: "hsl(var(--secondary))",
+          foreground: "hsl(var(--secondary-foreground))",
+        },
+        muted: {
+          DEFAULT: "hsl(var(--muted))",
+          foreground: "hsl(var(--muted-foreground))",
+        },
+        accent: {
+          DEFAULT: "hsl(var(--accent))",
+          foreground: "hsl(var(--accent-foreground))",
+        },
+        destructive: {
+          DEFAULT: "hsl(var(--destructive))",
+          foreground: "hsl(var(--destructive-foreground))",
+        },
+        border: "hsl(var(--border))",
+        input: "hsl(var(--input))",
+        ring: "hsl(var(--ring))",
+      },
+      borderRadius: {
+        lg: "var(--radius, 0.5rem)",
+        md: "calc(var(--radius, 0.5rem) - 2px)",
+        sm: "calc(var(--radius, 0.5rem) - 4px)",
+      },
+    },
+  },
+  plugins: [require("tailwindcss-animate")],
+};
+
+export default config;
+`,
     "tsconfig.json": JSON.stringify({
       compilerOptions: {
         baseUrl: ".",
@@ -150,21 +236,23 @@ function buildStorefrontPrompt(input: any): string {
     "- Clean, minimal design with generous whitespace",
     "- Professional, uncluttered appearance",
     themeInstructions,
-    "AVAILABLE COMPONENTS (already imported, DO NOT modify their internals):",
+    "AVAILABLE COMPONENTS (already imported and LOCKED - DO NOT modify their internals):",
     "- <Header /> - Store navigation with cart",
     "- <HeroSection /> - Dynamic hero with store data",
     "- <CategoryTabs /> - Category navigation",
     "- <ProductGrid /> - 4-column product grid",
     "",
     "YOU CAN:",
+    "- Customize the layout and arrangement of components in app/page.tsx",
     "- Adjust spacing, padding, margins between components",
-    "- Add promotional banners or testimonials",
-    "- Modify typography (font sizes, weights)",
+    "- Add promotional banners, testimonials, or decorative sections",
+    "- Modify typography (font sizes, weights) in globals.css",
     "- Ensure perfect mobile responsiveness",
-    "- Add non-functional decorative elements",
+    "- Add CSS custom properties and styling",
     "",
     "YOU CANNOT:",
-    "- Remove or modify data fetching",
+    "- Modify files in components/storefront/ (they are LOCKED)",
+    "- Remove or modify data fetching logic",
     "- Use gradient classes",
     "- Hardcode product data",
     "- Break the cart functionality",
@@ -242,7 +330,7 @@ export class SiteBuilderServiceV2 {
 
       if (!store) {
         store = await createStore({
-          tenantId: tenant.id, // Use actual tenant UUID
+          tenantId: tenant.id,
           name: input?.storeName || tenantSlug,
           slug: tenantSlug,
           description: `Store for ${input?.category || 'General'} category`,
@@ -261,110 +349,76 @@ export class SiteBuilderServiceV2 {
           const vars = selectedTheme.cssVariables;
           await upsertStoreTheme({
             storeId: store.id,
-            // Map CSS variables to DB columns where possible, or extend DB schema later
-            // For now we will map the primary colors which likely exist in schema
             primaryColor: vars.primary,
             secondaryColor: vars.secondary,
             accentColor: vars.accent,
             backgroundColor: vars.background,
             textColor: vars.foreground,
-            // Font defaults based on theme vibes could go here
             headingFont: "Inter",
             bodyFont: "Inter",
           });
         }
       }
 
-      // Set tenant status to ready (using default template, no v0 generation needed)
+      // === AI GATEWAY INTEGRATION (replaces v0) ===
+
+      // Import and use AI Gateway service
+      const { aiGatewayService } = await import("./ai-gateway-service");
+
+      // Get theme for AI generation
+      const selectedTheme = themeId ? getThemeById(themeId) : undefined;
+
+      // Generate storefront using AI Gateway (Gemini)
+      console.log(`[SiteBuilderV2] Job ${jobId} - Generating storefront via AI Gateway...`);
+      const generatedStorefront = await aiGatewayService.generateStorefront({
+        storeName: input?.storeName || tenantSlug,
+        storeSlug: tenantSlug,
+        category: input?.category || "General",
+        theme: selectedTheme ? {
+          name: selectedTheme.name,
+          description: selectedTheme.description,
+          cssVariables: selectedTheme.cssVariables,
+        } : undefined,
+      });
+      console.log(`[SiteBuilderV2] Job ${jobId} - Storefront generated with ${generatedStorefront.files.length} files`);
+
+      // Save generated files to tenant (Upload to Vercel Blob)
+      if (generatedStorefront.files.length > 0) {
+        console.log(`[SiteBuilderV2] Job ${jobId} - Uploading ${generatedStorefront.files.length} generated files to Vercel Blob...`);
+
+        const { put } = await import("@vercel/blob");
+        const uploadedFiles = await Promise.all(
+          generatedStorefront.files.map(async (file) => {
+            const blobPath = `tenants/${tenantSlug}/${file.name}`;
+            const { url } = await put(blobPath, file.content, {
+              access: "public",
+              addRandomSuffix: false, // Keep names clean: tenants/slug/index.html
+            });
+            return { name: file.name, url };
+          })
+        );
+
+        console.log(`[SiteBuilderV2] Job ${jobId} - Saving uploaded file URLs to database...`);
+        await saveTenantGeneratedFiles({
+          slug: tenantSlug,
+          generatedFiles: uploadedFiles as any, // Cast to match DB schema expectation if strictly typed
+          v0ChatId: undefined,
+        });
+        console.log(`[SiteBuilderV2] Job ${jobId} - Generated files saved to Blob`);
+      }
+
+      // Save demo URL (using data URL for inline HTML preview, or you can host it)
+      const demoUrl = `data:text/html;charset=utf-8,${encodeURIComponent(generatedStorefront.demoHtml)}`;
+      console.log(`[SiteBuilderV2] Job ${jobId} - Demo HTML generated (${generatedStorefront.demoHtml.length} chars)`);
+      await saveTenantDemoUrl({
+        slug: tenantSlug,
+        demoUrl,
+        v0ChatId: undefined,
+      });
+
+      // Set tenant status to ready
       console.log(`[SiteBuilderV2] Job ${jobId} - Setting tenant status to ready...`);
       await setTenantStatus({ slug: tenantSlug, status: "ready" });
-
-      // 1. Create v0 project with environment variables
-      // console.log(`[SiteBuilderV2] Job ${jobId} - Creating v0 project...`);
-      // const project = await v0.projects.create({
-      //   name: `${tenantSlug}-storefront`,
-      //   description: `Ecommerce storefront for ${input.storeName}`,
-      //   environmentVariables: [
-      //     {
-      //       key: "NEXT_PUBLIC_STORE_SLUG",
-      //       value: tenantSlug,
-      //     },
-      //     {
-      //       key: "NEXT_PUBLIC_STORE_NAME",
-      //       value: input.storeName || tenantSlug,
-      //     },
-      //     {
-      //       key: "NEXT_PUBLIC_API_URL",
-      //       value:
-      //         process.env.NEXT_PUBLIC_API_URL ||
-      //         "https://api.vendlyafrica.store",
-      //     },
-      //   ],
-      // });
-      // console.log(
-      //   `[SiteBuilderV2] Job ${jobId} - Created project: ${project.id}`
-      // );
-
-      // 2. Initialize chat with locked components
-      // console.log(
-      //   `[SiteBuilderV2] Job ${jobId} - Initializing chat with locked components...`
-      // );
-      // const baseFiles = getBaseFiles();
-      // const chat = await v0.chats.init({
-      //   type: "files",
-      //   projectId: project.id,
-      //   files: Object.entries(baseFiles).map(([name, content]) => ({
-      //     name,
-      //     content,
-      //     locked: name.includes("components/storefront"), // Lock our components
-      //   })),
-      //   name: `${input.storeName} Storefront`,
-      // });
-      // console.log(
-      //   `[SiteBuilderV2] Job ${jobId} - Initialized chat: ${chat.id}`
-      // );
-
-      // 3. Generate the storefront design
-      // console.log(
-      //   `[SiteBuilderV2] Job ${jobId} - Generating storefront design...`
-      // );
-      // const prompt = buildStorefrontPrompt(input);
-      // const result = await v0.chats.sendMessage({
-      //   chatId: chat.id,
-      //   message: prompt,
-      // });
-      // console.log(`[SiteBuilderV2] Job ${jobId} - Design generated`);
-
-      // 4. Save the demo URL (skipped - using default template)
-      // const chatData = result as any;
-      // const demoUrl =
-      //   chatData?.latestVersion?.demoUrl ||
-      //   `https://v0.dev/chat/${chatData.id}`;
-
-      // console.log(`[SiteBuilderV2] Job ${jobId} - Saving demo URL: ${demoUrl}`);
-      // await saveTenantDemoUrl({
-      //   slug: tenantSlug,
-      //   demoUrl,
-      //   v0ChatId: chatData.id,
-      // });
-
-      // 5. Save generated files (skipped - using default template)
-      // const files = chatData?.latestVersion?.files;
-      // if (Array.isArray(files) && files.length > 0) {
-      //   console.log(
-      //     `[SiteBuilderV2] Job ${jobId} - Saving ${files.length} generated files...`
-      //   );
-      //   const formattedFiles = files.map((f: any) => ({
-      //     name: f.name,
-      //     content: f.content,
-      //   }));
-      //   await saveTenantGeneratedFiles({
-      //     slug: tenantSlug,
-      //     generatedFiles: formattedFiles,
-      //     v0ChatId: chatData.id,
-      //   });
-      //   console.log(`[SiteBuilderV2] Job ${jobId} - Generated files saved`);
-      // }
 
       job.status = "ready";
       jobs.set(jobId, job);
