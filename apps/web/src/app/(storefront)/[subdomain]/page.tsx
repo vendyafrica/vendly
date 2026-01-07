@@ -16,8 +16,7 @@ import { CartProvider } from '@/components/storefront';
 import { CartDrawer } from '@/components/storefront';
 import { Footer } from '@/components/storefront';
 import { FeaturedSections } from '@/components/storefront';
-import { Render } from '@measured/puck';
-import { puckConfig } from '@/lib/puck-config';
+import { PuckRenderer } from '@/components/storefront/PuckRenderer';
 
 export const dynamic = 'force-dynamic';
 
@@ -105,10 +104,22 @@ export default async function TenantPage({ params }: Props) {
   const pageData = customization.content?.pageData;
   
   if (pageData && pageData.content && pageData.content.length > 0) {
+    // Inject storeSlug into all block props so components can fetch store-specific data
+    const dataWithStoreSlug = {
+      ...pageData,
+      content: pageData.content.map((block: any) => ({
+        ...block,
+        props: {
+          ...block.props,
+          storeSlug: subdomain, // Inject the subdomain as storeSlug
+        },
+      })),
+    };
+    
     // Render using Puck with saved page data
     return (
       <CartProvider>
-        <Render config={puckConfig} data={pageData} />
+        <PuckRenderer data={dataWithStoreSlug} />
         <CartDrawer />
       </CartProvider>
     );

@@ -12,6 +12,8 @@ import {
   getStorePageDataBySlug,
   upsertStorePageData
 } from "@vendly/db/storefront-queries";
+import { generateStorefrontForStore } from "../services/v0-storefront-service";
+import { type ColorTemplateName } from "../lib/color-templates";
 
 const router = Router();
 
@@ -324,4 +326,40 @@ router.put("/:slug/page-data", async (req: Request, res: Response) => {
   }
 });
 
+// Generate storefront with v0 AI
+router.post("/:slug/generate", async (req: Request, res: Response) => {
+  try {
+    const { slug } = req.params;
+    const { colorTemplate = "dark" } = req.body;
+
+    console.log(`Generating storefront for ${slug} with template: ${colorTemplate}`);
+
+    const result = await generateStorefrontForStore(slug, colorTemplate as ColorTemplateName);
+
+    if (!result.success) {
+      return res.status(400).json({
+        error: true,
+        message: result.error || "Generation failed"
+      });
+    }
+
+    res.json({
+      error: false,
+      message: "Storefront generated successfully",
+      data: {
+        storeSlug: slug,
+        colorTemplate,
+        puckData: result.puckData
+      }
+    });
+  } catch (error) {
+    console.error("Error generating storefront:", error);
+    res.status(500).json({
+      error: true,
+      message: "Internal server error"
+    });
+  }
+});
+
 export default router;
+

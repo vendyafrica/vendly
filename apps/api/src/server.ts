@@ -20,6 +20,7 @@ app.use(
       "http://localhost:3000",
       "http://localhost:5000",
       /^http:\/\/localhost:\d+$/,
+      /^http:\/\/[\w-]+\.localhost:\d+$/, // Allow subdomains like shoemart.localhost:3000
       "https://vendly-web.vercel.app",
       "https://www.vendlyafrica.store",
       "https://vendlyafrica.store",
