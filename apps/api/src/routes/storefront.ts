@@ -1,5 +1,7 @@
 import { Router } from "express";
 import { Response, Request } from "express";
+import { put } from "@vercel/blob";
+import multer from "multer";
 import {
   getStoreBySlug,
   getProductsByStoreSlug,
@@ -12,10 +14,11 @@ import {
   getStorePageDataBySlug,
   upsertStorePageData
 } from "@vendly/db/storefront-queries";
+import { getTenantBySlug, saveTenantGeneratedFiles } from "@vendly/db/tenant-queries";
 import { generateStorefrontForStore } from "../services/v0-storefront-service";
 import { type ColorTemplateName } from "../lib/color-templates";
 
-const router = Router();
+const router: Router = Router();
 
 // Store info endpoint
 router.get("/:slug/store-info", async (req: Request, res: Response) => {
@@ -53,7 +56,7 @@ router.get("/:slug/products", async (req: Request, res: Response) => {
     const products = await getProductsByStoreSlug(slug, {
       limit: limit ? parseInt(limit as string) : undefined,
       offset: offset ? parseInt(offset as string) : undefined,
-      status: status as "active" | "archived" | "draft" || "active"
+      status: (status as "active" | "archived" | "draft") || "active"
     });
 
     // Get images for each product
@@ -326,6 +329,99 @@ router.put("/:slug/page-data", async (req: Request, res: Response) => {
   }
 });
 
+// Get AI Generated Files (for GrapesJS editor)
+router.get("/:slug/generated-files", async (req: Request, res: Response) => {
+  try {
+    const { slug } = req.params;
+    const tenant = await getTenantBySlug(slug);
+
+    if (!tenant) {
+      return res.status(404).json({ error: true, message: "Tenant not found" });
+    }
+
+    res.json({
+      error: false,
+      data: tenant.generatedFiles,
+    });
+  } catch (error) {
+    console.error("Error fetching generated files:", error);
+    res.status(500).json({ error: true, message: "Internal server error" });
+  }
+});
+
+// Update AI Generated Files (from GrapesJS editor)
+router.put("/:slug/generated-files", async (req: Request, res: Response) => {
+  try {
+    const { slug } = req.params;
+    const { files } = req.body; // Expects [{ name: 'index.html', content: '...' }, ...]
+
+    if (!files || !Array.isArray(files)) {
+      return res.status(400).json({ error: true, message: "Invalid files format" });
+    }
+
+    const tenant = await getTenantBySlug(slug);
+    if (!tenant) {
+      return res.status(404).json({ error: true, message: "Tenant not found" });
+    }
+
+    const uploadedFiles: { name: string; url: string }[] = [];
+
+    // Upload files to Blob
+    for (const file of files) {
+      if (!file.name || !file.content) continue;
+
+      const filename = `${slug}/${file.name}`; // e.g., "shoemart/index.html"
+
+      const blob = await put(filename, file.content, {
+        access: "public",
+        addRandomSuffix: false, // Overwrite existing if possible, or consistent URL
+        token: process.env.BLOB_READ_WRITE_TOKEN,
+      });
+
+      uploadedFiles.push({ name: file.name, url: blob.url });
+    }
+
+    // Save URLs to DB
+    await saveTenantGeneratedFiles({
+      slug,
+      generatedFiles: uploadedFiles as any, // reuse existing query
+    });
+
+    res.json({
+      error: false,
+      message: "Files saved successfully",
+      data: uploadedFiles,
+    });
+  } catch (error) {
+    console.error("Error saving generated files:", error);
+    res.status(500).json({ error: true, message: "Internal server error" });
+  }
+});
+
+
+// Upload asset (image)
+const upload = multer();
+router.post("/:slug/upload", upload.single("file"), async (req: Request, res: Response) => {
+  try {
+    const { slug } = req.params;
+    const file = req.file;
+    if (!file) {
+      return res.status(400).json({ error: true, message: "No file provided" });
+    }
+
+    const filename = `${slug}/assets/${Date.now()}-${file.originalname}`;
+    const blob = await put(filename, file.buffer, {
+      access: "public",
+      token: process.env.BLOB_READ_WRITE_TOKEN,
+    });
+
+    res.json({ error: false, url: blob.url });
+  } catch (error) {
+    console.error("Error uploading file:", error);
+    res.status(500).json({ error: true, message: "Upload failed" });
+  }
+});
+
 // Generate storefront with v0 AI
 router.post("/:slug/generate", async (req: Request, res: Response) => {
   try {
@@ -362,4 +458,3 @@ router.post("/:slug/generate", async (req: Request, res: Response) => {
 });
 
 export default router;
-

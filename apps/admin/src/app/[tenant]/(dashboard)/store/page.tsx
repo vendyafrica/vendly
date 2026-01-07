@@ -5,7 +5,6 @@ import { useParams } from "next/navigation";
 import { Button } from "@vendly/ui/components/button";
 import { Input } from "@vendly/ui/components/input";
 import { Label } from "@vendly/ui/components/label";
-import { Card, CardContent } from "@vendly/ui/components/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@vendly/ui/components/tabs";
 import {
   Select,
@@ -35,6 +34,8 @@ import {
   ShoppingCart,
   User,
 } from "lucide-react";
+
+import GrapesJSEditor from "@/components/GrapesJSEditor";
 
 // Types
 interface PuckBlockProps {
@@ -97,13 +98,18 @@ export default function StoreEditorPage() {
   const [hasChanges, setHasChanges] = useState(false);
   const [iframeKey, setIframeKey] = useState(0);
 
+  // GrapesJS State
+  const [generatedFiles, setGeneratedFiles] = useState<{ name: string, url: string }[]>([]);
+  const [editorContent, setEditorContent] = useState<{ html: string, css: string } | null>(null);
+
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const storefrontUrl = `http://${tenant}.localhost:3000`;
 
-  // Fetch page data
+  // Fetch page data & generated files
   useEffect(() => {
     async function fetchData() {
       try {
+        // 1. Fetch Puck Page Data
         const res = await fetch(`${apiBaseUrl}/api/storefront/${tenant}/page-data`);
         if (res.ok) {
           const result = await res.json();
@@ -112,6 +118,33 @@ export default function StoreEditorPage() {
             setOriginalData(JSON.parse(JSON.stringify(result.data.pageData)));
           }
         }
+
+        // 2. Fetch AI Generated Files (for GrapesJS)
+        const resGen = await fetch(`${apiBaseUrl}/api/storefront/${tenant}/generated-files`);
+        if (resGen.ok) {
+          const result = await resGen.json();
+          if (result.data && Array.isArray(result.data)) {
+            setGeneratedFiles(result.data);
+
+            // Load content for editor
+            const htmlFile = result.data.find((f: any) => f.name.endsWith('index.html'));
+            const cssFile = result.data.find((f: any) => f.name.endsWith('styles.css'));
+
+            let html = "";
+            let css = "";
+            if (htmlFile) {
+              try { html = await (await fetch(htmlFile.url)).text(); } catch (e) { console.error("Failed to load HTML", e); }
+            }
+            if (cssFile) {
+              try { css = await (await fetch(cssFile.url)).text(); } catch (e) { console.error("Failed to load CSS", e); }
+            }
+
+            if (html || css) {
+              setEditorContent({ html, css });
+            }
+          }
+        }
+
       } catch (error) {
         console.error("Error fetching page data:", error);
       } finally {
@@ -191,6 +224,33 @@ export default function StoreEditorPage() {
     return pageData.content.find(b => b.props.id === selectedBlock) || null;
   };
 
+  // Handle GrapesJS Save
+  const handleGrapesSave = async (html: string, css: string) => {
+    setIsSaving(true);
+    try {
+      const res = await fetch(`${apiBaseUrl}/api/storefront/${tenant}/generated-files`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          files: [
+            { name: "index.html", content: html },
+            { name: "styles.css", content: css }
+          ]
+        }),
+      });
+      if (res.ok) {
+        console.log("Saved generated files");
+        // Simple alert for now as we don't have toast setup in this context easily
+        alert("Changes saved successfully!");
+      }
+    } catch (error) {
+      console.error("Error saving generated files:", error);
+      alert("Error saving changes.");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-screen">
@@ -200,6 +260,17 @@ export default function StoreEditorPage() {
   }
 
   if (!pageData) {
+    if (editorContent) {
+      return (
+        <GrapesJSEditor
+          initialHtml={editorContent.html}
+          initialCss={editorContent.css}
+          onSave={handleGrapesSave}
+          uploadUrl={`${apiBaseUrl}/api/storefront/${tenant}/upload`}
+        />
+      );
+    }
+
     return (
       <div className="flex h-screen bg-gray-50">
         {/* Left Sidebar - AI Mode Info */}
@@ -211,7 +282,9 @@ export default function StoreEditorPage() {
             <div className="bg-blue-50 border border-blue-100 rounded-lg p-4 text-sm text-blue-900">
               <h3 className="font-medium mb-1">AI Generated Storefront</h3>
               <p className="text-blue-700/80 mb-4">
-                This store is currently using the raw AI-generated code. Visual editing is not yet initialized for this version.
+                {generatedFiles.length > 0
+                  ? "Loading editor content... please wait."
+                  : "This store is currently using the raw AI-generated code. Visual editing is not yet initialized for this version."}
               </p>
               <p className="text-blue-700/80">
                 You can view the live preview on the right.
@@ -317,8 +390,8 @@ export default function StoreEditorPage() {
                   key={block.props.id}
                   onClick={() => setSelectedBlock(block.props.id)}
                   className={`w-full p-3 rounded-lg border text-left transition-all ${selectedBlock === block.props.id
-                      ? "border-primary bg-primary/5 ring-1 ring-primary"
-                      : "border-gray-200 hover:border-gray-300"
+                    ? "border-primary bg-primary/5 ring-1 ring-primary"
+                    : "border-gray-200 hover:border-gray-300"
                     }`}
                 >
                   <div className="flex items-center gap-3">
