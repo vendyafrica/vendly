@@ -49,6 +49,7 @@ export const products = pgTable(
     description: text("description"),
     priceAmount: integer("price_amount").notNull(),
     currency: text("currency").notNull().default("USD"),
+    inventoryQuantity: integer("inventory_quantity").notNull().default(0),
     status: productStatus("status").notNull().default("draft"),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at")
@@ -206,6 +207,7 @@ export const storesRelations = relations(stores, ({ many, one }) => ({
   categories: many(categories),
   theme: one(storeThemes),
   content: one(storeContent),
+  instagramMedia: many(instagramMedia),
 }));
 
 export const storeThemesRelations = relations(storeThemes, ({ one }) => ({
@@ -267,3 +269,45 @@ export type ProductImage = typeof productImages.$inferSelect;
 export type Category = typeof categories.$inferSelect;
 export type StoreTheme = typeof storeThemes.$inferSelect;
 export type StoreContent = typeof storeContent.$inferSelect;
+
+export const instagramMedia = pgTable(
+  "instagram_media",
+  {
+    id: uuid("id").primaryKey().notNull().defaultRandom(),
+    storeId: uuid("store_id")
+      .notNull()
+      .references(() => stores.id, { onDelete: "cascade" }),
+    productId: uuid("product_id").references(() => products.id, { onDelete: "set null" }),
+    instagramId: text("instagram_id").notNull().unique(),
+    mediaType: text("media_type").notNull(), // IMAGE, VIDEO, CAROUSEL_ALBUM
+    mediaUrl: text("media_url").notNull(),
+    thumbnailUrl: text("thumbnail_url"),
+    permalink: text("permalink"),
+    caption: text("caption"),
+    timestamp: timestamp("timestamp"),
+    isImported: boolean("is_imported").default(false).notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at")
+      .defaultNow()
+      .$onUpdate(() => new Date())
+      .notNull(),
+  },
+  (table) => [
+    index("instagram_media_store_idx").on(table.storeId),
+    index("instagram_media_instagram_id_idx").on(table.instagramId),
+    index("instagram_media_product_idx").on(table.productId),
+  ],
+);
+
+export const instagramMediaRelations = relations(instagramMedia, ({ one }) => ({
+  store: one(stores, {
+    fields: [instagramMedia.storeId],
+    references: [stores.id],
+  }),
+  product: one(products, {
+    fields: [instagramMedia.productId],
+    references: [products.id],
+  }),
+}));
+
+export type InstagramMedia = typeof instagramMedia.$inferSelect;

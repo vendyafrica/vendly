@@ -7,6 +7,7 @@ import aiRouter from "./routes/ai";
 import siteBuilderRouter from "./routes/site-builder";
 import vercelDeploymentRouter from "./routes/vercel-deployment";
 import storefrontRouter from "./routes/storefront";
+import instagramRouter from "./routes/instagram";
 
 const app = express();
 const PORT = process.env.PORT || 8000;
@@ -40,6 +41,7 @@ app.use("/api/ai", aiRouter);
 app.use("/api/site-builder", siteBuilderRouter);
 app.use("/api/vercel", vercelDeploymentRouter);
 app.use("/api/storefront", storefrontRouter);
+app.use("/api/instagram", instagramRouter);
 
 app.get("/", (_req, res) => {
   res.send("API is running");

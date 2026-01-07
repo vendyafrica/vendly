@@ -19,6 +19,7 @@ export type OnboardingData = {
   storeName: string;
   subdomain: string;
   colorPalette: string;
+  selectedThemeId: string;
   // Job tracking
   jobId?: string;
 };
@@ -30,6 +31,7 @@ const defaultData: OnboardingData = {
   storeName: '',
   subdomain: '',
   colorPalette: '',
+  selectedThemeId: 'premium-minimal',
 };
 
 const STORAGE_KEY = 'vendly_onboarding';

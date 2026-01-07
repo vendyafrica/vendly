@@ -46,6 +46,9 @@ importers:
       '@vercel/blob':
         specifier: ^2.0.0
         version: 2.0.0
+      drizzle-orm:
+        specifier: ^0.45.1
+        version: 0.45.1(@neondatabase/serverless@1.0.2)(postgres@3.4.7)
       lucide-react:
         specifier: ^0.540.0
         version: 0.540.0(react@19.2.3)

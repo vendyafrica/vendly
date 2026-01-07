@@ -13,14 +13,15 @@ import {
 } from "@vendly/ui/components/card";
 import { Input } from "@vendly/ui/components/input";
 import { Label } from "@vendly/ui/components/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@vendly/ui/components/select";
 import { useOnboarding } from '@/contexts/OnboardingContext';
-
-const COLOR_PALETTES = [
-  { name: "Ocean Blue", colors: ["#0077B6", "#00B4D8", "#90E0EF", "#CAF0F8"] },
-  { name: "Sunset Orange", colors: ["#FF6B35", "#F77F00", "#FCBF49", "#EAE2B7"] },
-  { name: "Forest Green", colors: ["#2D6A4F", "#52B788", "#95D5B2", "#D8F3DC"] },
-  { name: "Royal Purple", colors: ["#7209B7", "#A663CC", "#C77DFF", "#E0AAFF"] },
-];
+import { THEME_PRESETS, getThemeById } from '@/lib/theme-presets';
 
 function sanitizeSubdomain(input: string) {
   return input
@@ -34,25 +35,27 @@ export function StoreSetupForm() {
   const router = useRouter();
   const { data, updateData } = useOnboarding();
   const [storeName, setStoreName] = useState(data.storeName);
-  const [subdomain, setSubdomain] = useState(data.subdomain);
-  const [colorPalette, setColorPalette] = useState(data.colorPalette || COLOR_PALETTES[0].name);
+  const [selectedThemeId, setSelectedThemeId] = useState(data.selectedThemeId || 'premium-minimal');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const handleSubdomainChange = (value: string) => {
-    setSubdomain(sanitizeSubdomain(value));
+  const selectedTheme = getThemeById(selectedThemeId);
+
+  const handleStoreNameChange = (value: string) => {
+    setStoreName(value);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!storeName.trim() || !subdomain.trim()) return;
+    if (!storeName.trim()) return;
 
     setIsSubmitting(true);
     setError(null);
 
     try {
       const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000';
-      const selectedPalette = COLOR_PALETTES.find((p) => p.name === colorPalette);
+      const subdomain = sanitizeSubdomain(storeName);
+      const theme = getThemeById(selectedThemeId);
 
       const res = await fetch(`${apiBaseUrl}/api/site-builder/start`, {
         method: 'POST',
@@ -62,8 +65,7 @@ export function StoreSetupForm() {
           input: {
             storeName: storeName.trim(),
             category: data.categories.join(', '),
-            brandVibe: colorPalette,
-            colors: selectedPalette?.colors.join(', ') ?? '',
+            themeId: selectedThemeId,
           },
         }),
         cache: 'no-store',
@@ -82,7 +84,8 @@ export function StoreSetupForm() {
       updateData({
         storeName: storeName.trim(),
         subdomain,
-        colorPalette,
+        selectedThemeId,
+        colorPalette: theme?.name || '',
         jobId: result.jobId,
       });
 
@@ -97,7 +100,7 @@ export function StoreSetupForm() {
   const rootDomain = process.env.NEXT_PUBLIC_ROOT_DOMAIN ?? 'vendlyafrica.store';
 
   return (
-    <Card className="w-full max-w-4xl rounded-2xl py-10 gap-10">
+    <Card className="w-full max-w-4xl rounded-2xl py-10 gap-8">
       <CardHeader className="px-10">
         <CardTitle className="text-xl">Store Setup</CardTitle>
         <CardDescription>
@@ -107,7 +110,7 @@ export function StoreSetupForm() {
 
       <CardContent className="px-10">
         <form id="store-setup-form" onSubmit={handleSubmit}>
-          <div className="grid gap-6 md:grid-cols-2">
+          <div className="grid gap-6">
             <div className="grid gap-2">
               <Label htmlFor="storeName">Store Name</Label>
               <Input
@@ -115,64 +118,57 @@ export function StoreSetupForm() {
                 type="text"
                 placeholder="My Store"
                 value={storeName}
-                onChange={(e) => setStoreName(e.target.value)}
+                onChange={(e) => handleStoreNameChange(e.target.value)}
                 required
               />
+              {storeName.trim() && (
+                <p className="text-sm text-muted-foreground">
+                  Your store URL: <span className="font-medium">{sanitizeSubdomain(storeName)}.{rootDomain}</span>
+                </p>
+              )}
             </div>
-            <div className="grid gap-2">
-              <Label htmlFor="storeSlug">Store URL</Label>
-              <div className="flex items-center">
-                <Input
-                  id="storeSlug"
-                  type="text"
-                  placeholder="my-store"
-                  value={subdomain}
-                  onChange={(e) => handleSubdomainChange(e.target.value)}
-                  className="rounded-r-none"
-                  required
-                />
-                <span className="inline-flex items-center px-3 h-9 border border-l-0 border-input bg-muted text-muted-foreground text-sm rounded-r-md">
-                  .{rootDomain}
-                </span>
-              </div>
-            </div>
-          </div>
 
-          <div className="space-y-4 mt-8">
-            <Label>Color Palette</Label>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {COLOR_PALETTES.map((palette) => (
-                <button
-                  key={palette.name}
-                  type="button"
-                  onClick={() => setColorPalette(palette.name)}
-                  className="flex items-center space-x-2 cursor-pointer group text-left"
-                >
-                  <div
-                    className={`h-4 w-4 rounded-full border-2 flex items-center justify-center transition-colors ${
-                      colorPalette === palette.name
-                        ? 'border-primary bg-primary'
-                        : 'border-gray-300 group-hover:border-gray-400'
-                    }`}
-                  >
-                    {colorPalette === palette.name && (
-                      <div className="h-1.5 w-1.5 rounded-full bg-white" />
+            <div className="grid gap-2">
+              <Label htmlFor="theme">Store Theme</Label>
+              <Select value={selectedThemeId} onValueChange={(value) => value && setSelectedThemeId(value)}>
+                <SelectTrigger id="theme" className="w-full">
+                  <div className="flex items-center gap-3">
+                    {selectedTheme && (
+                      <div className="flex gap-1">
+                        {selectedTheme.preview.map((color, i) => (
+                          <div
+                            key={i}
+                            className="w-3 h-3 rounded-full border border-border"
+                            style={{ backgroundColor: color }}
+                          />
+                        ))}
+                      </div>
                     )}
+                    <SelectValue />
                   </div>
-                  <div className="flex items-center space-x-2">
-                    <div className="flex space-x-1">
-                      {palette.colors.map((color, index) => (
-                        <div
-                          key={index}
-                          className="w-3 h-3 rounded-full"
-                          style={{ backgroundColor: color }}
-                        />
-                      ))}
-                    </div>
-                    <span className="text-sm font-medium">{palette.name}</span>
-                  </div>
-                </button>
-              ))}
+                </SelectTrigger>
+                <SelectContent>
+                  {THEME_PRESETS.map((theme) => (
+                    <SelectItem key={theme.id} value={theme.id}>
+                      <div className="flex items-center gap-3">
+                        <div className="flex gap-1">
+                          {theme.preview.map((color, i) => (
+                            <div
+                              key={i}
+                              className="w-3 h-3 rounded-full border border-border"
+                              style={{ backgroundColor: color }}
+                            />
+                          ))}
+                        </div>
+                        <div className="flex flex-col">
+                          <span className="font-medium">{theme.name}</span>
+                          <span className="text-xs text-muted-foreground">{theme.description}</span>
+                        </div>
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           </div>
 
@@ -189,7 +185,7 @@ export function StoreSetupForm() {
           type="submit"
           form="store-setup-form"
           className="px-8"
-          disabled={isSubmitting || !storeName.trim() || !subdomain.trim()}
+          disabled={isSubmitting || !storeName.trim()}
         >
           {isSubmitting ? 'Creating...' : 'Create Store'}
         </Button>

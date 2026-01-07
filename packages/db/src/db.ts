@@ -22,13 +22,15 @@ function getDatabaseUrl(): string {
   return databaseUrl;
 }
 
-function getDb(): ReturnType<typeof drizzle> {
+import { NeonHttpDatabase } from "drizzle-orm/neon-http";
+
+function getDb(): NeonHttpDatabase<typeof schema> {
   if (_db) return _db;
   _db = drizzle(getDatabaseUrl(), { schema });
   return _db;
 }
 
-export const db: ReturnType<typeof drizzle> = new Proxy({} as ReturnType<typeof drizzle>, {
+export const db: NeonHttpDatabase<typeof schema> = new Proxy({} as NeonHttpDatabase<typeof schema>, {
   get(_target, prop, receiver) {
     return Reflect.get(getDb() as unknown as object, prop, receiver);
   },

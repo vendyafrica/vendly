@@ -67,7 +67,7 @@ const items: SidebarNavItem[] = [
     icon: Analytics02Icon,
   },
   {
-    title: "Messages",
+    title: "Notifications",
     url: "/messages",
     icon: Message01Icon,
   },
@@ -112,10 +112,10 @@ export function AppSidebar({
 }: React.ComponentProps<typeof Sidebar> & { basePath?: string }) {
   const pathname = usePathname();
   const params = useParams();
-  
+
   // Try to get tenant from params first, then fallback to parsing basePath
   let tenant = getTenantFromParams(params);
-  
+
   if (!tenant && basePathProp) {
     // basePath is usually formatted as "/tenant-slug", so we strip the leading slash
     const match = basePathProp.match(/^\/([^/]+)/);
@@ -160,7 +160,7 @@ export function AppSidebar({
                 return (
                   <SidebarMenuItem key={item.title} >
                     <SidebarMenuButton
-                    className="cursor-pointer"
+                      className="cursor-pointer"
                       isActive={isActive}
                       render={<Link href={fullUrl} />}
                     >
@@ -174,7 +174,7 @@ export function AppSidebar({
                             ? joinPaths(basePath, subItem.url)
                             : normalizePath(subItem.url);
                           const isSubActive = pathname === subFullUrl;
-                          
+
                           return (
                             <SidebarMenuSubItem key={subItem.title}>
                               <SidebarMenuSubButton
