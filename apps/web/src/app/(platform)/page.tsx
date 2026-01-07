@@ -10,12 +10,12 @@ export default function Page() {
   const storesByCategory = useMemo(() => {
     const grouped: Record<Category, typeof stores> = {} as Record<Category, typeof stores>;
     
-    // Initialize all categories with empty arrays
+ 
     categories.forEach(category => {
       grouped[category] = [];
     });
 
-    // Group stores by category
+    
     stores.forEach((store) => {
       grouped[store.category].push(store);
     });

@@ -19,7 +19,7 @@ interface ProductGridProps {
   showViewAll?: boolean;
 }
 
-export function ProductGrid({ storeSlug, products, title = "Our Products", showViewAll = true }: ProductGridProps) {
+export function ProductGrid({ storeSlug, products, showViewAll = true }: ProductGridProps) {
   if (products.length === 0) {
     return (
       <div className="container mx-auto px-4 lg:px-8 py-16">

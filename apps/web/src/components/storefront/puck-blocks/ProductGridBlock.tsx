@@ -46,7 +46,7 @@ export function ProductGridBlock({
         if (res.ok) {
           const data = await res.json();
           setProducts(
-            data.data?.map((p: any) => ({
+            data.data?.map((p: { id: string; title: string; priceAmount: number; compareAtPrice?: number | null; images?: { url: string }[] }) => ({
               id: p.id,
               name: p.title, // API uses 'title' not 'name'
               price: (p.priceAmount / 100).toFixed(2), // Convert cents to dollars
@@ -67,15 +67,15 @@ export function ProductGridBlock({
   }, [storeSlug, maxProducts]);
 
   // For editor preview, show placeholder cards
-  const displayProducts = products.length > 0 
-    ? products 
+  const displayProducts = products.length > 0
+    ? products
     : Array.from({ length: maxProducts }, (_, i) => ({
-        id: `placeholder-${i}`,
-        name: `Product ${i + 1}`,
-        price: "99.00",
-        imageUrl: undefined,
-        slug: `product-${i}`,
-      }));
+      id: `placeholder-${i}`,
+      name: `Product ${i + 1}`,
+      price: "99.00",
+      imageUrl: undefined,
+      slug: `product-${i}`,
+    }));
 
   const gridCols = {
     2: "grid-cols-2",
@@ -127,8 +127,8 @@ interface ProductCardProps {
 
 function ProductCard({ product, storeSlug }: ProductCardProps) {
   const hasImage = !!product.imageUrl;
-  const productUrl = storeSlug 
-    ? `/${storeSlug}/products/${product.slug}` 
+  const productUrl = storeSlug
+    ? `/${storeSlug}/products/${product.slug}`
     : `/products/${product.slug}`;
 
   return (

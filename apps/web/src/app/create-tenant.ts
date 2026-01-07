@@ -1,7 +1,6 @@
 'use server';
 
-import { db } from '@vendly/db';
-import { tenants } from '@vendly/db';
+import { db, tenants } from '@vendly/db';
 import { eq } from 'drizzle-orm';
 import { redirect } from 'next/navigation';
 
@@ -22,7 +21,7 @@ function sanitizeSubdomain(input: string) {
 }
 
 export async function createTenant(
-  _: any,
+  _prevState: unknown,
   formData: FormData
 ) {
   const name = formData.get('name') as string;

@@ -14,12 +14,3 @@ export async function SignOut() {
   console.log("Signing out...", data);
   return data;
 }
-
-// export async function signInWithInstagram(){
-//   const data = await authClient.signIn.oauth2({
-//     providerId: "instagram",
-//     callbackURL: "http://localhost:3000/demo"
-//   })
-//   console.log("Signing in with Instagram...", data);
-//   return data;
-// }

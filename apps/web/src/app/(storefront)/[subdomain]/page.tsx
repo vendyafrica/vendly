@@ -1,7 +1,7 @@
 import { db, tenants } from '@vendly/db';
-import { 
-  getStoreBySlug, 
-  getProductsByStoreSlug, 
+import {
+  getStoreBySlug,
+  getProductsByStoreSlug,
   getCategoriesByStoreSlug,
   getProductImages,
   getStoreCustomization
@@ -17,6 +17,8 @@ import { CartDrawer } from '@/components/storefront';
 import { Footer } from '@/components/storefront';
 import { FeaturedSections } from '@/components/storefront';
 import { PuckRenderer } from '@/components/storefront/PuckRenderer';
+import { type Data } from "@measured/puck";
+import { type Components, type RootProps } from "@/lib/puck-config";
 
 export const dynamic = 'force-dynamic';
 
@@ -47,7 +49,7 @@ const defaultContent = {
 
 export default async function TenantPage({ params }: Props) {
   const { subdomain } = await params;
-  
+
   // Fetch tenant to verify it exists and check status
   const [tenant] = await db
     .select()
@@ -61,16 +63,15 @@ export default async function TenantPage({ params }: Props) {
 
   const rootDomain = process.env.NEXT_PUBLIC_ROOT_DOMAIN ?? 'vendlyafrica.store';
   const status = tenant.status;
-  const error = tenant.error ?? undefined;
 
   // Show pending/failed status pages
-  if (status !== 'ready' && status !== 'deployed') {
+  if (status !== 'active') {
     return (
       <main className="min-h-screen flex flex-col items-center justify-center px-6">
         <h1 className="text-2xl font-semibold">{subdomain}.{rootDomain}</h1>
-        {status === 'failed' ? (
+        {status === 'suspended' ? (
           <p className="text-muted-foreground mt-3 text-center max-w-xl">
-            Store generation failed{error ? `: ${error}` : '.'}
+            Store is suspended.
           </p>
         ) : (
           <p className="text-muted-foreground mt-3 text-center max-w-xl">
@@ -83,7 +84,7 @@ export default async function TenantPage({ params }: Props) {
 
   // Fetch store data from database
   const store = await getStoreBySlug(subdomain);
-  
+
   // If no store exists yet, create a temporary store object from tenant
   const storeData = store || {
     id: tenant.id,
@@ -97,25 +98,27 @@ export default async function TenantPage({ params }: Props) {
   const [products, categories, customization] = await Promise.all([
     store ? getProductsByStoreSlug(subdomain) : Promise.resolve([]),
     store ? getCategoriesByStoreSlug(subdomain) : Promise.resolve([]),
-    store ? getStoreCustomization(store.id) : Promise.resolve({ theme: null, content: null }),
+    store ? getStoreCustomization(storeData.id) : Promise.resolve({ theme: null, content: null }),
   ]);
 
   // Check if we have Puck page data - if so, render with Puck
-  const pageData = customization.content?.pageData;
-  
+  const pageData = customization.content?.pageData as Data<Components, RootProps> | null;
+
   if (pageData && pageData.content && pageData.content.length > 0) {
     // Inject storeSlug into all block props so components can fetch store-specific data
-    const dataWithStoreSlug = {
+    const dataWithStoreSlug: Data<Components, RootProps> = {
       ...pageData,
-      content: pageData.content.map((block: any) => ({
+      root: pageData.root || { props: { title: storeData.name as string } },
+      content: pageData.content.map((block) => ({
         ...block,
         props: {
           ...block.props,
           storeSlug: subdomain, // Inject the subdomain as storeSlug
-        },
+          /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+        } as any, // Cast props to any for simpler injection of storeSlug
       })),
     };
-    
+
     // Render using Puck with saved page data
     return (
       <CartProvider>
@@ -154,6 +157,8 @@ export default async function TenantPage({ params }: Props) {
       return {
         ...product,
         imageUrl: images[0]?.url,
+        priceAmount: product.basePriceAmount,
+        currency: product.baseCurrency,
       };
     })
   );
@@ -173,13 +178,13 @@ export default async function TenantPage({ params }: Props) {
   return (
     <CartProvider>
       <div className="min-h-screen flex flex-col" style={themeStyles}>
-        <Header 
-          storeSlug={subdomain} 
+        <Header
+          storeSlug={subdomain}
           storeName={storeData.name}
           theme={theme}
         />
-        <HeroSection 
-          store={storeData} 
+        <HeroSection
+          store={storeData}
           storeSlug={subdomain}
           theme={theme}
           content={content}
@@ -189,9 +194,9 @@ export default async function TenantPage({ params }: Props) {
           <ProductGrid storeSlug={subdomain} products={productsWithImages} />
           <FeaturedSections storeSlug={subdomain} storeName={storeData.name} />
         </main>
-        <Footer 
-          storeSlug={subdomain} 
-          storeName={storeData.name} 
+        <Footer
+          storeSlug={subdomain}
+          storeName={storeData.name}
           storeDescription={storeData.description ?? undefined}
           theme={theme}
           content={content}

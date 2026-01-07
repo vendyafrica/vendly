@@ -5,7 +5,7 @@ interface FeaturedSectionsProps {
   storeName: string;
 }
 
-export function FeaturedSections({ storeSlug, storeName }: FeaturedSectionsProps) {
+export function FeaturedSections({ storeSlug }: FeaturedSectionsProps) {
   const sections = [
     {
       id: 1,

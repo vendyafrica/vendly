@@ -18,6 +18,11 @@ export const config = [
         ...globals.browser,
       },
     },
+    settings: {
+      react: {
+        version: "detect",
+      },
+    },
   },
   pluginReactHooks.configs.flat.recommended,
 ];

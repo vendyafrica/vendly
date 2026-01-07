@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ShoppingCart, User, Heart, Search, Menu, X } from "lucide-react";
+import { ShoppingCart, User, Search, Menu, X } from "lucide-react";
 import { useState } from "react";
 
 export interface HeaderBlockProps {
@@ -98,7 +98,7 @@ export function HeaderBlock({
                 className="relative transition-opacity hover:opacity-80"
                 style={{ color: textColor }}
                 aria-label="Cart"
-                // TODO: Open cart drawer
+              // TODO: Open cart drawer
               >
                 <ShoppingCart size={20} />
                 {cartCount > 0 && (
