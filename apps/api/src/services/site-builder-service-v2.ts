@@ -314,17 +314,11 @@ export class SiteBuilderServiceV2 {
       job.status = "running";
       jobs.set(jobId, job);
 
-      console.log(
-        `[SiteBuilderV2] Job ${jobId} - Creating tenant if not exists...`
-      );
+      // 1. Create Tenant
+      console.log(`[SiteBuilderV2] Job ${jobId} - Creating tenant if not exists...`);
       const tenant = await createTenantIfNotExists(tenantSlug);
 
-      console.log(
-        `[SiteBuilderV2] Job ${jobId} - Setting tenant status to generating...`
-      );
-      await setTenantStatus({ slug: tenantSlug, status: "generating" });
-
-      // Create or get store record for the tenant
+      // 2. Create Store
       console.log(`[SiteBuilderV2] Job ${jobId} - Checking/Creating store record...`);
       let store = await getStoreBySlug(tenantSlug);
 
@@ -340,89 +334,37 @@ export class SiteBuilderServiceV2 {
         console.log(`[SiteBuilderV2] Job ${jobId} - Found existing store with ID: ${store.id}`);
       }
 
-      // Save the selected theme if provided
-      const themeId = input?.themeId;
-      if (themeId) {
-        const selectedTheme = getThemeById(themeId);
-        if (selectedTheme) {
-          console.log(`[SiteBuilderV2] Job ${jobId} - Saving theme: ${selectedTheme.name}`);
-          const vars = selectedTheme.cssVariables;
-          await upsertStoreTheme({
-            storeId: store.id,
-            primaryColor: vars.primary,
-            secondaryColor: vars.secondary,
-            accentColor: vars.accent,
-            backgroundColor: vars.background,
-            textColor: vars.foreground,
-            headingFont: "Inter",
-            bodyFont: "Inter",
-          });
-        }
-      }
+      // 3. Save Theme
+      const themeId = input?.themeId; // Keep for backward compatibility if passed
+      // Also accept template input
+      const template = input?.template || "fashion";
+      const colorTemplate = input?.colorTemplate || "dark";
 
-      // === AI GATEWAY INTEGRATION (replaces v0) ===
+      // 4. Generate Storefront (Template based)
+      console.log(`[SiteBuilderV2] Job ${jobId} - Generating template-based storefront (${template})...`);
 
-      // Import and use AI Gateway service
-      const { aiGatewayService } = await import("./ai-gateway-service");
+      const { generateStorefront } = await import("./v0-storefront-service");
+      const { upsertStorePageData } = await import("@vendly/db/storefront-queries");
 
-      // Get theme for AI generation
-      const selectedTheme = themeId ? getThemeById(themeId) : undefined;
-
-      // Generate storefront using AI Gateway (Gemini)
-      console.log(`[SiteBuilderV2] Job ${jobId} - Generating storefront via AI Gateway...`);
-      const generatedStorefront = await aiGatewayService.generateStorefront({
-        storeName: input?.storeName || tenantSlug,
+      const puckData = await generateStorefront({
+        storeName: store.name!,
         storeSlug: tenantSlug,
-        category: input?.category || "General",
-        theme: selectedTheme ? {
-          name: selectedTheme.name,
-          description: selectedTheme.description,
-          cssVariables: selectedTheme.cssVariables,
-        } : undefined,
-      });
-      console.log(`[SiteBuilderV2] Job ${jobId} - Storefront generated with ${generatedStorefront.files.length} files`);
+        category: input?.category || "fashion",
+        colorTemplate: colorTemplate,
+        description: store.description || undefined,
+      }, template);
 
-      // Save generated files to tenant (Upload to Vercel Blob)
-      if (generatedStorefront.files.length > 0) {
-        console.log(`[SiteBuilderV2] Job ${jobId} - Uploading ${generatedStorefront.files.length} generated files to Vercel Blob...`);
+      console.log(`[SiteBuilderV2] Job ${jobId} - Saving Puck data to database...`);
+      await upsertStorePageData(store.id, puckData);
 
-        const { put } = await import("@vercel/blob");
-        const uploadedFiles = await Promise.all(
-          generatedStorefront.files.map(async (file) => {
-            const blobPath = `tenants/${tenantSlug}/${file.name}`;
-            const { url } = await put(blobPath, file.content, {
-              access: "public",
-              addRandomSuffix: false, // Keep names clean: tenants/slug/index.html
-            });
-            return { name: file.name, url };
-          })
-        );
-
-        console.log(`[SiteBuilderV2] Job ${jobId} - Saving uploaded file URLs to database...`);
-        await saveTenantGeneratedFiles({
-          slug: tenantSlug,
-          generatedFiles: uploadedFiles as any, // Cast to match DB schema expectation if strictly typed
-          v0ChatId: undefined,
-        });
-        console.log(`[SiteBuilderV2] Job ${jobId} - Generated files saved to Blob`);
-      }
-
-      // Save demo URL (using data URL for inline HTML preview, or you can host it)
-      const demoUrl = `data:text/html;charset=utf-8,${encodeURIComponent(generatedStorefront.demoHtml)}`;
-      console.log(`[SiteBuilderV2] Job ${jobId} - Demo HTML generated (${generatedStorefront.demoHtml.length} chars)`);
-      await saveTenantDemoUrl({
-        slug: tenantSlug,
-        demoUrl,
-        v0ChatId: undefined,
-      });
-
-      // Set tenant status to ready
+      // 5. Set Status
       console.log(`[SiteBuilderV2] Job ${jobId} - Setting tenant status to ready...`);
       await setTenantStatus({ slug: tenantSlug, status: "ready" });
 
       job.status = "ready";
       jobs.set(jobId, job);
       console.log(`[SiteBuilderV2] Job ${jobId} - COMPLETED SUCCESSFULLY`);
+
     } catch (err) {
       const message = err instanceof Error ? err.message : "Unknown error";
       console.error(`[SiteBuilderV2] Job ${jobId} - FAILED:`, message);
@@ -435,10 +377,7 @@ export class SiteBuilderServiceV2 {
           error: message,
         });
       } catch (statusErr) {
-        console.error(
-          `[SiteBuilderV2] Job ${jobId} - Failed to set tenant status:`,
-          statusErr
-        );
+        console.error(`[SiteBuilderV2] Job ${jobId} - Failed to set tenant status:`, statusErr);
       }
 
       const jobToUpdate = jobs.get(jobId);

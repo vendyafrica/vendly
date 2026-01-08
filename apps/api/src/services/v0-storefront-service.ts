@@ -1,4 +1,8 @@
-import { v0 } from "v0-sdk";
+/**
+ * Template-based Storefront Service
+ * 
+ * Generates Puck configurations from pre-built templates instead of AI.
+ */
 import { colorTemplates, type ColorTemplateName } from "../lib/color-templates";
 import { getStoreBySlug, getProductsByStoreSlug, upsertStorePageData } from "@vendly/db/storefront-queries";
 
@@ -23,63 +27,93 @@ export interface PuckData {
 }
 
 /**
- * Build a prompt for v0 to generate a storefront homepage
+ * Build Fashion template Puck data
  */
-function buildStorefrontPrompt(params: GenerateStorefrontParams): string {
-    const colors = colorTemplates[params.colorTemplate];
-
-    return `
-Create a stunning e-commerce homepage for "${params.storeName}" - a ${params.category || "retail"} store.
-
-## Design Requirements
-- Use the ${colors.name} color scheme:
-  - Primary: ${colors.primary}
-  - Secondary: ${colors.secondary}
-  - Accent: ${colors.accent}
-  - Background: ${colors.background}
-  - Text: ${colors.text}
-
-## Page Structure (use these exact block types)
-
-1. **HeaderBlock**
-   - Left: Home link
-   - Center: Store logo "${params.storeName}" in elegant calligraphy/italic style
-   - Right: Sign in button + Cart icon
-   - Background: ${colors.primary}
-   - Text: ${colors.accent}
-
-2. **HeroBlock**
-   - Large full-width hero section (min-height 500px)
-   - Background color: ${colors.secondary}
-   - Text color: ${colors.accent}
-   - Include a compelling headline about ${params.category || "shopping"}
-   - Subtitle about discovering the collection
-   - CTA button "Shop Now" linking to /${params.storeSlug}/products
-
-3. **ProductGridBlock**
-   - Section title like "Featured Products" or "New Arrivals"
-   - 4 products per row
-   - Products come from database (dynamic)
-
-4. **FooterBlock**
-   - Simple design
-   - Store logo "${params.storeName}"
-   - Social media links placeholder
-   - Background: ${colors.primary}
-   - Text: ${colors.accent}
-
-## Output Format
-Return ONLY a valid JSON object matching this Puck structure (no markdown, no explanation):
-{
-  "content": [ { "type": "BlockName", "props": { ... } } ],
-  "root": { "props": { "title": "...", "backgroundColor": "..." } },
-  "zones": {}
-}
-`.trim();
+function buildFashionPuckData(
+    params: GenerateStorefrontParams,
+    colors: typeof colorTemplates[ColorTemplateName]
+): PuckData {
+    return {
+        content: [
+            {
+                type: "FashionHeader",
+                props: {
+                    id: "header-1",
+                    storeName: params.storeName,
+                    storeSlug: params.storeSlug,
+                    backgroundColor: colors.primary,
+                    textColor: colors.accent,
+                    showHome: true,
+                    showShop: true,
+                    showCart: true,
+                    showUser: true,
+                },
+            },
+            {
+                type: "FashionHero",
+                props: {
+                    id: "hero-1",
+                    label: params.category?.toUpperCase() || "FASHION",
+                    title: `Style at ${params.storeName}`,
+                    ctaText: "Shop Now",
+                    ctaLink: `/${params.storeSlug}/products`,
+                    ctaPadding: "16px 32px",
+                    imageUrl: params.heroImageUrl || "",
+                    overlayColor: "rgba(0, 0, 0, 0.4)",
+                },
+            },
+            {
+                type: "FashionCategoryTabs",
+                props: {
+                    id: "categories-1",
+                    categoriesText: "Women, Men",
+                    showSection: true,
+                },
+            },
+            {
+                type: "FashionProductGrid",
+                props: {
+                    id: "products-1",
+                    title: "New Arrivals",
+                    showTitle: true,
+                    columns: 4,
+                    storeSlug: params.storeSlug,
+                },
+            },
+            {
+                type: "FashionFooter",
+                props: {
+                    id: "footer-1",
+                    storeName: params.storeName,
+                    storeSlug: params.storeSlug,
+                    backgroundColor: colors.primary,
+                    textColor: colors.accent,
+                    socialLinks: {
+                        instagram: "#",
+                        whatsapp: "#",
+                        twitter: "#",
+                    },
+                    showPoweredBy: true,
+                },
+            },
+        ],
+        root: {
+            props: {
+                title: `${params.storeName} - Fashion Store`,
+                description: params.description || `Welcome to ${params.storeName}`,
+                backgroundColor: colors.background,
+                primaryColor: colors.primary,
+                textColor: colors.text,
+                headingFont: "Playfair Display",
+                bodyFont: "Inter",
+            },
+        },
+        zones: {},
+    };
 }
 
 /**
- * Build default Puck data structure
+ * Generate default Puck data (legacy - for non-fashion templates)
  */
 function buildDefaultPuckData(
     params: GenerateStorefrontParams,
@@ -156,52 +190,22 @@ function buildDefaultPuckData(
     };
 }
 
-/**
- * Parse v0 response to extract JSON
- */
-function parseV0Response(response: string): PuckData | null {
-    try {
-        // Try to extract JSON from the response
-        const jsonMatch = response.match(/\{[\s\S]*\}/);
-        if (jsonMatch) {
-            return JSON.parse(jsonMatch[0]);
-        }
-        return null;
-    } catch {
-        return null;
-    }
-}
+export type TemplateType = "fashion" | "default";
 
 /**
- * Generate a storefront homepage using v0 AI
+ * Generate a storefront using templates
  */
-export async function generateStorefront(params: GenerateStorefrontParams): Promise<PuckData> {
+export async function generateStorefront(
+    params: GenerateStorefrontParams,
+    template: TemplateType = "fashion"
+): Promise<PuckData> {
     const colors = colorTemplates[params.colorTemplate];
 
-    // Check if v0 API key is configured
-    const v0ApiKey = process.env.V0_API_KEY;
-    if (!v0ApiKey) {
-        console.log("V0_API_KEY not configured, using default template");
-        return buildDefaultPuckData(params, colors);
-    }
-
-    try {
-        const prompt = buildStorefrontPrompt(params);
-
-        // Create v0 chat and get response
-        const chat = await v0.chats.create({
-            message: prompt,
-        });
-
-        // v0 chats.create may return ChatDetail or stream
-        // For now, use default template - v0 response parsing can be enhanced later
-        console.log("v0 chat created, using default template for now");
-        return buildDefaultPuckData(params, colors);
-
-    } catch (error) {
-        console.error("Error generating storefront with v0:", error);
-        // Return default structure on error
-        return buildDefaultPuckData(params, colors);
+    switch (template) {
+        case "fashion":
+            return buildFashionPuckData(params, colors);
+        default:
+            return buildDefaultPuckData(params, colors);
     }
 }
 
@@ -210,24 +214,26 @@ export async function generateStorefront(params: GenerateStorefrontParams): Prom
  */
 export async function generateStorefrontForStore(
     storeSlug: string,
-    colorTemplate: ColorTemplateName = "dark"
+    colorTemplate: ColorTemplateName = "dark",
+    template: TemplateType = "fashion"
 ): Promise<{ success: boolean; puckData: PuckData; error?: string }> {
     try {
         // Fetch store info from database
         const store = await getStoreBySlug(storeSlug);
         if (!store) {
             return {
-                success: false, puckData: buildDefaultPuckData({
+                success: false,
+                puckData: buildDefaultPuckData({
                     storeName: storeSlug,
                     storeSlug,
                     colorTemplate,
-                }, colorTemplates[colorTemplate]), error: "Store not found"
+                }, colorTemplates[colorTemplate]),
+                error: "Store not found"
             };
         }
 
-        // Fetch products to determine category (use store description or default)
-        const products = await getProductsByStoreSlug(storeSlug);
-        const category = "retail"; // Products don't have category field
+        // Determine category
+        const category = "fashion";
 
         // Generate the Puck data
         const puckData = await generateStorefront({
@@ -236,7 +242,7 @@ export async function generateStorefrontForStore(
             category: category,
             colorTemplate: colorTemplate,
             description: store.description || undefined,
-        });
+        }, template);
 
         // Save to database
         await upsertStorePageData(store.id, puckData);

@@ -422,15 +422,19 @@ router.post("/:slug/upload", upload.single("file"), async (req: Request, res: Re
   }
 });
 
-// Generate storefront with v0 AI
+// Generate storefront with template
 router.post("/:slug/generate", async (req: Request, res: Response) => {
   try {
     const { slug } = req.params;
-    const { colorTemplate = "dark" } = req.body;
+    const { colorTemplate = "dark", template = "fashion" } = req.body;
 
-    console.log(`Generating storefront for ${slug} with template: ${colorTemplate}`);
+    console.log(`Generating storefront for ${slug} with template: ${template}, colors: ${colorTemplate}`);
 
-    const result = await generateStorefrontForStore(slug, colorTemplate as ColorTemplateName);
+    const result = await generateStorefrontForStore(
+      slug,
+      colorTemplate as ColorTemplateName,
+      template as "fashion" | "default"
+    );
 
     if (!result.success) {
       return res.status(400).json({
@@ -445,6 +449,7 @@ router.post("/:slug/generate", async (req: Request, res: Response) => {
       data: {
         storeSlug: slug,
         colorTemplate,
+        template,
         puckData: result.puckData
       }
     });
