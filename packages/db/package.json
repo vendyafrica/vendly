@@ -9,7 +9,7 @@
         "db:generate": "drizzle-kit generate",
         "db:push": "drizzle-kit push",
         "db:migrate": "drizzle-kit migrate",
-        "db:seed": "npx tsx src/seed/shoe-store-force.ts"
+        "db:reset": "npx tsx src/reset.ts && drizzle-kit push"
     },
     "dependencies": {
         "@neondatabase/serverless": "^1.0.2",

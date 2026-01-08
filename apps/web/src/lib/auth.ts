@@ -3,7 +3,7 @@ import { authClient } from "@vendly/auth/auth-client";
 export async function signInWithGoogle() {
   const data = await authClient.signIn.social({
     provider: "google",
-    callbackURL: "http://localhost:3000"
+    callbackURL: typeof window !== "undefined" ? window.location.origin : "http://localhost:3000"
   });
   console.log("Signing in with Google...", data);
   return data;
@@ -22,7 +22,7 @@ export async function signInWithOneTap(): Promise<void> {
 export async function signInWithMagicLink(email: string) {
   const data = await authClient.signIn.magicLink({
     email,
-    callbackURL: "http://localhost:3000",
+    callbackURL: typeof window !== "undefined" ? window.location.origin : "http://localhost:3000",
   });
   return data;
 }

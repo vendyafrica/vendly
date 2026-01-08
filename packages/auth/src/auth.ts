@@ -41,6 +41,31 @@ export const auth = betterAuth({
     },
   },
 
+  databaseHooks: {
+    user: {
+      create: {
+        before: async (user) => {
+          if (!user.name || user.name === user.email) {
+            const emailPrefix = user.email.split("@")[0];
+            const name = emailPrefix
+              .split(/[._-]/)
+              .map((part: string) =>
+                part.charAt(0).toUpperCase() + part.slice(1).toLowerCase()
+              )
+              .join(" ")
+              .split(" ")[0];
+            return {
+              data: {
+                ...user,
+                name,
+              },
+            };
+          }
+        },
+      },
+    },
+  },
+
   trustedOrigins: [
     "http://localhost:3000",
     "http://localhost:8000",
@@ -194,27 +219,23 @@ export const auth = betterAuth({
           to: email,
           url,
         });
-      }
+      },
     })
   ],
 
   session: {
+    expiresIn: 60 * 60 * 24 * 7, // 7 days
+    updateAge: 60 * 60 * 24, // Refresh session every 1 day
     cookieCache: {
       enabled: true,
       maxAge: 60 * 5,
+      refreshCache: true, // Enable automatic refresh
     },
   },
 
   advanced: {
     cookiePrefix: "vendly",
-    useSecureCookies: true,
-    defaultCookieAttributes: {
-      sameSite: "none",
-      secure: true
-    },
-    crossSubDomainCookies: {
-      enabled: false,
-    },
+    useSecureCookies: process.env.NODE_ENV === "production",
   },
 });
 

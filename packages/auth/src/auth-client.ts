@@ -9,12 +9,12 @@ export const authClient = createAuthClient({
     magicLinkClient(),
     oneTapClient({
       clientId: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID as string,
-      autoSelect: false,
+      autoSelect: true,
       cancelOnTapOutside: true,
       context: "signin",
       additionalOptions: {},
       promptOptions: {
-        baseDelay: 1000,
+        baseDelay: 500,
         maxAttempts: 5,
       },
     }),

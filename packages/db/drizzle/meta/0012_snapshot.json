@@ -1,5 +1,5 @@
 {
-  "id": "6c02f941-cf5a-4a56-aaad-7c5d48e10f96",
+  "id": "a2a35700-8e66-42e5-84eb-d74380bce2f7",
   "prevId": "9e77d3d2-8e74-49c9-84bc-25c4e3ef7510",
   "version": "7",
   "dialect": "postgresql",
@@ -2690,7 +2690,8 @@
         "suspended",
         "onboarding",
         "generating",
-        "failed"
+        "failed",
+        "ready"
       ]
     },
     "public.store_role": {
