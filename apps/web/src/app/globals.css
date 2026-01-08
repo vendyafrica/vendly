@@ -155,3 +155,62 @@
     display: none;
   }
 }
+
+/* Edit Mode Styles */
+body.edit-mode [data-editable-section] {
+  position: relative;
+  transition: outline 0.2s ease, box-shadow 0.2s ease;
+}
+
+body.edit-mode [data-editable-section]:hover {
+  outline: 2px dashed rgba(59, 130, 246, 0.6);
+  outline-offset: 4px;
+}
+
+body.edit-mode [data-editable-section].selected {
+  outline: 2px solid #3b82f6;
+  outline-offset: 4px;
+}
+
+body.edit-mode [data-editable] {
+  position: relative;
+  cursor: pointer !important;
+  transition: all 0.15s ease;
+}
+
+body.edit-mode [data-editable]:hover {
+  outline: 2px dashed #8b5cf6 !important;
+  outline-offset: 2px;
+  background-color: rgba(139, 92, 246, 0.08) !important;
+}
+
+body.edit-mode [data-editable]:hover::after {
+  content: attr(data-editable);
+  position: absolute;
+  top: -24px;
+  left: 0;
+  background: #8b5cf6;
+  color: white;
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 3px;
+  text-transform: capitalize;
+  white-space: nowrap;
+  z-index: 100;
+}
+
+/* Animation for popover */
+@keyframes fadeInSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-in {
+  animation: fadeInSlideUp 0.15s ease-out;
+}

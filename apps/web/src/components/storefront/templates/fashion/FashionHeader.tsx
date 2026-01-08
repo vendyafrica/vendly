@@ -29,6 +29,7 @@ export function FashionHeader({
 
     return (
         <header
+            data-editable-section="header"
             className="sticky top-0 z-50"
             style={{ backgroundColor, color: textColor }}
         >
@@ -70,6 +71,7 @@ export function FashionHeader({
                         href={`/${storeSlug}`}
                         className="absolute left-1/2 -translate-x-1/2 text-xl md:text-2xl font-serif italic font-medium tracking-wide"
                         style={{ color: textColor }}
+                        data-editable="storeName"
                     >
                         {storeName}
                     </Link>

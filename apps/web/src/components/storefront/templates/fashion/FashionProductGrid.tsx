@@ -83,11 +83,14 @@ export function FashionProductGrid({
         }));
 
     return (
-        <section className="py-12 md:py-16 bg-white">
+        <section data-editable-section="productGrid" className="py-12 md:py-16 bg-white">
             <div className="container mx-auto px-4 lg:px-8">
                 {/* Section Title */}
                 {showTitle && title && (
-                    <h2 className="text-2xl md:text-3xl font-serif font-medium text-center mb-10">
+                    <h2
+                        data-editable="title"
+                        className="text-2xl md:text-3xl font-serif font-medium text-center mb-10"
+                    >
                         {title}
                     </h2>
                 )}
