@@ -1,9 +1,9 @@
 "use client";
-import type { Store } from "@/constants/stores";
+import type { MarketplaceStore } from "@/types/marketplace";
 import { StoreCard } from "./StoreCard";
 import { MarketplaceGridSkeleton } from "./MarketplaceGridSkeleton";
 interface MarketplaceGridProps {
-  stores: Store[];
+  stores: MarketplaceStore[];
   loading?: boolean;
 }
 export function MarketplaceGrid({ stores, loading }: MarketplaceGridProps) {

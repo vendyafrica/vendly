@@ -7,15 +7,13 @@ import {
     boolean,
     uniqueIndex,
     index,
-    pgEnum,
     jsonb,
     unique,
     integer,
 } from "drizzle-orm/pg-core";
 
-// Enums
-export const tenantRole = pgEnum("tenant_role", ["owner", "admin", "member"]);
-export const tenantStatus = pgEnum("tenant_status", ["active", "suspended", "onboarding", "generating", "failed", "ready"]);
+import { tenantRole, tenantStatus } from "../enums/tenant-enums";
+export { tenantRole, tenantStatus };
 
 /**
  * Users table
@@ -152,7 +150,7 @@ export const tenantMemberships = pgTable(
         userId: text("user_id")
             .notNull()
             .references(() => users.id, { onDelete: "cascade" }),
-        role: tenantRole("role").notNull().default("member"),
+        role: tenantRole("role").notNull().default("owner"),
         createdAt: timestamp("created_at").defaultNow().notNull(),
         updatedAt: timestamp("updated_at")
             .defaultNow()

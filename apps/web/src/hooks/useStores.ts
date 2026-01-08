@@ -2,10 +2,10 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import type { Store } from "@/constants/stores";
+import type { MarketplaceStore } from "@/types/marketplace";
 
 export function useStores() {
-  const [stores, setStores] = useState<Store[]>([]);
+  const [stores, setStores] = useState<MarketplaceStore[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 

@@ -2,19 +2,19 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import type { Store } from "@/constants/stores";
+import type { MarketplaceStore } from "@/types/marketplace";
 import { StoreCarousel } from "./StoreCarousel";
 import { Star } from "lucide-react";
 
 interface StoreCardProps {
-  store: Store;
+  store: MarketplaceStore;
 }
 
 export function StoreCard({ store }: StoreCardProps) {
   return (
     <div className="group">
       {/* Image Card - Full rounded */}
-      <Link 
+      <Link
         href={`/store/${store.slug}`}
         className="block bg-white rounded-3xl overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-300 active:scale-[0.98]"
       >
@@ -35,7 +35,7 @@ export function StoreCard({ store }: StoreCardProps) {
               className="object-cover"
             />
           </div>
-          <Link 
+          <Link
             href={`/store/${store.slug}`}
             className="font-semibold text-sm text-gray-900 leading-tight hover:text-black transition-colors"
             onClick={(e) => e.stopPropagation()}
@@ -43,7 +43,7 @@ export function StoreCard({ store }: StoreCardProps) {
             {store.name}
           </Link>
         </div>
-        
+
         {/* Rating */}
         <div className="flex items-center gap-1">
           <span className="text-sm font-medium text-gray-700">{store.rating}</span>
