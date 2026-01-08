@@ -16,8 +16,8 @@
     }
   },
   "scripts": {
+    "dev": "email dev",
     "build": "tsup",
-    "dev": "tsup --watch",
     "export": "email export",
     "typecheck": "tsc --noEmit"
   },

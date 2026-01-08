@@ -1,8 +1,9 @@
 import { betterAuth } from "better-auth";
-import { genericOAuth } from "better-auth/plugins";
+import { genericOAuth, magicLink, oneTap } from "better-auth/plugins";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { db } from "@vendly/db/db";
-import { sendEmail } from "@vendly/transactional";
+import * as schema from "@vendly/db/schema";
+import { sendEmail, sendMagicLinkEmail } from "@vendly/transactional";
 
 const baseURL = process.env.BETTER_AUTH_URL || process.env.BACKEND_URL_PROD || "http://localhost:8000";
 
@@ -12,6 +13,12 @@ export const auth = betterAuth({
 
   database: drizzleAdapter(db, {
     provider: "pg",
+    schema: {
+      user: schema.users,
+      session: schema.session,
+      account: schema.account,
+      verification: schema.verification,
+    },
   }),
 
   emailAndPassword: {
@@ -35,10 +42,8 @@ export const auth = betterAuth({
   },
 
   trustedOrigins: [
-    process.env.WEB_URL_PROD || process.env.WEB_URL_DEV,
-    process.env.STOREFRONT_URL_PROD || process.env.STOREFRONT_URL_DEV,
     "http://localhost:3000",
-    "http://localhost:4000",
+    "http://localhost:8000",
     process.env.NGROK_URL,
   ].filter((origin): origin is string => Boolean(origin)),
 
@@ -182,6 +187,15 @@ export const auth = betterAuth({
         },
       ],
     }),
+    oneTap(),
+    magicLink({
+      sendMagicLink: async ({ email, url }) => {
+        await sendMagicLinkEmail({
+          to: email,
+          url,
+        });
+      }
+    })
   ],
 
   session: {

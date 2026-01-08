@@ -1,16 +1,25 @@
-import { ClientOptions, createAuthClient } from "better-auth/client";
-import { genericOAuthClient } from "better-auth/client/plugins";
+import { createAuthClient } from "better-auth/react";
+import { genericOAuthClient, oneTapClient, magicLinkClient } from "better-auth/client/plugins";
 
-type AuthClientOptions = Omit<ClientOptions, "plugins"> & {
-  plugins: [ReturnType<typeof genericOAuthClient>];
-};
-
-const _authClient: ReturnType<typeof createAuthClient<AuthClientOptions>> = createAuthClient<AuthClientOptions>({
-  baseURL: process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000",
+export const authClient = createAuthClient({
+  baseURL: process.env.BETTER_AUTH_URL || "http://localhost:8000",
   basePath: "/api/auth",
-  plugins: [genericOAuthClient()],
+  plugins: [
+    genericOAuthClient(),
+    magicLinkClient(),
+    oneTapClient({
+      clientId: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID as string,
+      autoSelect: false,
+      cancelOnTapOutside: true,
+      context: "signin",
+      additionalOptions: {},
+      promptOptions: {
+        baseDelay: 1000,
+        maxAttempts: 5,
+      },
+    }),
+  ],
 });
 
-export type MyAuthClient = typeof _authClient;
 
-export const authClient: MyAuthClient = _authClient;
+export type AuthClient = typeof authClient;

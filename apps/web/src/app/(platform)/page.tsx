@@ -1,6 +1,7 @@
 "use client";
 
-import { useMemo, Suspense } from "react";
+import { useMemo, Suspense, useEffect } from "react";
+import { signInWithOneTap } from "@/lib/auth";
 import Link from "next/link";
 import { MarketplaceGrid } from "@/components/marketplace/MarketplaceGrid";
 import { MarketplaceGridSkeleton } from "@/components/marketplace/MarketplaceGridSkeleton";
@@ -31,7 +32,7 @@ function MarketplaceContent() {
   return (
     <>
       <CategoryOverview />
-      
+
       <div className="px-4 sm:px-6 lg:px-8 py-6">
         {categories.map((category) => (
           <section key={category} className="mb-12">
@@ -58,6 +59,14 @@ function MarketplaceContent() {
 }
 
 export default function Page() {
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      void signInWithOneTap();
+    }, 5000);
+
+    return () => clearTimeout(timer);
+  }, []);
+
   return (
     <main className="min-h-screen bg-white">
       <Header />
