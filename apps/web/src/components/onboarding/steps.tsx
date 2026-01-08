@@ -4,7 +4,7 @@ import type { ReactNode } from 'react';
 
 import { usePathname, useRouter } from 'next/navigation';
 
-import { Button } from '@/components/button-1';
+import { Button } from '@/components/onboarding/button-1';
 import {
   Stepper,
   StepperIndicator,
@@ -12,7 +12,7 @@ import {
   StepperNav,
   StepperTitle,
   StepperTrigger,
-} from '@/components/stepper';
+} from '@/components/onboarding/stepper';
 import { ArrowLeft02Icon } from '@hugeicons/core-free-icons';
 import { HugeiconsIcon } from '@hugeicons/react';
 
