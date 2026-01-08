@@ -71,7 +71,7 @@ export default function Header() {
                 id="marketplace-search"
                 type="search"
                 placeholder="Search products, stores, creators…"
-                className="h-10 pl-9 pr-4 text-md transition-shadow focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-0 rounded-full"
+                className="h-10 pl-9 pr-4 text-md transition-shadow focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-0 rounded-full"
               />
             </div>
           </div>

@@ -1,13 +1,15 @@
 "use client";
-
 import type { Store } from "@/constants/stores";
 import { StoreCard } from "./StoreCard";
-
+import { MarketplaceGridSkeleton } from "./MarketplaceGridSkeleton";
 interface MarketplaceGridProps {
   stores: Store[];
+  loading?: boolean;
 }
-
-export function MarketplaceGrid({ stores }: MarketplaceGridProps) {
+export function MarketplaceGrid({ stores, loading }: MarketplaceGridProps) {
+  if (loading) {
+    return <MarketplaceGridSkeleton />;
+  }
   if (stores.length === 0) {
     return (
       <div className="flex items-center justify-center py-20">
@@ -15,7 +17,6 @@ export function MarketplaceGrid({ stores }: MarketplaceGridProps) {
       </div>
     );
   }
-
   return (
     <div className="px-4 sm:px-6 lg:px-8 py-6">
       {/* Mobile: 2 columns */}

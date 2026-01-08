@@ -4,7 +4,7 @@ export type Store = {
   name: string;
   logoUrl: string;
   rating: number;
-  category: "Women" | "Men" | "Beauty" | "Gifts" | "Home";
+  category: "Women" | "Men" | "Beauty" | "Gifts" | "Home" | "Accessories";
   images: string[];
 };
 
@@ -625,5 +625,5 @@ export const stores: Store[] = [
   }
 ];
 
-export const categories = ["Women", "Men", "Beauty", "Gifts", "Home"] as const;
+export const categories = ["Women", "Men", "Beauty", "Gifts", "Home","Accessories"] as const;
 export type Category = typeof categories[number];
