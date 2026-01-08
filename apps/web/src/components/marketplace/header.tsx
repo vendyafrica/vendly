@@ -103,7 +103,7 @@ export default function Header() {
               {isSignedIn && (
                 <DropdownMenu>
                   <DropdownMenuTrigger className="outline-none">
-                    <Avatar className="h-10 w-10">
+                    <Avatar className="h-6 w-6">
                       <AvatarImage src={session?.user?.image || ""} />
                       <AvatarFallback>
                         {session?.user?.name?.charAt(0)}
@@ -113,10 +113,13 @@ export default function Header() {
 
                   <DropdownMenuContent align="end">
                     <Link href="/sell">
-                      <DropdownMenuItem onClick={() => SignOut()}>
+                      <DropdownMenuItem>
                         Sell now
                       </DropdownMenuItem>
                     </Link>
+                    <DropdownMenuItem onClick={() => SignOut()}>
+                      Sign out
+                    </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
               )}
@@ -144,19 +147,19 @@ export default function Header() {
               <div className="flex items-center gap-2">
                 {!isSignedIn && (
                   <>
-                    
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setShowLogin(true)}
-                      >
-                        Sign in
-                      </Button>
-                    
+
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setShowLogin(true)}
+                    >
+                      Sign in
+                    </Button>
+
                     <Link href="/sell">
                       <Button
                         size="sm"
-                    
+
                       >
                         Sell now
                       </Button>

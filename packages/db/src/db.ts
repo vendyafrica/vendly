@@ -1,46 +1,15 @@
-import { drizzle } from "drizzle-orm/neon-http";
-import { config } from "dotenv";
+import { drizzle as drizzlePg } from "drizzle-orm/postgres-js";
+import { drizzle as drizzleNeon } from "drizzle-orm/neon-http";
+import { neon } from "@neondatabase/serverless";
+import postgres from "postgres";
 import * as schema from "./schema/index";
-import path from "path";
 
-let _db: NeonHttpDatabase<typeof schema> | undefined;
+const connectionString = process.env.DATABASE_URL!;
 
-function getDatabaseUrl(): string {
-  if (!process.env.DATABASE_URL) {
-    config({ path: path.resolve(process.cwd(), ".env") });
+const pgClient = postgres(connectionString);
+export const nodeDb = drizzlePg(pgClient, { schema });
 
-    if (!process.env.DATABASE_URL) {
-      config({ path: path.resolve(process.cwd(), "../../.env") });
-    }
-  }
+const neonClient = neon(connectionString);
+export const edgeDb = drizzleNeon(neonClient, { schema });
 
-  const databaseUrl = process.env.DATABASE_URL;
-  if (!databaseUrl) {
-    throw new Error("DATABASE_URL environment variable is not set");
-  }
-
-  return databaseUrl;
-}
-
-import { NeonHttpDatabase } from "drizzle-orm/neon-http";
-
-function getDb(): NeonHttpDatabase<typeof schema> {
-  if (_db) return _db;
-  _db = drizzle(getDatabaseUrl(), { schema });
-  return _db;
-}
-
-export const db: NeonHttpDatabase<typeof schema> = new Proxy({} as NeonHttpDatabase<typeof schema>, {
-  get(_target, prop, receiver) {
-    return Reflect.get(getDb() as unknown as object, prop, receiver);
-  },
-  has(_target, prop) {
-    return prop in (getDb() as unknown as object);
-  },
-  ownKeys() {
-    return Reflect.ownKeys(getDb() as unknown as object);
-  },
-  getOwnPropertyDescriptor(_target, prop) {
-    return Object.getOwnPropertyDescriptor(getDb() as unknown as object, prop);
-  },
-});
+export const db = nodeDb;

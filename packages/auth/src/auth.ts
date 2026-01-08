@@ -1,17 +1,17 @@
 import { betterAuth } from "better-auth";
 import { genericOAuth, magicLink, oneTap } from "better-auth/plugins";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
-import { db } from "@vendly/db/db";
+import { nodeDb } from "@vendly/db/db";
 import * as schema from "@vendly/db/schema";
 import { sendEmail, sendMagicLinkEmail } from "@vendly/transactional";
 
-const baseURL = process.env.BETTER_AUTH_URL || process.env.BACKEND_URL_PROD || "http://localhost:8000";
+const baseURL = process.env.BETTER_AUTH_URL as string;
 
 export const auth = betterAuth({
   baseURL,
   secret: process.env.BETTER_AUTH_SECRET as string,
 
-  database: drizzleAdapter(db, {
+  database: drizzleAdapter(nodeDb, {
     provider: "pg",
     schema: {
       user: schema.users,
@@ -212,6 +212,7 @@ export const auth = betterAuth({
         },
       ],
     }),
+
     oneTap(),
     magicLink({
       sendMagicLink: async ({ email, url }) => {
@@ -235,7 +236,7 @@ export const auth = betterAuth({
 
   advanced: {
     cookiePrefix: "vendly",
-    useSecureCookies: process.env.NODE_ENV === "production",
+    useSecureCookies: false,
   },
 });
 

@@ -32,7 +32,7 @@ export async function setTenantStatus({
   error,
 }: {
   slug: string;
-  status: "active" | "suspended" | "onboarding" | "generating" | "failed" | "ready";
+  status: "active" | "suspended" | "onboarding";
   error?: string | null;
 }): Promise<void> {
   await db
