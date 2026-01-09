@@ -139,11 +139,11 @@ export function ProductsGrid({
                 </div>
             )}
 
-            {/* Products Grid */}
+            {/* Products Grid - Responsive columns */}
             <div
                 style={{
                     display: "grid",
-                    gridTemplateColumns: `repeat(${columns}, 1fr)`,
+                    gridTemplateColumns: `repeat(auto-fill, minmax(250px, 1fr))`,
                     gap: "2rem",
                     padding: "2rem 3rem 4rem",
                     maxWidth: "1400px",
@@ -164,15 +164,16 @@ export function ProductsGrid({
                             e.currentTarget.style.transform = "translateY(0)";
                         }}
                     >
-                        {/* Product Image */}
+                        {/* Product Image - Fixed Square Container */}
                         <div
                             style={{
                                 position: "relative",
                                 width: "100%",
-                                paddingTop: "125%",
+                                aspectRatio: "1 / 1",
                                 backgroundColor: "#f5f5f5",
                                 marginBottom: "1rem",
                                 overflow: "hidden",
+                                borderRadius: "4px",
                             }}
                         >
                             {product.imageUrl ? (
@@ -180,7 +181,11 @@ export function ProductsGrid({
                                     src={product.imageUrl}
                                     alt={product.name}
                                     fill
-                                    style={{ objectFit: "cover" }}
+                                    sizes="(max-width: 768px) 50vw, 250px"
+                                    style={{
+                                        objectFit: "cover",
+                                        objectPosition: "center",
+                                    }}
                                 />
                             ) : (
                                 <div

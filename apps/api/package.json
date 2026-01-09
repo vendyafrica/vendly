@@ -14,6 +14,7 @@
     "@ai-sdk/google": "^3.0.6",
     "@ai-sdk/openai": "^3.0.7",
     "@neondatabase/serverless": "^1.0.2",
+    "@types/sharp": "^0.32.0",
     "@vendly/auth": "workspace:*",
     "@vendly/db": "workspace:*",
     "@vendly/transactional": "workspace:*",
@@ -30,6 +31,7 @@
     "morgan": "^1.10.0",
     "multer": "^2.0.2",
     "resend": "^6.5.2",
+    "sharp": "^0.34.5",
     "tsup": "^8.5.0",
     "v0-sdk": "^0.15.3"
   },
