@@ -36,7 +36,7 @@ export function proxy(req: NextRequest) {
     if (pathname.startsWith('/_next') || pathname.startsWith('/favicon')) {
       return NextResponse.next();
     }
-    
+
     // Prevent admin routes on tenant domains
     if (pathname.startsWith('/admin')) {
       return NextResponse.redirect(new URL('/', req.url));
@@ -60,7 +60,7 @@ export function proxy(req: NextRequest) {
     if (pathParts.length > 0) {
       const potentialSlug = pathParts[0];
       // Skip known routes that are not tenant slugs
-      const knownRoutes = new Set(['sell', 'api', 'admin', '_next', 'favicon.ico', 'images', 'fonts']);
+      const knownRoutes = new Set(['sell', 'api', 'admin', '_next', 'favicon.ico', 'images', 'fonts', 'plasmic-host', 'plasmic-demo']);
       if (!knownRoutes.has(potentialSlug) && !potentialSlug.startsWith('_')) {
         // This could be a tenant slug - let it pass through to [subdomain] route
         return NextResponse.next();

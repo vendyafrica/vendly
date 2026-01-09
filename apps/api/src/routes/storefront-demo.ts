@@ -1,5 +1,7 @@
 import { Router, Request, Response } from "express";
 import { list } from "@vercel/blob";
+import { db, tenants } from "@vendly/db";
+import { eq } from "drizzle-orm";
 
 const router: Router = Router();
 
@@ -140,4 +142,46 @@ router.get("/:slug", async (req: Request, res: Response) => {
     }
 });
 
+/**
+ * Get tenant info by slug
+ * This allows the Next.js frontend to check tenant existence without DATABASE_URL
+ */
+router.get("/:slug/tenant", async (req: Request, res: Response) => {
+    try {
+        const { slug } = req.params;
+
+        console.log(`[Tenant] Fetching tenant info for: ${slug}`);
+
+        const [tenant] = await db
+            .select()
+            .from(tenants)
+            .where(eq(tenants.slug, slug))
+            .limit(1);
+
+        if (!tenant) {
+            return res.status(404).json({
+                error: true,
+                message: "Tenant not found",
+            });
+        }
+
+        // Return tenant info (excluding sensitive fields)
+        res.json({
+            id: tenant.id,
+            slug: tenant.slug,
+            name: tenant.name,
+            status: tenant.status,
+            plasmicTemplate: (tenant as { plasmicTemplate?: string }).plasmicTemplate,
+            generatedFiles: tenant.generatedFiles,
+        });
+    } catch (error) {
+        console.error("[Tenant] Error fetching tenant:", error);
+        res.status(500).json({
+            error: true,
+            message: "Failed to fetch tenant info",
+        });
+    }
+});
+
 export default router;
+
