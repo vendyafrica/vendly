@@ -120,6 +120,7 @@ export const tenants = pgTable(
         demoUrl: text("demo_url"),
         v0ChatId: text("v0_chat_id"),
         generatedFiles: jsonb("generated_files"),
+        plasmicTemplate: text("plasmic_template"), 
         vercelDeploymentUrl: text("vercel_deployment_url"),
         error: text("error"),
 

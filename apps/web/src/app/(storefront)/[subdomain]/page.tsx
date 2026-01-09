@@ -19,6 +19,13 @@ import { FeaturedSections } from '@/components/storefront';
 import { PuckRenderer } from '@/components/storefront/PuckRenderer';
 import { type Data } from "@measured/puck";
 import { type Components, type RootProps } from "@/lib/puck-config";
+// Plasmic integration
+import { PLASMIC } from "@/lib/plasmic-init";
+import {
+  PlasmicRootProvider,
+  PlasmicComponent,
+  extractPlasmicQueryData,
+} from "@plasmicapp/loader-nextjs";
 
 export const dynamic = 'force-dynamic';
 
@@ -131,8 +138,61 @@ export default async function TenantPage({ params }: Props) {
     );
   }
 
+  // Check if store uses a Plasmic template
+  // Type assertion needed until db schema types are refreshed
+  const plasmicTemplate = (tenant as { plasmicTemplate?: string }).plasmicTemplate;
+
+  if (plasmicTemplate) {
+    try {
+      const plasmicData = await PLASMIC.fetchComponentData(plasmicTemplate);
+
+      if (plasmicData && plasmicData.entryCompMetas.length > 0) {
+        const compMeta = plasmicData.entryCompMetas[0];
+
+        // Pre-fetch query data for SSR
+        const queryCache = await extractPlasmicQueryData(
+          <PlasmicRootProvider
+            loader={PLASMIC}
+            prefetchedData={plasmicData}
+            pageParams={{ storeSlug: subdomain }}
+          >
+            <PlasmicComponent
+              component={plasmicTemplate}
+              componentProps={{
+                storeSlug: subdomain,
+              }}
+            />
+          </PlasmicRootProvider>
+        );
+
+        // Render with Plasmic
+        return (
+          <CartProvider>
+            <PlasmicRootProvider
+              loader={PLASMIC}
+              prefetchedData={plasmicData}
+              prefetchedQueryData={queryCache}
+              pageParams={{ storeSlug: subdomain }}
+            >
+              <PlasmicComponent
+                component={plasmicTemplate}
+                componentProps={{
+                  storeSlug: subdomain,
+                }}
+              />
+            </PlasmicRootProvider>
+            <CartDrawer />
+          </CartProvider>
+        );
+      }
+    } catch (error) {
+      console.error("Failed to load Plasmic template:", error);
+      // Fall through to other rendering methods
+    }
+  }
+
   // Check for AI Generated Files (Blob Storage) and render them if available
-  // This logic runs if no custom Puck editor data exists
+  // This logic runs if no Plasmic template or custom Puck editor data exists
   interface GeneratedFile { name: string; url: string; }
   const generatedFiles = tenant.generatedFiles as unknown as GeneratedFile[] | null;
 
