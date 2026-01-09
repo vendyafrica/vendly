@@ -21,6 +21,7 @@ interface StoreHeaderProps {
     showCart?: boolean;
     backgroundImage?: string;
     className?: string;
+    variant?: "standard" | "minimal";
 }
 
 /**
@@ -32,6 +33,7 @@ export function StoreHeader({
     showCart = true,
     backgroundImage,
     className,
+    variant = "standard",
 }: StoreHeaderProps) {
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -149,82 +151,115 @@ export function StoreHeader({
                 </button>
 
                 {/* Left Section - Categories (Desktop) */}
-                <nav className="desktop-nav" style={{ display: "flex", alignItems: "center", gap: "2rem", position: "relative", zIndex: 1 }}>
-                    <a
-                        href="#"
-                        style={{
-                            color: "#1a1a1a",
-                            textDecoration: "none",
-                            fontSize: "0.8125rem",
-                            fontWeight: 400,
-                            letterSpacing: "0.5px",
-                            textTransform: "uppercase",
-                            transition: "color 0.2s",
-                        }}
-                        onMouseEnter={(e) => e.currentTarget.style.color = primaryColor}
-                        onMouseLeave={(e) => e.currentTarget.style.color = "#1a1a1a"}
-                    >
-                        Men
-                    </a>
-                    <a
-                        href="#"
-                        style={{
-                            color: "#1a1a1a",
-                            textDecoration: "none",
-                            fontSize: "0.8125rem",
-                            fontWeight: 400,
-                            letterSpacing: "0.5px",
-                            textTransform: "uppercase",
-                            transition: "color 0.2s",
-                        }}
-                        onMouseEnter={(e) => e.currentTarget.style.color = primaryColor}
-                        onMouseLeave={(e) => e.currentTarget.style.color = "#1a1a1a"}
-                    >
-                        Women
-                    </a>
-                    <a
-                        href="#"
-                        style={{
-                            color: "#1a1a1a",
-                            textDecoration: "none",
-                            fontSize: "0.8125rem",
-                            fontWeight: 400,
-                            letterSpacing: "0.5px",
-                            textTransform: "uppercase",
-                            transition: "color 0.2s",
-                        }}
-                        onMouseEnter={(e) => e.currentTarget.style.color = primaryColor}
-                        onMouseLeave={(e) => e.currentTarget.style.color = "#1a1a1a"}
-                    >
-                        Collections
-                    </a>
-                </nav>
+                {/* Standard: Nav on Left. Minimal: Logo on Left */}
+                {variant === "minimal" ? (
+                    <div className="center-logo" style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "0.5rem",
+                        zIndex: 1,
+                    }}>
+                        <span
+                            style={{
+                                fontSize: "1.25rem",
+                                fontWeight: 700,
+                                color: textColor,
+                                letterSpacing: "-0.5px",
+                                textTransform: "none",
+                            }}
+                        >
+                            {store?.name || "Store"}
+                        </span>
+                    </div>
+                ) : (
+                    <nav className="desktop-nav" style={{ display: "flex", alignItems: "center", gap: "2rem", position: "relative", zIndex: 1 }}>
+                        <a
+                            href="#"
+                            style={{
+                                color: "#1a1a1a",
+                                textDecoration: "none",
+                                fontSize: "0.8125rem",
+                                fontWeight: 400,
+                                letterSpacing: "0.5px",
+                                textTransform: "uppercase",
+                                transition: "color 0.2s",
+                            }}
+                            onMouseEnter={(e) => e.currentTarget.style.color = primaryColor}
+                            onMouseLeave={(e) => e.currentTarget.style.color = "#1a1a1a"}
+                        >
+                            Men
+                        </a>
+                        <a
+                            href="#"
+                            style={{
+                                color: "#1a1a1a",
+                                textDecoration: "none",
+                                fontSize: "0.8125rem",
+                                fontWeight: 400,
+                                letterSpacing: "0.5px",
+                                textTransform: "uppercase",
+                                transition: "color 0.2s",
+                            }}
+                            onMouseEnter={(e) => e.currentTarget.style.color = primaryColor}
+                            onMouseLeave={(e) => e.currentTarget.style.color = "#1a1a1a"}
+                        >
+                            Women
+                        </a>
+                        <a
+                            href="#"
+                            style={{
+                                color: "#1a1a1a",
+                                textDecoration: "none",
+                                fontSize: "0.8125rem",
+                                fontWeight: 400,
+                                letterSpacing: "0.5px",
+                                textTransform: "uppercase",
+                                transition: "color 0.2s",
+                            }}
+                            onMouseEnter={(e) => e.currentTarget.style.color = primaryColor}
+                            onMouseLeave={(e) => e.currentTarget.style.color = "#1a1a1a"}
+                        >
+                            Collections
+                        </a>
+                    </nav>
+                )}
 
-                {/* Center - Store Name/Logo */}
-                <div className="center-logo" style={{
-                    position: "absolute",
-                    left: "50%",
-                    transform: "translateX(-50%)",
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "0.5rem",
-                    zIndex: 1,
-                }}>
-                    <span
-                        style={{
-                            fontSize: "1.125rem",
-                            fontWeight: 600,
-                            color: textColor,
-                            letterSpacing: "1px",
-                            textTransform: "uppercase",
-                        }}
-                    >
-                        {store?.name || "Store"}
-                    </span>
-                </div>
+
+                {/* Center - Store Name/Logo (Standard Only) */}
+                {/* Or Nav (Minimal) */}
+                {variant === "standard" ? (
+                    <div className="center-logo" style={{
+                        position: "absolute",
+                        left: "50%",
+                        transform: "translateX(-50%)",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "0.5rem",
+                        zIndex: 1,
+                    }}>
+                        <span
+                            style={{
+                                fontSize: "1.125rem",
+                                fontWeight: 600,
+                                color: textColor,
+                                letterSpacing: "1px",
+                                textTransform: "uppercase",
+                            }}
+                        >
+                            {store?.name || "Store"}
+                        </span>
+                    </div>
+                ) : (
+                    <nav className="desktop-nav" style={{ display: "flex", alignItems: "center", gap: "2.5rem", justifyContent: "center", flex: 1, zIndex: 1 }}>
+                        <a href="#" style={{ color: "#1a1a1a", textDecoration: "none", fontSize: "0.9rem", fontWeight: 500 }}>Shop</a>
+                        <a href="#" style={{ color: "#1a1a1a", textDecoration: "none", fontSize: "0.9rem", fontWeight: 500 }}>About</a>
+                        <a href="#" style={{ color: "#1a1a1a", textDecoration: "none", fontSize: "0.9rem", fontWeight: 500 }}>Journal</a>
+                    </nav>
+                )}
 
                 {/* Right Section - Actions */}
                 <div className="actions-section" style={{ display: "flex", alignItems: "center", gap: "1.5rem", position: "relative", zIndex: 1 }}>
+                    {/* ... (keep actions) ... */}
                     <button
                         style={{
                             background: "none",

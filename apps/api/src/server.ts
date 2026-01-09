@@ -6,11 +6,7 @@ import { Response, Request } from "express";
 import { toNodeHandler } from "better-auth/node";
 import { auth } from "@vendly/auth";
 import aiRouter from "./routes/ai";
-// import siteBuilderRouter from "./routes/site-builder";
 import vercelDeploymentRouter from "./routes/vercel-deployment";
-// import storefrontRouter from "./routes/storefront";
-// import instagramRouter from "./routes/instagram";
-// import uploadRouter from "./routes/upload";
 import imageUploadRouter from "./routes/image-upload";
 import storefrontDemoRouter from "./routes/storefront-demo";
 
@@ -43,10 +39,7 @@ app.use(
 app.all("/api/auth/*splat", toNodeHandler(auth));
 
 app.use("/api/ai", aiRouter);
-// app.use("/api/site-builder", siteBuilderRouter);
 app.use("/api/vercel", vercelDeploymentRouter);
-// app.use("/api/storefront", storefrontRouter);
-// app.use("/api/instagram", instagramRouter);
 app.use("/api/upload", imageUploadRouter);
 app.use("/api/storefront", storefrontDemoRouter);
 
