@@ -26,6 +26,8 @@ import {
   PlasmicComponent,
   extractPlasmicQueryData,
 } from "@plasmicapp/loader-nextjs";
+// Programmatic Plasmic template (no drag-and-drop needed)
+import { PlasmicStorefrontTemplate } from "@/components/plasmic/PlasmicStorefrontTemplate";
 
 export const dynamic = 'force-dynamic';
 
@@ -143,6 +145,19 @@ export default async function TenantPage({ params }: Props) {
   const plasmicTemplate = (tenant as { plasmicTemplate?: string }).plasmicTemplate;
 
   if (plasmicTemplate) {
+    // Option 1: Use programmatic template (no Plasmic Studio needed)
+    if (plasmicTemplate === "plasmic-default" || plasmicTemplate === "programmatic") {
+      return (
+        <CartProvider>
+          <PlasmicStorefrontTemplate
+            storeSlug={subdomain}
+          />
+          <CartDrawer />
+        </CartProvider>
+      );
+    }
+
+    // Option 2: Use Plasmic Studio template (drag-and-drop)
     try {
       const plasmicData = await PLASMIC.fetchComponentData(plasmicTemplate);
 

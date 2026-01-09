@@ -11,6 +11,7 @@ import vercelDeploymentRouter from "./routes/vercel-deployment";
 // import storefrontRouter from "./routes/storefront";
 // import instagramRouter from "./routes/instagram";
 import uploadRouter from "./routes/upload";
+import storefrontDemoRouter from "./routes/storefront-demo";
 
 const app = express();
 const PORT = process.env.PORT || 8000;
@@ -24,7 +25,7 @@ app.use(
       "http://localhost:3000",
       "http://localhost:5000",
       /^http:\/\/localhost:\d+$/,
-      /^http:\/\/[\w-]+\.localhost:\d+$/, 
+      /^http:\/\/[\w-]+\.localhost:\d+$/,
       "https://vendly-web.vercel.app",
       "https://www.vendlyafrica.store",
       "https://vendlyafrica.store",
@@ -46,6 +47,7 @@ app.use("/api/vercel", vercelDeploymentRouter);
 // app.use("/api/storefront", storefrontRouter);
 // app.use("/api/instagram", instagramRouter);
 app.use("/api/upload", uploadRouter);
+app.use("/api/storefront", storefrontDemoRouter);
 
 app.get("/", (_req, res) => {
   res.send("API is running");

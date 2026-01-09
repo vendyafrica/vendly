@@ -17,6 +17,7 @@ interface ProductsGridProps {
     storeSlug: string;
     columns?: number;
     limit?: number;
+    sectionTitle?: string;
     className?: string;
 }
 
@@ -28,6 +29,7 @@ export function ProductsGrid({
     storeSlug,
     columns = 4,
     limit = 12,
+    sectionTitle = "SHOP THE COLLECTION",
     className,
 }: ProductsGridProps) {
     const { data: products, isLoading, error } = usePlasmicQueryData<Product[]>(
@@ -93,91 +95,142 @@ export function ProductsGrid({
         }).format(amount);
     };
 
+    // Star rating component
+    const StarRating = ({ rating = 5 }: { rating?: number }) => (
+        <div style={{ display: "flex", gap: "2px", marginTop: "0.5rem" }}>
+            {[...Array(5)].map((_, i) => (
+                <svg
+                    key={i}
+                    width="12"
+                    height="12"
+                    viewBox="0 0 24 24"
+                    fill={i < rating ? "#1a1a1a" : "none"}
+                    stroke="#1a1a1a"
+                    strokeWidth="2"
+                >
+                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+                </svg>
+            ))}
+        </div>
+    );
+
     return (
-        <div
-            className={className}
-            style={{
-                display: "grid",
-                gridTemplateColumns: `repeat(${columns}, 1fr)`,
-                gap: "1.5rem",
-                padding: "2rem",
-            }}
-        >
-            {products.slice(0, limit).map((product) => (
+        <div className={className}>
+            {/* Section Title */}
+            {sectionTitle && (
                 <div
-                    key={product.id}
                     style={{
-                        borderRadius: "0.75rem",
-                        overflow: "hidden",
-                        backgroundColor: "#fff",
-                        boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
-                        transition: "transform 0.2s, box-shadow 0.2s",
-                        cursor: "pointer",
-                    }}
-                    onMouseEnter={(e) => {
-                        e.currentTarget.style.transform = "translateY(-4px)";
-                        e.currentTarget.style.boxShadow = "0 4px 12px rgba(0,0,0,0.15)";
-                    }}
-                    onMouseLeave={(e) => {
-                        e.currentTarget.style.transform = "translateY(0)";
-                        e.currentTarget.style.boxShadow = "0 1px 3px rgba(0,0,0,0.1)";
+                        textAlign: "center",
+                        padding: "4rem 2rem 2rem",
+                        borderTop: "1px solid rgba(0,0,0,0.08)",
                     }}
                 >
-                    <div
+                    <h2
                         style={{
-                            position: "relative",
-                            width: "100%",
-                            paddingTop: "100%",
-                            backgroundColor: "#f9fafb",
+                            fontSize: "0.8125rem",
+                            fontWeight: 600,
+                            letterSpacing: "2px",
+                            textTransform: "uppercase",
+                            color: "#1a1a1a",
                         }}
                     >
-                        {product.imageUrl ? (
-                            <Image
-                                src={product.imageUrl}
-                                alt={product.name}
-                                fill
-                                style={{ objectFit: "cover" }}
-                            />
-                        ) : (
-                            <div
+                        {sectionTitle}
+                    </h2>
+                </div>
+            )}
+
+            {/* Products Grid */}
+            <div
+                style={{
+                    display: "grid",
+                    gridTemplateColumns: `repeat(${columns}, 1fr)`,
+                    gap: "2rem",
+                    padding: "2rem 3rem 4rem",
+                    maxWidth: "1400px",
+                    margin: "0 auto",
+                }}
+            >
+                {products.slice(0, limit).map((product) => (
+                    <div
+                        key={product.id}
+                        style={{
+                            cursor: "pointer",
+                            transition: "transform 0.3s ease",
+                        }}
+                        onMouseEnter={(e) => {
+                            e.currentTarget.style.transform = "translateY(-8px)";
+                        }}
+                        onMouseLeave={(e) => {
+                            e.currentTarget.style.transform = "translateY(0)";
+                        }}
+                    >
+                        {/* Product Image */}
+                        <div
+                            style={{
+                                position: "relative",
+                                width: "100%",
+                                paddingTop: "125%",
+                                backgroundColor: "#f5f5f5",
+                                marginBottom: "1rem",
+                                overflow: "hidden",
+                            }}
+                        >
+                            {product.imageUrl ? (
+                                <Image
+                                    src={product.imageUrl}
+                                    alt={product.name}
+                                    fill
+                                    style={{ objectFit: "cover" }}
+                                />
+                            ) : (
+                                <div
+                                    style={{
+                                        position: "absolute",
+                                        inset: 0,
+                                        display: "flex",
+                                        alignItems: "center",
+                                        justifyContent: "center",
+                                        color: "#9ca3af",
+                                        fontSize: "0.875rem",
+                                    }}
+                                >
+                                    No Image
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Product Info */}
+                        <div style={{ textAlign: "center" }}>
+                            <h3
                                 style={{
-                                    position: "absolute",
-                                    inset: 0,
-                                    display: "flex",
-                                    alignItems: "center",
-                                    justifyContent: "center",
-                                    color: "#9ca3af",
+                                    fontSize: "0.875rem",
+                                    fontWeight: 400,
+                                    marginBottom: "0.375rem",
+                                    color: "#1a1a1a",
+                                    overflow: "hidden",
+                                    textOverflow: "ellipsis",
+                                    whiteSpace: "nowrap",
                                 }}
                             >
-                                No Image
+                                {product.name}
+                            </h3>
+                            <p
+                                style={{
+                                    fontSize: "0.875rem",
+                                    fontWeight: 600,
+                                    color: "#1a1a1a",
+                                    marginBottom: "0.25rem",
+                                }}
+                            >
+                                {formatPrice(product.basePriceAmount, product.baseCurrency)}
+                            </p>
+                            <div style={{ display: "flex", justifyContent: "center" }}>
+                                <StarRating rating={5} />
                             </div>
-                        )}
+                        </div>
                     </div>
-                    <div style={{ padding: "1rem" }}>
-                        <h3
-                            style={{
-                                fontSize: "0.875rem",
-                                fontWeight: 500,
-                                marginBottom: "0.5rem",
-                                overflow: "hidden",
-                                textOverflow: "ellipsis",
-                                whiteSpace: "nowrap",
-                            }}
-                        >
-                            {product.name}
-                        </h3>
-                        <p
-                            style={{
-                                fontSize: "1rem",
-                                fontWeight: 600,
-                                color: "#111827",
-                            }}
-                        >
-                            {formatPrice(product.basePriceAmount, product.baseCurrency)}
-                        </p>
-                    </div>
-                </div>
-            ))}
+                ))}
+            </div>
         </div>
     );
 }

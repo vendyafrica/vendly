@@ -62,38 +62,42 @@ export function FooterSection({
         <footer
             className={className}
             style={{
-                backgroundColor: "#1f2937",
-                color: "#fff",
-                padding: "4rem 2rem 2rem",
+                backgroundColor: "#f9f9f9",
+                color: "#1a1a1a",
+                padding: "4rem 3rem 2rem",
+                borderTop: "1px solid rgba(0,0,0,0.08)",
             }}
         >
             {showNewsletter && (
                 <div
                     style={{
-                        maxWidth: "600px",
-                        margin: "0 auto 3rem",
+                        maxWidth: "500px",
+                        margin: "0 auto 4rem",
                         textAlign: "center",
                     }}
                 >
                     <h3
                         style={{
-                            fontSize: "1.5rem",
+                            fontSize: "0.8125rem",
                             fontWeight: 600,
-                            marginBottom: "0.5rem",
+                            marginBottom: "1rem",
+                            letterSpacing: "2px",
+                            textTransform: "uppercase",
                         }}
                     >
                         {newsletterTitle}
                     </h3>
                     <p
                         style={{
-                            color: "rgba(255,255,255,0.7)",
+                            color: "#666",
                             marginBottom: "1.5rem",
+                            fontSize: "0.875rem",
                         }}
                     >
                         {newsletterSubtitle}
                     </p>
                     {subscribed ? (
-                        <p style={{ color: "#10b981" }}>Thanks for subscribing!</p>
+                        <p style={{ color: "#10b981", fontSize: "0.875rem" }}>Thanks for subscribing!</p>
                     ) : (
                         <form
                             onSubmit={handleSubscribe}
@@ -112,23 +116,30 @@ export function FooterSection({
                                 required
                                 style={{
                                     flex: 1,
-                                    padding: "0.75rem 1rem",
-                                    borderRadius: "0.5rem",
-                                    border: "none",
-                                    fontSize: "1rem",
+                                    padding: "0.875rem 1rem",
+                                    border: "1px solid rgba(0,0,0,0.15)",
+                                    borderRadius: "2px",
+                                    fontSize: "0.875rem",
+                                    backgroundColor: "#fff",
                                 }}
                             />
                             <button
                                 type="submit"
                                 style={{
-                                    padding: "0.75rem 1.5rem",
+                                    padding: "0.875rem 2rem",
                                     backgroundColor: primaryColor,
                                     color: "#fff",
                                     border: "none",
-                                    borderRadius: "0.5rem",
+                                    borderRadius: "2px",
                                     fontWeight: 600,
                                     cursor: "pointer",
+                                    fontSize: "0.8125rem",
+                                    letterSpacing: "1px",
+                                    textTransform: "uppercase",
+                                    transition: "background 0.3s",
                                 }}
+                                onMouseEnter={(e) => e.currentTarget.style.opacity = "0.9"}
+                                onMouseLeave={(e) => e.currentTarget.style.opacity = "1"}
                             >
                                 Subscribe
                             </button>
@@ -139,101 +150,97 @@ export function FooterSection({
 
             <div
                 style={{
-                    borderTop: "1px solid rgba(255,255,255,0.1)",
+                    display: "grid",
+                    gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
+                    gap: "3rem",
                     paddingTop: "2rem",
-                    display: "flex",
-                    flexWrap: "wrap",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                    gap: "1rem",
+                    borderTop: "1px solid rgba(0,0,0,0.08)",
+                    maxWidth: "1200px",
+                    margin: "0 auto",
                 }}
             >
                 <div>
                     <h4
                         style={{
-                            fontSize: "1.25rem",
+                            fontSize: "1rem",
                             fontWeight: 600,
-                            marginBottom: "0.25rem",
+                            marginBottom: "0.5rem",
                         }}
                     >
                         {storeName}
                     </h4>
                     <p
                         style={{
-                            color: "rgba(255,255,255,0.6)",
-                            fontSize: "0.875rem",
-                            maxWidth: "300px",
+                            color: "#666",
+                            fontSize: "0.8125rem",
+                            lineHeight: 1.6,
                         }}
                     >
                         {storeDescription}
                     </p>
                 </div>
 
-                <div
-                    style={{
-                        display: "flex",
-                        gap: "2rem",
-                    }}
-                >
-                    <div>
-                        <h5
-                            style={{
-                                fontSize: "0.875rem",
-                                fontWeight: 600,
-                                marginBottom: "0.75rem",
-                                color: "rgba(255,255,255,0.8)",
-                            }}
-                        >
-                            Shop
-                        </h5>
-                        <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
-                            <li style={{ marginBottom: "0.5rem" }}>
-                                <a href="#products" style={{ color: "rgba(255,255,255,0.6)", textDecoration: "none", fontSize: "0.875rem" }}>
-                                    All Products
-                                </a>
-                            </li>
-                            <li style={{ marginBottom: "0.5rem" }}>
-                                <a href="#categories" style={{ color: "rgba(255,255,255,0.6)", textDecoration: "none", fontSize: "0.875rem" }}>
-                                    Categories
-                                </a>
-                            </li>
-                        </ul>
-                    </div>
-                    <div>
-                        <h5
-                            style={{
-                                fontSize: "0.875rem",
-                                fontWeight: 600,
-                                marginBottom: "0.75rem",
-                                color: "rgba(255,255,255,0.8)",
-                            }}
-                        >
-                            Support
-                        </h5>
-                        <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
-                            <li style={{ marginBottom: "0.5rem" }}>
-                                <a href="#contact" style={{ color: "rgba(255,255,255,0.6)", textDecoration: "none", fontSize: "0.875rem" }}>
-                                    Contact Us
-                                </a>
-                            </li>
-                            <li style={{ marginBottom: "0.5rem" }}>
-                                <a href="#faq" style={{ color: "rgba(255,255,255,0.6)", textDecoration: "none", fontSize: "0.875rem" }}>
-                                    FAQ
-                                </a>
-                            </li>
-                        </ul>
-                    </div>
+                <div>
+                    <h5
+                        style={{
+                            fontSize: "0.75rem",
+                            fontWeight: 600,
+                            marginBottom: "1rem",
+                            letterSpacing: "1.5px",
+                            textTransform: "uppercase",
+                        }}
+                    >
+                        Shop
+                    </h5>
+                    <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
+                        <li style={{ marginBottom: "0.625rem" }}>
+                            <a href="#products" style={{ color: "#666", textDecoration: "none", fontSize: "0.8125rem", transition: "color 0.2s" }}>
+                                All Products
+                            </a>
+                        </li>
+                        <li style={{ marginBottom: "0.625rem" }}>
+                            <a href="#categories" style={{ color: "#666", textDecoration: "none", fontSize: "0.8125rem", transition: "color 0.2s" }}>
+                                Categories
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h5
+                        style={{
+                            fontSize: "0.75rem",
+                            fontWeight: 600,
+                            marginBottom: "1rem",
+                            letterSpacing: "1.5px",
+                            textTransform: "uppercase",
+                        }}
+                    >
+                        Support
+                    </h5>
+                    <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
+                        <li style={{ marginBottom: "0.625rem" }}>
+                            <a href="#contact" style={{ color: "#666", textDecoration: "none", fontSize: "0.8125rem", transition: "color 0.2s" }}>
+                                Contact Us
+                            </a>
+                        </li>
+                        <li style={{ marginBottom: "0.625rem" }}>
+                            <a href="#faq" style={{ color: "#666", textDecoration: "none", fontSize: "0.8125rem", transition: "color 0.2s" }}>
+                                FAQ
+                            </a>
+                        </li>
+                    </ul>
                 </div>
             </div>
 
             <div
                 style={{
-                    marginTop: "2rem",
-                    paddingTop: "1rem",
-                    borderTop: "1px solid rgba(255,255,255,0.1)",
+                    marginTop: "3rem",
+                    paddingTop: "2rem",
+                    borderTop: "1px solid rgba(0,0,0,0.08)",
                     textAlign: "center",
-                    color: "rgba(255,255,255,0.5)",
-                    fontSize: "0.875rem",
+                    color: "#999",
+                    fontSize: "0.75rem",
                 }}
             >
                 © {new Date().getFullYear()} {storeName}. Powered by Vendly.

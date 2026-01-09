@@ -67,6 +67,12 @@ PLASMIC.registerComponent(ProductsGrid, {
             min: 1,
             max: 100,
         },
+        sectionTitle: {
+            type: "string",
+            displayName: "Section Title",
+            description: "Title displayed above the product grid",
+            defaultValue: "SHOP THE COLLECTION",
+        },
     },
 });
 
@@ -86,6 +92,11 @@ PLASMIC.registerComponent(StoreHeader, {
             displayName: "Show Cart Icon",
             description: "Whether to display the shopping cart icon",
             defaultValue: true,
+        },
+        backgroundImage: {
+            type: "imageUrl",
+            displayName: "Background Image",
+            description: "Optional background image for the header",
         },
     },
 });
@@ -122,6 +133,11 @@ PLASMIC.registerComponent(HeroSection, {
             displayName: "CTA Link",
             description: "Call-to-action button link",
             defaultValue: "#products",
+        },
+        backgroundImage: {
+            type: "imageUrl",
+            displayName: "Background Image",
+            description: "Background image for the hero section",
         },
     },
 });

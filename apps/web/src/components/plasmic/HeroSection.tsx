@@ -24,6 +24,7 @@ interface HeroSectionProps {
     subtitle?: string;
     ctaText?: string;
     ctaLink?: string;
+    backgroundImage?: string;
     className?: string;
 }
 
@@ -37,6 +38,7 @@ export function HeroSection({
     subtitle,
     ctaText = "Shop Now",
     ctaLink = "#products",
+    backgroundImage,
     className,
 }: HeroSectionProps) {
     const { data: store, isLoading } = usePlasmicQueryData<StoreData>(
@@ -79,104 +81,165 @@ export function HeroSection({
     const heroTitle = title || store?.content?.heroTitle || store?.name || "Welcome";
     const heroSubtitle = subtitle || store?.content?.heroSubtitle || "Discover our curated collection of premium products.";
     const heroLabel = store?.content?.heroLabel || "New Collection";
-    const heroImageUrl = store?.content?.heroImageUrl;
+    const heroImageUrl = backgroundImage || store?.content?.heroImageUrl;
 
     return (
-        <section
-            className={className}
-            style={{
-                minHeight: "60vh",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                padding: "4rem 2rem",
-                backgroundColor: backgroundColor,
-                backgroundImage: heroImageUrl ? `url(${heroImageUrl})` : undefined,
-                backgroundSize: "cover",
-                backgroundPosition: "center",
-                position: "relative",
-            }}
-        >
-            {heroImageUrl && (
-                <div
-                    style={{
-                        position: "absolute",
-                        inset: 0,
-                        backgroundColor: "rgba(0,0,0,0.4)",
-                    }}
-                />
-            )}
-            <div
+        <>
+            <style jsx>{`
+                @media (max-width: 768px) {
+                    .hero-section {
+                        min-height: 60vh !important;
+                    }
+                    .hero-content {
+                        padding: 2rem 1.5rem !important;
+                    }
+                    .hero-label {
+                        font-size: 0.625rem !important;
+                        letter-spacing: 1.5px !important;
+                        margin-bottom: 1rem !important;
+                    }
+                    .hero-title {
+                        font-size: 2.5rem !important;
+                        line-height: 1.1 !important;
+                        margin-bottom: 1rem !important;
+                    }
+                    .hero-subtitle {
+                        font-size: 0.875rem !important;
+                        margin-bottom: 2rem !important;
+                        max-width: 100% !important;
+                    }
+                    .hero-cta {
+                        padding: 0.875rem 2rem !important;
+                        font-size: 0.75rem !important;
+                        letter-spacing: 1px !important;
+                    }
+                }
+            `}</style>
+            <section
+                className={`hero-section ${className || ''}`}
                 style={{
+                    minHeight: "75vh",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    padding: "0",
+                    backgroundColor: "#f5f1ed",
+                    backgroundImage: heroImageUrl ? `url(${heroImageUrl})` : undefined,
+                    backgroundSize: "cover",
+                    backgroundPosition: "center",
                     position: "relative",
-                    textAlign: "center",
-                    maxWidth: "800px",
+                    overflow: "hidden",
                 }}
             >
-                <span
+                {heroImageUrl && (
+                    <div
+                        style={{
+                            position: "absolute",
+                            inset: 0,
+                            backgroundColor: "rgba(0,0,0,0.1)",
+                        }}
+                    />
+                )}
+                <div
+                    className="hero-content"
                     style={{
-                        display: "inline-block",
-                        padding: "0.5rem 1rem",
-                        backgroundColor: secondaryColor,
-                        color: "#fff",
-                        borderRadius: "9999px",
-                        fontSize: "0.75rem",
-                        fontWeight: 600,
-                        textTransform: "uppercase",
-                        letterSpacing: "0.05em",
-                        marginBottom: "1.5rem",
+                        position: "relative",
+                        textAlign: "center",
+                        maxWidth: "900px",
+                        padding: "4rem 2rem",
                     }}
                 >
-                    {heroLabel}
-                </span>
-                <h1
-                    style={{
-                        fontSize: "3rem",
-                        fontWeight: 700,
-                        color: heroImageUrl ? "#fff" : textColor,
-                        marginBottom: "1rem",
-                        lineHeight: 1.2,
-                    }}
-                >
-                    {heroTitle}
-                </h1>
-                <p
-                    style={{
-                        fontSize: "1.25rem",
-                        color: heroImageUrl ? "rgba(255,255,255,0.9)" : "#6b7280",
-                        marginBottom: "2rem",
-                        maxWidth: "600px",
-                        marginLeft: "auto",
-                        marginRight: "auto",
-                    }}
-                >
-                    {heroSubtitle}
-                </p>
-                <a
-                    href={ctaLink}
-                    style={{
-                        display: "inline-block",
-                        padding: "1rem 2.5rem",
-                        backgroundColor: primaryColor,
-                        color: "#fff",
-                        borderRadius: "0.5rem",
-                        textDecoration: "none",
-                        fontWeight: 600,
-                        fontSize: "1rem",
-                        transition: "transform 0.2s, box-shadow 0.2s",
-                    }}
-                    onMouseEnter={(e) => {
-                        e.currentTarget.style.transform = "translateY(-2px)";
-                        e.currentTarget.style.boxShadow = "0 4px 12px rgba(0,0,0,0.2)";
-                    }}
-                    onMouseLeave={(e) => {
-                        e.currentTarget.style.transform = "translateY(0)";
-                        e.currentTarget.style.boxShadow = "none";
-                    }}
-                >
-                    {ctaText}
-                </a>
-            </div>
-        </section>
+                    {/* Small Label */}
+                    <span
+                        className="hero-label"
+                        style={{
+                            display: "inline-block",
+                            fontSize: "0.75rem",
+                            fontWeight: 500,
+                            textTransform: "uppercase",
+                            letterSpacing: "2px",
+                            color: heroImageUrl ? "#fff" : "#666",
+                            marginBottom: "1.5rem",
+                        }}
+                    >
+                        {heroLabel}
+                    </span>
+
+                    {/* Large Stylized Title */}
+                    <h1
+                        className="hero-title"
+                        style={{
+                            fontSize: "5.5rem",
+                            fontWeight: 300,
+                            fontStyle: "italic",
+                            color: heroImageUrl ? "#fff" : textColor,
+                            marginBottom: "1.5rem",
+                            lineHeight: 0.95,
+                            fontFamily: "'Playfair Display', Georgia, serif",
+                            textShadow: heroImageUrl ? "0 2px 20px rgba(0,0,0,0.3)" : "none",
+                        }}
+                    >
+                        {heroTitle}
+                    </h1>
+
+                    {/* Subtitle */}
+                    <p
+                        className="hero-subtitle"
+                        style={{
+                            fontSize: "0.9375rem",
+                            color: heroImageUrl ? "rgba(255,255,255,0.95)" : "#666",
+                            marginBottom: "2.5rem",
+                            maxWidth: "500px",
+                            marginLeft: "auto",
+                            marginRight: "auto",
+                            letterSpacing: "0.5px",
+                            fontWeight: 400,
+                        }}
+                    >
+                        {heroSubtitle}
+                    </p>
+
+                    {/* CTA Button */}
+                    <a
+                        href={ctaLink}
+                        className="hero-cta"
+                        style={{
+                            display: "inline-block",
+                            padding: "1rem 3rem",
+                            backgroundColor: heroImageUrl ? "#fff" : primaryColor,
+                            color: heroImageUrl ? "#1a1a1a" : "#fff",
+                            borderRadius: "2px",
+                            textDecoration: "none",
+                            fontWeight: 500,
+                            fontSize: "0.8125rem",
+                            letterSpacing: "1.5px",
+                            textTransform: "uppercase",
+                            transition: "all 0.3s ease",
+                            border: heroImageUrl ? "1px solid #fff" : `1px solid ${primaryColor}`,
+                        }}
+                        onMouseEnter={(e) => {
+                            if (heroImageUrl) {
+                                e.currentTarget.style.backgroundColor = "transparent";
+                                e.currentTarget.style.color = "#fff";
+                            } else {
+                                e.currentTarget.style.backgroundColor = "transparent";
+                                e.currentTarget.style.color = primaryColor;
+                            }
+                        }}
+                        onMouseLeave={(e) => {
+                            if (heroImageUrl) {
+                                e.currentTarget.style.backgroundColor = "#fff";
+                                e.currentTarget.style.color = "#1a1a1a";
+                            } else {
+                                e.currentTarget.style.backgroundColor = primaryColor;
+                                e.currentTarget.style.color = "#fff";
+                            }
+                        }}
+                    >
+                        {ctaText}
+                    </a>
+                </div>
+            </section>
+        </>
     );
 }
