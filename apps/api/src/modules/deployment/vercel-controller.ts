@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { vercelDeploymentService } from "../services/vercel-deployment-service";
+import { vercelDeploymentService } from "./vercel-service";
 
 export const vercelDeploymentController = {
   /**
@@ -11,34 +11,9 @@ export const vercelDeploymentController = {
       res.json({ tenants });
     } catch (error) {
       console.error("Error listing tenants:", error);
-      res.status(500).json({ 
-        error: error instanceof Error ? error.message : "Failed to list tenants" 
-      });
-    }
-  },
-
-  /**
-   * Fetch files from v0 for a specific tenant
-   */
-  async fetchFiles(req: Request, res: Response): Promise<void> {
-    try {
-      const { slug } = req.params;
-      
-      if (!slug) {
-        res.status(400).json({ error: "slug is required" });
-        return;
-      }
-      
-      const files = await vercelDeploymentService.fetchAndSaveFilesForTenant(slug);
-      res.json({ 
-        slug, 
-        filesCount: files.length,
-        files: files.map(f => ({ name: f.name, contentLength: f.content.length }))
-      });
-    } catch (error) {
-      console.error("Error fetching files:", error);
-      res.status(500).json({ 
-        error: error instanceof Error ? error.message : "Failed to fetch files" 
+      res.status(500).json({
+        error:
+          error instanceof Error ? error.message : "Failed to list tenants",
       });
     }
   },
@@ -49,20 +24,19 @@ export const vercelDeploymentController = {
   async deployTenant(req: Request, res: Response): Promise<void> {
     try {
       const { slug } = req.params;
-      
+
       if (!slug) {
         res.status(400).json({ error: "slug is required" });
         return;
       }
-      
+
       const result = await vercelDeploymentService.deployTenant(slug);
-      
+
       if (result.success) {
         res.json({
           success: true,
           slug,
           domain: result.domain,
-          filesCount: result.files?.length || 0,
         });
       } else {
         res.status(500).json({
@@ -73,8 +47,9 @@ export const vercelDeploymentController = {
       }
     } catch (error) {
       console.error("Error deploying tenant:", error);
-      res.status(500).json({ 
-        error: error instanceof Error ? error.message : "Failed to deploy tenant" 
+      res.status(500).json({
+        error:
+          error instanceof Error ? error.message : "Failed to deploy tenant",
       });
     }
   },
@@ -88,8 +63,11 @@ export const vercelDeploymentController = {
       res.json(result);
     } catch (error) {
       console.error("Error deploying all tenants:", error);
-      res.status(500).json({ 
-        error: error instanceof Error ? error.message : "Failed to deploy all tenants" 
+      res.status(500).json({
+        error:
+          error instanceof Error
+            ? error.message
+            : "Failed to deploy all tenants",
       });
     }
   },
@@ -100,14 +78,15 @@ export const vercelDeploymentController = {
   async addSubdomain(req: Request, res: Response): Promise<void> {
     try {
       const { subdomain } = req.body;
-      
+
       if (!subdomain) {
         res.status(400).json({ error: "subdomain is required" });
         return;
       }
-      
-      const result = await vercelDeploymentService.addSubdomainToVercel(subdomain);
-      
+
+      const result =
+        await vercelDeploymentService.addSubdomainToVercel(subdomain);
+
       if (result.success) {
         res.json({
           success: true,
@@ -121,8 +100,9 @@ export const vercelDeploymentController = {
       }
     } catch (error) {
       console.error("Error adding subdomain:", error);
-      res.status(500).json({ 
-        error: error instanceof Error ? error.message : "Failed to add subdomain" 
+      res.status(500).json({
+        error:
+          error instanceof Error ? error.message : "Failed to add subdomain",
       });
     }
   },
