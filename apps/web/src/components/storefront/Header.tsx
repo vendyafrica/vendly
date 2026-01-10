@@ -6,13 +6,13 @@ import { useCart } from "./CartProvider";
 import { Search, ShoppingCart, Menu, X, User, ChevronDown, Heart } from "lucide-react";
 
 interface ThemeProps {
-  primaryColor: string;
-  secondaryColor: string;
-  accentColor: string;
-  backgroundColor: string;
-  textColor: string;
-  headingFont: string;
-  bodyFont: string;
+  primaryColor?: string;
+  secondaryColor?: string;
+  accentColor?: string;
+  backgroundColor?: string;
+  textColor?: string;
+  headingFont?: string;
+  bodyFont?: string;
 }
 
 interface HeaderProps {

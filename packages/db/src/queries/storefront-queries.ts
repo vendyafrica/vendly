@@ -20,7 +20,6 @@ import {
   categories,
   type Category
 } from "../schema/category-schema";
-import { tenants } from "../schema/core-schema";
 
 // Store queries
 export async function getStoreBySlug(slug: string): Promise<Store | undefined> {

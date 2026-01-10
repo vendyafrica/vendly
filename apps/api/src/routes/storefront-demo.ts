@@ -171,17 +171,20 @@ router.post("/create-demo", async (req: Request, res: Response) => {
             await db.insert(storeContent).values({
                 tenantId: tenantId!,
                 storeId: storeId!,
-                heroLabel: "New Collection",
-                heroTitle: `Welcome to ${name}`,
-                heroSubtitle: "Discover our premium collection.",
-                heroCta: "Shop Now",
+                data: {
+                    heroLabel: "New Collection",
+                    heroTitle: `Welcome to ${name}`,
+                    heroSubtitle: "Discover our premium collection.",
+                    heroCta: "Shop Now",
+                },
             });
         }
-
-        res.json({ success: true, slug, message: "Store created/updated successfully" });
-
+        res.status(200).json({
+            error: false,
+            message: "Demo store created successfully",
+        });
     } catch (error) {
-        console.error("[Create Demo] Error:", error);
+        console.error("[Create Demo] Error creating demo store:", error);
         res.status(500).json({ error: true, message: "Failed to create demo store" });
     }
 });
@@ -219,7 +222,10 @@ router.get("/:slug", async (req: Request, res: Response) => {
                 .limit(1);
 
             // Fetch an image from the demo folder to use as hero background if not set
-            let heroImageUrl = content?.heroImageUrl;
+            // The content.data is jsonb, so we cast it to any to access properties
+            const contentData = (content?.data || {}) as Record<string, any>;
+            let heroImageUrl = contentData.heroImageUrl;
+
             if (!heroImageUrl) {
                 try {
                     const result = await list({ prefix: "demo/", limit: 1 });
@@ -233,9 +239,9 @@ router.get("/:slug", async (req: Request, res: Response) => {
                 slug: store.slug,
                 description: store.description,
                 logoUrl: store.logoUrl,
-                theme: theme || {}, // Return empty object if no theme found, frontend defaults handle it
+                theme: theme || {},
                 content: {
-                    ...content,
+                    ...contentData,
                     heroImageUrl,
                 }
             });

@@ -2,17 +2,17 @@ import Link from "next/link";
 import { Facebook, Twitter, Instagram, Youtube } from "lucide-react";
 
 interface ThemeProps {
-  primaryColor: string;
-  secondaryColor: string;
-  accentColor: string;
-  backgroundColor: string;
-  textColor: string;
-  headingFont: string;
-  bodyFont: string;
+  primaryColor?: string;
+  secondaryColor?: string;
+  accentColor?: string;
+  backgroundColor?: string;
+  textColor?: string;
+  headingFont?: string;
+  bodyFont?: string;
 }
 
 interface ContentProps {
-  newsletterTitle: string;
+  newsletterTitle?: string;
   newsletterSubtitle?: string | null;
 }
 

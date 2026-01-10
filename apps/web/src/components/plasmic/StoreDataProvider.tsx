@@ -18,13 +18,7 @@ interface StoreData {
         headingFont: string;
         bodyFont: string;
     };
-    content: {
-        heroLabel?: string;
-        heroTitle?: string;
-        heroSubtitle?: string;
-        heroCta?: string;
-        heroImageUrl?: string;
-    };
+    content: Record<string, any>;
 }
 
 interface StoreDataProviderProps {

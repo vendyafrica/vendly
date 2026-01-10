@@ -8,3 +8,5 @@ export { ProductGrid } from "./ProductGrid";
 export { StoreLayout } from "./StoreLayout";
 export { Footer } from "./Footer";
 export { FeaturedSections } from "./FeaturedSections";
+export { StorefrontHome } from "./StorefrontHome";
+export { StorefrontStandardTemplate } from "./templates/StorefrontStandardTemplate";

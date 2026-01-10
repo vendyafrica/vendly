@@ -4,7 +4,7 @@ import { useSearchParams } from "next/navigation";
 import { Suspense } from "react";
 import { CartProvider } from "@/components/storefront";
 import { CartDrawer } from "@/components/storefront";
-import { PlasmicStorefrontTemplate } from "@/components/plasmic/PlasmicStorefrontTemplate";
+import { PlasmicStorefrontTemplate } from "@/legacy/plasmic";
 
 /**
  * Demo page that renders the Plasmic storefront template programmatically.

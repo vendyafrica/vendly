@@ -1,9 +1,13 @@
-import { PlasmicStorefrontTemplate } from "../plasmic/PlasmicStorefrontTemplate";
-import { PlasmicStorefrontMinimal } from "./PlasmicStorefrontMinimal";
+import { PlasmicStorefrontTemplate, PlasmicStorefrontMinimal } from "@/legacy/plasmic";
 
 export type TemplateName = "standard" | "minimal";
 
-export const TEMPLATES: Record<string, React.ComponentType<any>> = {
+type StorefrontTemplateProps = {
+    storeSlug: string;
+    heroBackgroundImage?: string;
+};
+
+export const TEMPLATES: Record<string, React.ComponentType<StorefrontTemplateProps>> = {
     standard: PlasmicStorefrontTemplate,
     minimal: PlasmicStorefrontMinimal,
     // Add more templates here

@@ -1,5 +1,6 @@
 export * from "./schema/index";
-export * from "./queries/v0-clone-queries";
 export * from "./queries/tenant-queries";
 export * from "./queries/storefront-queries";
+export * from "./queries/storefront-config-queries";
+export * from "./queries/storefront-data-queries";
 export { db } from "./db";

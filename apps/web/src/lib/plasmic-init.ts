@@ -6,9 +6,6 @@ import { HeroSection } from "../components/plasmic/HeroSection";
 import { FooterSection } from "../components/plasmic/FooterSection";
 
 // Initialize Plasmic with project credentials
-// Get these from your Plasmic project:
-// - Project ID: from URL https://studio.plasmic.app/projects/PROJECTID
-// - API Token: click "Code" button in Plasmic Studio toolbar
 export const PLASMIC = initPlasmicLoader({
     projects: [
         {

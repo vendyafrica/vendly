@@ -9,21 +9,21 @@ interface Store {
 }
 
 interface ThemeProps {
-  primaryColor: string;
-  secondaryColor: string;
-  accentColor: string;
-  backgroundColor: string;
-  textColor: string;
-  headingFont: string;
-  bodyFont: string;
+  primaryColor?: string;
+  secondaryColor?: string;
+  accentColor?: string;
+  backgroundColor?: string;
+  textColor?: string;
+  headingFont?: string;
+  bodyFont?: string;
 }
 
 interface ContentProps {
-  heroLabel: string;
-  heroTitle: string | null;
-  heroSubtitle: string | null;
-  heroCta: string;
-  heroImageUrl: string | null;
+  heroLabel?: string;
+  heroTitle?: string | null;
+  heroSubtitle?: string | null;
+  heroCta?: string;
+  heroImageUrl?: string | null;
 }
 
 interface HeroSectionProps {

@@ -13,6 +13,19 @@ import { tenants, users } from "./core-schema";
 import { categories } from "./category-schema";
 import { products, instagramMedia } from "./product-schema";
 
+// Featured section configuration type
+export interface FeaturedSectionConfig {
+  id: string;
+  type: "products" | "categories" | "instagram" | "custom";
+  title: string;
+  subtitle?: string;
+  items: any[]; // Could be products, categories, or custom content
+  layout?: "grid" | "list" | "carousel";
+  autoplay?: boolean;
+  showMore?: boolean;
+  maxItems?: number;
+}
+
 export const storeStatus = pgEnum("store_status", ["active", "suspended", "draft"]);
 export const storeRole = pgEnum("store_role", ["store_owner", "manager", "seller", "viewer"]);
 
@@ -26,8 +39,8 @@ export const stores = pgTable(
     name: text("name").notNull(),
     slug: text("slug").notNull(),
     description: text("description"),
-    logoUrl: text("logo_url"), 
-    coverUrl: text("cover_url"), 
+    logoUrl: text("logo_url"),
+    coverUrl: text("cover_url"),
 
     status: storeStatus("status").notNull().default("draft"),
     defaultCurrency: text("default_currency").default("KES").notNull(),
@@ -57,7 +70,7 @@ export const storeMemberships = pgTable(
     userId: text("user_id")
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
-    role: storeRole("role").notNull().default("viewer"),
+    role: storeRole("role").notNull(),
 
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at")
@@ -88,13 +101,7 @@ export const storeThemes = pgTable(
     presetName: text("preset_name"),
     customCssVars: jsonb("custom_css_vars"),
 
-    primaryColor: text("primary_color").default("#1a1a2e"),
-    secondaryColor: text("secondary_color").default("#4a6fa5"),
-    accentColor: text("accent_color").default("#ffffff"),
-    backgroundColor: text("background_color").default("#ffffff"),
-    textColor: text("text_color").default("#1a1a2e"),
-    headingFont: text("heading_font").default("Inter"),
-    bodyFont: text("body_font").default("Inter"),
+    themeConfig: jsonb("theme_config"), 
 
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at")
@@ -119,22 +126,17 @@ export const storeContent = pgTable(
       .notNull()
       .unique()
       .references(() => stores.id, { onDelete: "cascade" }),
-
-    // Configs
-    pageData: jsonb("page_data"), // Puck editor data
-    heroConfig: jsonb("hero_config"),
-    footerConfig: jsonb("footer_config"),
-
-    // Legacy/Simple fields
-    heroLabel: text("hero_label").default("Urban Style"),
+    data: jsonb("data"),
+    pageData: jsonb("page_data"), // For Puck editor page data
+    heroLabel: text("hero_label"),
     heroTitle: text("hero_title"),
     heroSubtitle: text("hero_subtitle"),
-    heroCta: text("hero_cta").default("Discover Now"),
+    heroCta: text("hero_cta"),
     heroImageUrl: text("hero_image_url"),
-    featuredSections: jsonb("featured_sections"),
+    featuredSections: jsonb("featured_sections"), // Array of FeaturedSectionConfig
     footerDescription: text("footer_description"),
-    newsletterTitle: text("newsletter_title").default("Subscribe to our newsletter"),
-    newsletterSubtitle: text("newsletter_subtitle").default("Get the latest updates on new products and upcoming sales"),
+    newsletterTitle: text("newsletter_title"),
+    newsletterSubtitle: text("newsletter_subtitle"),
 
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at")
@@ -148,13 +150,6 @@ export const storeContent = pgTable(
   ]
 );
 
-export interface FeaturedSectionConfig {
-  id: string;
-  type: string;
-  title: string;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  data: any;
-}
 
 // Relations
 export const storesRelations = relations(stores, ({ many, one }) => ({
