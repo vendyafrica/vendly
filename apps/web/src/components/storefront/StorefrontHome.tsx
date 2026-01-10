@@ -25,6 +25,14 @@ function getString(value: unknown): string | undefined {
   return typeof value === "string" ? value : undefined;
 }
 
+function isLikelyImageUrl(url: string) {
+  const trimmed = url.trim();
+  if (!trimmed) return false;
+  if (trimmed.endsWith("/")) return false;
+  const lower = trimmed.toLowerCase();
+  return lower.endsWith(".jpg") || lower.endsWith(".jpeg") || lower.endsWith(".png") || lower.endsWith(".webp") || lower.endsWith(".gif");
+}
+
 function buildCssVars(theme: unknown): React.CSSProperties {
   const t: ThemeLike | undefined = isRecord(theme) ? (theme as ThemeLike) : undefined;
   const cssVars: Record<string, string> = t?.customCssVars ?? {};
@@ -88,7 +96,10 @@ export function StorefrontHome({ storeSlug }: { storeSlug: string }) {
   const contentObj: ContentLike = isRecord(store.content) ? (store.content as ContentLike) : ({} as ContentLike);
 
   const coverImageUrl =
-    getString(contentObj.heroImageUrl) ??
+    (() => {
+      const u = getString(contentObj.heroImageUrl);
+      return u && isLikelyImageUrl(u) ? u : undefined;
+    })() ??
     products.find((p) => !!p.imageUrl)?.imageUrl ??
     null;
 

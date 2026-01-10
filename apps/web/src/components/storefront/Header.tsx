@@ -1,9 +1,8 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
 import { useCart } from "./CartProvider";
-import { Search, ShoppingCart, Menu, X, User, ChevronDown, Heart } from "lucide-react";
+import { ShoppingCart, User, Heart } from "lucide-react";
 
 interface ThemeProps {
   primaryColor?: string;
@@ -23,7 +22,6 @@ interface HeaderProps {
 }
 
 export function Header({ storeSlug, storeName, theme, overlay }: HeaderProps) {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { toggleCart, totalItems } = useCart();
 
   // Use theme colors or fallback to defaults
@@ -31,10 +29,8 @@ export function Header({ storeSlug, storeName, theme, overlay }: HeaderProps) {
   const textColor = "var(--primary-foreground, #ffffff)";
 
   const navItems = [
-    { label: "Home", href: `/${storeSlug}`, hasDropdown: false },
-    { label: "Pages", href: `/${storeSlug}/pages`, hasDropdown: true },
-    { label: "Blog", href: `/${storeSlug}/blog`, hasDropdown: true },
-    { label: "Shop", href: `/${storeSlug}/products`, hasDropdown: true },
+    { label: "Men", href: `/${storeSlug}/products?collection=men` },
+    { label: "Women", href: `/${storeSlug}/products?collection=women` },
   ];
 
   return (
@@ -51,7 +47,7 @@ export function Header({ storeSlug, storeName, theme, overlay }: HeaderProps) {
       <div className="container mx-auto px-4 lg:px-8">
         <div className="flex h-16 items-center justify-between">
           {/* Left Navigation */}
-          <nav className="hidden lg:flex items-center space-x-8">
+          <nav className="flex items-center gap-6">
             {navItems.map((item) => (
               <Link
                 key={item.label}
@@ -64,7 +60,6 @@ export function Header({ storeSlug, storeName, theme, overlay }: HeaderProps) {
                 onMouseLeave={(e) => (e.currentTarget.style.color = overlay ? "rgba(255,255,255,0.90)" : "var(--primary-foreground, rgba(255,255,255,0.90))")}
               >
                 {item.label}
-                {item.hasDropdown && <ChevronDown className="h-3.5 w-3.5" />}
               </Link>
             ))}
           </nav>
@@ -84,19 +79,9 @@ export function Header({ storeSlug, storeName, theme, overlay }: HeaderProps) {
 
           {/* Right Actions */}
           <div className="flex items-center space-x-5 ml-auto">
-            {/* Search */}
-            <button 
-              className="transition-colors"
-              style={{ color: overlay ? "rgba(255,255,255,0.90)" : "rgba(255,255,255,0.90)" }}
-              onMouseEnter={(e) => (e.currentTarget.style.color = textColor)}
-              onMouseLeave={(e) => (e.currentTarget.style.color = overlay ? "rgba(255,255,255,0.90)" : "rgba(255,255,255,0.90)")}
-            >
-              <Search className="h-5 w-5" />
-            </button>
-
             {/* Wishlist */}
             <button 
-              className="hidden sm:block transition-colors"
+              className="transition-colors"
               style={{ color: overlay ? "rgba(255,255,255,0.90)" : "rgba(255,255,255,0.90)" }}
               onMouseEnter={(e) => (e.currentTarget.style.color = textColor)}
               onMouseLeave={(e) => (e.currentTarget.style.color = overlay ? "rgba(255,255,255,0.90)" : "rgba(255,255,255,0.90)")}
@@ -106,7 +91,7 @@ export function Header({ storeSlug, storeName, theme, overlay }: HeaderProps) {
 
             {/* User */}
             <button 
-              className="hidden sm:block transition-colors"
+              className="transition-colors"
               style={{ color: overlay ? "rgba(255,255,255,0.90)" : "rgba(255,255,255,0.90)" }}
               onMouseEnter={(e) => (e.currentTarget.style.color = textColor)}
               onMouseLeave={(e) => (e.currentTarget.style.color = overlay ? "rgba(255,255,255,0.90)" : "rgba(255,255,255,0.90)")}
@@ -135,42 +120,8 @@ export function Header({ storeSlug, storeName, theme, overlay }: HeaderProps) {
                 </span>
               )}
             </button>
-
-            {/* Mobile Menu Toggle */}
-            <button 
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="lg:hidden transition-colors"
-              style={{ color: overlay ? "rgba(255,255,255,0.90)" : "rgba(255,255,255,0.90)" }}
-              onMouseEnter={(e) => (e.currentTarget.style.color = textColor)}
-              onMouseLeave={(e) => (e.currentTarget.style.color = overlay ? "rgba(255,255,255,0.90)" : "rgba(255,255,255,0.90)")}
-            >
-              {isMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-            </button>
           </div>
         </div>
-
-        {/* Mobile Navigation */}
-        {isMenuOpen && (
-          <nav 
-            className="lg:hidden py-4"
-            style={{ borderTop: overlay ? "1px solid rgba(255,255,255,0.18)" : "1px solid rgba(255,255,255,0.18)" }}
-          >
-            <div className="flex flex-col space-y-3">
-              {navItems.map((item) => (
-                <Link
-                  key={item.label}
-                  href={item.href}
-                  className="flex items-center justify-between text-sm font-medium py-2"
-                  style={{ color: overlay ? "rgba(255,255,255,0.90)" : "rgba(255,255,255,0.90)" }}
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  {item.label}
-                  {item.hasDropdown && <ChevronDown className="h-4 w-4" />}
-                </Link>
-              ))}
-            </div>
-          </nav>
-        )}
       </div>
     </header>
   );

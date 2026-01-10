@@ -61,11 +61,13 @@ export function StorefrontStandardTemplate({
   content?: StoreContent;
   products: Product[];
 }) {
-  const coverImageUrl = getString((content as unknown as Record<string, unknown> | undefined)?.heroImageUrl) ?? null;
+  const contentHeroImageUrl = getString((content as unknown as Record<string, unknown> | undefined)?.heroImageUrl);
   const featuredImages = products
     .map((p) => p.imageUrl)
     .filter((u): u is string => typeof u === "string" && u.length > 0)
     .slice(0, 6);
+
+  const coverImageUrl = contentHeroImageUrl || featuredImages[0] || null;
 
   return (
     <div
@@ -80,14 +82,27 @@ export function StorefrontStandardTemplate({
         {coverImageUrl && (
           <div
             className="absolute inset-0 bg-cover bg-center"
-            style={{ backgroundImage: `url(${coverImageUrl})` }}
+            style={{
+              backgroundImage: `url(${coverImageUrl})`,
+              filter: "saturate(115%) contrast(105%)",
+              transform: "scale(1.02)",
+            }}
+          />
+        )}
+        {!coverImageUrl && (
+          <div
+            className="absolute inset-0"
+            style={{
+              background:
+                "radial-gradient(1200px 400px at 20% 10%, rgba(255,255,255,0.12) 0%, rgba(0,0,0,0) 60%), linear-gradient(to bottom, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.25) 100%), var(--primary, #111111)",
+            }}
           />
         )}
         <div
           className="absolute inset-0"
           style={{
             background:
-              "linear-gradient(to bottom, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.55) 35%, rgba(0,0,0,0.25) 100%)",
+              "linear-gradient(to bottom, rgba(0,0,0,0.35) 0%, rgba(0,0,0,0.55) 60%, rgba(0,0,0,0.20) 100%)",
           }}
         />
 

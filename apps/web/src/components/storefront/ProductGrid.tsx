@@ -36,8 +36,19 @@ export function ProductGrid({ storeSlug, products, showViewAll = true }: Product
   const displayedProducts = products.slice(0, 8);
 
   return (
-    <div className="bg-white pb-16">
+    <div className="pb-16" style={{ backgroundColor: "var(--background, #ffffff)" }}>
       <div className="container mx-auto px-4 lg:px-8">
+        <div className="pt-12 pb-8">
+          <h2
+            className="text-xl md:text-2xl font-semibold tracking-tight"
+            style={{
+              color: "var(--foreground, #111111)",
+              fontFamily: "var(--font-heading, inherit)",
+            }}
+          >
+            Featured Collections
+          </h2>
+        </div>
         {/* Product Grid - 4 columns on desktop, 2 on mobile */}
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 md:gap-8">
           {displayedProducts.map((product) => (
