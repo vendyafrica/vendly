@@ -48,6 +48,32 @@ export interface InstagramWebhookEntry {
     id: string;
     time: number;
     changes?: any[];
+    messaging?: InstagramMessagingEvent[];
+}
+
+export interface InstagramMessagingEvent {
+    sender: { id: string };
+    recipient: { id: string };
+    timestamp: number;
+    message?: InstagramMessage;
+}
+
+export interface InstagramMessage {
+    mid: string;
+    text?: string;
+    attachments?: InstagramAttachment[];
+    is_echo?: boolean;
+}
+
+export interface InstagramAttachment {
+    type: "image" | "video" | "audio" | "file" | "share" | "story_mention" | "ig_post";
+    payload: InstagramSharePayload | any;
+}
+
+export interface InstagramSharePayload {
+    url: string;
+    ig_post_media_id?: string; // specific to ig_post
+    title?: string;
 }
 
 export interface InstagramWebhookPayload {
@@ -143,7 +169,7 @@ export function generateProductTitle(caption?: string, instagramId?: string): st
  */
 export function sanitizeCaption(caption?: string): string | null {
     if (!caption || caption.trim().length === 0) return null;
-    
+
     // Remove excessive hashtags and clean up
     return caption
         .replace(/#[\w]+/g, "") // Remove hashtags

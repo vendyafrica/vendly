@@ -1,10 +1,7 @@
-/**
- * Instagram Service (Updated with Query Repository)
- * Handles business logic for Instagram integration
- */
+
 import { uploadService } from "../storage/blob-service";
 import { createInstagramQueries } from "../../../../../packages/db/src/queries/instagram-queries";
-import type { DbClient } from "../db/db-client";
+import { edgeDb } from "@vendly/db";
 import {
     InstagramAPIResponse,
     InstagramMediaItem,
@@ -21,7 +18,7 @@ export class InstagramService {
     private readonly MEDIA_FIELDS =
         "id,media_type,media_url,thumbnail_url,permalink,caption,timestamp";
 
-    constructor(private db: DbClient) {}
+    constructor(private db: typeof edgeDb) { }
 
     /**
      * Get queries instance
@@ -76,7 +73,7 @@ export class InstagramService {
         tenantSlug: string,
         instagramId: string,
         mediaType: string
-    ): Promise<string> {
+    ): Promise<{ url: string; pathname: string; contentType: string; sizeBytes: number; width?: number; height?: number }> {
         console.log(
             `[InstagramService] Uploading media ${instagramId} to Blob for ${tenantSlug}`
         );
@@ -104,7 +101,16 @@ export class InstagramService {
         );
 
         console.log(`[InstagramService] Media uploaded to Blob: ${result.url}`);
-        return result.url;
+
+        const sizeBytes = result.processedSize ?? result.originalSize ?? fileBuffer.length;
+        return {
+            url: result.url,
+            pathname: result.pathname,
+            contentType: result.contentType,
+            sizeBytes,
+            width: result.size?.width,
+            height: result.size?.height,
+        };
     }
 
     /**
@@ -136,11 +142,11 @@ export class InstagramService {
             for (const item of mediaItems) {
                 try {
                     // Check if media already exists
-                    const existingMedia = await queries.getMediaByInstagramId(item.id);
+                    const existingMedia = await queries.getMediaByInstagramId(tenant.id, item.id);
 
                     if (existingMedia) {
                         // Update existing media
-                        await queries.updateMediaByInstagramId(item.id, {
+                        await queries.updateMediaByInstagramId(tenant.id, item.id, {
                             caption: item.caption || null,
                             timestamp: new Date(item.timestamp),
                         });
@@ -150,22 +156,51 @@ export class InstagramService {
                     }
 
                     // Upload media to Blob storage
-                    const blobUrl = await this.uploadMediaToBlob(
+                    const uploaded = await this.uploadMediaToBlob(
                         item.media_url,
                         options.tenantSlug,
                         item.id,
                         item.media_type
                     );
 
+                    const mediaObject = await queries.createMediaObject({
+                        tenantId: tenant.id,
+                        blobUrl: uploaded.url,
+                        blobPathname: uploaded.pathname,
+                        contentType: uploaded.contentType,
+                        sizeBytes: uploaded.sizeBytes,
+                        width: uploaded.width,
+                        height: uploaded.height,
+                        isPublic: true,
+                        source: "instagram",
+                    });
+
                     // Upload thumbnail for videos
                     let thumbnailBlobUrl: string | null = null;
+                    let thumbnailMediaObjectId: string | null = null;
                     if (item.media_type === "VIDEO" && item.thumbnail_url) {
-                        thumbnailBlobUrl = await this.uploadMediaToBlob(
+                        const uploadedThumb = await this.uploadMediaToBlob(
                             item.thumbnail_url,
                             options.tenantSlug,
                             `${item.id}-thumb`,
                             "IMAGE"
                         );
+
+                        thumbnailBlobUrl = uploadedThumb.url;
+
+                        const thumbMediaObject = await queries.createMediaObject({
+                            tenantId: tenant.id,
+                            blobUrl: uploadedThumb.url,
+                            blobPathname: uploadedThumb.pathname,
+                            contentType: uploadedThumb.contentType,
+                            sizeBytes: uploadedThumb.sizeBytes,
+                            width: uploadedThumb.width,
+                            height: uploadedThumb.height,
+                            isPublic: true,
+                            source: "instagram",
+                        });
+
+                        thumbnailMediaObjectId = thumbMediaObject.id;
                     }
 
                     // Insert new media with Blob URL
@@ -174,8 +209,10 @@ export class InstagramService {
                         tenantId: tenant.id,
                         instagramId: item.id,
                         mediaType: item.media_type,
-                        mediaUrl: blobUrl,
+                        mediaUrl: uploaded.url,
                         thumbnailUrl: thumbnailBlobUrl,
+                        mediaObjectId: mediaObject.id,
+                        thumbnailMediaObjectId,
                         permalink: item.permalink,
                         caption: item.caption || null,
                         timestamp: new Date(item.timestamp),
@@ -199,12 +236,25 @@ export class InstagramService {
                     const imageUrl =
                         item.media_type === "VIDEO" && thumbnailBlobUrl
                             ? thumbnailBlobUrl
-                            : blobUrl;
+                            : uploaded.url;
 
                     await queries.addProductImage({
                         productId: newProduct.id,
                         url: imageUrl,
                         sortOrder: 0,
+                    });
+
+                    const featuredMediaObjectId =
+                        item.media_type === "VIDEO" && thumbnailMediaObjectId
+                            ? thumbnailMediaObjectId
+                            : mediaObject.id;
+
+                    await queries.linkMediaToProduct({
+                        tenantId: tenant.id,
+                        productId: newProduct.id,
+                        mediaId: featuredMediaObjectId,
+                        sortOrder: 0,
+                        isFeatured: true,
                     });
 
                     // Link media to product
@@ -300,6 +350,36 @@ export class InstagramService {
                 sortOrder: 0,
             });
 
+            const featuredMediaObjectId =
+                media.mediaType === "VIDEO" && media.thumbnailMediaObjectId
+                    ? media.thumbnailMediaObjectId
+                    : media.mediaObjectId;
+
+            if (featuredMediaObjectId) {
+                await queries.linkMediaToProduct({
+                    tenantId: tenant.id,
+                    productId: newProduct.id,
+                    mediaId: featuredMediaObjectId,
+                    sortOrder: 0,
+                    isFeatured: true,
+                });
+            } else {
+                const legacyMediaObject = await queries.createMediaObject({
+                    tenantId: tenant.id,
+                    blobUrl: imageUrl,
+                    isPublic: true,
+                    source: "instagram",
+                });
+
+                await queries.linkMediaToProduct({
+                    tenantId: tenant.id,
+                    productId: newProduct.id,
+                    mediaId: legacyMediaObject.id,
+                    sortOrder: 0,
+                    isFeatured: true,
+                });
+            }
+
             // Mark media as imported
             await queries.markAsImported(options.mediaId, newProduct.id);
 
@@ -316,19 +396,50 @@ export class InstagramService {
             throw error;
         }
     }
+
+    /**
+     * Subscribe app to Instagram webhooks
+     */
+    async subscribeApp(userId: string, fields: string[] = ["comments", "mentions", "messages"]): Promise<boolean> {
+        console.log(`[InstagramService] Subscribing app to webhooks for user ${userId}`);
+        const queries = this.getQueries();
+
+        try {
+            const accessToken = await queries.getInstagramAccessToken(userId);
+            if (!accessToken) {
+                throw new Error("Instagram account not connected");
+            }
+
+            const url = `https://graph.instagram.com/${this.INSTAGRAM_API_VERSION}/me/subscribed_apps?subscribed_fields=${fields.join(",")}&access_token=${accessToken}`;
+
+            const response = await fetch(url, { method: "POST" });
+            const data = await response.json();
+
+            if (data.success) {
+                console.log("[InstagramService] Successfully subscribed to webhooks");
+                return true;
+            } else {
+                console.error("[InstagramService] Failed to subscribe:", data);
+                return false;
+            }
+        } catch (error) {
+            console.error("[InstagramService] Subscription error:", error);
+            throw error;
+        }
+    }
 }
 
 /**
  * Create Instagram service instance
  */
-export function createInstagramService(db: DbClient) {
+export function createInstagramService(db: typeof edgeDb) {
     return new InstagramService(db);
 }
 
 // Singleton for TCP connection (Express API)
 let instagramServiceInstance: InstagramService | null = null;
 
-export function getInstagramService(db: DbClient) {
+export function getInstagramService(db: typeof edgeDb) {
     if (!instagramServiceInstance) {
         instagramServiceInstance = new InstagramService(db);
     }
@@ -336,5 +447,5 @@ export function getInstagramService(db: DbClient) {
 }
 
 // Export default instance
-import { getDb } from "../db/db-client";
-export const instagramService = new InstagramService(getDb());
+import { edgeDb } from "@vendly/db";
+export const instagramService = new InstagramService(edgeDb);

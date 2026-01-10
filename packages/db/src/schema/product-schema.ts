@@ -163,10 +163,12 @@ export const instagramMedia = pgTable(
             .notNull()
             .references(() => stores.id, { onDelete: "cascade" }),
         productId: uuid("product_id").references(() => products.id, { onDelete: "set null" }),
-        instagramId: text("instagram_id").notNull().unique(),
+        instagramId: text("instagram_id").notNull(),
         mediaType: text("media_type").notNull(), // IMAGE, VIDEO, CAROUSEL_ALBUM
         mediaUrl: text("media_url").notNull(),
         thumbnailUrl: text("thumbnail_url"),
+        mediaObjectId: uuid("media_object_id").references(() => mediaObjects.id, { onDelete: "set null" }),
+        thumbnailMediaObjectId: uuid("thumbnail_media_object_id").references(() => mediaObjects.id, { onDelete: "set null" }),
         permalink: text("permalink"),
         caption: text("caption"),
         timestamp: timestamp("timestamp"),
@@ -178,6 +180,7 @@ export const instagramMedia = pgTable(
             .notNull(),
     },
     (table) => [
+        unique("instagram_media_tenant_instagram_id_unique").on(table.tenantId, table.instagramId),
         index("instagram_media_store_idx").on(table.storeId),
         index("instagram_media_instagram_id_idx").on(table.instagramId),
         index("instagram_media_product_idx").on(table.productId),
@@ -276,6 +279,14 @@ export const instagramMediaRelations = relations(instagramMedia, ({ one }) => ({
     product: one(products, {
         fields: [instagramMedia.productId],
         references: [products.id],
+    }),
+    mediaObject: one(mediaObjects, {
+        fields: [instagramMedia.mediaObjectId],
+        references: [mediaObjects.id],
+    }),
+    thumbnailMediaObject: one(mediaObjects, {
+        fields: [instagramMedia.thumbnailMediaObjectId],
+        references: [mediaObjects.id],
     }),
 }));
 

@@ -1,17 +1,9 @@
-/**
- * Media Queries Repository
- * All database queries for media/upload module
- */
 import { eq, and, desc } from "drizzle-orm";
 import { mediaObjects, productMedia, products, tenants } from "@vendly/db/schema";
 import { edgeDb } from "../db";
 
 export class MediaQueries {
     constructor(private db: typeof edgeDb) {}
-
-    // ========================================================================
-    // Tenant Queries
-    // ========================================================================
 
     /**
      * Get tenant by slug
@@ -38,10 +30,6 @@ export class MediaQueries {
 
         return tenant || null;
     }
-
-    // ========================================================================
-    // Media Object Queries
-    // ========================================================================
 
     /**
      * Create media object
@@ -114,22 +102,24 @@ export class MediaQueries {
             source?: string;
         }
     ) {
+        const conditions = [eq(mediaObjects.tenantId, tenantId)];
+        
+        if (options?.source) {
+            conditions.push(eq(mediaObjects.source, options.source));
+        }
+
         let query = this.db
             .select()
             .from(mediaObjects)
-            .where(eq(mediaObjects.tenantId, tenantId))
+            .where(and(...conditions))
             .orderBy(desc(mediaObjects.createdAt));
 
-        if (options?.source) {
-            query = query.where(eq(mediaObjects.source, options.source)) as any;
-        }
-
         if (options?.limit) {
-            query = query.limit(options.limit) as any;
+            query = query.limit(options.limit);
         }
 
         if (options?.offset) {
-            query = query.offset(options.offset) as any;
+            query = query.offset(options.offset);
         }
 
         return await query;
@@ -191,10 +181,6 @@ export class MediaQueries {
 
         return media.reduce((total, item) => total + (item.sizeBytes || 0), 0);
     }
-
-    // ========================================================================
-    // Product Media Queries
-    // ========================================================================
 
     /**
      * Link media to product
@@ -325,10 +311,6 @@ export class MediaQueries {
 
         return productsList;
     }
-
-    // ========================================================================
-    // Batch Operations
-    // ========================================================================
 
     /**
      * Create multiple media objects

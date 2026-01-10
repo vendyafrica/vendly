@@ -1,7 +1,3 @@
-/**
- * Product Queries Repository
- * All database queries for products module
- */
 import { eq, and, desc, asc, isNull } from "drizzle-orm";
 import {
     products,
@@ -12,15 +8,12 @@ import {
     inventoryItems,
     stores,
     tenants,
+    mediaObjects,
 } from "@vendly/db/schema";
 import { edgeDb } from "../db";
 
 export class ProductQueries {
     constructor(private db: typeof edgeDb) {}
-
-    // ========================================================================
-    // Product CRUD
-    // ========================================================================
 
     /**
      * Create product
@@ -120,6 +113,54 @@ export class ProductQueries {
     }
 
     /**
+     * List products for store with media URLs.
+     * Prefers product_media -> media_objects, but also returns legacy product_images.
+     */
+    async listProductsByStoreWithMedia(
+        storeId: string,
+        options?: {
+            status?: "draft" | "active" | "archived";
+            limit?: number;
+            offset?: number;
+        }
+    ) {
+        const productList = await this.listProductsByStore(storeId, options);
+
+        const results = [] as Array<
+            (typeof products.$inferSelect) & {
+                mediaUrls: string[];
+                images: Array<typeof productImages.$inferSelect>;
+            }
+        >;
+
+        for (const product of productList) {
+            const images = await this.getProductImages(product.id);
+
+            const mediaLinks = await this.db
+                .select({
+                    url: mediaObjects.blobUrl,
+                    sortOrder: productMedia.sortOrder,
+                    isFeatured: productMedia.isFeatured,
+                })
+                .from(productMedia)
+                .innerJoin(mediaObjects, eq(productMedia.mediaId, mediaObjects.id))
+                .where(eq(productMedia.productId, product.id))
+                .orderBy(asc(productMedia.sortOrder));
+
+            const mediaUrls = mediaLinks.map((m) => m.url);
+            const legacyUrls = images.map((img) => img.url);
+
+            results.push({
+                ...product,
+                images,
+                mediaUrls: mediaUrls.length > 0 ? mediaUrls : legacyUrls,
+            });
+        }
+
+        return results;
+    }
+
+    /**
      * Update product
      */
     async updateProduct(
@@ -182,10 +223,6 @@ export class ProductQueries {
         const result = await query;
         return result.length;
     }
-
-    // ========================================================================
-    // Product Variants
-    // ========================================================================
 
     /**
      * Create product variant
@@ -264,10 +301,6 @@ export class ProductQueries {
         return updated;
     }
 
-    // ========================================================================
-    // Product Images (Legacy Support)
-    // ========================================================================
-
     /**
      * Add product image
      */
@@ -324,10 +357,6 @@ export class ProductQueries {
         return deleted;
     }
 
-    // ========================================================================
-    // Product Categories
-    // ========================================================================
-
     /**
      * Add product to category
      */
@@ -367,10 +396,6 @@ export class ProductQueries {
             .where(eq(productCategories.productId, productId));
     }
 
-    // ========================================================================
-    // Inventory
-    // ========================================================================
-
     /**
      * Get inventory for variant
      */
@@ -403,10 +428,6 @@ export class ProductQueries {
 
         return updated;
     }
-
-    // ========================================================================
-    // Store & Tenant
-    // ========================================================================
 
     /**
      * Get store by slug

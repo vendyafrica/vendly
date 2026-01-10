@@ -1,17 +1,21 @@
-/**
- * Instagram Queries Repository
- * All database queries for Instagram module in one place
- */
 import { eq, and, desc } from "drizzle-orm";
-import { instagramMedia, stores, tenants, account, products, productImages } from "@vendly/db/schema";
+import {
+    instagramMedia,
+    stores,
+    tenants,
+    account,
+    products,
+    productImages,
+    mediaObjects,
+    productMedia,
+} from "@vendly/db/schema";
 import { edgeDb } from "../db";
 
+/**
+ * Instagram Queries
+ */
 export class InstagramQueries {
     constructor(private db: typeof edgeDb) {}
-
-    // ========================================================================
-    // Auth & Account Queries
-    // ========================================================================
 
     /**
      * Get Instagram account for user
@@ -33,10 +37,6 @@ export class InstagramQueries {
         const igAccount = await this.getInstagramAccount(userId);
         return igAccount?.accessToken || null;
     }
-
-    // ========================================================================
-    // Tenant & Store Queries
-    // ========================================================================
 
     /**
      * Get tenant by slug
@@ -81,18 +81,14 @@ export class InstagramQueries {
         return { tenant, store };
     }
 
-    // ========================================================================
-    // Instagram Media Queries
-    // ========================================================================
-
     /**
      * Check if Instagram media exists by Instagram ID
      */
-    async getMediaByInstagramId(instagramId: string) {
+    async getMediaByInstagramId(tenantId: string, instagramId: string) {
         const [media] = await this.db
             .select()
             .from(instagramMedia)
-            .where(eq(instagramMedia.instagramId, instagramId))
+            .where(and(eq(instagramMedia.tenantId, tenantId), eq(instagramMedia.instagramId, instagramId)))
             .limit(1);
 
         return media || null;
@@ -155,6 +151,8 @@ export class InstagramQueries {
         mediaType: string;
         mediaUrl: string;
         thumbnailUrl?: string | null;
+        mediaObjectId?: string | null;
+        thumbnailMediaObjectId?: string | null;
         permalink: string;
         caption?: string | null;
         timestamp: Date;
@@ -169,6 +167,8 @@ export class InstagramQueries {
                 mediaType: data.mediaType,
                 mediaUrl: data.mediaUrl,
                 thumbnailUrl: data.thumbnailUrl || null,
+                mediaObjectId: data.mediaObjectId || null,
+                thumbnailMediaObjectId: data.thumbnailMediaObjectId || null,
                 permalink: data.permalink,
                 caption: data.caption || null,
                 timestamp: data.timestamp,
@@ -204,6 +204,7 @@ export class InstagramQueries {
      * Update media by Instagram ID
      */
     async updateMediaByInstagramId(
+        tenantId: string,
         instagramId: string,
         data: {
             mediaUrl?: string;
@@ -214,7 +215,7 @@ export class InstagramQueries {
         const [updated] = await this.db
             .update(instagramMedia)
             .set(data)
-            .where(eq(instagramMedia.instagramId, instagramId))
+            .where(and(eq(instagramMedia.tenantId, tenantId), eq(instagramMedia.instagramId, instagramId)))
             .returning();
 
         return updated;
@@ -229,10 +230,6 @@ export class InstagramQueries {
             productId,
         });
     }
-
-    // ========================================================================
-    // Product Creation Queries
-    // ========================================================================
 
     /**
      * Create product from Instagram media
@@ -281,9 +278,57 @@ export class InstagramQueries {
         return image;
     }
 
-    // ========================================================================
-    // Batch Operations
-    // ========================================================================
+    async createMediaObject(data: {
+        tenantId: string;
+        blobUrl: string;
+        blobPathname?: string | null;
+        contentType?: string | null;
+        sizeBytes?: number | null;
+        width?: number | null;
+        height?: number | null;
+        altText?: string | null;
+        isPublic?: boolean;
+        source?: string | null;
+    }) {
+        const [mediaObject] = await this.db
+            .insert(mediaObjects)
+            .values({
+                tenantId: data.tenantId,
+                blobUrl: data.blobUrl,
+                blobPathname: data.blobPathname || null,
+                contentType: data.contentType || null,
+                sizeBytes: data.sizeBytes || null,
+                width: data.width || null,
+                height: data.height || null,
+                altText: data.altText || null,
+                isPublic: data.isPublic ?? true,
+                source: data.source || null,
+            })
+            .returning();
+
+        return mediaObject;
+    }
+
+    async linkMediaToProduct(data: {
+        tenantId: string;
+        productId: string;
+        mediaId: string;
+        sortOrder?: number;
+        isFeatured?: boolean;
+    }) {
+        const [link] = await this.db
+            .insert(productMedia)
+            .values({
+                tenantId: data.tenantId,
+                productId: data.productId,
+                mediaId: data.mediaId,
+                sortOrder: data.sortOrder ?? 0,
+                isFeatured: data.isFeatured ?? false,
+            })
+            .returning();
+
+        return link;
+    }
 
     /**
      * Bulk check which Instagram IDs already exist
@@ -330,6 +375,6 @@ export class InstagramQueries {
 /**
  * Create Instagram queries instance
  */
-export function createInstagramQueries(db: DbClient) {
+export function createInstagramQueries(db: typeof edgeDb) {
     return new InstagramQueries(db);
 }

@@ -1,11 +1,7 @@
-/**
- * Instagram Controller (Updated)
- * Handles HTTP requests and responses for Instagram integration
- */
 import { Request, Response } from "express";
 import crypto from "crypto";
 import { createInstagramService } from "./instagram-service";
-import { getTcpDb } from "../db/db-client";
+import { edgeDb } from "@vendly/db";
 import {
     validateSyncOptions,
     validateImportOptions,
@@ -16,13 +12,13 @@ import {
 
 export class InstagramController {
     private readonly VERIFY_TOKEN =
-        process.env.INSTAGRAM_WEBHOOK_VERIFY_TOKEN || "vendly-instagram-verify-token";
+        process.env.INSTAGRAM_WEBHOOK_VERIFY_TOKEN;
 
     /**
      * Get service instance with database client
      */
     private getService() {
-        return createInstagramService(getTcpDb());
+        return createInstagramService(edgeDb);
     }
 
     /**
@@ -38,8 +34,8 @@ export class InstagramController {
             .createHmac(
                 "sha256",
                 process.env.INSTAGRAM_CLIENT_SECRET ||
-                    process.env.BETTER_AUTH_SECRET ||
-                    ""
+                process.env.BETTER_AUTH_SECRET ||
+                ""
             )
             .update(body)
             .digest("hex");
@@ -97,9 +93,43 @@ export class InstagramController {
             );
 
             if (payload.object === "instagram") {
-                payload.entry?.forEach((entry) => {
-                    console.log("[InstagramController] Processing entry:", entry);
-                });
+                // Verify signature if rawBody is available (requires upstream middleware configuration)
+                if ((req as any).rawBody && !this.verifyWebhookSignature(req, (req as any).rawBody)) {
+                    console.error("[InstagramController] Invalid webhook signature");
+                    res.sendStatus(403);
+                    return;
+                }
+
+                for (const entry of payload.entry || []) {
+                    console.log("[InstagramController] Processing entry:", entry.id);
+
+                    // Handle Messaging Events (e.g. Post Shares, DMs)
+                    if (entry.messaging) {
+                        for (const event of entry.messaging) {
+                            if (event.message?.attachments) {
+                                for (const attachment of event.message.attachments) {
+                                    if (attachment.type === "ig_post") {
+                                        console.log("[InstagramController] Received New Post Share (ig_post):", attachment.payload);
+                                        const { ig_post_media_id, url } = attachment.payload;
+                                        // TODO: Automatically import this product if desired
+                                        // await this.getService().importMediaAsProduct({ ... })
+                                    } else if (attachment.type === "share") {
+                                        // Legacy support
+                                        console.log("[InstagramController] Received Post Share (legacy):", attachment.payload);
+                                    }
+                                }
+                            }
+                            // Handle text messages or other events
+                        }
+                    }
+
+                    // Handle Changes Events (e.g. Comments, Mentions - if configured)
+                    if (entry.changes) {
+                        entry.changes.forEach(change => {
+                            console.log("[InstagramController] Change event:", change.field, change.value);
+                        });
+                    }
+                }
 
                 res.status(200).send("EVENT_RECEIVED");
             } else {
