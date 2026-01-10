@@ -8,7 +8,7 @@ import {
     index,
 } from "drizzle-orm/pg-core";
 
-import { tenants } from "./core-schema";
+import { tenants } from "./auth-schema";
 import { customers } from "./customer-schema";
 import { productVariants } from "./product-schema";
 import { cartStatus } from "../enums/cart-enums";

@@ -1,7 +1,7 @@
 import { eq } from "drizzle-orm";
 
 import { db } from "../db";
-import { tenants, type Tenant } from "../schema/core-schema";
+import { tenants, type Tenant } from "../schema/auth-schema";
 
 export async function getTenantBySlug(slug: string): Promise<Tenant | undefined> {
   const [tenant] = await db.select().from(tenants).where(eq(tenants.slug, slug));
