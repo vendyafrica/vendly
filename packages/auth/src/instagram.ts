@@ -2,7 +2,6 @@
  * Instagram OAuth Configuration
  * Separate configuration for Instagram authentication
  */
-
 interface TokenExchangeParams {
     code: string;
     redirectURI: string;
@@ -17,9 +16,9 @@ interface TokenResponse {
 
 interface UserProfile {
     id: string;
-    name: string;
-    email: string;
-    image: string | null;
+    name?: string;
+    email?: string;
+    image?: string;
     emailVerified: boolean;
 }
 
@@ -93,14 +92,11 @@ export async function getInstagramToken({
 /**
  * Get Instagram user information
  */
-export async function getInstagramUserInfo(tokens: {
-    accessToken: string;
-    raw?: any;
-}): Promise<UserProfile> {
+export async function getInstagramUserInfo(tokens: any): Promise<UserProfile | null> {
     const accessToken = tokens.accessToken;
 
     if (!accessToken) {
-        throw new Error("No access token provided");
+        return null;
     }
 
     console.log("[Instagram OAuth] Fetching user info...");
@@ -131,27 +127,7 @@ export async function getInstagramUserInfo(tokens: {
         id: finalId,
         name: data.username || `instagram_user_${finalId}`,
         email: `instagram_${finalId}@vendly.local`,
-        image: data.profile_picture_url || null,
+        image: data.profile_picture_url || undefined,
         emailVerified: true,
     };
 }
-
-/**
- * Instagram OAuth provider configuration
- */
-export const instagramOAuthConfig = {
-    providerId: "instagram",
-    clientId: process.env.INSTAGRAM_CLIENT_ID as string,
-    clientSecret: process.env.INSTAGRAM_CLIENT_SECRET as string,
-    authorizationUrl: "https://www.instagram.com/oauth/authorize",
-    scopes: [
-        "instagram_business_basic",
-        "instagram_business_manage_messages",
-        "instagram_business_manage_comments",
-        "instagram_business_content_publish",
-        "instagram_business_manage_insights",
-    ],
-    redirectURI: `${process.env.BETTER_AUTH_URL}/api/auth/callback/instagram`,
-    getToken: getInstagramToken,
-    getUserInfo: getInstagramUserInfo,
-};
