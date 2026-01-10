@@ -2,18 +2,17 @@ import { eq, and, desc, asc, isNull } from "drizzle-orm";
 import {
     products,
     productVariants,
-    productImages,
     productMedia,
     productCategories,
     inventoryItems,
     stores,
     tenants,
     mediaObjects,
-} from "@vendly/db/schema";
+} from "../schema/index";
 import { edgeDb } from "../db";
 
 export class ProductQueries {
-    constructor(private db: typeof edgeDb) {}
+    constructor(private db: typeof edgeDb) { }
 
     /**
      * Create product
@@ -41,6 +40,7 @@ export class ProductQueries {
                 status: data.status || "draft",
                 compareAtPrice: data.compareAtPrice || null,
                 hasVariants: data.hasVariants || false,
+                slug: data.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "")
             })
             .returning();
 
@@ -67,11 +67,7 @@ export class ProductQueries {
         const product = await this.getProductById(productId);
         if (!product) return null;
 
-        const images = await this.db
-            .select()
-            .from(productImages)
-            .where(eq(productImages.productId, productId))
-            .orderBy(asc(productImages.sortOrder));
+        const images = await this.getProductImages(productId);
 
         return {
             ...product,
@@ -129,31 +125,20 @@ export class ProductQueries {
         const results = [] as Array<
             (typeof products.$inferSelect) & {
                 mediaUrls: string[];
-                images: Array<typeof productImages.$inferSelect>;
+                images: { id: string; url: string; sortOrder: number; productId: string }[];
             }
         >;
 
         for (const product of productList) {
             const images = await this.getProductImages(product.id);
 
-            const mediaLinks = await this.db
-                .select({
-                    url: mediaObjects.blobUrl,
-                    sortOrder: productMedia.sortOrder,
-                    isFeatured: productMedia.isFeatured,
-                })
-                .from(productMedia)
-                .innerJoin(mediaObjects, eq(productMedia.mediaId, mediaObjects.id))
-                .where(eq(productMedia.productId, product.id))
-                .orderBy(asc(productMedia.sortOrder));
-
-            const mediaUrls = mediaLinks.map((m) => m.url);
-            const legacyUrls = images.map((img) => img.url);
+            // mediaUrls is just a list of URLs for convenience
+            const mediaUrls = images.map((img) => img.url);
 
             results.push({
                 ...product,
                 images,
-                mediaUrls: mediaUrls.length > 0 ? mediaUrls : legacyUrls,
+                mediaUrls,
             });
         }
 
@@ -309,27 +294,54 @@ export class ProductQueries {
         url: string;
         sortOrder?: number;
     }) {
-        const [image] = await this.db
-            .insert(productImages)
+        // We need tenantId. Fetch it first.
+        const [product] = await this.db.select({ tenantId: products.tenantId }).from(products).where(eq(products.id, data.productId)).limit(1);
+        if (!product) throw new Error("Product not found");
+
+        // Create media object
+        const [mediaObj] = await this.db.insert(mediaObjects).values({
+            tenantId: product.tenantId,
+            blobUrl: data.url
+        }).returning();
+
+        const [link] = await this.db
+            .insert(productMedia)
             .values({
                 productId: data.productId,
-                url: data.url,
+                mediaId: mediaObj.id,
                 sortOrder: data.sortOrder || 0,
+                tenantId: product.tenantId
             })
             .returning();
 
-        return image;
+        return {
+            id: link.id,
+            productId: link.productId,
+            url: data.url,
+            sortOrder: link.sortOrder || 0
+        };
     }
 
     /**
      * Get product images
      */
     async getProductImages(productId: string) {
-        return await this.db
-            .select()
-            .from(productImages)
-            .where(eq(productImages.productId, productId))
-            .orderBy(asc(productImages.sortOrder));
+        const rows = await this.db
+            .select({
+                media: productMedia,
+                mediaObj: mediaObjects
+            })
+            .from(productMedia)
+            .innerJoin(mediaObjects, eq(productMedia.mediaId, mediaObjects.id))
+            .where(eq(productMedia.productId, productId))
+            .orderBy(asc(productMedia.sortOrder));
+
+        return rows.map(r => ({
+            id: r.media.id,
+            productId: r.media.productId,
+            url: r.mediaObj.blobUrl,
+            sortOrder: r.media.sortOrder ?? 0
+        }));
     }
 
     /**
@@ -337,9 +349,9 @@ export class ProductQueries {
      */
     async updateImageSortOrder(imageId: string, sortOrder: number) {
         const [updated] = await this.db
-            .update(productImages)
+            .update(productMedia)
             .set({ sortOrder })
-            .where(eq(productImages.id, imageId))
+            .where(eq(productMedia.id, imageId))
             .returning();
 
         return updated;
@@ -350,8 +362,8 @@ export class ProductQueries {
      */
     async deleteProductImage(imageId: string) {
         const [deleted] = await this.db
-            .delete(productImages)
-            .where(eq(productImages.id, imageId))
+            .delete(productMedia)
+            .where(eq(productMedia.id, imageId))
             .returning();
 
         return deleted;

@@ -1,5 +1,5 @@
 import { eq, and, desc, asc } from "drizzle-orm";
-import { db } from "../db";
+import { edgeDb } from "../db";
 import {
   stores,
   storeThemes,
@@ -11,19 +11,25 @@ import {
 } from "../schema/storefront-schema";
 import {
   products,
-  productImages,
+  productMedia,
+  mediaObjects,
   productCategories,
   type Product,
-  type ProductImage
 } from "../schema/product-schema";
+export type ProductImage = {
+  id: string;
+  productId: string;
+  url: string;
+  sortOrder: number;
+};
 import {
-  categories,
-  type Category
-} from "../schema/category-schema";
+  storeCategories as categories,
+  type StoreCategory as Category
+} from "../schema/index";
 
 // Store queries
 export async function getStoreBySlug(slug: string): Promise<Store | undefined> {
-  const [store] = await db
+  const [store] = await edgeDb
     .select()
     .from(stores)
     .where(eq(stores.slug, slug))
@@ -33,7 +39,7 @@ export async function getStoreBySlug(slug: string): Promise<Store | undefined> {
 }
 
 export async function getStoreByTenantId(tenantId: string): Promise<Store | undefined> {
-  const [store] = await db
+  const [store] = await edgeDb
     .select()
     .from(stores)
     .where(eq(stores.tenantId, tenantId))
@@ -49,7 +55,7 @@ export async function createStore(data: {
   description?: string;
   logoUrl?: string;
 }): Promise<Store> {
-  const [store] = await db
+  const [store] = await edgeDb
     .insert(stores)
     .values(data)
     .returning();
@@ -65,22 +71,8 @@ export async function getProductsByStoreSlug(slug: string, options?: {
 }): Promise<Product[]> {
   const { limit = 50, offset = 0, status = "active" } = options || {};
 
-  const storeProducts = await db
-    .select({
-      id: products.id,
-      tenantId: products.tenantId,
-      storeId: products.storeId,
-      title: products.title,
-      description: products.description,
-      basePriceAmount: products.basePriceAmount,
-      baseCurrency: products.baseCurrency,
-      compareAtPrice: products.compareAtPrice,
-      hasVariants: products.hasVariants,
-      status: products.status,
-      createdAt: products.createdAt,
-      updatedAt: products.updatedAt,
-      deletedAt: products.deletedAt,
-    })
+  const storeProducts = await edgeDb
+    .select()
     .from(products)
     .innerJoin(stores, eq(products.storeId, stores.id))
     .where(and(
@@ -91,59 +83,45 @@ export async function getProductsByStoreSlug(slug: string, options?: {
     .limit(limit)
     .offset(offset);
 
-  return storeProducts;
+  // Map result to just Product[]
+  // Drizzle innerJoin returns { products: ..., stores: ... }
+  return storeProducts.map(row => row.products);
+
+
 }
 
 export async function getProductById(id: string): Promise<Product & { images: ProductImage[] } | undefined> {
-  const productWithImages = await db
+  // We need to join products with productMedia and mediaObjects to simulate legacy "images"
+  const rows = await edgeDb
     .select({
-      // Select all fields from products manually to match type
-      id: products.id,
-      tenantId: products.tenantId,
-      storeId: products.storeId,
-      title: products.title,
-      description: products.description,
-      basePriceAmount: products.basePriceAmount,
-      baseCurrency: products.baseCurrency,
-      compareAtPrice: products.compareAtPrice,
-      hasVariants: products.hasVariants,
-      status: products.status,
-      createdAt: products.createdAt,
-      updatedAt: products.updatedAt,
-      deletedAt: products.deletedAt,
-      // Image
-      image: productImages,
+      product: products,
+      media: productMedia,
+      mediaObj: mediaObjects
     })
     .from(products)
-    .leftJoin(productImages, eq(products.id, productImages.productId))
+    .leftJoin(productMedia, eq(products.id, productMedia.productId))
+    .leftJoin(mediaObjects, eq(productMedia.mediaId, mediaObjects.id))
     .where(eq(products.id, id))
-    .orderBy(asc(productImages.sortOrder));
+    .orderBy(asc(productMedia.sortOrder));
 
-  if (productWithImages.length === 0) return undefined;
+  if (rows.length === 0) return undefined;
 
-  // Group images by product
-  // Note: Drizzle returns rows, we need to consolidate
-  const firstRow = productWithImages[0];
-  const product: Product & { images: ProductImage[] } = {
-    id: firstRow.id,
-    tenantId: firstRow.tenantId,
-    storeId: firstRow.storeId,
-    title: firstRow.title,
-    description: firstRow.description,
-    basePriceAmount: firstRow.basePriceAmount,
-    baseCurrency: firstRow.baseCurrency,
-    compareAtPrice: firstRow.compareAtPrice,
-    hasVariants: firstRow.hasVariants,
-    status: firstRow.status,
-    createdAt: firstRow.createdAt,
-    updatedAt: firstRow.updatedAt,
-    deletedAt: firstRow.deletedAt,
-    images: productWithImages
-      .filter(row => row.image !== null)
-      .map(row => row.image!)
+  const firstRow = rows[0];
+  const { product } = firstRow;
+
+  const images: ProductImage[] = rows
+    .filter(r => r.media && r.mediaObj)
+    .map(r => ({
+      id: r.media!.id,
+      productId: r.product.id,
+      url: r.mediaObj!.blobUrl,
+      sortOrder: r.media!.sortOrder ?? 0
+    }));
+
+  return {
+    ...product,
+    images
   };
-
-  return product;
 }
 
 export async function createProduct(data: {
@@ -155,10 +133,10 @@ export async function createProduct(data: {
   status?: "active" | "archived" | "draft";
 }): Promise<Product> {
   // Fetch store to get tenantId
-  const [store] = await db.select({ tenantId: stores.tenantId }).from(stores).where(eq(stores.id, data.storeId)).limit(1);
+  const [store] = await edgeDb.select({ tenantId: stores.tenantId }).from(stores).where(eq(stores.id, data.storeId)).limit(1);
   if (!store) throw new Error("Store not found");
 
-  const [product] = await db
+  const [product] = await edgeDb
     .insert(products)
     .values({
       storeId: data.storeId,
@@ -167,7 +145,9 @@ export async function createProduct(data: {
       basePriceAmount: data.priceAmount,
       baseCurrency: data.currency ?? "KES",
       status: data.status ?? "draft",
-      tenantId: store.tenantId
+      tenantId: store.tenantId,
+      // Fix: Generate slug if missing (basic slugify)
+      slug: data.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "")
     })
     .returning();
 
@@ -176,63 +156,64 @@ export async function createProduct(data: {
 
 // Product Image queries
 export async function getProductImages(productId: string): Promise<ProductImage[]> {
-  return db
-    .select()
-    .from(productImages)
-    .where(eq(productImages.productId, productId))
-    .orderBy(asc(productImages.sortOrder));
+  const rows = await edgeDb
+    .select({
+      media: productMedia,
+      mediaObj: mediaObjects
+    })
+    .from(productMedia)
+    .innerJoin(mediaObjects, eq(productMedia.mediaId, mediaObjects.id))
+    .where(eq(productMedia.productId, productId))
+    .orderBy(asc(productMedia.sortOrder));
+
+  return rows.map(r => ({
+    id: r.media.id,
+    productId: r.media.productId,
+    url: r.mediaObj.blobUrl,
+    sortOrder: r.media.sortOrder ?? 0
+  }));
 }
 
+// TODO: This function is problematic because `productImages` is gone.
+// We should use `addMediaToProduct`.
+// For now, I will throw or implement a mock that fails if we don't have mediaObjects logic here.
+// But wait, the frontend might call this with a direct URL (cloudinary/etc). 
+// `mediaObjects` requires an entry there first.
+// I will implement a bridge: Create mediaObject then link it.
 export async function addProductImage(data: {
   productId: string;
   url: string;
   sortOrder?: number;
 }): Promise<ProductImage> {
+  // 1. Get tenantId from product
+  const [product] = await edgeDb.select({ tenantId: products.tenantId }).from(products).where(eq(products.id, data.productId)).limit(1);
+  if (!product) throw new Error("Product not found");
 
-  // Need tenantId for strict compliance? 
-  // productMedia / productImages table definition check:
-  // product_media in product-schema has tenantId.
-  // product_images (if legacy table) might not.
-  // Wait, product-schema has `productMedia` table (new unified), BUT ALSO `productImages`?
-  // Let's check product-schema.ts content in Step 270.
-  // It has productMedia.
-  // Does it have productImages?
-  // Step 270: NO table named `productImages` exported! 
-  // It has "productMedia".
+  // 2. Create mediaObject
+  const [mediaObj] = await edgeDb.insert(mediaObjects).values({
+    tenantId: product.tenantId,
+    blobUrl: data.url
+  }).returning();
 
-  // So `productImages` import in this file is likely BROKEN if I removed it from schema.
-  // I need to use `productMedia` or restore `productImages`.
-  // The plan said "Unified media_objects".
-  // But Phase 3 is Product Catalog. I am in Phase 2.
-  // Ideally, I should keep `productImages` SIMPLE table if I want rapid migration, 
-  // OR fully switch to `productMedia` + `mediaObjects`.
+  // 3. Link
+  const [link] = await edgeDb.insert(productMedia).values({
+    tenantId: product.tenantId,
+    productId: data.productId,
+    mediaId: mediaObj.id,
+    sortOrder: data.sortOrder ?? 0
+  }).returning();
 
-  // For now, I'll assume I should use `productMedia`.
-  // BUT `storefront-queries.ts` is used by the frontend NOW.
-  // Changing `productImages` to `productMedia` is a breaking change for UI.
-
-  // I will check if I defined `productImages` in `product-schema.ts`.
-  // Step 270 code content: 
-  // ... export const productMedia = ...
-  // It DOES NOT have productImages.
-
-  // I should add `productImages` to `product-schema.ts` as a deprecated/back-compat table OR update the queries to use `productMedia` but project it to `ProductImage` shape.
-  // `ProductImage` type likely has `{ id, url, sortOrder }`.
-  // `productMedia` has `mediaId`.
-  // `mediaObjects` has `blobUrl`.
-
-  // This is a big change.
-  // Maybe I should add a simple `product_images` table to `product-schema.ts` for transition?
-  // The user said "rewrite". "All existing tables... replaced."
-  // So I *should* break it and fix the UI later?
-  // Or I can simulate `productImages` via a View?
-
-  throw new Error("productImages table does not exist in new schema. Use productMedia.");
+  return {
+    id: link.id,
+    productId: link.productId,
+    url: mediaObj.blobUrl,
+    sortOrder: link.sortOrder ?? 0
+  };
 }
 
 // Category queries
 export async function getCategoriesByStoreSlug(slug: string): Promise<Category[]> {
-  const storeCategories = await db
+  const storeCategories = await edgeDb
     .select({
       id: categories.id,
       tenantId: categories.tenantId,
@@ -261,10 +242,10 @@ export async function createCategory(data: {
   imageUrl?: string;
 }): Promise<Category> {
   // Fetch store to get tenantId
-  const [store] = await db.select({ tenantId: stores.tenantId }).from(stores).where(eq(stores.id, data.storeId)).limit(1);
+  const [store] = await edgeDb.select({ tenantId: stores.tenantId }).from(stores).where(eq(stores.id, data.storeId)).limit(1);
   if (!store) throw new Error("Store not found");
 
-  const [category] = await db
+  const [category] = await edgeDb
     .insert(categories)
     .values({
       storeId: data.storeId,
@@ -280,7 +261,7 @@ export async function createCategory(data: {
 
 // Product-Category junction queries
 export async function addProductToCategory(productId: string, categoryId: string): Promise<void> {
-  await db
+  await edgeDb
     .insert(productCategories)
     .values({ productId, categoryId })
     .onConflictDoNothing();
@@ -290,22 +271,8 @@ export async function getProductsByCategorySlug(
   storeSlug: string,
   categorySlug: string
 ): Promise<Product[]> {
-  const categoryProducts = await db
-    .select({
-      id: products.id,
-      tenantId: products.tenantId,
-      storeId: products.storeId,
-      title: products.title,
-      description: products.description,
-      basePriceAmount: products.basePriceAmount,
-      baseCurrency: products.baseCurrency,
-      compareAtPrice: products.compareAtPrice,
-      hasVariants: products.hasVariants,
-      status: products.status,
-      createdAt: products.createdAt,
-      updatedAt: products.updatedAt,
-      deletedAt: products.deletedAt,
-    })
+  const categoryProducts = await edgeDb
+    .select()
     .from(products)
     .innerJoin(stores, eq(products.storeId, stores.id))
     .innerJoin(productCategories, eq(products.id, productCategories.productId))
@@ -317,25 +284,27 @@ export async function getProductsByCategorySlug(
     ))
     .orderBy(desc(products.createdAt));
 
-  return categoryProducts;
+  return categoryProducts.map(row => row.products);
+
+
 }
 
 // Delete functions
 export async function deleteStore(storeId: string): Promise<void> {
-  await db.delete(stores).where(eq(stores.id, storeId));
+  await edgeDb.delete(stores).where(eq(stores.id, storeId));
 }
 
 export async function deleteProductsByStoreId(storeId: string): Promise<void> {
-  await db.delete(products).where(eq(products.storeId, storeId));
+  await edgeDb.delete(products).where(eq(products.storeId, storeId));
 }
 
 export async function deleteCategoriesByStoreId(storeId: string): Promise<void> {
-  await db.delete(categories).where(eq(categories.storeId, storeId));
+  await edgeDb.delete(categories).where(eq(categories.storeId, storeId));
 }
 
 // Store Theme queries
 export async function getStoreTheme(storeId: string): Promise<StoreTheme | undefined> {
-  const [theme] = await db
+  const [theme] = await edgeDb
     .select()
     .from(storeThemes)
     .where(eq(storeThemes.storeId, storeId))
@@ -363,7 +332,7 @@ export async function upsertStoreTheme(data: {
 
   const existing = await getStoreTheme(data.storeId);
   if (existing) {
-    const [updated] = await db
+    const [updated] = await edgeDb
       .update(storeThemes)
       .set(data)
       .where(eq(storeThemes.storeId, data.storeId))
@@ -372,10 +341,10 @@ export async function upsertStoreTheme(data: {
   }
 
   // Fetch store to get tenantId
-  const [store] = await db.select({ tenantId: stores.tenantId }).from(stores).where(eq(stores.id, data.storeId)).limit(1);
+  const [store] = await edgeDb.select({ tenantId: stores.tenantId }).from(stores).where(eq(stores.id, data.storeId)).limit(1);
   if (!store) throw new Error("Store not found");
 
-  const [created] = await db
+  const [created] = await edgeDb
     .insert(storeThemes)
     .values({
       ...data,
@@ -388,7 +357,7 @@ export async function upsertStoreTheme(data: {
 
 // Store Content queries
 export async function getStoreContent(storeId: string): Promise<StoreContent | undefined> {
-  const [content] = await db
+  const [content] = await edgeDb
     .select()
     .from(storeContent)
     .where(eq(storeContent.storeId, storeId))
@@ -418,7 +387,7 @@ export async function upsertStoreContent(data: {
   const existing = await getStoreContent(data.storeId);
 
   if (existing) {
-    const [updated] = await db
+    const [updated] = await edgeDb
       .update(storeContent)
       .set(data)
       .where(eq(storeContent.storeId, data.storeId))
@@ -427,10 +396,10 @@ export async function upsertStoreContent(data: {
   }
 
   // Fetch store to get tenantId
-  const [store] = await db.select({ tenantId: stores.tenantId }).from(stores).where(eq(stores.id, data.storeId)).limit(1);
+  const [store] = await edgeDb.select({ tenantId: stores.tenantId }).from(stores).where(eq(stores.id, data.storeId)).limit(1);
   if (!store) throw new Error("Store not found");
 
-  const [created] = await db
+  const [created] = await edgeDb
     .insert(storeContent)
     .values({
       ...data,
@@ -466,7 +435,7 @@ export async function getStoreCustomizationBySlug(slug: string): Promise<StoreCu
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function getStorePageData(storeId: string): Promise<any | null> {
   const content = await getStoreContent(storeId);
-  return content?.pageData ?? null;
+  return content?.editorData ?? null;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -479,23 +448,23 @@ export async function getStorePageDataBySlug(slug: string): Promise<any | null> 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function upsertStorePageData(storeId: string, pageData: any): Promise<StoreContent> {
   // Fetch store to get tenantId
-  const [store] = await db.select({ tenantId: stores.tenantId }).from(stores).where(eq(stores.id, storeId)).limit(1);
+  const [store] = await edgeDb.select({ tenantId: stores.tenantId }).from(stores).where(eq(stores.id, storeId)).limit(1);
   if (!store) throw new Error("Store not found");
 
   const existing = await getStoreContent(storeId);
 
   if (existing) {
-    const [updated] = await db
+    const [updated] = await edgeDb
       .update(storeContent)
-      .set({ pageData })
+      .set({ editorData: pageData })
       .where(eq(storeContent.storeId, storeId))
       .returning();
     return updated;
   }
 
-  const [created] = await db
+  const [created] = await edgeDb
     .insert(storeContent)
-    .values({ storeId, pageData, tenantId: store.tenantId })
+    .values({ storeId, editorData: pageData, tenantId: store.tenantId })
     .returning();
 
   return created;

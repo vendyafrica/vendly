@@ -1,15 +1,15 @@
 import { eq } from "drizzle-orm";
 
-import { db } from "../db";
-import { tenants, type Tenant } from "../schema/auth-schema";
+import { edgeDb } from "../db";
+import { tenants, type Tenant } from "../schema/tenant-schema";
 
 export async function getTenantBySlug(slug: string): Promise<Tenant | undefined> {
-  const [tenant] = await db.select().from(tenants).where(eq(tenants.slug, slug));
+  const [tenant] = await edgeDb.select().from(tenants).where(eq(tenants.slug, slug));
   return tenant;
 }
 
 export async function createTenantIfNotExists(slug: string): Promise<Tenant> {
-  await db
+  await edgeDb
     .insert(tenants)
     .values({
       slug,
@@ -35,7 +35,7 @@ export async function setTenantStatus({
   status: "active" | "suspended" | "onboarding";
   error?: string | null;
 }): Promise<void> {
-  await db
+  await edgeDb
     .update(tenants)
     .set({ status, error: error ?? null })
     .where(eq(tenants.slug, slug));
@@ -49,7 +49,7 @@ export async function saveTenantStorefrontConfig({
   slug: string;
   storefrontConfig: unknown;
 }): Promise<void> {
-  await db
+  await edgeDb
     .update(tenants)
     .set({ storefrontConfig, status: "active", error: null }) // Map ready -> active
     .where(eq(tenants.slug, slug));
@@ -64,7 +64,7 @@ export async function saveTenantDemoUrl({
   demoUrl: string;
   v0ChatId?: string;
 }): Promise<void> {
-  await db
+  await edgeDb
     .update(tenants)
     .set({ demoUrl, v0ChatId: v0ChatId ?? null, status: "active", error: null })
     .where(eq(tenants.slug, slug));
@@ -79,7 +79,7 @@ export async function saveTenantGeneratedFiles({
   generatedFiles: Array<{ name: string; content: string }>;
   v0ChatId?: string;
 }): Promise<void> {
-  await db
+  await edgeDb
     .update(tenants)
     // Cast strict type if needed, or Drizzle handles jsonb
     .set({ generatedFiles: generatedFiles as any, v0ChatId: v0ChatId ?? null })
@@ -93,17 +93,17 @@ export async function saveTenantDeploymentUrl({
   slug: string;
   vercelDeploymentUrl: string;
 }): Promise<void> {
-  await db
+  await edgeDb
     .update(tenants)
     .set({ vercelDeploymentUrl, status: "active", error: null }) // Map deployed -> active
     .where(eq(tenants.slug, slug));
 }
 
 export async function getAllTenants(): Promise<Tenant[]> {
-  return db.select().from(tenants);
+  return edgeDb.select().from(tenants);
 }
 
 export async function getTenantsWithV0ChatId(): Promise<Tenant[]> {
-  const allTenants = await db.select().from(tenants);
+  const allTenants = await edgeDb.select().from(tenants);
   return allTenants.filter(t => t.v0ChatId);
 }

@@ -5,10 +5,9 @@ import {
     tenants,
     account,
     products,
-    productImages,
     mediaObjects,
     productMedia,
-} from "@vendly/db/schema";
+} from "../schema/index";
 import { edgeDb } from "../db";
 
 /**
@@ -253,6 +252,7 @@ export class InstagramQueries {
                 basePriceAmount: data.priceAmount,
                 baseCurrency: "KES",
                 status: data.status || "draft",
+                slug: data.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "")
             })
             .returning();
 
@@ -267,16 +267,32 @@ export class InstagramQueries {
         url: string;
         sortOrder?: number;
     }) {
-        const [image] = await this.db
-            .insert(productImages)
+        // We need tenantId
+        const [product] = await this.db.select({ tenantId: products.tenantId }).from(products).where(eq(products.id, data.productId)).limit(1);
+        if (!product) throw new Error("Product not found");
+
+        // Create media object
+        const [mediaObj] = await this.db.insert(mediaObjects).values({
+            tenantId: product.tenantId,
+            blobUrl: data.url
+        }).returning();
+
+        const [link] = await this.db
+            .insert(productMedia)
             .values({
+                tenantId: product.tenantId,
                 productId: data.productId,
-                url: data.url,
+                mediaId: mediaObj.id,
                 sortOrder: data.sortOrder || 0,
             })
             .returning();
 
-        return image;
+        return {
+            id: link.id,
+            productId: link.productId,
+            url: data.url,
+            sortOrder: link.sortOrder || 0
+        };
     }
 
     async createMediaObject(data: {
