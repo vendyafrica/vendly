@@ -58,4 +58,16 @@ router.post(
     instagramController.importMedia.bind(instagramController)
 );
 
+/**
+ * @route   POST /api/instagram/initialize
+ * @desc    Initialize Instagram integration (sub + sync)
+ * @access  Private
+ * @body    { tenantSlug: string }
+ */
+router.post(
+    "/initialize",
+    authMiddleware,
+    instagramController.initializeIntegration.bind(instagramController)
+);
+
 export default router;

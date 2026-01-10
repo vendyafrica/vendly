@@ -15,7 +15,7 @@ import { edgeDb } from "../db";
  * Instagram Queries
  */
 export class InstagramQueries {
-    constructor(private db: typeof edgeDb) {}
+    constructor(private db: typeof edgeDb) { }
 
     /**
      * Get Instagram account for user
@@ -129,16 +129,17 @@ export class InstagramQueries {
      * List media for store
      */
     async listMediaByStore(storeId: string, options?: { onlyNonImported?: boolean }) {
-        let query = this.db
-            .select()
-            .from(instagramMedia)
-            .where(eq(instagramMedia.storeId, storeId));
+        const conditions = [eq(instagramMedia.storeId, storeId)];
 
         if (options?.onlyNonImported) {
-            query = query.where(eq(instagramMedia.isImported, false)) as any;
+            conditions.push(eq(instagramMedia.isImported, false));
         }
 
-        return await query.orderBy(desc(instagramMedia.timestamp));
+        return await this.db
+            .select()
+            .from(instagramMedia)
+            .where(and(...conditions))
+            .orderBy(desc(instagramMedia.timestamp));
     }
 
     /**

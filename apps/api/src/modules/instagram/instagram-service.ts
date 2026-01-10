@@ -38,16 +38,17 @@ export class InstagramService {
         console.log("[InstagramService] Fetching media from Instagram API");
 
         const response = await fetch(url);
-        const data: InstagramAPIResponse = await response.json();
+        const data = await response.json() as any;
 
-        if ((data as any).error) {
-            console.error("[InstagramService] Instagram API Error:", (data as any).error);
+        if (data.error) {
+            console.error("[InstagramService] Instagram API Error:", data.error);
             throw new Error(
-                `Failed to fetch media from Instagram: ${(data as any).error.message}`
+                `Failed to fetch media from Instagram: ${data.error.message}`
             );
         }
 
-        return data.data || [];
+        return (data as InstagramAPIResponse).data || [];
+
     }
 
     /**
@@ -326,8 +327,8 @@ export class InstagramService {
 
             // Create product
             const productTitle =
-                options.name || generateProductTitle(media.caption, media.instagramId);
-            const productDescription = sanitizeCaption(media.caption);
+                options.name || generateProductTitle(media.caption || undefined, media.instagramId);
+            const productDescription = sanitizeCaption(media.caption || undefined);
 
             const newProduct = await queries.createProductFromMedia({
                 storeId: store.id,
@@ -413,19 +414,43 @@ export class InstagramService {
             const url = `https://graph.instagram.com/${this.INSTAGRAM_API_VERSION}/me/subscribed_apps?subscribed_fields=${fields.join(",")}&access_token=${accessToken}`;
 
             const response = await fetch(url, { method: "POST" });
-            const data = await response.json();
+            const data = await response.json() as any;
 
             if (data.success) {
                 console.log("[InstagramService] Successfully subscribed to webhooks");
                 return true;
             } else {
                 console.error("[InstagramService] Failed to subscribe:", data);
+                // Don't throw here, just return false so the flow can continue (we still want to sync)
                 return false;
             }
         } catch (error) {
             console.error("[InstagramService] Subscription error:", error);
-            throw error;
+            // Don't throw here either
+            return false;
         }
+    }
+
+    /**
+     * Initialize integration (Subscribe + First Sync)
+     */
+    async initializeIntegration(tenantSlug: string, userId: string): Promise<{ subscribed: boolean; syncResult: MediaSyncResult }> {
+        console.log(`[InstagramService] Initializing integration for ${tenantSlug}`);
+
+        // 1. Subscribe to webhooks
+        const subscribed = await this.subscribeApp(userId);
+
+        // 2. Perform initial sync
+        const syncResult = await this.syncMedia({
+            tenantSlug,
+            userId,
+            forceRefresh: true
+        });
+
+        return {
+            subscribed,
+            syncResult
+        };
     }
 }
 
@@ -447,5 +472,4 @@ export function getInstagramService(db: typeof edgeDb) {
 }
 
 // Export default instance
-import { edgeDb } from "@vendly/db";
 export const instagramService = new InstagramService(edgeDb);

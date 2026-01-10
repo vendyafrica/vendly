@@ -111,8 +111,21 @@ export class InstagramController {
                                     if (attachment.type === "ig_post") {
                                         console.log("[InstagramController] Received New Post Share (ig_post):", attachment.payload);
                                         const { ig_post_media_id, url } = attachment.payload;
-                                        // TODO: Automatically import this product if desired
-                                        // await this.getService().importMediaAsProduct({ ... })
+                                        // Trigger a sync for this user/tenant ??
+                                        // Challenge: The webhook payload might NOT contain the tenantSlug or userId directly
+                                        // depending on how we subscribed.
+                                        // For "me/subscribed_apps", updates come for the User who authorized the app.
+                                        // We might need to look up the user by their Instagram ID (which should be in the payload `sender.id` or similar?)
+                                        // BUT default IG Webhooks structure is:
+                                        // entry: [{ id: 'IG_USER_ID', ... }] -> This 'id' is the Instagram Business Account ID or User ID.
+
+                                        const instagramAccountId = entry.id;
+                                        if (instagramAccountId) {
+                                            console.log(`[InstagramController] Triggering sync for Instagram Account: ${instagramAccountId}`);
+                                            // TODO: lookup tenant/user by instagramAccountId and trigger sync
+                                            // For now we just log it, as we need a way to map IG ID back to our User/Tenant.
+                                            // Ideally we store `instagramAccountId` in our `account` table or `tenants` table.
+                                        }
                                     } else if (attachment.type === "share") {
                                         // Legacy support
                                         console.log("[InstagramController] Received Post Share (legacy):", attachment.payload);
@@ -264,6 +277,39 @@ export class InstagramController {
                     process.env.NODE_ENV === "development"
                         ? (error as Error).stack
                         : undefined,
+            });
+        }
+    }
+
+    /**
+     * POST /initialize - Initialize integration (Subscribe + First Sync)
+     */
+    async initializeIntegration(req: Request, res: Response): Promise<void> {
+        try {
+            const session = (req as any).session;
+            if (!session) {
+                res.status(401).json({ error: "Unauthorized" });
+                return;
+            }
+
+            const { tenantSlug } = req.body;
+
+            if (!tenantSlug) {
+                res.status(400).json({ error: "tenantSlug is required" });
+                return;
+            }
+
+            const service = this.getService();
+            const result = await service.initializeIntegration(tenantSlug, session.user.id);
+
+            res.status(200).json({
+                success: true,
+                data: result,
+            });
+        } catch (error) {
+            console.error("[InstagramController] Initialize error:", error);
+            res.status(500).json({
+                error: error instanceof Error ? error.message : "Initialization failed",
             });
         }
     }

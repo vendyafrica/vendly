@@ -3,9 +3,9 @@ import cors from "cors";
 import { toNodeHandler } from "better-auth/node";
 import { auth } from "@vendly/auth";
 
-import vercelDeploymentRouter from "./routes/vercel-deployment";
-import imageUploadRouter from "./routes/image-upload";
-import storefrontDemoRouter from "./routes/storefront-demo";
+import vercelDeploymentRouter from "./modules/deployment/vercel-route";
+import imageUploadRouter from "./modules/storage/blob-route";
+import storefrontDemoRouter from "./modules/storefront/storefront-route";
 
 export function createApp(): Express {
   const app = express();

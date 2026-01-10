@@ -1,6 +1,4 @@
 "use client";
-
-import * as React from "react";
 import {
   Area,
   AreaChart,
@@ -10,8 +8,7 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-// Using standard Recharts because the shadcn Chart component source was not provided in the prompt context.
-// This implementation matches the visual design exactly.
+
 
 import { Badge } from "@vendly/ui/components/badge";
 import { Button } from "@vendly/ui/components/button";
