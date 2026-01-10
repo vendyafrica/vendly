@@ -26,7 +26,7 @@ interface ProductCardProps {
   showAddToCart?: boolean;
 }
 
-export function ProductCard({ product, storeSlug, showAddToCart = false }: ProductCardProps) {
+export function ProductCard({ product, storeSlug, showAddToCart = true }: ProductCardProps) {
   const { addItem } = useCart();
 
   const handleAddToCart = (e: React.MouseEvent) => {
@@ -52,79 +52,67 @@ export function ProductCard({ product, storeSlug, showAddToCart = false }: Produ
   return (
     <div className="group relative bg-white">
       {/* Product Image */}
-      <Link href={`/${storeSlug}/product/${product.id}`}>
-        <div className="relative aspect-square overflow-hidden bg-gray-100">
-          {product.imageUrl ? (
-            <Image
-              src={product.imageUrl}
-              alt={product.name || product.title}
-              fill
-              sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
-              className="object-cover group-hover:scale-105 transition-transform duration-500"
-            />
-          ) : (
-            <div className="w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
-              <span className="text-gray-400 text-sm">No image</span>
-            </div>
-          )}
-          
-          {/* Status Badge */}
-          {product.status === "new" && (
-            <span className="absolute top-3 left-3 bg-gray-900 text-white px-3 py-1 text-xs font-medium tracking-wide uppercase">
-              New
-            </span>
-          )}
+      <Link href={`/${storeSlug}/product/${product.id}`} className="block relative aspect-[4/5] bg-gray-100 overflow-hidden mb-3">
+        {product.imageUrl ? (
+          <Image
+            src={product.imageUrl}
+            alt={product.name || product.title}
+            fill
+            sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
+            className="object-cover group-hover:scale-105 transition-transform duration-500"
+          />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center text-gray-300">
+            <span className="text-sm">No image</span>
+          </div>
+        )}
 
-          {/* Quick Add Button - Shows on Hover */}
-          {showAddToCart && (
-            <button
-              onClick={handleAddToCart}
-              className="absolute bottom-3 right-3 w-10 h-10 bg-white text-gray-900 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-lg hover:bg-gray-100"
-              aria-label="Add to cart"
-            >
-              <Plus className="h-5 w-5" />
-            </button>
-          )}
-        </div>
+        {/* Add Button - Circle Overlay */}
+        {showAddToCart && (
+          <button
+            onClick={handleAddToCart}
+            className="absolute bottom-3 right-3 w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-md hover:bg-black hover:text-white transition-colors z-10"
+            aria-label="Add to cart"
+          >
+            <Plus className="h-5 w-5" />
+          </button>
+        )}
       </Link>
 
       {/* Product Info */}
-      <div className="pt-4 pb-2">
-        {/* Brand/Category */}
-        {product.category && (
-          <p className="text-xs text-gray-400 uppercase tracking-wide mb-1">
-            {product.category}
-          </p>
-        )}
-        
-        {/* Product Name */}
+      <div className="space-y-1">
+        {/* Title */}
         <Link href={`/${storeSlug}/product/${product.id}`}>
-          <h3 className="text-sm font-medium text-gray-900 group-hover:text-gray-600 transition-colors line-clamp-2 mb-2">
+          <h3 className="text-base font-medium text-gray-900 line-clamp-1 group-hover:underline decoration-1 underline-offset-4">
             {product.name || product.title}
           </h3>
         </Link>
 
-        {/* Rating Stars */}
-        <div className="flex items-center gap-1 mb-2">
-          {[...Array(5)].map((_, i) => (
-            <Star
-              key={i}
-              className={`h-3.5 w-3.5 ${
-                i < fullStars
-                  ? "fill-yellow-400 text-yellow-400"
-                  : i === fullStars && hasHalfStar
-                  ? "fill-yellow-400/50 text-yellow-400"
-                  : "fill-gray-200 text-gray-200"
-              }`}
-            />
-          ))}
+        {/* Rating */}
+        <div className="flex items-center gap-1">
+          <div className="flex items-center">
+            {[...Array(5)].map((_, i) => (
+              <Star
+                key={i}
+                className={`h-3 w-3 ${i < fullStars
+                    ? "fill-yellow-400 text-yellow-400"
+                    : i === fullStars && hasHalfStar
+                      ? "fill-yellow-400/50 text-yellow-400"
+                      : "fill-gray-200 text-gray-200"
+                  }`}
+              />
+            ))}
+          </div>
+          {/* Optional: Show count if available */}
+          {/* <span className="text-xs text-gray-400">(12)</span> */}
         </div>
 
         {/* Price */}
         <div className="flex items-center gap-2">
-          <p className="text-sm font-semibold text-gray-900">
+          <p className="text-base font-bold text-gray-900">
             {formatPrice(product.price || product.priceAmount)}
           </p>
+          {/* Hide original price for cleaner look unless significantly different */}
           {product.originalPrice && product.originalPrice > (product.price || product.priceAmount) && (
             <p className="text-sm text-gray-400 line-through">
               {formatPrice(product.originalPrice)}

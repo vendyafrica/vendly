@@ -35,21 +35,50 @@ function isLikelyImageUrl(url: string) {
 
 function buildCssVars(theme: unknown): React.CSSProperties {
   const t: ThemeLike | undefined = isRecord(theme) ? (theme as ThemeLike) : undefined;
-  const cssVars: Record<string, string> = t?.customCssVars ?? {};
-  const themeConfig: Record<string, unknown> = t?.themeConfig ?? {};
+  if (!t) return {};
+
+  const cssVars: Record<string, string> = t.customCssVars ?? {};
+
+  // Handle both nested themeConfig (legacy/blobs) and flat structure (DB store_themes)
+  const themeConfig = (t.themeConfig as Record<string, unknown>) || t;
+
+  const colors = (themeConfig.colors as Record<string, string>) || {};
+  const typography = (themeConfig.typography as Record<string, string>) || {};
 
   const style: React.CSSProperties = {};
 
+  // Custom CSS Vars
   for (const [k, v] of Object.entries(cssVars)) {
     if (typeof v === "string") {
       (style as Record<string, string>)[toCssVarName(k)] = v;
     }
   }
 
-  const headingFont = themeConfig.headingFont;
-  const bodyFont = themeConfig.bodyFont;
+  // Typography
+  const headingFont = typography.headingFont || themeConfig.headingFont;
+  const bodyFont = typography.bodyFont || themeConfig.bodyFont;
+
   if (typeof headingFont === "string") (style as Record<string, string>)["--font-heading"] = headingFont;
   if (typeof bodyFont === "string") (style as Record<string, string>)["--font-body"] = bodyFont;
+
+  // Colors mapping (Assuming shadcn/tailwind variables are what we target)
+  // Map our DB colors to CSS variables expected by the theme
+  if (colors.background) (style as Record<string, string>)["--background"] = colors.background;
+  if (colors.foreground) (style as Record<string, string>)["--foreground"] = colors.foreground;
+  if (colors.primary) (style as Record<string, string>)["--primary"] = colors.primary;
+  if (colors.primaryForeground) (style as Record<string, string>)["--primary-foreground"] = colors.primaryForeground;
+  if (colors.secondary) (style as Record<string, string>)["--secondary"] = colors.secondary;
+  if (colors.secondaryForeground) (style as Record<string, string>)["--secondary-foreground"] = colors.secondaryForeground;
+  if (colors.muted) (style as Record<string, string>)["--muted"] = colors.muted;
+  if (colors.mutedForeground) (style as Record<string, string>)["--muted-foreground"] = colors.mutedForeground;
+  if (colors.accent) (style as Record<string, string>)["--accent"] = colors.accent;
+  if (colors.accentForeground) (style as Record<string, string>)["--accent-foreground"] = colors.accentForeground;
+  if (colors.card) (style as Record<string, string>)["--card"] = colors.card;
+  if (colors.cardForeground) (style as Record<string, string>)["--card-foreground"] = colors.cardForeground;
+  if (colors.border) (style as Record<string, string>)["--border"] = colors.border;
+  if (colors.input) (style as Record<string, string>)["--input"] = colors.input;
+  if (colors.ring) (style as Record<string, string>)["--ring"] = colors.ring;
+  if (colors.radius) (style as Record<string, string>)["--radius"] = colors.radius;
 
   return style;
 }

@@ -10,6 +10,7 @@ export type StorefrontProduct = {
   currency: string;
   status: string;
   imageUrl?: string;
+  originalPrice?: number;
 };
 
 function getApiBaseUrl() {
@@ -79,6 +80,7 @@ function normalizeProducts(raw: unknown): StorefrontProduct[] {
       currency,
       status,
       imageUrl,
+      originalPrice: getNumber(item.originalPrice) ?? getNumber(item.compareAtPrice),
     });
   }
 

@@ -22,7 +22,12 @@ async function fetchJson(url: string) {
     const text = await resp.text().catch(() => "");
     throw new Error(text || `Request failed: ${resp.status}`);
   }
-  return resp.json();
+  const json = await resp.json();
+  // Unwrap { success: true, data: ... } if present
+  if (json && typeof json === 'object' && 'success' in json && 'data' in json) {
+    return json.data;
+  }
+  return json;
 }
 
 export function useStorefrontStore(storeSlug?: string) {

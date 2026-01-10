@@ -63,12 +63,20 @@ export class StorefrontService {
         const [newContent] = await db.insert(storeContent).values({
             tenantId: tenant.id,
             storeId: newStore.id,
-            data: {
-                heroLabel: "New Collection",
-                heroTitle: `Welcome to ${data.name}`,
-                heroSubtitle: "Discover our premium collection.",
-                heroCta: "Shop Now",
+            hero: {
+                label: "New Collection",
+                title: `Welcome to ${data.name}`,
+                subtitle: "Discover our premium collection.",
+                ctaText: "Shop Now",
+                layout: "centered",
+                enabled: true
             },
+            sections: [],
+            footer: {
+                showSocialLinks: true,
+                showNewsletter: true,
+                copyright: `© ${new Date().getFullYear()} ${data.name}`
+            }
         }).returning();
 
         return {
@@ -80,7 +88,14 @@ export class StorefrontService {
             status: newStore.status,
             logoUrl: newStore.logoUrl,
             theme: newTheme,
-            content: newContent.data,
+            content: {
+                heroLabel: newContent.hero?.label,
+                heroTitle: newContent.hero?.title,
+                heroSubtitle: newContent.hero?.subtitle,
+                heroCta: newContent.hero?.ctaText,
+                sections: newContent.sections,
+                footer: newContent.footer
+            },
             defaultCurrency: newStore.defaultCurrency,
             createdAt: newStore.createdAt,
         };
@@ -121,7 +136,19 @@ export class StorefrontService {
             status: store.status,
             logoUrl: store.logoUrl,
             theme: theme || {},
-            content: (content?.data as any) || {},
+            content: content ? {
+                // Flatten nested DB content for frontend compatibility
+                heroLabel: content.hero?.label,
+                heroTitle: content.hero?.title,
+                heroSubtitle: content.hero?.subtitle,
+                heroCta: content.hero?.ctaText,
+                heroLink: content.hero?.ctaLink,
+                heroImageUrl: content.hero?.imageUrl,
+
+                // Pass through sections and footer for components that can handle them
+                sections: content.sections,
+                footer: content.footer,
+            } : {},
             defaultCurrency: store.defaultCurrency,
             createdAt: store.createdAt,
         };

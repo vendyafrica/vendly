@@ -60,7 +60,7 @@ router.get("/:slug/products", async (req: Request, res: Response) => {
         });
 
         // Transform blobs into product format
-        const products = result.blobs
+        let products = result.blobs
             .filter((blob) => {
                 const ext = blob.pathname.toLowerCase();
                 return (
@@ -90,6 +90,19 @@ router.get("/:slug/products", async (req: Request, res: Response) => {
                 };
             })
             .slice(0, limitNum);
+
+        // FALLBACK: If no blobs found (e.g. user deleted folder), return static demo data
+        if (products.length === 0) {
+            products = Array.from({ length: 8 }).map((_, i) => ({
+                id: `static-demo-${i}`,
+                name: `Premium Item ${i + 1}`,
+                description: "This is a sample product description to demonstrate the layout.",
+                basePriceAmount: (i + 1) * 1500 + 2000,
+                baseCurrency: "KES",
+                status: "active",
+                imageUrl: `https://images.unsplash.com/photo-${i % 2 === 0 ? '1523275335684-37898b6baf30' : '1505740420926-4d67395efdc2'}?auto=format&fit=crop&w=800&q=80`,
+            }));
+        }
 
         res.json(products);
     } catch (error) {
