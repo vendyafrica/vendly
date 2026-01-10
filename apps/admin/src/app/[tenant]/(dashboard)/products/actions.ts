@@ -1,7 +1,7 @@
 "use server"
 
 import { db } from "@vendly/db"
-import { products, tenants, stores, productImages } from "@vendly/db/schema"
+import { products, tenants, stores, productVariants, inventoryItems, mediaObjects, productMedia } from "@vendly/db/schema"
 import { eq } from "drizzle-orm"
 import { revalidatePath } from "next/cache"
 
@@ -21,24 +21,37 @@ export async function updateProduct(
         if (data.title !== undefined) {
             updateData.title = data.title
         }
-        if (data.price !== undefined) {
-            updateData.priceAmount = data.price
-        }
-        if (data.stock !== undefined) {
-            updateData.inventoryQuantity = data.stock
-        }
         if (data.status !== undefined) {
             updateData.status = data.status
         }
-
-        if (Object.keys(updateData).length === 0) {
-            return { success: true }
+        // Base price update on product
+        if (data.price !== undefined) {
+            updateData.basePriceAmount = Math.round(data.price * 100)
         }
 
-        await db
-            .update(products)
-            .set(updateData)
-            .where(eq(products.id, productId))
+        if (Object.keys(updateData).length > 0) {
+            await db
+                .update(products)
+                .set(updateData)
+                .where(eq(products.id, productId))
+        }
+
+        // Update variants and inventory if needed
+        // Assuming single variant for now.
+        const variants = await db.select().from(productVariants).where(eq(productVariants.productId, productId));
+        if (variants.length > 0) {
+            const variantId = variants[0].id;
+            if (data.price !== undefined) {
+                await db.update(productVariants)
+                    .set({ priceAmount: Math.round(data.price * 100) })
+                    .where(eq(productVariants.id, variantId))
+            }
+            if (data.stock !== undefined) {
+                await db.update(inventoryItems)
+                    .set({ quantityOnHand: data.stock })
+                    .where(eq(inventoryItems.variantId, variantId));
+            }
+        }
 
         return { success: true }
     } catch (error) {
@@ -65,20 +78,45 @@ export async function createProduct(
         if (!store) throw new Error("Store not found")
 
         // 2. Create Product
+        const slug = data.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") + "-" + Date.now();
+
         const [newProduct] = await db.insert(products).values({
+            tenantId: tenant.id,
             storeId: store.id,
             title: data.title,
-            priceAmount: Math.round(data.price * 100),
-            inventoryQuantity: data.stock,
+            slug: slug,
+            basePriceAmount: Math.round(data.price * 100),
             status: "active",
         }).returning()
 
-        // 3. Create Image if provided
+        // 3. Create Default Variant
+        const [newVariant] = await db.insert(productVariants).values({
+            tenantId: tenant.id,
+            productId: newProduct.id,
+            priceAmount: Math.round(data.price * 100),
+            title: "Default",
+            options: {},
+        }).returning();
+
+        // 4. Create Inventory Link
+        await db.insert(inventoryItems).values({
+            tenantId: tenant.id,
+            variantId: newVariant.id,
+            quantityOnHand: data.stock
+        });
+
+        // 5. Create Image if provided
         if (data.imageUrl) {
-            await db.insert(productImages).values({
+            const [media] = await db.insert(mediaObjects).values({
+                tenantId: tenant.id,
+                blobUrl: data.imageUrl,
+            }).returning();
+
+            await db.insert(productMedia).values({
+                tenantId: tenant.id,
                 productId: newProduct.id,
-                url: data.imageUrl,
-                sortOrder: 0,
+                mediaId: media.id,
+                variantId: newVariant.id
             })
         }
 

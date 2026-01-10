@@ -37,6 +37,7 @@
     "@types/react-dom": "19.1.7",
     "@vendly/eslint-config": "workspace:*",
     "@vendly/typescript-config": "workspace:*",
+    "dotenv": "^17.2.3",
     "eslint": "^9.39.0",
     "typescript": "5.9.3"
   }

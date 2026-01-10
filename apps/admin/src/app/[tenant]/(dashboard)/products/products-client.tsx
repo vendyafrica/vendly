@@ -516,6 +516,8 @@ export default function ProductsClient({ products: initialProducts, tenantSlug }
     const [isAdding, setIsAdding] = React.useState(false)
     const [newProductImage, setNewProductImage] = React.useState("")
     const [newProductTitle, setNewProductTitle] = React.useState("")
+    const [newProductPrice, setNewProductPrice] = React.useState("")
+    const [newProductStock, setNewProductStock] = React.useState("")
     const [isCreating, setIsCreating] = React.useState(false)
     const fileInputRef = React.useRef<HTMLInputElement>(null)
 
@@ -536,8 +538,8 @@ export default function ProductsClient({ products: initialProducts, tenantSlug }
         setIsCreating(true)
         const result = await createProduct(tenantSlug, {
             title: newProductTitle,
-            price: 0,
-            stock: 0,
+            price: parseFloat(newProductPrice) || 0,
+            stock: parseInt(newProductStock) || 0,
             imageUrl: newProductImage
         })
 
@@ -549,10 +551,10 @@ export default function ProductsClient({ products: initialProducts, tenantSlug }
             setProductList(prev => [{
                 id: result.product!.id,
                 name: result.product!.title,
-                price: 0,
+                price: parseFloat(newProductPrice) || 0,
                 sales: "0",
                 revenue: "$0.00",
-                stock: 0,
+                stock: parseInt(newProductStock) || 0,
                 status: "active",
                 rating: 0,
                 selected: false,
@@ -561,6 +563,8 @@ export default function ProductsClient({ products: initialProducts, tenantSlug }
             setIsAdding(false)
             setNewProductImage("")
             setNewProductTitle("")
+            setNewProductPrice("")
+            setNewProductStock("")
         }
         setIsCreating(false)
     }
@@ -640,6 +644,36 @@ export default function ProductsClient({ products: initialProducts, tenantSlug }
                                         onChange={(e) => setNewProductTitle(e.target.value)}
                                         className="h-10"
                                     />
+                                </div>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="grid gap-2">
+                                        <label htmlFor="price" className="text-sm font-medium">Price</label>
+                                        <div className="relative">
+                                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
+                                            <Input
+                                                id="price"
+                                                type="number"
+                                                min="0"
+                                                step="0.01"
+                                                placeholder="0.00"
+                                                className="pl-7 h-10"
+                                                value={newProductPrice}
+                                                onChange={(e) => setNewProductPrice(e.target.value)}
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="grid gap-2">
+                                        <label htmlFor="stock" className="text-sm font-medium">Stock</label>
+                                        <Input
+                                            id="stock"
+                                            type="number"
+                                            min="0"
+                                            placeholder="0"
+                                            className="h-10"
+                                            value={newProductStock}
+                                            onChange={(e) => setNewProductStock(e.target.value)}
+                                        />
+                                    </div>
                                 </div>
                                 <div className="grid gap-2">
                                     <label className="text-sm font-medium">Product Image</label>
