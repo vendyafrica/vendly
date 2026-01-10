@@ -8,7 +8,7 @@ import {
 } from "drizzle-orm/pg-core";
 
 // Import tenant tables to reference them
-import { tenants, tenantMemberships } from "./tenant-schema";
+import { tenantMemberships } from "./tenant-schema";
 
 /**
  * Users table
@@ -116,7 +116,6 @@ export const accountRelations = relations(account, ({ one }) => ({
     }),
 }));
 
-// Typed exports
 export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;
 export type Session = typeof session.$inferSelect;
