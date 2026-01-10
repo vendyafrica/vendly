@@ -4,6 +4,5 @@ export * from "./storefront-schema";
 export * from "./category-schema";
 export * from "./product-schema";
 export * from "./commerce-schema";
-export * from "./review-schema";
 
 

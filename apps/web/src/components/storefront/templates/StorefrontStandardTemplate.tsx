@@ -1,8 +1,8 @@
-import { Header } from "@/components/storefront/Header";
-import { HeroSection } from "@/components/storefront/HeroSection";
-import { ProductGrid } from "@/components/storefront/ProductGrid";
-import { Footer } from "@/components/storefront/Footer";
-import { FeaturedSections } from "@/components/storefront/FeaturedSections";
+import { Header } from "@/components/storefront/primitives/Header";
+import { HeroSection } from "@/components/storefront/primitives/HeroSection";
+import { ProductGrid } from "@/components/storefront/primitives/ProductGrid";
+import { Footer } from "@/components/storefront/primitives/Footer";
+import { FeaturedSections } from "@/components/storefront/primitives/FeaturedSections";
 
 type StoreTheme = Partial<{
   primaryColor: string;

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useCart } from "./CartProvider";
+import { useCart } from "../CartProvider";
 import { ShoppingCart, User, Heart } from "lucide-react";
 
 interface ThemeProps {

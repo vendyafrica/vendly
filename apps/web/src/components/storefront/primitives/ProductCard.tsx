@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useCart } from "./CartProvider";
+import { useCart } from "../CartProvider";
 import { Star, Plus } from "lucide-react";
 
 interface Product {
