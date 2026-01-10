@@ -15,8 +15,17 @@ export type OnboardingData = {
   phone: string;
   // Business
   categories: string[];
+  location: string;
+  socialLinks: {
+    instagram?: string;
+    tiktok?: string;
+    twitter?: string;
+    facebook?: string;
+    website?: string;
+  };
   // Store Setup
   storeName: string;
+  description: string;
   subdomain: string;
   colorPalette: string;
   selectedThemeId: string;
@@ -28,7 +37,10 @@ const defaultData: OnboardingData = {
   fullName: '',
   phone: '',
   categories: [],
+  location: '',
+  socialLinks: {},
   storeName: '',
+  description: '',
   subdomain: '',
   colorPalette: '',
   selectedThemeId: 'premium-minimal',

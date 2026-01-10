@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useParams } from "next/navigation";
 import { Button } from "@vendly/ui/components/button";
-import { RefreshCw, Eye, Check, Monitor, Tablet, Smartphone } from "lucide-react";
+import { RefreshCw, Eye, Check, Monitor, Tablet, Smartphone, UploadCloud } from "lucide-react";
 
 type DevicePreview = "desktop" | "tablet" | "mobile";
 
@@ -26,6 +26,7 @@ export default function StoreEditorPage() {
   const [pageData, setPageData] = useState<PageData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [isPublishing, setIsPublishing] = useState(false);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
   const [devicePreview, setDevicePreview] = useState<DevicePreview>("desktop");
   const [iframeKey, setIframeKey] = useState(0);
@@ -120,6 +121,28 @@ export default function StoreEditorPage() {
     }, 1500);
   }, [apiBaseUrl, tenant]);
 
+  const handlePublish = async () => {
+    if (!confirm("Are you sure you want to publish this store to the live web?")) return;
+
+    setIsPublishing(true);
+    try {
+      const res = await fetch(`${apiBaseUrl}/api/vercel/tenants/${tenant}/deploy`, {
+        method: "POST",
+      });
+
+      if (res.ok) {
+        alert("Store publish initiated successfully!");
+      } else {
+        const err = await res.json();
+        alert("Failed to publish: " + (err.message || "Unknown error"));
+      }
+    } catch (e: any) {
+      alert("Error publishing: " + e.message);
+    } finally {
+      setIsPublishing(false);
+    }
+  };
+
   // Cleanup
   useEffect(() => {
     return () => {
@@ -190,6 +213,21 @@ export default function StoreEditorPage() {
           >
             <Eye className="w-4 h-4 mr-2" />
             Preview
+          </Button>
+
+          <Button
+            variant="default"
+            size="sm"
+            className="bg-black text-white hover:bg-gray-800"
+            onClick={handlePublish}
+            disabled={isPublishing}
+          >
+            {isPublishing ? (
+              <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+            ) : (
+              <UploadCloud className="w-4 h-4 mr-2" />
+            )}
+            Publish
           </Button>
         </div>
       </div>

@@ -1,5 +1,5 @@
 import { db, stores, storeThemes, storeContent, tenants, eq } from "@vendly/db";
-import { CreateStoreRequest, UpdateStoreRequest, StoreResponse } from "./storefront-model";
+import { CreateStoreRequest, UpdateStoreRequest, StoreResponse, PageData } from "./storefront-model";
 import { vercelDeploymentService } from "../deployment/vercel-service";
 
 
@@ -202,6 +202,83 @@ export class StorefrontService {
                 updatedAt: new Date()
             }).where(eq(storeContent.storeId, storeId));
         }
+    }
+    /**
+     * Get Page Data for Editor/Storefront
+     */
+    async getPageData(tenantSlug: string): Promise<{ pageData: PageData } | null> {
+        // 1. Get Tenant & Store (Assuming single store per tenant for now or main store)
+        // We really should look up by store slug if possible, but the route param is :slug (which maps to tenant or store?)
+        // The URL is /api/storefront/${tenant}/page-data. So 'tenant' param is likely the tenant slug (which is also the store slug usually).
+
+        const [store] = await db
+            .select()
+            .from(stores)
+            .where(eq(stores.slug, tenantSlug))
+            .limit(1);
+
+        if (!store) return null;
+
+        // 2. Fetch Content
+        const [content] = await db
+            .select()
+            .from(storeContent)
+            .where(eq(storeContent.storeId, store.id))
+            .limit(1);
+
+        // 3. Transform to PageData (Puck format)
+        // If we have stored editorData (Puck JSON), return that directly.
+        // Otherwise, construct it from structured fields (hero, sections).
+
+        if (content?.editorData) {
+            return { pageData: content.editorData as PageData };
+        }
+
+        // Construct from parts
+        const blocks: any[] = [];
+
+        // Hero
+        if (content?.hero && content.hero.enabled !== false) {
+            blocks.push({
+                type: "Hero",
+                props: {
+                    title: content.hero.title,
+                    subtitle: content.hero.subtitle,
+                    ctaText: content.hero.ctaText,
+                    ctaLink: content.hero.ctaLink,
+                    imageUrl: content.hero.imageUrl,
+                    id: "hero" // Puck needs unique IDs? usually auto-generated
+                }
+            });
+        }
+
+        // Sections
+        if (content?.sections && Array.isArray(content.sections)) {
+            content.sections.forEach((sec: any) => {
+                if (sec.enabled === false) return;
+
+                if (sec.type === "products") {
+                    blocks.push({
+                        type: "ProductsGrid", // Example component name
+                        props: {
+                            title: sec.title,
+                            id: sec.id
+                        }
+                    });
+                }
+                // Add more mappings as needed
+            });
+        }
+
+        // Footer (Usually part of root layout props or a block, depending on Puck config)
+        // Let's assume Footer is a block for now or handled by Layout.
+
+        return {
+            pageData: {
+                content: blocks,
+                root: { props: { title: store.name } }
+            }
+        };
     }
 }
 

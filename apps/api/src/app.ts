@@ -7,6 +7,7 @@ import vercelDeploymentRouter from "./modules/deployment/vercel-route";
 import imageUploadRouter from "./modules/storage/blob-route";
 import storefrontDemoRouter from "./modules/storefront/storefront-route";
 import tenantRouter from "./modules/tenant/tenant-route";
+import onboardingRouter from "./modules/onboarding/onboarding-route";
 
 export function createApp(): Express {
   const app = express();
@@ -44,6 +45,7 @@ export function createApp(): Express {
   app.use("/api/upload", imageUploadRouter);
   app.use("/api/storefront", storefrontDemoRouter);
   app.use("/api/tenants", tenantRouter);
+  app.use("/api/onboarding", onboardingRouter);
 
   app.get("/", (_req, res) => {
     res.send("API is running");

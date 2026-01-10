@@ -29,6 +29,13 @@ router.put("/:id", authMiddleware, storefrontController.update.bind(storefrontCo
 router.post("/:id/publish", authMiddleware, storefrontController.publish.bind(storefrontController));
 
 /**
+ * @route   GET /api/storefront/:slug/page-data
+ * @desc    Get store page data for editor
+ * @access  Public
+ */
+router.get("/:slug/page-data", storefrontController.getPageData.bind(storefrontController));
+
+/**
  * @route   GET /api/storefront/:slug
  * @desc    Get store public data (Preview)
  * @access  Public

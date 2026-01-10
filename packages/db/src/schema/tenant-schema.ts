@@ -24,6 +24,7 @@ export const tenants = pgTable(
     {
         id: uuid("id").primaryKey().defaultRandom(),
         name: text("name").notNull(),
+        phoneNumber: text("phone_number"),
         slug: text("slug").notNull().unique(),
         status: tenantStatus("status").notNull().default("onboarding"),
         plan: text("plan").default("free"),

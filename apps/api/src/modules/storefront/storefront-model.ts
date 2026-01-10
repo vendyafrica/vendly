@@ -25,3 +25,8 @@ export interface StoreResponse {
     defaultCurrency: string;
     createdAt: Date;
 }
+
+export interface PageData {
+    content: Array<{ type: string; props: Record<string, unknown> }>;
+    root: { props: Record<string, unknown> };
+}

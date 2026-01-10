@@ -12,6 +12,7 @@ import {
   CardDescription,
 } from "@vendly/ui/components/card";
 import { Label } from "@vendly/ui/components/label";
+import { Input } from "@vendly/ui/components/input";
 import * as Checkbox from "@radix-ui/react-checkbox";
 import { CheckIcon } from "@radix-ui/react-icons";
 import { useOnboarding } from '@/contexts/OnboardingContext';
@@ -29,6 +30,12 @@ export function BusinessForm() {
   const router = useRouter();
   const { data, updateData } = useOnboarding();
   const [categories, setCategories] = useState<string[]>(data.categories);
+  const [location, setLocation] = useState(data.location || "");
+  const [socialLinks, setSocialLinks] = useState({
+    instagram: data.socialLinks?.instagram || "",
+    tiktok: data.socialLinks?.tiktok || "",
+    twitter: data.socialLinks?.twitter || ""
+  });
 
   const toggleCategory = (category: string) => {
     setCategories((prev) =>
@@ -38,10 +45,18 @@ export function BusinessForm() {
     );
   };
 
+  const handleSocialChange = (platform: string, value: string) => {
+    setSocialLinks(prev => ({ ...prev, [platform]: value }));
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (categories.length === 0) return;
-    updateData({ categories });
+    updateData({
+      categories,
+      location,
+      socialLinks
+    });
     router.push('/sell/store-setup');
   };
 
@@ -56,30 +71,76 @@ export function BusinessForm() {
 
       <CardContent className="px-10">
         <form id="business-form" onSubmit={handleSubmit}>
-          <div className="space-y-4 mt-6">
-            <Label>Product Categories</Label>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-              {CATEGORIES.map((category) => (
-                <div key={category} className="flex items-center space-x-2">
-                  <Checkbox.Root
-                    id={category}
-                    checked={categories.includes(category)}
-                    onCheckedChange={() => toggleCategory(category)}
-                    className="h-4 w-4 rounded border border-gray-300 data-[state=checked]:bg-primary data-[state=checked]:border-primary"
-                  >
-                    <Checkbox.Indicator className="flex items-center justify-center text-white">
-                      <CheckIcon className="h-3 w-3" />
-                    </Checkbox.Indicator>
-                  </Checkbox.Root>
-                  <label
-                    htmlFor={category}
-                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
-                    onClick={() => toggleCategory(category)}
-                  >
-                    {category}
-                  </label>
+          <div className="space-y-6 mt-6">
+            <div className="grid gap-2">
+              <Label>Product Categories</Label>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                {CATEGORIES.map((category) => (
+                  <div key={category} className="flex items-center space-x-2">
+                    <Checkbox.Root
+                      id={category}
+                      checked={categories.includes(category)}
+                      onCheckedChange={() => toggleCategory(category)}
+                      className="h-4 w-4 rounded border border-gray-300 data-[state=checked]:bg-primary data-[state=checked]:border-primary"
+                    >
+                      <Checkbox.Indicator className="flex items-center justify-center text-white">
+                        <CheckIcon className="h-3 w-3" />
+                      </Checkbox.Indicator>
+                    </Checkbox.Root>
+                    <label
+                      htmlFor={category}
+                      className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                      onClick={() => toggleCategory(category)}
+                    >
+                      {category}
+                    </label>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="space-y-4 pt-4 border-t">
+              <h3 className="text-sm font-medium">Business Details</h3>
+
+              <div className="grid gap-2">
+                <Label htmlFor="location">Location / Address</Label>
+                <Input
+                  id="location"
+                  placeholder="e.g. Nairobi, Kenya"
+                  value={location}
+                  onChange={(e) => setLocation(e.target.value)}
+                />
+              </div>
+
+              <div className="grid gap-4 sm:grid-cols-3">
+                <div className="grid gap-2">
+                  <Label htmlFor="instagram">Instagram</Label>
+                  <Input
+                    id="instagram"
+                    placeholder="@username"
+                    value={socialLinks.instagram}
+                    onChange={(e) => handleSocialChange('instagram', e.target.value)}
+                  />
                 </div>
-              ))}
+                <div className="grid gap-2">
+                  <Label htmlFor="tiktok">TikTok</Label>
+                  <Input
+                    id="tiktok"
+                    placeholder="@username"
+                    value={socialLinks.tiktok}
+                    onChange={(e) => handleSocialChange('tiktok', e.target.value)}
+                  />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="twitter">Twitter / X</Label>
+                  <Input
+                    id="twitter"
+                    placeholder="@username"
+                    value={socialLinks.twitter}
+                    onChange={(e) => handleSocialChange('twitter', e.target.value)}
+                  />
+                </div>
+              </div>
             </div>
           </div>
         </form>

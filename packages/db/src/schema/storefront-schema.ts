@@ -29,6 +29,116 @@ export const themePreset = pgEnum("theme_preset", [
 ]);
 
 /**
+ * Templates
+ * Pre-defined store templates that users can choose from.
+ * Contains default configuration for themes, content, navigation, and pages.
+ */
+export const templates = pgTable(
+    "templates",
+    {
+        id: uuid("id").primaryKey().defaultRandom(),
+        name: text("name").notNull(),
+        slug: text("slug").notNull().unique(), // e.g., 'old-money', 'minimalist'
+        description: text("description"),
+        thumbnailUrl: text("thumbnail_url"),
+        config: jsonb("config"),
+
+        // Preview colors for the UI selection
+        previewColors: jsonb("preview_colors").$type<string[]>(),
+
+        // 1. Theme Configuration (maps to store_themes)
+        themeConfig: jsonb("theme_config").$type<{
+            colors: {
+                background: string;
+                foreground: string;
+                primary: string;
+                primaryForeground: string;
+                secondary: string;
+                secondaryForeground: string;
+                muted: string;
+                mutedForeground: string;
+                accent: string;
+                accentForeground: string;
+                border: string;
+                input: string;
+                ring: string;
+                radius: string;
+                card: string;
+                cardForeground: string;
+            };
+            typography: {
+                fontFamily: string;
+                headingFont: string;
+                bodyFont: string;
+            };
+            layout?: any;
+            components?: any;
+            customCss?: string;
+        }>(),
+
+        // 2. Content Configuration (maps to store_content)
+        contentConfig: jsonb("content_config").$type<{
+            hero: {
+                enabled: boolean;
+                layout: "centered" | "split" | "fullscreen";
+                title: string;
+                subtitle: string;
+                ctaText: string;
+                imageUrl?: string;
+                backgroundOverlay?: boolean;
+            };
+            sections: Array<{
+                id: string;
+                type: string;
+                title?: string;
+                enabled: boolean;
+                settings?: any;
+                content?: any;
+            }>;
+            footer: {
+                description: string;
+                showSocialLinks: boolean;
+                showNewsletter: boolean;
+                newsletterTitle?: string;
+                copyright: string;
+            };
+        }>(),
+
+        // 3. Navigation Configuration (maps to store_navigation)
+        navigationConfig: jsonb("navigation_config").$type<Array<{
+            name: string; // "Main Menu", "Footer"
+            position: "header" | "footer" | "sidebar";
+            items: Array<{
+                label: string;
+                url: string; // Internal links or placeholders like '/shop'
+                type: "link" | "category" | "page";
+            }>;
+        }>>(),
+
+        // 4. Pages Configuration (maps to store_pages)
+        pagesConfig: jsonb("pages_config").$type<Array<{
+            title: string;
+            slug: string;
+            content: string; // HTML or Markdown
+            isPublished: boolean;
+            showInMenu: boolean;
+        }>>(),
+
+        isActive: boolean("is_active").default(true).notNull(),
+
+        createdAt: timestamp("created_at").defaultNow().notNull(),
+        updatedAt: timestamp("updated_at")
+            .defaultNow()
+            .$onUpdate(() => new Date())
+            .notNull(),
+    },
+    (table) => [
+        index("templates_slug_idx").on(table.slug),
+        index("templates_active_idx").on(table.isActive),
+    ]
+);
+
+/**
  * Stores
  * Individual storefronts owned by tenants
  */
@@ -39,35 +149,35 @@ export const stores = pgTable(
         tenantId: uuid("tenant_id")
             .notNull()
             .references(() => tenants.id, { onDelete: "cascade" }),
-        
+
         name: text("name").notNull(),
         slug: text("slug").notNull(),
         description: text("description"),
-        
+
         // Branding
         logoUrl: text("logo_url"),
         coverUrl: text("cover_url"),
         faviconUrl: text("favicon_url"),
-        
+
         // Settings
         status: storeStatus("status").notNull().default("draft"),
         defaultCurrency: text("default_currency").default("KES").notNull(),
-        
+
         // SEO
         metaTitle: text("meta_title"),
         metaDescription: text("meta_description"),
-        
+
         // Social
         facebookUrl: text("facebook_url"),
         instagramUrl: text("instagram_url"),
         twitterUrl: text("twitter_url"),
         whatsappNumber: text("whatsapp_number"),
-        
+
         // Contact
         email: text("email"),
         phone: text("phone"),
         address: text("address"),
-        
+
         createdAt: timestamp("created_at").defaultNow().notNull(),
         updatedAt: timestamp("updated_at")
             .defaultNow()
@@ -100,9 +210,9 @@ export const storeMemberships = pgTable(
         userId: text("user_id")
             .notNull()
             .references(() => users.id, { onDelete: "cascade" }),
-        
+
         role: storeRole("role").notNull(),
-        
+
         createdAt: timestamp("created_at").defaultNow().notNull(),
         updatedAt: timestamp("updated_at")
             .defaultNow()
@@ -132,10 +242,13 @@ export const storeThemes = pgTable(
             .notNull()
             .unique()
             .references(() => stores.id, { onDelete: "cascade" }),
-        
-        // Theme selection
-        preset: themePreset("preset").notNull().default("minimal"),
-        
+
+        // Reference to the template used
+        templateId: uuid("template_id").references(() => templates.id),
+
+        // Theme selection (kept for backward compatibility or as manual override)
+        preset: themePreset("preset").default("minimal"),
+
         // Color system
         colors: jsonb("colors").$type<{
             primary?: string;
@@ -151,7 +264,7 @@ export const storeThemes = pgTable(
             // Additional theme-specific colors
             [key: string]: string | undefined;
         }>(),
-        
+
         // Typography
         typography: jsonb("typography").$type<{
             fontFamily?: string;
@@ -168,7 +281,7 @@ export const storeThemes = pgTable(
                 bold?: number;
             };
         }>(),
-        
+
         // Layout preferences
         layout: jsonb("layout").$type<{
             containerWidth?: "narrow" | "normal" | "wide" | "full";
@@ -177,7 +290,7 @@ export const storeThemes = pgTable(
             headerStyle?: "minimal" | "centered" | "sticky";
             footerStyle?: "minimal" | "detailed";
         }>(),
-        
+
         // Component styles
         components: jsonb("components").$type<{
             buttonStyle?: "solid" | "outline" | "ghost";
@@ -185,10 +298,10 @@ export const storeThemes = pgTable(
             inputStyle?: "default" | "filled" | "underlined";
             // Add more component customizations
         }>(),
-        
+
         // Custom CSS variables (advanced users)
         customCss: text("custom_css"),
-        
+
         createdAt: timestamp("created_at").defaultNow().notNull(),
         updatedAt: timestamp("updated_at")
             .defaultNow()
@@ -217,10 +330,10 @@ export const storeContent = pgTable(
             .notNull()
             .unique()
             .references(() => stores.id, { onDelete: "cascade" }),
-        
+
         // Puck/Plasmic editor data
         editorData: jsonb("editor_data").$type<any>(), // Raw editor JSON
-        
+
         // Hero section
         hero: jsonb("hero").$type<{
             enabled?: boolean;
@@ -236,7 +349,7 @@ export const storeContent = pgTable(
             videoUrl?: string;
             backgroundOverlay?: boolean;
         }>(),
-        
+
         // Featured sections (products, categories, etc.)
         sections: jsonb("sections").$type<Array<{
             id: string;
@@ -258,7 +371,7 @@ export const storeContent = pgTable(
             items?: any[]; // Products, categories, or custom content
             content?: any; // For custom HTML or rich text
         }>>(),
-        
+
         // Footer configuration
         footer: jsonb("footer").$type<{
             description?: string;
@@ -274,8 +387,9 @@ export const storeContent = pgTable(
                 }>;
             }>;
             copyright?: string;
+            // New fields to match template structure if needed
         }>(),
-        
+
         // Announcement bar
         announcement: jsonb("announcement").$type<{
             enabled?: boolean;
@@ -284,7 +398,7 @@ export const storeContent = pgTable(
             backgroundColor?: string;
             textColor?: string;
         }>(),
-        
+
         createdAt: timestamp("created_at").defaultNow().notNull(),
         updatedAt: timestamp("updated_at")
             .defaultNow()
@@ -311,23 +425,23 @@ export const storePages = pgTable(
         storeId: uuid("store_id")
             .notNull()
             .references(() => stores.id, { onDelete: "cascade" }),
-        
+
         title: text("title").notNull(),
         slug: text("slug").notNull(),
-        
+
         // Page content
         content: text("content"), // Rich text/HTML
         editorData: jsonb("editor_data").$type<any>(), // Puck/Plasmic data
-        
+
         // SEO
         metaTitle: text("meta_title"),
         metaDescription: text("meta_description"),
-        
+
         // Settings
         isPublished: boolean("is_published").default(true),
         showInMenu: boolean("show_in_menu").default(false),
-        menuOrder: integer("menu_order").default(0), 
-        
+        menuOrder: integer("menu_order").default(0),
+
         createdAt: timestamp("created_at").defaultNow().notNull(),
         updatedAt: timestamp("updated_at")
             .defaultNow()
@@ -357,12 +471,12 @@ export const storeNavigation = pgTable(
         storeId: uuid("store_id")
             .notNull()
             .references(() => stores.id, { onDelete: "cascade" }),
-        
+
         name: text("name").notNull(), // "Main Menu", "Footer Menu"
         position: text("position").notNull(), // "header", "footer", "sidebar"
-        
+
         items: jsonb("items").$type<Array<{
-            id: string;
+            id?: string;
             label: string;
             url?: string;
             type?: "link" | "category" | "page" | "product";
@@ -370,9 +484,9 @@ export const storeNavigation = pgTable(
             openInNewTab?: boolean;
             children?: Array<any>; // For nested menus
         }>>(),
-        
+
         isActive: boolean("is_active").default(true),
-        
+
         createdAt: timestamp("created_at").defaultNow().notNull(),
         updatedAt: timestamp("updated_at")
             .defaultNow()
@@ -426,6 +540,10 @@ export const storeThemesRelations = relations(storeThemes, ({ one }) => ({
         fields: [storeThemes.storeId],
         references: [stores.id],
     }),
+    template: one(templates, {
+        fields: [storeThemes.templateId],
+        references: [templates.id],
+    }),
 }));
 
 export const storeContentRelations = relations(storeContent, ({ one }) => ({
@@ -461,7 +579,9 @@ export const storeNavigationRelations = relations(storeNavigation, ({ one }) => 
     }),
 }));
 
-// Type exports
+export type Template = typeof templates.$inferSelect;
+export type NewTemplate = typeof templates.$inferInsert;
+
 export type Store = typeof stores.$inferSelect;
 export type NewStore = typeof stores.$inferInsert;
 

@@ -28,6 +28,30 @@ export type ThemePreset = {
 
 export const THEME_PRESETS: ThemePreset[] = [
     {
+        id: "old-money",
+        name: "Old Money / Heritage",
+        description: "Timeless elegance with rich greens, creams, and serif typography.",
+        preview: ["#1B4D3E", "#F5F5F0", "#D4AF37", "#0A192F"],
+        cssVariables: {
+            background: "#F5F5F0",
+            foreground: "#0A192F",
+            card: "#FFFFFF",
+            cardForeground: "#0A192F",
+            primary: "#1B4D3E",
+            primaryForeground: "#FFFFFF",
+            secondary: "#D4AF37",
+            secondaryForeground: "#0A192F",
+            muted: "#E8E8E0",
+            mutedForeground: "#5C6B7F",
+            accent: "#D4AF37",
+            accentForeground: "#FFFFFF",
+            border: "#D1D1C7",
+            input: "#FFFFFF",
+            ring: "#1B4D3E",
+            radius: "0.25rem",
+        },
+    },
+    {
         id: "premium-minimal",
         name: "Premium Minimal",
         description: "Clean, premium feel for luxury goods",

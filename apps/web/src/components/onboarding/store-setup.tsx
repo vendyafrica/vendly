@@ -13,6 +13,7 @@ import {
 } from "@vendly/ui/components/card";
 import { Input } from "@vendly/ui/components/input";
 import { Label } from "@vendly/ui/components/label";
+import { Textarea } from "@vendly/ui/components/textarea";
 import {
   Select,
   SelectContent,
@@ -22,6 +23,7 @@ import {
 } from "@vendly/ui/components/select";
 import { useOnboarding } from '@/contexts/OnboardingContext';
 import { THEME_PRESETS, getThemeById } from '@/lib/theme-presets';
+import { useSession } from "@/lib/auth";
 
 function sanitizeSubdomain(input: string) {
   return input
@@ -34,7 +36,12 @@ function sanitizeSubdomain(input: string) {
 export function StoreSetupForm() {
   const router = useRouter();
   const { data, updateData } = useOnboarding();
+  // We can get Auth data here or in the API. 
+  // API handles user update, but frontend passes the new details.
+  const { data: session } = useSession(); // To get token effectively
+
   const [storeName, setStoreName] = useState(data.storeName);
+  const [description, setDescription] = useState("");
   const [selectedThemeId, setSelectedThemeId] = useState(data.selectedThemeId || 'premium-minimal');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -57,39 +64,58 @@ export function StoreSetupForm() {
       const subdomain = sanitizeSubdomain(storeName);
       const theme = getThemeById(selectedThemeId);
 
-      const res = await fetch(`${apiBaseUrl}/api/site-builder/start`, {
+      // Construct payload with all onboarding data
+      const payload = {
+        fullName: data.fullName,
+        phone: data.phone,
+        categories: data.categories,
+        storeName: storeName.trim(),
+        description: description.trim(),
+        tenantSlug: subdomain,
+        themeId: selectedThemeId,
+        socialLinks: data.socialLinks,
+        location: data.location,
+      };
+
+      const res = await fetch(`${apiBaseUrl}/api/onboarding/complete`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          tenantSlug: subdomain,
-          input: {
-            storeName: storeName.trim(),
-            category: data.categories.join(', '),
-            themeId: selectedThemeId,
-          },
-        }),
+        credentials: 'include',
+        body: JSON.stringify(payload),
         cache: 'no-store',
       });
 
       if (!res.ok) {
         const message = await res.text();
-        throw new Error(message || 'Failed to start storefront generation');
+        throw new Error(message || 'Failed to complete onboarding');
       }
 
-      const result = (await res.json()) as { jobId?: string };
-      if (!result.jobId) {
-        throw new Error('Missing jobId from API');
-      }
+      const result = (await res.json());
 
+      // Success! Update local state and redirect to Admin
       updateData({
         storeName: storeName.trim(),
         subdomain,
         selectedThemeId,
         colorPalette: theme?.name || '',
-        jobId: result.jobId,
+        jobId: result.jobId, // May not have job ID if sync
       });
 
-      router.push(`/sell/success?jobId=${result.jobId}&subdomain=${subdomain}`);
+      // Redirect to Admin Panel Store Preview
+      // We assume the admin URL is returned or we construct it
+      const adminUrl = result.adminUrl || `http://${subdomain}.localhost:3000`; // Default fallback
+
+      // For now, redirect to success page which then redirects or linked to admin
+      // Or redirect directly? User asked: "move them on finish onboarding for now ... and then we take them to the admin panel"
+      // Let's redirect to success page first to show a "Store Created" state, then go to Admin.
+      // But the success page currently expects a jobId. Since we are doing it sync (mostly), let's just push to adminUrl if available.
+
+      if (result.adminUrl) {
+        window.location.href = result.adminUrl;
+      } else {
+        router.push(`/sell/success?subdomain=${subdomain}`);
+      }
+
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Something went wrong';
       setError(message);
@@ -126,6 +152,16 @@ export function StoreSetupForm() {
                   Your store URL: <span className="font-medium">{sanitizeSubdomain(storeName)}.{rootDomain}</span>
                 </p>
               )}
+            </div>
+
+            <div className="grid gap-2">
+              <Label htmlFor="description">Store Description</Label>
+              <Textarea
+                id="description"
+                placeholder="Describe your store (e.g., Luxury clothes for men)"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+              />
             </div>
 
             <div className="grid gap-2">

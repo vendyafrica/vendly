@@ -24,20 +24,20 @@ export const carts = pgTable(
         id: uuid("id").primaryKey().defaultRandom(),
         userId: text("user_id")
             .references(() => users.id, { onDelete: "cascade" }),
-        
+
         // For guest checkouts
         sessionId: text("session_id"),
         guestEmail: text("guest_email"),
-        
+
         currency: text("currency").notNull().default("KES"),
         status: cartStatus("status").notNull().default("active"),
-        
+
         // Converted to order
         convertedToOrderAt: timestamp("converted_to_order_at"),
-        
+
         // Expiry for abandoned carts
         expiresAt: timestamp("expires_at"),
-        
+
         createdAt: timestamp("created_at").defaultNow().notNull(),
         updatedAt: timestamp("updated_at")
             .defaultNow()
@@ -63,24 +63,24 @@ export const cartItems = pgTable(
         cartId: uuid("cart_id")
             .notNull()
             .references(() => carts.id, { onDelete: "cascade" }),
-        
+
         // Store reference - critical for multi-store checkout
         storeId: uuid("store_id")
             .notNull()
             .references(() => stores.id, { onDelete: "cascade" }),
-        
+
         productId: uuid("product_id")
             .notNull()
             .references(() => products.id, { onDelete: "restrict" }),
         variantId: uuid("variant_id")
             .references(() => productVariants.id, { onDelete: "restrict" }),
-        
+
         quantity: integer("quantity").notNull().default(1),
-        
+
         // Price snapshot (in case price changes)
         priceAtAdd: integer("price_at_add").notNull(),
         currency: text("currency").notNull().default("KES"),
-        
+
         createdAt: timestamp("created_at").defaultNow().notNull(),
         updatedAt: timestamp("updated_at")
             .defaultNow()
@@ -107,17 +107,17 @@ export const savedItems = pgTable(
         userId: text("user_id")
             .notNull()
             .references(() => users.id, { onDelete: "cascade" }),
-        
+
         storeId: uuid("store_id")
             .notNull()
             .references(() => stores.id, { onDelete: "cascade" }),
-        
+
         productId: uuid("product_id")
             .notNull()
             .references(() => products.id, { onDelete: "cascade" }),
         variantId: uuid("variant_id")
             .references(() => productVariants.id, { onDelete: "cascade" }),
-        
+
         createdAt: timestamp("created_at").defaultNow().notNull(),
     },
     (table) => [

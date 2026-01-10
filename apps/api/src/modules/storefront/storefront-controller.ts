@@ -114,6 +114,36 @@ export class StorefrontController {
             });
         }
     }
+    /**
+     * Get Page Data (Puck Editor)
+     */
+    async getPageData(req: Request, res: Response): Promise<void> {
+        try {
+            const { slug } = req.params;
+            const result = await storefrontService.getPageData(slug);
+
+            if (!result) {
+                // If not found, return default empty data instead of 404 to avoid crashing editor
+                res.status(200).json({
+                    success: true,
+                    data: {
+                        pageData: { content: [], root: { props: {} } }
+                    }
+                });
+                return;
+            }
+
+            res.status(200).json({
+                success: true,
+                data: result
+            });
+        } catch (error) {
+            console.error("[StorefrontController] GetPageData error:", error);
+            res.status(500).json({
+                error: error instanceof Error ? error.message : "Failed to get page data"
+            });
+        }
+    }
 }
 
 export const storefrontController = new StorefrontController();
