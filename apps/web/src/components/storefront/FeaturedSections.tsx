@@ -1,11 +1,72 @@
 import Link from "next/link";
+import type { ReactNode } from "react";
+
+function FeaturedCard({
+  label,
+  title,
+  cta,
+  href,
+  imageUrl,
+  className,
+  children,
+}: {
+  label: string;
+  title: string;
+  cta: string;
+  href: string;
+  imageUrl: string | null;
+  className: string;
+  children?: ReactNode;
+}) {
+  return (
+    <div
+      className={`relative overflow-hidden rounded-2xl ${className}`}
+      style={{
+        backgroundImage: imageUrl ? `url(${imageUrl})` : undefined,
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        backgroundColor: "rgba(0,0,0,0.06)",
+      }}
+    >
+      <div
+        className="absolute inset-0"
+        style={{
+          background:
+            "linear-gradient(to bottom, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0.50) 100%)",
+        }}
+      />
+      <div className="relative p-8 flex flex-col justify-end h-full">
+        <span className="text-[11px] font-semibold tracking-[0.22em] uppercase text-white/80 mb-2">
+          {label}
+        </span>
+        <h3
+          className="text-2xl md:text-3xl font-semibold text-white leading-tight"
+          style={{ fontFamily: "var(--font-heading, inherit)" }}
+        >
+          {title}
+        </h3>
+        <Link
+          href={href}
+          className="inline-flex items-center text-sm font-medium text-white/90 hover:text-white transition-colors mt-4"
+          style={{ fontFamily: "var(--font-body, inherit)" }}
+        >
+          {cta} →
+        </Link>
+        {children}
+      </div>
+    </div>
+  );
+}
 
 interface FeaturedSectionsProps {
   storeSlug: string;
   storeName: string;
+  images?: string[];
 }
 
-export function FeaturedSections({ storeSlug }: FeaturedSectionsProps) {
+export function FeaturedSections({ storeSlug, images }: FeaturedSectionsProps) {
+  const img = (i: number) => images?.[i] || images?.[0] || null;
+
   const sections = [
     {
       id: 1,
@@ -13,9 +74,8 @@ export function FeaturedSections({ storeSlug }: FeaturedSectionsProps) {
       title: "Where Dreams Meet Couture",
       cta: "Shop Now",
       href: `/${storeSlug}/products?collection=elegance`,
-      bgColor: "bg-gradient-to-br from-rose-100 to-rose-200",
-      textColor: "text-gray-900",
       size: "tall",
+      imageUrl: img(0),
     },
     {
       id: 2,
@@ -23,9 +83,8 @@ export function FeaturedSections({ storeSlug }: FeaturedSectionsProps) {
       title: "Enchanting Styles for Every Woman",
       cta: "Shop Now",
       href: `/${storeSlug}/products?collection=radiant`,
-      bgColor: "bg-gradient-to-br from-amber-50 to-amber-100",
-      textColor: "text-gray-900",
       size: "normal",
+      imageUrl: img(1),
     },
     {
       id: 3,
@@ -33,9 +92,8 @@ export function FeaturedSections({ storeSlug }: FeaturedSectionsProps) {
       title: "Explore Our Latest Arrivals",
       cta: "Discover",
       href: `/${storeSlug}/products?collection=new`,
-      bgColor: "bg-gradient-to-br from-gray-100 to-gray-200",
-      textColor: "text-gray-900",
       size: "normal",
+      imageUrl: img(2),
     },
     {
       id: 4,
@@ -43,9 +101,8 @@ export function FeaturedSections({ storeSlug }: FeaturedSectionsProps) {
       title: "Chic Footwear for City Living",
       cta: "Shop Now",
       href: `/${storeSlug}/products?collection=footwear`,
-      bgColor: "bg-gradient-to-br from-slate-200 to-slate-300",
-      textColor: "text-gray-900",
       size: "wide",
+      imageUrl: img(3),
     },
     {
       id: 5,
@@ -53,105 +110,67 @@ export function FeaturedSections({ storeSlug }: FeaturedSectionsProps) {
       title: "Up to 50% Off",
       cta: "Shop Now",
       href: `/${storeSlug}/products?sale=true`,
-      bgColor: "bg-gradient-to-br from-sky-100 to-sky-200",
-      textColor: "text-gray-900",
       size: "normal",
       hasIcon: true,
+      imageUrl: img(4),
     },
   ];
 
   return (
-    <section className="py-16 bg-white">
+    <section className="py-16" style={{ backgroundColor: "var(--background, #ffffff)" }}>
       <div className="container mx-auto px-4 lg:px-8">
         {/* Featured Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-          {/* First Column - Tall Card */}
-          <div className={`${sections[0].bgColor} rounded-lg p-8 flex flex-col justify-end min-h-[400px] lg:row-span-2`}>
-            <span className="text-xs font-semibold tracking-widest text-gray-600 uppercase mb-2">
-              {sections[0].label}
-            </span>
-            <h3 className="text-2xl font-serif text-gray-900 mb-4">
-              {sections[0].title}
-            </h3>
-            <Link
-              href={sections[0].href}
-              className="inline-flex items-center text-sm font-medium text-gray-900 hover:text-gray-600 transition-colors"
-            >
-              {sections[0].cta} →
-            </Link>
-          </div>
+          <FeaturedCard
+            label={sections[0].label}
+            title={sections[0].title}
+            cta={sections[0].cta}
+            href={sections[0].href}
+            imageUrl={sections[0].imageUrl}
+            className="min-h-[420px] lg:row-span-2"
+          />
 
-          {/* Second Column - Two Normal Cards */}
           <div className="flex flex-col gap-4 md:gap-6">
-            <div className={`${sections[1].bgColor} rounded-lg p-6 flex flex-col justify-end min-h-[190px]`}>
-              <span className="text-xs font-semibold tracking-widest text-gray-600 uppercase mb-2">
-                {sections[1].label}
-              </span>
-              <h3 className="text-lg font-serif text-gray-900 mb-3">
-                {sections[1].title}
-              </h3>
-              <Link
-                href={sections[1].href}
-                className="inline-flex items-center text-sm font-medium text-gray-900 hover:text-gray-600 transition-colors"
-              >
-                {sections[1].cta} →
-              </Link>
-            </div>
-            <div className={`${sections[2].bgColor} rounded-lg p-6 flex flex-col justify-end min-h-[190px]`}>
-              <span className="text-xs font-semibold tracking-widest text-gray-600 uppercase mb-2">
-                {sections[2].label}
-              </span>
-              <h3 className="text-lg font-serif text-gray-900 mb-3">
-                {sections[2].title}
-              </h3>
-              <Link
-                href={sections[2].href}
-                className="inline-flex items-center text-sm font-medium text-gray-900 hover:text-gray-600 transition-colors"
-              >
-                {sections[2].cta} →
-              </Link>
-            </div>
+            <FeaturedCard
+              label={sections[1].label}
+              title={sections[1].title}
+              cta={sections[1].cta}
+              href={sections[1].href}
+              imageUrl={sections[1].imageUrl}
+              className="min-h-[200px]"
+            />
+            <FeaturedCard
+              label={sections[2].label}
+              title={sections[2].title}
+              cta={sections[2].cta}
+              href={sections[2].href}
+              imageUrl={sections[2].imageUrl}
+              className="min-h-[200px]"
+            />
           </div>
 
-          {/* Third and Fourth Columns - Wide Card and Sale Card */}
           <div className="lg:col-span-2 flex flex-col gap-4 md:gap-6">
-            <div className={`${sections[3].bgColor} rounded-lg p-6 flex flex-col justify-end min-h-[190px]`}>
-              <span className="text-xs font-semibold tracking-widest text-gray-600 uppercase mb-2">
-                {sections[3].label}
-              </span>
-              <h3 className="text-xl font-serif text-gray-900 mb-3">
-                {sections[3].title}
-              </h3>
-              <Link
-                href={sections[3].href}
-                className="inline-flex items-center text-sm font-medium text-gray-900 hover:text-gray-600 transition-colors"
-              >
-                {sections[3].cta} →
-              </Link>
-            </div>
-            <div className={`${sections[4].bgColor} rounded-lg p-6 flex items-center justify-between min-h-[190px]`}>
-              <div>
-                <span className="text-xs font-semibold tracking-widest text-gray-600 uppercase mb-2 block">
-                  {sections[4].label}
-                </span>
-                <Link
-                  href={sections[4].href}
-                  className="inline-flex items-center text-sm font-medium text-gray-900 hover:text-gray-600 transition-colors"
-                >
-                  {sections[4].cta} →
-                </Link>
+            <FeaturedCard
+              label={sections[3].label}
+              title={sections[3].title}
+              cta={sections[3].cta}
+              href={sections[3].href}
+              imageUrl={sections[3].imageUrl}
+              className="min-h-[200px]"
+            />
+            <FeaturedCard
+              label={sections[4].label}
+              title={sections[4].title}
+              cta={sections[4].cta}
+              href={sections[4].href}
+              imageUrl={sections[4].imageUrl}
+              className="min-h-[200px]"
+            >
+              <div className="flex items-center gap-3 mt-6">
+                <span className="text-5xl md:text-6xl font-bold text-white">50</span>
+                <span className="text-2xl font-bold text-white">% OFF</span>
               </div>
-              <div className="text-right">
-                <span className="text-6xl font-bold text-gray-900">50</span>
-                <span className="text-2xl font-bold text-gray-900">%</span>
-                <div className="flex items-center justify-end gap-1 mt-1">
-                  <span className="text-sm text-gray-600">OFF</span>
-                  <svg className="w-8 h-8 text-gray-900" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M7 17L17 7M17 7H7M17 7V17" />
-                  </svg>
-                </div>
-              </div>
-            </div>
+            </FeaturedCard>
           </div>
         </div>
       </div>

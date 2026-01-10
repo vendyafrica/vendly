@@ -4,6 +4,48 @@ import { StorefrontStandardTemplate } from "@/components/storefront/templates/St
 import { useStorefrontStore } from "@/hooks/useStorefrontStore";
 import { useStorefrontProducts } from "@/hooks/useStorefrontProducts";
 
+function toCssVarName(key: string) {
+  return key.startsWith("--") ? key : `--${key}`;
+}
+
+type ThemeLike = {
+  customCssVars?: Record<string, string> | null;
+  themeConfig?: Record<string, unknown> | null;
+};
+
+type ContentLike = {
+  heroImageUrl?: string | null;
+} & Record<string, unknown>;
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null;
+}
+
+function getString(value: unknown): string | undefined {
+  return typeof value === "string" ? value : undefined;
+}
+
+function buildCssVars(theme: unknown): React.CSSProperties {
+  const t: ThemeLike | undefined = isRecord(theme) ? (theme as ThemeLike) : undefined;
+  const cssVars: Record<string, string> = t?.customCssVars ?? {};
+  const themeConfig: Record<string, unknown> = t?.themeConfig ?? {};
+
+  const style: React.CSSProperties = {};
+
+  for (const [k, v] of Object.entries(cssVars)) {
+    if (typeof v === "string") {
+      (style as Record<string, string>)[toCssVarName(k)] = v;
+    }
+  }
+
+  const headingFont = themeConfig.headingFont;
+  const bodyFont = themeConfig.bodyFont;
+  if (typeof headingFont === "string") (style as Record<string, string>)["--font-heading"] = headingFont;
+  if (typeof bodyFont === "string") (style as Record<string, string>)["--font-body"] = bodyFont;
+
+  return style;
+}
+
 export function StorefrontHome({ storeSlug }: { storeSlug: string }) {
   const { store, isLoading: isStoreLoading, error: storeError } = useStorefrontStore(storeSlug);
   const { products, isLoading: isProductsLoading, error: productsError } = useStorefrontProducts(storeSlug, {
@@ -41,19 +83,33 @@ export function StorefrontHome({ storeSlug }: { storeSlug: string }) {
     );
   }
 
+  const cssVarStyle = buildCssVars(store.theme);
+
+  const contentObj: ContentLike = isRecord(store.content) ? (store.content as ContentLike) : ({} as ContentLike);
+
+  const coverImageUrl =
+    getString(contentObj.heroImageUrl) ??
+    products.find((p) => !!p.imageUrl)?.imageUrl ??
+    null;
+
   return (
-    <StorefrontStandardTemplate
-      storeSlug={storeSlug}
-      store={{
-        id: store.id,
-        name: store.name,
-        slug: store.slug,
-        description: store.description ?? null,
-        logoUrl: store.logoUrl ?? null,
-      }}
-      theme={store.theme}
-      content={store.content}
-      products={products}
-    />
+    <div className="min-h-screen" style={cssVarStyle}>
+      <StorefrontStandardTemplate
+        storeSlug={storeSlug}
+        store={{
+          id: store.id,
+          name: store.name,
+          slug: store.slug,
+          description: store.description ?? null,
+          logoUrl: store.logoUrl ?? null,
+        }}
+        theme={store.theme}
+        content={{
+          ...contentObj,
+          heroImageUrl: coverImageUrl,
+        }}
+        products={products}
+      />
+    </div>
   );
 }
