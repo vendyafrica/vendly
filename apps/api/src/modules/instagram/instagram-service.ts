@@ -3,7 +3,7 @@
  * Handles business logic for Instagram integration
  */
 import { uploadService } from "../storage/blob-service";
-import { createInstagramQueries } from "./instagram-queries";
+import { createInstagramQueries } from "../../../../../packages/db/src/queries/instagram-queries";
 import type { DbClient } from "../db/db-client";
 import {
     InstagramAPIResponse,

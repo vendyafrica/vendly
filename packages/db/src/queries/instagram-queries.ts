@@ -4,10 +4,10 @@
  */
 import { eq, and, desc } from "drizzle-orm";
 import { instagramMedia, stores, tenants, account, products, productImages } from "@vendly/db/schema";
-import type { DbClient } from "./db-client";
+import { edgeDb } from "../db";
 
 export class InstagramQueries {
-    constructor(private db: DbClient) {}
+    constructor(private db: typeof edgeDb) {}
 
     // ========================================================================
     // Auth & Account Queries

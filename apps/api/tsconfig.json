@@ -20,5 +20,5 @@
     ".",
     "../../packages/db/drizzle.config.ts",
     "../../packages/db/src/seed"
-  ]
+, "../../packages/db/src/queries/instagram-queries.ts"  ]
 }
