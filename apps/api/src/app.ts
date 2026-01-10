@@ -6,6 +6,7 @@ import { auth } from "@vendly/auth";
 import vercelDeploymentRouter from "./modules/deployment/vercel-route";
 import imageUploadRouter from "./modules/storage/blob-route";
 import storefrontDemoRouter from "./modules/storefront/storefront-route";
+import tenantRouter from "./modules/tenant/tenant-route";
 
 export function createApp(): Express {
   const app = express();
@@ -42,6 +43,7 @@ export function createApp(): Express {
   app.use("/api/vercel", vercelDeploymentRouter);
   app.use("/api/upload", imageUploadRouter);
   app.use("/api/storefront", storefrontDemoRouter);
+  app.use("/api/tenants", tenantRouter);
 
   app.get("/", (_req, res) => {
     res.send("API is running");

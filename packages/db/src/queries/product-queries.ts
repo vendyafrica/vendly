@@ -459,6 +459,6 @@ export class ProductQueries {
 /**
  * Create product queries instance
  */
-export function createProductQueries(db: DbClient) {
+export function createProductQueries(db: typeof edgeDb) {
     return new ProductQueries(db);
 }
