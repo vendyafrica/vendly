@@ -1,15 +1,8 @@
-import Link from "next/link";
-import { Facebook, Twitter, Instagram, Youtube } from "lucide-react";
+"use client";
 
-interface ThemeProps {
-  primaryColor?: string;
-  secondaryColor?: string;
-  accentColor?: string;
-  backgroundColor?: string;
-  textColor?: string;
-  headingFont?: string;
-  bodyFont?: string;
-}
+import Link from "next/link";
+import { WhatsAppIcon, FacebookIcon, InstagramIcon } from "../social";
+
 
 interface ContentProps {
   newsletterTitle?: string;
@@ -20,68 +13,114 @@ interface FooterProps {
   storeSlug: string;
   storeName: string;
   storeDescription?: string;
-  theme?: ThemeProps;
   content?: ContentProps;
 }
 
-export function Footer({ storeSlug, storeName, theme }: FooterProps) {
+export function Footer({ storeSlug, storeName, content }: FooterProps) {
   const currentYear = new Date().getFullYear();
 
   const socialLinks = [
-    { icon: Facebook, href: "#", label: "Facebook" },
-    { icon: Twitter, href: "#", label: "Twitter" },
-    { icon: Instagram, href: "#", label: "Instagram" },
-    { icon: Youtube, href: "#", label: "Youtube" },
+    { icon: FacebookIcon, href: "https://www.facebook.com/", label: "Facebook" },
+    { icon: WhatsAppIcon, href: "https://www.whatsapp.com/", label: "Whatsapp" },
   ];
 
   return (
     <footer
+      className="border-t"
       style={{
         backgroundColor: "var(--background, #ffffff)",
         color: "var(--foreground, #111111)",
-        borderTop: "1px solid rgba(0,0,0,0.08)",
+        borderColor: "var(--border, transparent)",
       }}
     >
-      <div className="container mx-auto px-4 lg:px-8 py-12">
-        <div className="flex flex-col items-center text-center">
-          <Link
-            href={`/${storeSlug}`}
-            className="text-2xl italic tracking-wide"
-            style={{ fontFamily: theme?.headingFont || "var(--font-heading, inherit)" }}
-          >
-            {storeName}
-          </Link>
+      <div className="mx-auto px-4 lg:px-8 py-16 max-w-[var(--container-max,1400px)]">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
 
-          <div className="flex items-center gap-4 mt-6">
-            {socialLinks.map((social) => (
-              <a
-                key={social.label}
-                href={social.href}
-                className="w-10 h-10 rounded-full flex items-center justify-center transition-colors"
-                style={{ backgroundColor: "rgba(0,0,0,0.06)" }}
-                aria-label={social.label}
-              >
-                <social.icon className="h-4 w-4" />
-              </a>
-            ))}
+          {/* Brand Column */}
+          <div className="md:col-span-1 space-y-6">
+            <Link
+              href={`/${storeSlug}`}
+              className="text-2xl font-bold tracking-tight block"
+              style={{ fontFamily: "var(--font-heading, inherit)" }}
+            >
+              {storeName}
+            </Link>
+            <p className="text-sm opacity-70 max-w-xs">
+              Quality products for your lifestyle. Designed with care and crafted for excellence.
+            </p>
+            <div className="flex items-center gap-4">
+              {socialLinks.map((social) => {
+                const Icon = social.icon;
+
+                return (
+                  <a
+                    key={social.label}
+                    href={social.href}
+                    aria-label={social.label}
+                    className="w-5 h-5"
+                  >
+                    <Icon
+                      className="w-5 h-5 opacity-80 transition-opacity hover:opacity-100"
+                      aria-hidden
+                    />
+                  </a>
+                );
+              })}
+            </div>
+
           </div>
 
-          <p
-            className="text-sm mt-8"
-            style={{
-              color: "rgba(0,0,0,0.55)",
-              fontFamily: theme?.bodyFont || "var(--font-body, inherit)",
-            }}
-          >
-            © {currentYear} {storeName}. Powered by{" "}
+          {/* Links Columns */}
+          <div>
+            <h4 className="font-semibold mb-6">Shop</h4>
+            <ul className="space-y-4 text-sm opacity-70">
+              <li><Link href={`/${storeSlug}/products`} className="hover:text-[var(--primary)] hover:underline">All Products</Link></li>
+              <li><Link href="#" className="hover:text-[var(--primary)] hover:underline">New Arrivals</Link></li>
+              <li><Link href="#" className="hover:text-[var(--primary)] hover:underline">Best Sellers</Link></li>
+            </ul>
+          </div>
+          <div>
+            <h4 className="font-semibold mb-6">Support</h4>
+            <ul className="space-y-4 text-sm opacity-70">
+              <li><Link href="#" className="hover:text-[var(--primary)] hover:underline">FAQ</Link></li>
+              <li><Link href="#" className="hover:text-[var(--primary)] hover:underline">Shipping & Returns</Link></li>
+              <li><Link href="#" className="hover:text-[var(--primary)] hover:underline">Contact Us</Link></li>
+            </ul>
+          </div>
+
+          {/* Newsletter */}
+          <div>
+            <h4 className="font-semibold mb-6">{content?.newsletterTitle || "Stay in the loop"}</h4>
+            <p className="text-sm opacity-70 mb-4">{content?.newsletterSubtitle || "Subscribe to get special offers and updates."}</p>
+            <div className="flex gap-2">
+              <input
+                type="email"
+                placeholder="Enter your email"
+                className="flex-1 bg-transparent border border-[var(--input,#e2e8f0)] rounded-[var(--radius)] px-4 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--ring)]"
+              />
+              <button className="bg-[var(--primary)] text-[var(--primary-foreground)] px-4 py-2 rounded-[var(--radius)] text-sm font-medium">
+                Sign Up
+              </button>
+            </div>
+          </div>
+
+        </div>
+
+        {/* Bottom Bar */}
+        <div className="pt-8 border-t border-[var(--border)] flex flex-col md:flex-row justify-between items-center gap-4 text-sm opacity-60">
+          <p>
+            © {currentYear} {storeName}. All rights reserved.
+          </p>
+          <div className="flex items-center gap-1">
+            <span>Powered by</span>
             <Link
               href="https://vendlyafrica.store"
               target="_blank"
-              className="font-medium"
+              className="font-semibold hover:text-[var(--primary)]"
             >
               Vendly
             </Link>
-          </p>
+          </div>
         </div>
       </div>
     </footer>

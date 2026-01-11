@@ -1,8 +1,10 @@
 "use client";
 
-import { StorefrontStandardTemplate } from "@/components/storefront/templates/StorefrontStandardTemplate";
 import { useStorefrontStore } from "@/hooks/useStorefrontStore";
 import { useStorefrontProducts } from "@/hooks/useStorefrontProducts";
+import { BlockRenderer } from "./BlockRenderer";
+import { StoreLayout } from "./primitives/StoreLayout";
+import { Footer } from "./primitives/Footer";
 
 function toCssVarName(key: string) {
   return key.startsWith("--") ? key : `--${key}`;
@@ -11,74 +13,82 @@ function toCssVarName(key: string) {
 type ThemeLike = {
   customCssVars?: Record<string, string> | null;
   themeConfig?: Record<string, unknown> | null;
+  colors?: Record<string, string> | null;
+  typography?: Record<string, any> | null;
+  layout?: Record<string, any> | null;
 };
 
-type ContentLike = {
-  heroImageUrl?: string | null;
-} & Record<string, unknown>;
+// Helper maps for layout tokens
+const RADIUS_MAP: Record<string, string> = {
+  none: "0",
+  small: "0.2rem",
+  medium: "0.5rem",
+  large: "1rem",
+  full: "9999px",
+};
 
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null;
-}
+const SPACING_MAP: Record<string, string> = {
+  compact: "0.5",
+  normal: "1",
+  relaxed: "1.5",
+};
 
-function getString(value: unknown): string | undefined {
-  return typeof value === "string" ? value : undefined;
-}
-
-function isLikelyImageUrl(url: string) {
-  const trimmed = url.trim();
-  if (!trimmed) return false;
-  if (trimmed.endsWith("/")) return false;
-  const lower = trimmed.toLowerCase();
-  return lower.endsWith(".jpg") || lower.endsWith(".jpeg") || lower.endsWith(".png") || lower.endsWith(".webp") || lower.endsWith(".gif");
-}
+const CONTAINER_MAP: Record<string, string> = {
+  narrow: "800px",
+  normal: "1200px",
+  wide: "1400px",
+  full: "100%",
+};
 
 function buildCssVars(theme: unknown): React.CSSProperties {
-  const t: ThemeLike | undefined = isRecord(theme) ? (theme as ThemeLike) : undefined;
-  if (!t) return {};
+  if (!theme || typeof theme !== "object") return {};
+  const t = theme as ThemeLike;
 
   const cssVars: Record<string, string> = t.customCssVars ?? {};
 
-  // Handle both nested themeConfig (legacy/blobs) and flat structure (DB store_themes)
-  const themeConfig = (t.themeConfig as Record<string, unknown>) || t;
-
-  const colors = (themeConfig.colors as Record<string, string>) || {};
-  const typography = (themeConfig.typography as Record<string, string>) || {};
+  // Handle flattened storeThemes structure from DB schema
+  const colors = (t.colors as Record<string, string>) || {};
+  const typography = (t.typography as Record<string, any>) || {};
+  const layout = (t.layout as Record<string, any>) || {};
 
   const style: React.CSSProperties = {};
 
-  // Custom CSS Vars
+  // 1. Inject Custom CSS Vars
   for (const [k, v] of Object.entries(cssVars)) {
     if (typeof v === "string") {
       (style as Record<string, string>)[toCssVarName(k)] = v;
     }
   }
 
-  // Typography
-  const headingFont = typography.headingFont || themeConfig.headingFont;
-  const bodyFont = typography.bodyFont || themeConfig.bodyFont;
+  // 2. Typography
+  if (typography.fontFamily) (style as Record<string, string>)["--font-sans"] = typography.fontFamily;
+  if (typography.headingFont) (style as Record<string, string>)["--font-heading"] = typography.headingFont;
+  if (typography.bodyFont) (style as Record<string, string>)["--font-body"] = typography.bodyFont;
 
-  if (typeof headingFont === "string") (style as Record<string, string>)["--font-heading"] = headingFont;
-  if (typeof bodyFont === "string") (style as Record<string, string>)["--font-body"] = bodyFont;
+  // 3. Layout Tokens
+  if (layout.borderRadius && RADIUS_MAP[layout.borderRadius]) {
+    (style as Record<string, string>)["--radius"] = RADIUS_MAP[layout.borderRadius];
+  }
+  if (layout.spacing && SPACING_MAP[layout.spacing]) {
+    (style as Record<string, string>)["--spacing-factor"] = SPACING_MAP[layout.spacing];
+  }
+  if (layout.containerWidth && CONTAINER_MAP[layout.containerWidth]) {
+    (style as Record<string, string>)["--container-max"] = CONTAINER_MAP[layout.containerWidth];
+  }
 
-  // Colors mapping (Assuming shadcn/tailwind variables are what we target)
-  // Map our DB colors to CSS variables expected by the theme
-  if (colors.background) (style as Record<string, string>)["--background"] = colors.background;
-  if (colors.foreground) (style as Record<string, string>)["--foreground"] = colors.foreground;
-  if (colors.primary) (style as Record<string, string>)["--primary"] = colors.primary;
-  if (colors.primaryForeground) (style as Record<string, string>)["--primary-foreground"] = colors.primaryForeground;
-  if (colors.secondary) (style as Record<string, string>)["--secondary"] = colors.secondary;
-  if (colors.secondaryForeground) (style as Record<string, string>)["--secondary-foreground"] = colors.secondaryForeground;
-  if (colors.muted) (style as Record<string, string>)["--muted"] = colors.muted;
-  if (colors.mutedForeground) (style as Record<string, string>)["--muted-foreground"] = colors.mutedForeground;
-  if (colors.accent) (style as Record<string, string>)["--accent"] = colors.accent;
-  if (colors.accentForeground) (style as Record<string, string>)["--accent-foreground"] = colors.accentForeground;
-  if (colors.card) (style as Record<string, string>)["--card"] = colors.card;
-  if (colors.cardForeground) (style as Record<string, string>)["--card-foreground"] = colors.cardForeground;
-  if (colors.border) (style as Record<string, string>)["--border"] = colors.border;
-  if (colors.input) (style as Record<string, string>)["--input"] = colors.input;
-  if (colors.ring) (style as Record<string, string>)["--ring"] = colors.ring;
-  if (colors.radius) (style as Record<string, string>)["--radius"] = colors.radius;
+  // 4. Colors
+  // Map all color keys to CSS variables
+  for (const [key, value] of Object.entries(colors)) {
+    if (value && typeof value === "string") {
+      (style as Record<string, string>)[toCssVarName(key)] = value;
+    }
+  }
+
+  // Ensure defaults if not present
+  if (!(style as any)["--background"]) (style as any)["--background"] = "#ffffff";
+  if (!(style as any)["--foreground"]) (style as any)["--foreground"] = "#111111";
+  if (!(style as any)["--primary"]) (style as any)["--primary"] = "#111111";
+  if (!(style as any)["--radius"]) (style as any)["--radius"] = "0.5rem";
 
   return style;
 }
@@ -91,17 +101,10 @@ export function StorefrontHome({ storeSlug }: { storeSlug: string }) {
 
   if (isStoreLoading || isProductsLoading) {
     return (
-      <div className="min-h-screen bg-white">
-        <div className="container mx-auto px-4 lg:px-8 py-12">
-          <div className="animate-pulse space-y-6">
-            <div className="h-10 bg-gray-200 rounded w-1/3" />
-            <div className="h-64 bg-gray-200 rounded" />
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-              {Array.from({ length: 8 }).map((_, i) => (
-                <div key={i} className="h-64 bg-gray-200 rounded" />
-              ))}
-            </div>
-          </div>
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="animate-pulse space-y-4 text-center">
+          <div className="h-12 w-12 bg-gray-200 rounded-full mx-auto" />
+          <div className="h-4 w-32 bg-gray-200 rounded mx-auto" />
         </div>
       </div>
     );
@@ -109,11 +112,11 @@ export function StorefrontHome({ storeSlug }: { storeSlug: string }) {
 
   if (storeError || productsError || !store) {
     return (
-      <div className="min-h-screen bg-white">
-        <div className="container mx-auto px-4 lg:px-8 py-12">
-          <h1 className="text-xl font-semibold">Failed to load storefront</h1>
-          <p className="mt-2 text-sm text-muted-foreground">
-            {(storeError || productsError)?.message || "Unknown error"}
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-xl font-semibold">Store Unavailable</h1>
+          <p className="mt-2 text-sm text-gray-500">
+            {(storeError || productsError)?.message || "We couldn't load this store."}
           </p>
         </div>
       </div>
@@ -122,34 +125,44 @@ export function StorefrontHome({ storeSlug }: { storeSlug: string }) {
 
   const cssVarStyle = buildCssVars(store.theme);
 
-  const contentObj: ContentLike = isRecord(store.content) ? (store.content as ContentLike) : ({} as ContentLike);
+  // Prepare sections
+  // Combine hero (if enabled) with other sections
+  const content = store.content as any || {};
+  const sections = [...(content.sections || [])];
 
-  const coverImageUrl =
-    (() => {
-      const u = getString(contentObj.heroImageUrl);
-      return u && isLikelyImageUrl(u) ? u : undefined;
-    })() ??
-    products.find((p) => !!p.imageUrl)?.imageUrl ??
-    null;
+  const heroConfig = content.hero || {};
+  // DEBUG: Effectively forcing hero for now to troubleshoot, unless specifically disabled with a special override?
+  // Or just trust the config.
+  // if (heroConfig.enabled !== false) {
+
+  // Actually, let's just add it. The Renderer will handle it.
+  sections.unshift({
+    type: "hero",
+    ...heroConfig,
+    enabled: true, // Force enabled for legacy content porting
+  });
+  // }
+
+  console.log("[StorefrontHome] sections to render:", sections);
 
   return (
     <div className="min-h-screen" style={cssVarStyle}>
-      <StorefrontStandardTemplate
-        storeSlug={storeSlug}
-        store={{
-          id: store.id,
-          name: store.name,
-          slug: store.slug,
-          description: store.description ?? null,
-          logoUrl: store.logoUrl ?? null,
-        }}
-        theme={store.theme}
-        content={{
-          ...contentObj,
-          heroImageUrl: coverImageUrl,
-        }}
-        products={products}
-      />
+      <StoreLayout storeSlug={storeSlug} storeName={store.name}>
+        <div className="min-h-screen flex flex-col">
+          <BlockRenderer
+            sections={sections}
+            storeSlug={storeSlug}
+            storeName={store.name}
+            store={store}
+            products={products}
+          />
+          <Footer
+            storeSlug={storeSlug}
+            storeName={store.name}
+            content={content.footer}
+          />
+        </div>
+      </StoreLayout>
     </div>
   );
 }

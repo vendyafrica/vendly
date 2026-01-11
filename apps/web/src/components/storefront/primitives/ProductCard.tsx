@@ -50,9 +50,9 @@ export function ProductCard({ product, storeSlug, showAddToCart = true }: Produc
   const hasHalfStar = rating % 1 >= 0.5;
 
   return (
-    <div className="group relative bg-white">
+    <div className="group relative">
       {/* Product Image */}
-      <Link href={`/${storeSlug}/product/${product.id}`} className="block relative aspect-[4/5] bg-gray-100 overflow-hidden mb-3">
+      <Link href={`/${storeSlug}/product/${product.id}`} className="block relative aspect-[4/5] bg-[var(--muted,#f3f4f6)] overflow-hidden mb-3" style={{ borderRadius: "var(--radius)" }}>
         {product.imageUrl ? (
           <Image
             src={product.imageUrl}
@@ -62,7 +62,7 @@ export function ProductCard({ product, storeSlug, showAddToCart = true }: Produc
             className="object-cover group-hover:scale-105 transition-transform duration-500"
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center text-gray-300">
+          <div className="w-full h-full flex items-center justify-center text-[var(--muted-foreground)]">
             <span className="text-sm">No image</span>
           </div>
         )}
@@ -71,7 +71,19 @@ export function ProductCard({ product, storeSlug, showAddToCart = true }: Produc
         {showAddToCart && (
           <button
             onClick={handleAddToCart}
-            className="absolute bottom-3 right-3 w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-md hover:bg-black hover:text-white transition-colors z-10"
+            className="absolute bottom-3 right-3 w-10 h-10 rounded-full flex items-center justify-center shadow-md transition-colors z-10"
+            style={{
+              backgroundColor: "var(--background, #fff)",
+              color: "var(--foreground, #000)"
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = "var(--primary)";
+              e.currentTarget.style.color = "var(--primary-foreground)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = "var(--background, #fff)";
+              e.currentTarget.style.color = "var(--foreground, #000)";
+            }}
             aria-label="Add to cart"
           >
             <Plus className="h-5 w-5" />
@@ -83,38 +95,33 @@ export function ProductCard({ product, storeSlug, showAddToCart = true }: Produc
       <div className="space-y-1">
         {/* Title */}
         <Link href={`/${storeSlug}/product/${product.id}`}>
-          <h3 className="text-base font-medium text-gray-900 line-clamp-1 group-hover:underline decoration-1 underline-offset-4">
+          <h3 className="text-base font-medium line-clamp-1 group-hover:underline decoration-1 underline-offset-4" style={{ color: "var(--foreground)", fontFamily: "var(--font-heading, inherit)" }}>
             {product.name || product.title}
           </h3>
         </Link>
 
         {/* Rating */}
         <div className="flex items-center gap-1">
-          <div className="flex items-center">
+          <div className="flex items-center text-yellow-500">
             {[...Array(5)].map((_, i) => (
               <Star
                 key={i}
                 className={`h-3 w-3 ${i < fullStars
-                  ? "fill-yellow-400 text-yellow-400"
-                  : i === fullStars && hasHalfStar
-                    ? "fill-yellow-400/50 text-yellow-400"
-                    : "fill-gray-200 text-gray-200"
+                  ? "fill-current"
+                  : "text-gray-300 dark:text-gray-600"
                   }`}
               />
             ))}
           </div>
-          {/* Optional: Show count if available */}
-          {/* <span className="text-xs text-gray-400">(12)</span> */}
         </div>
 
         {/* Price */}
         <div className="flex items-center gap-2">
-          <p className="text-base font-bold text-gray-900">
+          <p className="text-base font-bold" style={{ color: "var(--foreground)" }}>
             {formatPrice(product.price || product.priceAmount)}
           </p>
-          {/* Hide original price for cleaner look unless significantly different */}
           {product.originalPrice && product.originalPrice > (product.price || product.priceAmount) && (
-            <p className="text-sm text-gray-400 line-through">
+            <p className="text-sm line-through" style={{ color: "var(--muted-foreground)" }}>
               {formatPrice(product.originalPrice)}
             </p>
           )}

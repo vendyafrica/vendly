@@ -2,49 +2,40 @@
 
 import Link from "next/link";
 import { useCart } from "./CartProvider";
-import { ShoppingCart, User, Heart } from "lucide-react";
-
-interface ThemeProps {
-  primaryColor?: string;
-  secondaryColor?: string;
-  accentColor?: string;
-  backgroundColor?: string;
-  textColor?: string;
-  headingFont?: string;
-  bodyFont?: string;
-}
+import { HugeiconsIcon } from "@hugeicons/react";
+import { UserIcon,ShoppingBasket01Icon,FavouriteIcon} from "@hugeicons/core-free-icons";
 
 interface HeaderProps {
   storeSlug?: string;
   storeName?: string;
-  theme?: ThemeProps;
   overlay?: boolean;
 }
 
-export function Header({ storeSlug, storeName, theme, overlay }: HeaderProps) {
+export function Header({ storeSlug, storeName, overlay }: HeaderProps) {
   const { toggleCart, totalItems } = useCart();
 
-  // Use theme colors or fallback to defaults
-  const bgColor = overlay ? "transparent" : "var(--primary, #1a1a2e)";
-  const textColor = "var(--primary-foreground, #ffffff)";
+  // Use CSS variables injected by StorefrontHome
+  const bgColor = overlay ? "transparent" : "var(--background, #ffffff)";
+  // If overlay, force white/light text, else use theme foreground
+  const textColor = overlay ? "rgba(255,255,255,0.95)" : "var(--foreground, #111111)";
 
   const navItems = [
     { label: "Men", href: `/${storeSlug}/products?collection=men` },
     { label: "Women", href: `/${storeSlug}/products?collection=women` },
+    { label: "All Products", href: `/${storeSlug}/products` },
   ];
 
   return (
     <header
-      className={overlay ? "absolute top-0 left-0 right-0 z-50" : "sticky top-0 z-50"}
+      className={overlay ? "absolute top-0 left-0 right-0 z-50 transition-colors duration-300" : "sticky top-0 z-50 border-b border-[var(--border,transparent)] transition-colors duration-300"}
       style={{
         backgroundColor: bgColor,
         color: textColor,
-        fontFamily: theme?.bodyFont || "var(--font-body, inherit)",
-        backdropFilter: overlay ? "saturate(120%) blur(10px)" : undefined,
-        WebkitBackdropFilter: overlay ? "saturate(120%) blur(10px)" : undefined,
+        fontFamily: "var(--font-body, inherit)",
+        backdropFilter: overlay ? undefined : "saturate(180%) blur(5px)",
       }}
     >
-      <div className="container mx-auto px-4 lg:px-8">
+      <div className="mx-auto px-4 lg:px-8 max-w-[var(--container-max,1400px)]">
         <div className="flex h-16 items-center justify-between">
           {/* Left Navigation */}
           <nav className="flex items-center gap-6">
@@ -52,12 +43,10 @@ export function Header({ storeSlug, storeName, theme, overlay }: HeaderProps) {
               <Link
                 key={item.label}
                 href={item.href}
-                className="flex items-center gap-1 text-sm font-medium transition-colors"
+                className="hidden md:flex items-center gap-1 text-sm font-medium transition-colors hover:opacity-70"
                 style={{
-                  color: overlay ? "rgba(255,255,255,0.90)" : "var(--primary-foreground, rgba(255,255,255,0.90))",
+                  color: textColor,
                 }}
-                onMouseEnter={(e) => (e.currentTarget.style.color = "var(--primary-foreground, #ffffff)")}
-                onMouseLeave={(e) => (e.currentTarget.style.color = overlay ? "rgba(255,255,255,0.90)" : "var(--primary-foreground, rgba(255,255,255,0.90))")}
               >
                 {item.label}
               </Link>
@@ -67,11 +56,11 @@ export function Header({ storeSlug, storeName, theme, overlay }: HeaderProps) {
           {/* Center Logo */}
           <Link
             href={`/${storeSlug}`}
-            className="absolute left-1/2 transform -translate-x-1/2 text-2xl font-serif italic tracking-wide"
+            className="absolute left-1/2 transform -translate-x-1/2 text-2xl font-bold tracking-tight"
             style={{
               color: textColor,
-              fontFamily: theme?.headingFont || "var(--font-heading, inherit)",
-              textShadow: overlay ? "0 2px 16px rgba(0,0,0,0.35)" : undefined,
+              fontFamily: "var(--font-heading, inherit)",
+              textShadow: overlay ? "0 2px 10px rgba(0,0,0,0.3)" : undefined,
             }}
           >
             {storeName || "Store"}
@@ -81,39 +70,33 @@ export function Header({ storeSlug, storeName, theme, overlay }: HeaderProps) {
           <div className="flex items-center space-x-5 ml-auto">
             {/* Wishlist */}
             <button
-              className="transition-colors"
-              style={{ color: overlay ? "rgba(255,255,255,0.90)" : "rgba(255,255,255,0.90)" }}
-              onMouseEnter={(e) => (e.currentTarget.style.color = textColor)}
-              onMouseLeave={(e) => (e.currentTarget.style.color = overlay ? "rgba(255,255,255,0.90)" : "rgba(255,255,255,0.90)")}
+              className="transition-colors hover:opacity-70"
+              style={{ color: textColor }}
             >
-              <Heart className="h-5 w-5" />
+             <HugeiconsIcon icon={FavouriteIcon} /> 
             </button>
 
             {/* User */}
             <button
-              className="transition-colors"
-              style={{ color: overlay ? "rgba(255,255,255,0.90)" : "rgba(255,255,255,0.90)" }}
-              onMouseEnter={(e) => (e.currentTarget.style.color = textColor)}
-              onMouseLeave={(e) => (e.currentTarget.style.color = overlay ? "rgba(255,255,255,0.90)" : "rgba(255,255,255,0.90)")}
+              className="transition-colors hover:opacity-70"
+              style={{ color: textColor }}
             >
-              <User className="h-5 w-5" />
+             <HugeiconsIcon icon={UserIcon} /> 
             </button>
 
             {/* Cart */}
             <button
               onClick={toggleCart}
-              className="relative transition-colors"
-              style={{ color: overlay ? "rgba(255,255,255,0.90)" : "rgba(255,255,255,0.90)" }}
-              onMouseEnter={(e) => (e.currentTarget.style.color = textColor)}
-              onMouseLeave={(e) => (e.currentTarget.style.color = overlay ? "rgba(255,255,255,0.90)" : "rgba(255,255,255,0.90)")}
+              className="relative transition-colors hover:opacity-70"
+              style={{ color: textColor }}
             >
-              <ShoppingCart className="h-5 w-5" />
+             <HugeiconsIcon icon={ShoppingBasket01Icon} /> 
               {totalItems > 0 && (
                 <span
-                  className="absolute -top-2 -right-2 h-5 w-5 text-xs font-semibold rounded-full flex items-center justify-center"
+                  className="absolute -top-2 -right-2 h-5 w-5 text-[10px] font-bold rounded-full flex items-center justify-center"
                   style={{
-                    backgroundColor: "var(--primary-foreground, #ffffff)",
-                    color: "var(--primary, #1a1a2e)",
+                    backgroundColor: "var(--primary, #111)",
+                    color: "var(--primary-foreground, #fff)",
                   }}
                 >
                   {totalItems}

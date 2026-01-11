@@ -1,5 +1,4 @@
-import { ProductDetail } from "@/components/storefront/primitives/ProductDetail";
-import { CartProvider, CartDrawer } from "@/components/storefront";
+import { StorefrontProduct } from "@/components/storefront/StorefrontProduct";
 
 export const dynamic = 'force-dynamic';
 
@@ -14,9 +13,6 @@ export default async function ProductPage({ params }: Props) {
     const { subdomain, productId } = await params;
 
     return (
-        <CartProvider>
-            <ProductDetail storeSlug={subdomain} productId={productId} />
-            <CartDrawer />
-        </CartProvider>
+        <StorefrontProduct storeSlug={subdomain} productId={productId} />
     );
 }
