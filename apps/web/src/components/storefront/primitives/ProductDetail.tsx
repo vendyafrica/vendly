@@ -3,7 +3,8 @@
 import { useStorefrontProducts } from "@/hooks/useStorefrontProducts";
 import { useCart } from "@/components/storefront/primitives/CartProvider";
 import { Button } from "@vendly/ui/components/button";
-import { Star, Truck, Share2, Heart, Minus, Plus } from "lucide-react";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { ContainerTruck01Icon ,StarIcon,SentIcon,FavouriteIcon,MinusSignIcon,PlusSignIcon } from "@hugeicons/core-free-icons";
 import Image from "next/image";
 import { useState } from "react";
 import { useStorefrontStore } from "@/hooks/useStorefrontStore";
@@ -46,7 +47,6 @@ export function ProductDetail({ storeSlug, productId }: ProductDetailProps) {
         );
     }
 
-    // Mock images logic: duplicate image 4 times if only 1 exists, to show variant thumbnails
     let images = product.imageUrl ? [product.imageUrl] : [];
     if (images.length === 1) {
         images = [images[0], images[0], images[0], images[0]];
@@ -129,7 +129,7 @@ export function ProductDetail({ storeSlug, productId }: ProductDetailProps) {
                             <div>
                                 <h3 className="font-semibold text-sm">{store?.name || "Store Name"}</h3>
                                 <div className="flex items-center text-xs text-yellow-500">
-                                    <Star className="w-3 h-3 fill-current" />
+                                    <HugeiconsIcon icon={StarIcon} className="w-3 h-3 fill-current" />
                                     <span className="text-[var(--muted-foreground)] ml-1">4.8 (1.2k)</span>
                                 </div>
                             </div>
@@ -141,7 +141,7 @@ export function ProductDetail({ storeSlug, productId }: ProductDetailProps) {
                             <div className="flex items-center gap-2 mb-4">
                                 <div className="flex text-yellow-400">
                                     {[...Array(5)].map((_, i) => (
-                                        <Star key={i} className={`w-4 h-4 ${i < 4 ? "fill-current" : "text-gray-300"}`} />
+                                        <HugeiconsIcon icon={StarIcon} key={i} className={`w-4 h-4 ${i < 4 ? "fill-current" : "text-gray-300"}`} />
                                     ))}
                                 </div>
                                 <span className="text-sm text-[var(--muted-foreground)] underline">148 ratings</span>
@@ -160,7 +160,7 @@ export function ProductDetail({ storeSlug, productId }: ProductDetailProps) {
                         {/* Shipping */}
                         <div className="space-y-4">
                             <div className="flex items-center gap-2 text-sm font-medium">
-                                <Truck className="w-4 h-4" />
+                                <HugeiconsIcon icon={ContainerTruck01Icon} className="w-4 h-4" />
                                 <span>Shipping calculated at checkout</span>
                             </div>
                         </div>
@@ -173,14 +173,14 @@ export function ProductDetail({ storeSlug, productId }: ProductDetailProps) {
                                     onClick={() => setQuantity(Math.max(1, quantity - 1))}
                                     className="w-10 h-full flex items-center justify-center hover:bg-[var(--muted)] transition-colors"
                                 >
-                                    <Minus className="w-3 h-3" />
+                                    <HugeiconsIcon icon={MinusSignIcon} className="w-3 h-3" />
                                 </button>
                                 <span className="flex-1 text-center font-medium">{quantity}</span>
                                 <button
                                     onClick={() => setQuantity(quantity + 1)}
                                     className="w-10 h-full flex items-center justify-center hover:bg-[var(--muted)] transition-colors"
                                 >
-                                    <Plus className="w-3 h-3" />
+                                    <HugeiconsIcon icon={PlusSignIcon} className="w-3 h-3" />
                                 </button>
                             </div>
                         </div>
@@ -205,10 +205,10 @@ export function ProductDetail({ storeSlug, productId }: ProductDetailProps) {
 
                         <div className="grid grid-cols-2 gap-3">
                             <Button variant="outline" className="rounded-[var(--radius)] flex gap-2">
-                                <Heart className="w-4 h-4" /> Save
+                                <HugeiconsIcon icon={FavouriteIcon} className="w-4 h-4" /> Save
                             </Button>
                             <Button variant="outline" className="rounded-[var(--radius)] flex gap-2">
-                                <Share2 className="w-4 h-4" /> Share
+                                <HugeiconsIcon icon={SentIcon} className="w-4 h-4" /> Share
                             </Button>
                         </div>
 

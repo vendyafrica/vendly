@@ -16,19 +16,43 @@ interface ContentProps {
   heroImageUrl?: string | null;
 }
 
+interface Product {
+  id: string;
+  name: string;
+  title: string;
+  imageUrl?: string;
+  [key: string]: any;
+}
+
 interface HeroSectionProps {
   store: Store;
   storeSlug: string;
   content?: ContentProps;
+  products?: Product[];
 }
 
-export function HeroSection({ store, storeSlug, content }: HeroSectionProps) {
+export function HeroSection({ store, storeSlug, content, products }: HeroSectionProps) {
+
   // Use content or fallback to defaults
   const heroLabel = content?.heroLabel || "Collection";
   const heroTitle = content?.heroTitle || store.description || `Welcome to ${store.name}`;
   const heroSubtitle = content?.heroSubtitle || "Discover our latest curated collection.";
   const heroCta = content?.heroCta || "Shop Now";
-  const bgImage = content?.heroImageUrl;
+  // Logic: 1. Configured Image -> 2. First Product Image -> 3. Static Placeholder
+  let bgImage = content?.heroImageUrl;
+
+  if (!bgImage && products && products.length > 0) {
+    // Try to find first product with an image
+    const productWithImage = products.find(p => p.imageUrl);
+    if (productWithImage) {
+      bgImage = productWithImage.imageUrl;
+    }
+  }
+
+  // Final fallback
+  if (!bgImage) {
+    bgImage = "/store-hero-placeholder.png";
+  }
 
   return (
     <section className="relative h-[600px] md:h-[700px] overflow-hidden flex items-center">

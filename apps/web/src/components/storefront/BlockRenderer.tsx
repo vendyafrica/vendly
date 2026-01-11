@@ -44,6 +44,7 @@ export function BlockRenderer({ sections, storeSlug, storeName, store, products 
                 } else if (section.type === "hero") {
                     specificProps = {
                         store,
+                        products, // Pass products
                         content: {
                             heroLabel: section.label,
                             heroTitle: section.title,
@@ -63,9 +64,9 @@ export function BlockRenderer({ sections, storeSlug, storeName, store, products 
                         key={`${section.type}-${index}`}
                         {...commonProps}
                         {...specificProps}
-                        // Pass through raw content/settings as fallback or for specialized usage
-                        content={section.content}
-                        settings={section.settings}
+                        // Only pass content/settings if they exist to avoid overwriting specificProps
+                        {...(section.content ? { content: section.content } : {})}
+                        {...(section.settings ? { settings: section.settings } : {})}
                     />
                 );
             })}
