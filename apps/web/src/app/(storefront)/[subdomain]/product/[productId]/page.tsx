@@ -1,4 +1,4 @@
-import { ProductDetail } from "@/components/storefront/product/ProductDetail";
+import { ProductDetail } from "@/components/storefront/primitives/ProductDetail";
 import { CartProvider, CartDrawer } from "@/components/storefront";
 
 export const dynamic = 'force-dynamic';

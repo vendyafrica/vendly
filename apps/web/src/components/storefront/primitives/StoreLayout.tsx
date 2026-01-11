@@ -1,8 +1,8 @@
 "use client";
 
 import { Header } from "./Header";
-import { CartProvider } from "../CartProvider";
-import { CartDrawer } from "../CartDrawer";
+import { CartProvider } from "./CartProvider";
+import { CartDrawer } from "./CartDrawer";
 
 interface StoreLayoutProps {
   children: React.ReactNode;

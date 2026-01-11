@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useCart } from "../CartProvider";
+import { useCart } from "./CartProvider";
 import { Star, Plus } from "lucide-react";
 
 interface Product {
@@ -95,10 +95,10 @@ export function ProductCard({ product, storeSlug, showAddToCart = true }: Produc
               <Star
                 key={i}
                 className={`h-3 w-3 ${i < fullStars
-                    ? "fill-yellow-400 text-yellow-400"
-                    : i === fullStars && hasHalfStar
-                      ? "fill-yellow-400/50 text-yellow-400"
-                      : "fill-gray-200 text-gray-200"
+                  ? "fill-yellow-400 text-yellow-400"
+                  : i === fullStars && hasHalfStar
+                    ? "fill-yellow-400/50 text-yellow-400"
+                    : "fill-gray-200 text-gray-200"
                   }`}
               />
             ))}

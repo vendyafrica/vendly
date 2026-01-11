@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useCart } from "../CartProvider";
+import { useCart } from "./CartProvider";
 import { ShoppingCart, User, Heart } from "lucide-react";
 
 interface ThemeProps {
@@ -34,9 +34,9 @@ export function Header({ storeSlug, storeName, theme, overlay }: HeaderProps) {
   ];
 
   return (
-    <header 
+    <header
       className={overlay ? "absolute top-0 left-0 right-0 z-50" : "sticky top-0 z-50"}
-      style={{ 
+      style={{
         backgroundColor: bgColor,
         color: textColor,
         fontFamily: theme?.bodyFont || "var(--font-body, inherit)",
@@ -53,7 +53,7 @@ export function Header({ storeSlug, storeName, theme, overlay }: HeaderProps) {
                 key={item.label}
                 href={item.href}
                 className="flex items-center gap-1 text-sm font-medium transition-colors"
-                style={{ 
+                style={{
                   color: overlay ? "rgba(255,255,255,0.90)" : "var(--primary-foreground, rgba(255,255,255,0.90))",
                 }}
                 onMouseEnter={(e) => (e.currentTarget.style.color = "var(--primary-foreground, #ffffff)")}
@@ -65,10 +65,10 @@ export function Header({ storeSlug, storeName, theme, overlay }: HeaderProps) {
           </nav>
 
           {/* Center Logo */}
-          <Link 
-            href={`/${storeSlug}`} 
+          <Link
+            href={`/${storeSlug}`}
             className="absolute left-1/2 transform -translate-x-1/2 text-2xl font-serif italic tracking-wide"
-            style={{ 
+            style={{
               color: textColor,
               fontFamily: theme?.headingFont || "var(--font-heading, inherit)",
               textShadow: overlay ? "0 2px 16px rgba(0,0,0,0.35)" : undefined,
@@ -80,7 +80,7 @@ export function Header({ storeSlug, storeName, theme, overlay }: HeaderProps) {
           {/* Right Actions */}
           <div className="flex items-center space-x-5 ml-auto">
             {/* Wishlist */}
-            <button 
+            <button
               className="transition-colors"
               style={{ color: overlay ? "rgba(255,255,255,0.90)" : "rgba(255,255,255,0.90)" }}
               onMouseEnter={(e) => (e.currentTarget.style.color = textColor)}
@@ -90,7 +90,7 @@ export function Header({ storeSlug, storeName, theme, overlay }: HeaderProps) {
             </button>
 
             {/* User */}
-            <button 
+            <button
               className="transition-colors"
               style={{ color: overlay ? "rgba(255,255,255,0.90)" : "rgba(255,255,255,0.90)" }}
               onMouseEnter={(e) => (e.currentTarget.style.color = textColor)}
@@ -100,7 +100,7 @@ export function Header({ storeSlug, storeName, theme, overlay }: HeaderProps) {
             </button>
 
             {/* Cart */}
-            <button 
+            <button
               onClick={toggleCart}
               className="relative transition-colors"
               style={{ color: overlay ? "rgba(255,255,255,0.90)" : "rgba(255,255,255,0.90)" }}
@@ -109,9 +109,9 @@ export function Header({ storeSlug, storeName, theme, overlay }: HeaderProps) {
             >
               <ShoppingCart className="h-5 w-5" />
               {totalItems > 0 && (
-                <span 
+                <span
                   className="absolute -top-2 -right-2 h-5 w-5 text-xs font-semibold rounded-full flex items-center justify-center"
-                  style={{ 
+                  style={{
                     backgroundColor: "var(--primary-foreground, #ffffff)",
                     color: "var(--primary, #1a1a2e)",
                   }}

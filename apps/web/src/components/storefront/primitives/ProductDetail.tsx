@@ -1,7 +1,7 @@
 "use client";
 
 import { useStorefrontProducts } from "@/hooks/useStorefrontProducts";
-import { useCart } from "@/components/storefront/CartProvider";
+import { useCart } from "@/components/storefront/primitives/CartProvider";
 import { Button } from "@vendly/ui/components/button";
 import { Star, Truck, Share2, Heart, Minus, Plus } from "lucide-react";
 import Image from "next/image";
