@@ -3,14 +3,17 @@ import cors from "cors";
 import { toNodeHandler } from "better-auth/node";
 import { auth } from "@vendly/auth";
 
-// import vercelDeploymentRouter from "./modules/deployment/vercel-route";
 import imageUploadRouter from "./modules/storage/blob-route";
-import storefrontDemoRouter from "./modules/storefront/storefront-route";
-import tenantRouter from "./modules/tenant/tenant-route";
 import { createOnboardingRouter } from "./modules/onboarding/onboarding-route";
+import { createStorefrontRouter } from "./modules/storefront/storefront-route";
 
 export function createApp(): Express {
   const app = express();
+
+  // Trust proxy is required for correct protocol detection (HTTP vs HTTPS)
+  // when running behind a proxy like ngrok, Vercel, or load balancers.
+  // This ensures cookies with 'Secure' attribute are handled correctly.
+  app.set("trust proxy", true);
 
   // ---------- Core middleware ----------
   app.use(express.json());
@@ -43,8 +46,7 @@ export function createApp(): Express {
   // ---------- Routes ----------
   // app.use("/api/vercel", vercelDeploymentRouter);
   app.use("/api/upload", imageUploadRouter);
-  app.use("/api/storefront", storefrontDemoRouter);
-  app.use("/api/tenants", tenantRouter);
+  app.use("/api/storefront", createStorefrontRouter());
   app.use("/api/onboarding", createOnboardingRouter());
 
   app.get("/", (_req, res) => {

@@ -34,6 +34,7 @@ function extractNameFromEmail(email: string): string {
 const trustedOrigins = [
   "http://localhost:3000",
   "http://localhost:8000",
+  baseURL,
   process.env.NGROK_URL,
 ].filter((origin): origin is string => Boolean(origin));
 
@@ -160,13 +161,13 @@ export const auth = betterAuth({
   // Advanced configuration
   advanced: {
     cookiePrefix: "vendly",
-    useSecureCookies: process.env.NODE_ENV === "production",
-    cookies: {
-      state: {
-        attributes: {
-          sameSite: "none",
-          secure: true,
-        },
+    useSecureCookies: true,
+  },
+  cookies: {
+    state: {
+      attributes: {
+        sameSite: "none",
+        secure: true,
       },
     },
   },

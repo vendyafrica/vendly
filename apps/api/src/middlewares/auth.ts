@@ -21,11 +21,12 @@ export async function authMiddleware(
                 error: "Unauthorized",
                 message: "You must be logged in to access this resource",
             });
-            return;
+            res.redirect("/api/auth/login");
+            return; 
         }
 
         // Attach session to request for use in controllers
-        (req as any).session = session;
+        (req as any).session = session; 
 
         next();
     } catch (error) {
@@ -34,6 +35,7 @@ export async function authMiddleware(
             error: "Authentication failed",
             message: error instanceof Error ? error.message : "Unknown error",
         });
+        res.redirect("/api/auth/login");
     }
 }
 

@@ -1,29 +1,23 @@
 import { OnboardingRequest, OnboardingResponse } from "./onboarding-types";
 import {
     buildTenantData,
-    buildStoreData,
-    buildThemeConfig,
-    buildStoreContent,
     buildOnboardingResponse,
 } from "./onboarding-builder";
 import {
     findTenantBySlug,
     createTenant,
     createTenantMembership,
-    findTemplateBySlug,
-    createStore,
     createStoreMembership,
-    createStoreTheme,
-    createStoreContent,
+    edgeDb,
 } from "@vendly/db";
-
+import { createStorefront } from "../storefront/storefront-service";
 import { sendWelcomeEmail } from "@vendly/transactional";
 
 // Non-blocking side effects
 const syncInstagramSafe = async (tenantSlug: string, userId: string) => {
     try {
-        const { instagramService } = await import("../instagram/instagram-service");
-
+        const { getInstagramService } = await import("../instagram/instagram-service");
+        const instagramService = getInstagramService(edgeDb);
         await instagramService.initializeIntegration(tenantSlug, userId);
         console.log("Instagram Sync triggered for tenant:", tenantSlug);
     } catch (error) {
@@ -47,13 +41,13 @@ const sendWelcomeEmailSafe = async (
     }
 };
 
-// Main service function
+// Main onboarding service
 export const completeOnboarding = async (
     userId: string,
     userEmail: string,
     request: OnboardingRequest
 ): Promise<OnboardingResponse> => {
-    // 1. Check if tenant exists
+    // 1. Validate tenant doesn't exist
     const existingTenant = await findTenantBySlug(request.tenantSlug);
     if (existingTenant) {
         throw new Error("Store URL already taken");
@@ -64,23 +58,20 @@ export const completeOnboarding = async (
     const tenant = await createTenant(tenantData);
     await createTenantMembership(tenant.id, userId);
 
-    // 3. Create store
-    const templateId = request.themeId
-        ? (await findTemplateBySlug(request.themeId))?.id
-        : null;
+    // 3. Create complete storefront (store + theme + content)
+    const storefront = await createStorefront({
+        tenantId: tenant.id,
+        storeName: request.storeName,
+        storeSlug: request.tenantSlug,
+        description: request.description,
+        themeId: request.themeId,
+        categories: request.categories,
+        location: request.location,
+        socialLinks: request.socialLinks,
+    });
 
-    const storeData = buildStoreData(request, tenant.id);
-    const store = await createStore(storeData);
-    await createStoreMembership(tenant.id, store.id, userId);
-
-    // 4. Create theme and content
-    const themeConfig = buildThemeConfig(tenant.id, store.id);
-    const contentConfig = buildStoreContent(tenant.id, store.id, request.storeName);
-
-    await Promise.all([
-        createStoreTheme(themeConfig),
-        createStoreContent(contentConfig),
-    ]);
+    // 4. Create store membership
+    await createStoreMembership(tenant.id, storefront.id, userId);
 
     // 5. Non-blocking side effects
     Promise.all([
@@ -89,5 +80,5 @@ export const completeOnboarding = async (
     ]).catch(error => console.error("Post-onboarding tasks failed:", error));
 
     // 6. Build response
-    return buildOnboardingResponse(tenant, store);
+    return buildOnboardingResponse(tenant, { id: storefront.id });
 };

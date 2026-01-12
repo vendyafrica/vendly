@@ -11,7 +11,16 @@ export const submitOnboarding = async (
             'Content-Type': 'application/json',
         },
         credentials: 'include',
-        body: JSON.stringify(data),
+        body: JSON.stringify({
+            fullName: data.fullName,
+            phone: data.phone,
+            categories: data.categories,
+            storeName: data.storeName,
+            description: data.description,
+            tenantSlug: data.tenantSlug,
+            themeId: data.themeId,
+            location: data.location,
+        }),
     });
 
     if (!response.ok) {

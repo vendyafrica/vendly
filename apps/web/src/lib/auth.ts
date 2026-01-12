@@ -2,27 +2,32 @@
 import { authClient } from "@vendly/auth/auth-client";
 
 export async function signInWithGoogle() {
-  try {
-    const data = await authClient.signIn.social({
-      provider: "google",
-      callbackURL: process.env.NEXT_PUBLIC_APP_URL
-    }, {
-      onRequest: (ctx) => {
-        console.log("Initiating Google sign-in...");
-      },
-      onSuccess: (ctx) => {
-        console.log("Successfully signed in with Google:", ctx);
-      },
-      onError: (ctx) => {
-        console.error("Google sign-in failed:", ctx.error.message);
-        alert(ctx.error.message);
-      }
-    });
-    return data;
-  } catch (error) {
-    console.error("Unexpected error during Google sign-in:", error);
-    throw error;
-  }
+	try {
+		console.log("Environment URL:", process.env.NEXT_PUBLIC_APP_URL);
+
+		const data = await authClient.signIn.social({
+			provider: "google",
+			callbackURL: "/"
+		}, {
+			onRequest: (ctx) => {
+				console.log("OAuth request initiated:", ctx);
+			},
+			onSuccess: (ctx) => {
+				console.log("OAuth success:", ctx);
+			},
+			onError: (ctx) => {
+				console.error("OAuth error details:", {
+					message: ctx.error.message,
+					status: ctx.error.status,
+					cause: ctx.error.cause
+				});
+			}
+		});
+		return data;
+	} catch (error) {
+		console.error("Caught error:", error);
+		throw error;
+	}
 }
 
 

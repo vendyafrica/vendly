@@ -7,6 +7,11 @@ export interface OnboardingFormData {
     tenantSlug: string;
     themeId: string;
     location?: string;
+    socialLinks?: {
+        instagram?: string;
+        facebook?: string;
+        twitter?: string;
+    };
 }
 
 export interface OnboardingResponse {
