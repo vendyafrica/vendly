@@ -1,109 +1,25 @@
-import { eq } from "drizzle-orm";
+import { db, tenants, tenantMemberships, eq } from "@vendly/db";
+import { NewTenant } from "../schema/tenant-schema";
 
-import { edgeDb } from "../db";
-import { tenants, type Tenant } from "../schema/tenant-schema";
+export const findTenantBySlug = async (slug: string) => {
+    return await db.query.tenants.findFirst({
+        where: eq(tenants.slug, slug)
+    });
+};
 
-export async function getTenantBySlug(slug: string): Promise<Tenant | undefined> {
-  const [tenant] = await edgeDb.select().from(tenants).where(eq(tenants.slug, slug));
-  return tenant;
-}
+export const createTenant = async (data: NewTenant) => {
+    const [tenant] = await db.insert(tenants).values(data).returning();
+    return tenant;
+};
 
-export async function createTenantIfNotExists(slug: string): Promise<Tenant> {
-  await edgeDb
-    .insert(tenants)
-    .values({
-      slug,
-      name: slug, // Fallback name
-      status: "onboarding"
-    })
-    .onConflictDoNothing({ target: tenants.slug });
-
-  // Fetch and return the tenant (either newly created or existing)
-  const tenant = await getTenantBySlug(slug);
-  if (!tenant) {
-    throw new Error(`Failed to create or find tenant: ${slug}`);
-  }
-  return tenant;
-}
-
-export async function setTenantStatus({
-  slug,
-  status,
-  error,
-}: {
-  slug: string;
-  status: "active" | "suspended" | "onboarding";
-  error?: string | null;
-}): Promise<void> {
-  await edgeDb
-    .update(tenants)
-    .set({ status, error: error ?? null })
-    .where(eq(tenants.slug, slug));
-}
-
-// Legacy helpers mapped to jsonb or new fields
-export async function saveTenantStorefrontConfig({
-  slug,
-  storefrontConfig,
-}: {
-  slug: string;
-  storefrontConfig: unknown;
-}): Promise<void> {
-  await edgeDb
-    .update(tenants)
-    .set({ storefrontConfig, status: "active", error: null }) // Map ready -> active
-    .where(eq(tenants.slug, slug));
-}
-
-export async function saveTenantDemoUrl({
-  slug,
-  demoUrl,
-  v0ChatId,
-}: {
-  slug: string;
-  demoUrl: string;
-  v0ChatId?: string;
-}): Promise<void> {
-  await edgeDb
-    .update(tenants)
-    .set({ demoUrl, v0ChatId: v0ChatId ?? null, status: "active", error: null })
-    .where(eq(tenants.slug, slug));
-}
-
-export async function saveTenantGeneratedFiles({
-  slug,
-  generatedFiles,
-  v0ChatId,
-}: {
-  slug: string;
-  generatedFiles: Array<{ name: string; content: string }>;
-  v0ChatId?: string;
-}): Promise<void> {
-  await edgeDb
-    .update(tenants)
-    // Cast strict type if needed, or Drizzle handles jsonb
-    .set({ generatedFiles: generatedFiles as any, v0ChatId: v0ChatId ?? null })
-    .where(eq(tenants.slug, slug));
-}
-
-export async function saveTenantDeploymentUrl({
-  slug,
-  vercelDeploymentUrl,
-}: {
-  slug: string;
-  vercelDeploymentUrl: string;
-}): Promise<void> {
-  await edgeDb
-    .update(tenants)
-    .set({ vercelDeploymentUrl, status: "active", error: null }) // Map deployed -> active
-    .where(eq(tenants.slug, slug));
-}
-
-export async function getAllTenants(): Promise<Tenant[]> {
-  return edgeDb.select().from(tenants);
-}
-
-export async function getTenantsWithV0ChatId(): Promise<Tenant[]> {
-  const allTenants = await edgeDb.select().from(tenants);
-  return allTenants.filter(t => t.v0ChatId);
-}
+export const createTenantMembership = async (
+    tenantId: string,
+    userId: string,
+    role: "owner" = "owner"
+) => {
+    await db.insert(tenantMemberships).values({
+        tenantId,
+        userId,
+        role,
+    });
+};

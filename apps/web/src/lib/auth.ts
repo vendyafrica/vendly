@@ -44,5 +44,12 @@ export async function signInWithMagicLink(email: string) {
   return data;
 }
 
+export async function signInWithInstagram() {
+  const data = await authClient.signIn.social({
+    provider: "instagram",
+    callbackURL:  process.env.NEXT_PUBLIC_APP_URL + "/sell/business?connected=true"
+  });
+  return data;
+}
 
 export const useSession = authClient.useSession;

@@ -1,6 +1,6 @@
 import { db, stores, storeThemes, storeContent, tenants, eq } from "@vendly/db";
 import { CreateStoreRequest, UpdateStoreRequest, StoreResponse, PageData } from "./storefront-model";
-import { vercelDeploymentService } from "../deployment/vercel-service";
+// import { vercelDeploymentService } from "../deployment/vercel-service";
 
 
 export class StorefrontService {
@@ -157,15 +157,15 @@ export class StorefrontService {
     /**
      * Publish Store (Integrate with Vercel Deployment)
      */
-    async publishStore(storeId: string): Promise<boolean> {
-        // 1. Get Store
-        const [store] = await db
-            .select()
-            .from(stores)
-            .where(eq(stores.id, storeId))
-            .limit(1);
+    // async publishStore(storeId: string): Promise<boolean> {
+    //     // 1. Get Store
+    //     const [store] = await db
+    //         .select()
+    //         .from(stores)
+    //         .where(eq(stores.id, storeId))
+    //         .limit(1);
 
-        if (!store) throw new Error("Store not found");
+    //     if (!store) throw new Error("Store not found");
 
         // 2. Trigger Vercel Deployment for the subdomain (store.slug)
         // NOTE: The deployments service currently expects a "tenant slug" but logically the store slug IS the subdomain.
@@ -184,129 +184,130 @@ export class StorefrontService {
         // Let's call `addSubdomainToVercel` directly from the service if needed, OR update `deployTenant`.
         // Given existing code in `vercel-service.ts`, it does `addSubdomainToVercel(slug)`.
 
-        const deployResult = await vercelDeploymentService.addSubdomainToVercel(store.slug);
+    //     const deployResult = await vercelDeploymentService.addSubdomainToVercel(store.slug);
 
-        if (!deployResult.success) {
-            throw new Error(`Deployment failed: ${deployResult.error}`);
-        }
+    //     if (!deployResult.success) {
+    //         throw new Error(`Deployment failed: ${deployResult.error}`);
+    //     }
 
-        // 3. Update Status
-        await db
-            .update(stores)
-            .set({ status: "active", updatedAt: new Date() })
-            .where(eq(stores.id, storeId));
+    //     // 3. Update Status
+    //     await db
+    //         .update(stores)
+    //         .set({ status: "active", updatedAt: new Date() })
+    //         .where(eq(stores.id, storeId));
 
-        return true;
-    }
+    //     return true;
+    // }
 
     /**
      * Update Store Config
      */
-    async updateStore(storeId: string, data: UpdateStoreRequest): Promise<void> {
-        if (data.name || data.description) {
-            await db.update(stores).set({
-                name: data.name,
-                description: data.description,
-                updatedAt: new Date()
-            }).where(eq(stores.id, storeId));
-        }
+    // async updateStore(storeId: string, data: UpdateStoreRequest): Promise<void> {
+    //     if (data.name || data.description) {
+    //         await db.update(stores).set({
+    //             name: data.name,
+    //             description: data.description,
+    //             updatedAt: new Date()
+    //         }).where(eq(stores.id, storeId));
+    //     }
 
-        if (data.theme) {
-            await db.update(storeThemes).set({
-                ...data.theme,
-                updatedAt: new Date()
-            }).where(eq(storeThemes.storeId, storeId));
-        }
+    //     if (data.theme) {
+    //         await db.update(storeThemes).set({
+    //             ...data.theme,
+    //             updatedAt: new Date()
+    //         }).where(eq(storeThemes.storeId, storeId));
+    //     }
 
-        if (data.content) {
-            // We need to merge or replace. Drizzle jsonb support usually replaces.
-            // Let's fetch existing first if we want merge, or just replace.
-            // Assuming replace/merge logic handled by frontend sending full object or we do deep merge here.
-            // For simplicity, we assume one level merge or replace.
+    //     if (data.content) {
+    //         // We need to merge or replace. Drizzle jsonb support usually replaces.
+    //         // Let's fetch existing first if we want merge, or just replace.
+    //         // Assuming replace/merge logic handled by frontend sending full object or we do deep merge here.
+    //         // For simplicity, we assume one level merge or replace.
 
-            await db.update(storeContent).set({
-                data: data.content,
-                updatedAt: new Date()
-            }).where(eq(storeContent.storeId, storeId));
-        }
-    }
+    //         await db.update(storeContent).set({
+    //             data: data.content,
+    //             updatedAt: new Date()
+    //         }).where(eq(storeContent.storeId, storeId));
+    //     }
+    // }
     /**
      * Get Page Data for Editor/Storefront
      */
-    async getPageData(tenantSlug: string): Promise<{ pageData: PageData } | null> {
-        // 1. Get Tenant & Store (Assuming single store per tenant for now or main store)
-        // We really should look up by store slug if possible, but the route param is :slug (which maps to tenant or store?)
-        // The URL is /api/storefront/${tenant}/page-data. So 'tenant' param is likely the tenant slug (which is also the store slug usually).
+//     async getPageData(tenantSlug: string): Promise<{ pageData: PageData } | null> {
+//         // 1. Get Tenant & Store (Assuming single store per tenant for now or main store)
+//         // We really should look up by store slug if possible, but the route param is :slug (which maps to tenant or store?)
+//         // The URL is /api/storefront/${tenant}/page-data. So 'tenant' param is likely the tenant slug (which is also the store slug usually).
 
-        const [store] = await db
-            .select()
-            .from(stores)
-            .where(eq(stores.slug, tenantSlug))
-            .limit(1);
+//         const [store] = await db
+//             .select()
+//             .from(stores)
+//             .where(eq(stores.slug, tenantSlug))
+//             .limit(1);
 
-        if (!store) return null;
+//         if (!store) return null;
 
-        // 2. Fetch Content
-        const [content] = await db
-            .select()
-            .from(storeContent)
-            .where(eq(storeContent.storeId, store.id))
-            .limit(1);
+//         // 2. Fetch Content
+//         const [content] = await db
+//             .select()
+//             .from(storeContent)
+//             .where(eq(storeContent.storeId, store.id))
+//             .limit(1);
 
-        // 3. Transform to PageData (Puck format)
-        // If we have stored editorData (Puck JSON), return that directly.
-        // Otherwise, construct it from structured fields (hero, sections).
+//         // 3. Transform to PageData (Puck format)
+//         // If we have stored editorData (Puck JSON), return that directly.
+//         // Otherwise, construct it from structured fields (hero, sections).
 
-        if (content?.editorData) {
-            return { pageData: content.editorData as PageData };
-        }
+//         if (content?.editorData) {
+//             return { pageData: content.editorData as PageData };
+//         }
 
-        // Construct from parts
-        const blocks: any[] = [];
+//         // Construct from parts
+//         const blocks: any[] = [];
 
-        // Hero
-        if (content?.hero && content.hero.enabled !== false) {
-            blocks.push({
-                type: "Hero",
-                props: {
-                    title: content.hero.title,
-                    subtitle: content.hero.subtitle,
-                    ctaText: content.hero.ctaText,
-                    ctaLink: content.hero.ctaLink,
-                    imageUrl: content.hero.imageUrl,
-                    id: "hero" // Puck needs unique IDs? usually auto-generated
-                }
-            });
-        }
+//         // Hero
+//         if (content?.hero && content.hero.enabled !== false) {
+//             blocks.push({
+//                 type: "Hero",
+//                 props: {
+//                     title: content.hero.title,
+//                     subtitle: content.hero.subtitle,
+//                     ctaText: content.hero.ctaText,
+//                     ctaLink: content.hero.ctaLink,
+//                     imageUrl: content.hero.imageUrl,
+//                     id: "hero" // Puck needs unique IDs? usually auto-generated
+//                 }
+//             });
+//         }
 
-        // Sections
-        if (content?.sections && Array.isArray(content.sections)) {
-            content.sections.forEach((sec: any) => {
-                if (sec.enabled === false) return;
+//         // Sections
+//         if (content?.sections && Array.isArray(content.sections)) {
+//             content.sections.forEach((sec: any) => {
+//                 if (sec.enabled === false) return;
 
-                if (sec.type === "products") {
-                    blocks.push({
-                        type: "ProductsGrid", // Example component name
-                        props: {
-                            title: sec.title,
-                            id: sec.id
-                        }
-                    });
-                }
-                // Add more mappings as needed
-            });
-        }
+//                 if (sec.type === "products") {
+//                     blocks.push({
+//                         type: "ProductsGrid", // Example component name
+//                         props: {
+//                             title: sec.title,
+//                             id: sec.id
+//                         }
+//                     });
+//                 }
+//                 // Add more mappings as needed
+//             });
+//         }
 
-        // Footer (Usually part of root layout props or a block, depending on Puck config)
-        // Let's assume Footer is a block for now or handled by Layout.
+//         // Footer (Usually part of root layout props or a block, depending on Puck config)
+//         // Let's assume Footer is a block for now or handled by Layout.
 
-        return {
-            pageData: {
-                content: blocks,
-                root: { props: { title: store.name } }
-            }
-        };
-    }
+//         return {
+//             pageData: {
+//                 content: blocks,
+//                 root: { props: { title: store.name } }
+//             }
+//         };
+//     }
+// }
+
+// export const storefrontService = new StorefrontService();
 }
-
-export const storefrontService = new StorefrontService();

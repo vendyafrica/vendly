@@ -1,5 +1,5 @@
-import { BusinessForm } from "@/components/onboarding/business";
+import { BusinessStep } from '@/components/onboarding/business';
 
 export default function BusinessPage() {
-  return <BusinessForm />;
+    return <BusinessStep />;
 }

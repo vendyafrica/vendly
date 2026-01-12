@@ -161,6 +161,14 @@ export const auth = betterAuth({
   advanced: {
     cookiePrefix: "vendly",
     useSecureCookies: process.env.NODE_ENV === "production",
+    cookies: {
+      state: {
+        attributes: {
+          sameSite: "none",
+          secure: true,
+        },
+      },
+    },
   },
 });
 

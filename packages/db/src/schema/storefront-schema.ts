@@ -1,6 +1,5 @@
 import { relations } from "drizzle-orm";
 import {
-    pgEnum,
     pgTable,
     text,
     timestamp,
@@ -14,19 +13,9 @@ import {
 
 import { tenants } from "./tenant-schema";
 import { users } from "./auth-schema";
-import { storeCategories } from "./category-schema";
-import { products, instagramMedia } from "./product-schema";
-
-export const storeStatus = pgEnum("store_status", ["active", "suspended", "draft"]);
-export const storeRole = pgEnum("store_role", ["store_owner", "manager", "seller", "viewer"]);
-export const themePreset = pgEnum("theme_preset", [
-    "minimal",
-    "bold",
-    "elegant",
-    "modern",
-    "vintage",
-    "playful",
-]);
+import { storeRole, storeStatus, themePreset } from "../enums/storefront-enum";
+// import { storeCategories } from "./category-schema";
+// import { products, instagramMedia } from "./product-schema";
 
 /**
  * Templates
@@ -501,20 +490,20 @@ export const storeNavigation = pgTable(
 );
 
 // Relations
-export const storesRelations = relations(stores, ({ one, many }) => ({
-    tenant: one(tenants, {
-        fields: [stores.tenantId],
-        references: [tenants.id],
-    }),
-    memberships: many(storeMemberships),
-    categories: many(storeCategories),
-    products: many(products),
-    theme: one(storeThemes),
-    content: one(storeContent),
-    pages: many(storePages),
-    navigation: many(storeNavigation),
-    instagramMedia: many(instagramMedia),
-}));
+// export const storesRelations = relations(stores, ({ one, many }) => ({
+//     tenant: one(tenants, {
+//         fields: [stores.tenantId],
+//         references: [tenants.id],
+//     }),
+//     memberships: many(storeMemberships),
+//     categories: many(storeCategories),
+//     products: many(products),
+//     theme: one(storeThemes),
+//     content: one(storeContent),
+//     pages: many(storePages),
+//     navigation: many(storeNavigation),
+//     instagramMedia: many(instagramMedia),
+// }));
 
 export const storeMembershipsRelations = relations(storeMemberships, ({ one }) => ({
     tenant: one(tenants, {

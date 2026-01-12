@@ -11,7 +11,7 @@ import {
   CardTitle,
   CardDescription,
 } from "@vendly/ui/components/card";
-import { useOnboarding } from '@/contexts/OnboardingContext';
+import { useOnboarding } from '@/contexts/onboarding-context';
 
 type JobStatus = 'queued' | 'running' | 'failed' | 'ready';
 

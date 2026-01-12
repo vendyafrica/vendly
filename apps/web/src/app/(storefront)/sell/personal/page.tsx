@@ -1,5 +1,5 @@
-import { PersonalForm } from "@/components/onboarding/personal"
+import { PersonalStep } from '@/components/onboarding/personal';
 
 export default function PersonalPage() {
-  return <PersonalForm />;
+    return <PersonalStep />;
 }
