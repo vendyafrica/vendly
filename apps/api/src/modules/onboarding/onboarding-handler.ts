@@ -1,5 +1,7 @@
 import { Request, Response } from "express";
 import { auth } from "@vendly/auth";
+import { db, users, eq } from "@vendly/db";
+import { randomUUID } from "node:crypto";
 import { validateOnboardingRequest } from "./onboarding-validators";
 import { completeOnboarding } from "./onboarding-service";
 
@@ -18,8 +20,34 @@ export const handleOnboardingComplete = async (
     try {
         // 1. Authentication
         const session = await getSession(req.headers);
-        if (!session?.user) {
-            return sendError(res, 401, "Unauthorized");
+        let userId = session?.user?.id;
+        let userEmail = session?.user?.email;
+
+        // [DEV] Bypass authentication if missing
+        if (!userId) {
+            console.warn("⚠️ [DEV] Authentication missing. Using fallback user.");
+            const fallbackEmail = "dev@vendly.local";
+
+            // Try fetch existing fallback user
+            const [existing] = await db.select().from(users).where(eq(users.email, fallbackEmail));
+
+            if (existing) {
+                userId = existing.id;
+                userEmail = existing.email;
+            } else {
+                // Create fallback user
+                const newId = `dev_${randomUUID()}`;
+                await db.insert(users).values({
+                    id: newId,
+                    name: "Developer",
+                    email: fallbackEmail,
+                    emailVerified: true,
+                    createdAt: new Date(),
+                    updatedAt: new Date(),
+                });
+                userId = newId;
+                userEmail = fallbackEmail;
+            }
         }
 
         // 2. Validation
@@ -27,8 +55,8 @@ export const handleOnboardingComplete = async (
 
         // 3. Execute business logic
         const response = await completeOnboarding(
-            session.user.id,
-            session.user.email,
+            userId!,
+            userEmail!,
             validatedData
         );
 

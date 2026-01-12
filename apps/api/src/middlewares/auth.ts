@@ -22,11 +22,11 @@ export async function authMiddleware(
                 message: "You must be logged in to access this resource",
             });
             res.redirect("/api/auth/login");
-            return; 
+            return;
         }
 
         // Attach session to request for use in controllers
-        (req as any).session = session; 
+        (req as any).session = session;
 
         next();
     } catch (error) {

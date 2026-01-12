@@ -10,7 +10,7 @@ import * as schema from "@vendly/db/schema";
 import { sendEmail, sendMagicLinkEmail } from "@vendly/transactional";
 import { getInstagramToken, getInstagramUserInfo } from "./instagram";
 
-const baseURL = process.env.BETTER_AUTH_URL as string;
+const baseURL = "http://localhost:8000";
 const secret = process.env.BETTER_AUTH_SECRET as string;
 
 /**
@@ -34,8 +34,6 @@ function extractNameFromEmail(email: string): string {
 const trustedOrigins = [
   "http://localhost:3000",
   "http://localhost:8000",
-  baseURL,
-  process.env.NGROK_URL,
 ].filter((origin): origin is string => Boolean(origin));
 
 /**
@@ -154,21 +152,16 @@ export const auth = betterAuth({
     cookieCache: {
       enabled: true,
       maxAge: 60 * 5, // 5 minutes
-      refreshCache: true,
     },
   },
 
   // Advanced configuration
   advanced: {
     cookiePrefix: "vendly",
-    useSecureCookies: true,
-  },
-  cookies: {
-    state: {
-      attributes: {
-        sameSite: "none",
-        secure: true,
-      },
+    useSecureCookies: process.env.NODE_ENV === "production",
+    defaultCookieAttributes: {
+      sameSite: "lax",
+      secure: process.env.NODE_ENV === "production",
     },
   },
 });

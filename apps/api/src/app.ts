@@ -10,14 +10,7 @@ import { createStorefrontRouter } from "./modules/storefront/storefront-route";
 export function createApp(): Express {
   const app = express();
 
-  // Trust proxy is required for correct protocol detection (HTTP vs HTTPS)
-  // when running behind a proxy like ngrok, Vercel, or load balancers.
-  // This ensures cookies with 'Secure' attribute are handled correctly.
   app.set("trust proxy", true);
-
-  // ---------- Core middleware ----------
-  app.use(express.json());
-  app.use(express.urlencoded({ extended: true }));
 
   // ---------- CORS ----------
   app.use(
@@ -41,7 +34,12 @@ export function createApp(): Express {
   );
 
   // ---------- Auth ----------
+  // Must be before express.json()
   app.all("/api/auth/*splat", toNodeHandler(auth));
+
+  // ---------- Core middleware ----------
+  app.use(express.json());
+  app.use(express.urlencoded({ extended: true }));
 
   // ---------- Routes ----------
   // app.use("/api/vercel", vercelDeploymentRouter);
