@@ -5,6 +5,6 @@ export default function StorefrontLayout({
   children: React.ReactNode;
 }) {
   return (
-    {children}
+    <>{children}</>
   );
 }

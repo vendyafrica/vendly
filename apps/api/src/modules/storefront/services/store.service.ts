@@ -32,6 +32,7 @@ export class StoreService {
         name: string;
         slug: string;
         templateId?: string;
+        cssVariables?: Record<string, string>;
     }) {
         // 1. Validate slug
         const existing = await this.storeRepo.findBySlug(input.slug);
@@ -51,11 +52,22 @@ export class StoreService {
         let cssVariables: Record<string, string> = DEFAULT_CSS_VARIABLES;
         let template = null;
         if (input.templateId) {
+            // If templateId is 'default', we might have a seeded template or just use hardcoded defaults
+            // Try to fetch it:
             template = await this.themeRepo.findTemplateBySlug(input.templateId);
+
             if (template) {
                 // Ensure template variables are merged/used
                 cssVariables = { ...DEFAULT_CSS_VARIABLES, ...template.defaultCssVariables };
+            } else if (input.templateId !== "default") {
+                // If specific template requested but not found, maybe log warning?
+                // For now, proceed with defaults.
             }
+        }
+
+        // Merge user-provided variables (e.g. from onboarding customization)
+        if (input.cssVariables) {
+            cssVariables = { ...cssVariables, ...input.cssVariables };
         }
 
         await this.themeRepo.create({

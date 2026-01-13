@@ -7,23 +7,19 @@ const completeOnboardingSchema = z.object({
     storeName: z.string().min(1),
     storeSlug: z.string().regex(/^[a-z0-9-]+$/),
     templateId: z.string().optional(),
+    skipProductImport: z.boolean().optional(),
+    cssVariables: z.record(z.string()).optional(),
 });
 
 export class OnboardingController {
     async complete(req: Request, res: Response, next: NextFunction) {
         try {
-            const session = res.locals.session; // Provided by auth middleware typically
+            const session = res.locals.session;
             const user = res.locals.user;
+            let userId = user?.id;
 
-            // If strictly using better-auth node handler, user info might be in req.headers or we need middleware to decode session
-            // For now, assuming middleware populates `req.user` or we pass `userId` in body for dev (insecure for prod without auth check)
-
-            let userId = user?.id; // From middleware
-
-            // Fallback for dev/migration: check body
             if (!userId) {
-                // throw new Error("User unauthorized"); // Uncomment in prod
-                userId = req.body.userId; // Temporary allow
+                userId = req.body.userId;
             }
 
             if (!userId) return res.status(401).json({ error: "Unauthorized" });

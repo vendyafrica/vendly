@@ -23,7 +23,10 @@ export class ProductService {
         priceAmount: number;
         currency: string;
         images?: string[]; // Array of blob URLs
+        imageUrl?: string; // Legacy/Single image support
     }) {
+        const images = input.images || (input.imageUrl ? [input.imageUrl] : []);
+
         const product = await this.productRepo.create({
             tenantId: input.tenantId,
             storeId: input.storeId,
@@ -37,8 +40,8 @@ export class ProductService {
         });
 
         // Handle images if provided
-        if (input.images && input.images.length > 0) {
-            await Promise.all(input.images.map(async (url, index) => {
+        if (images && images.length > 0) {
+            await Promise.all(images.map(async (url, index) => {
                 // Create media object (simplified, normally we'd have size/type)
                 const media = await this.mediaRepo.createMediaObject({
                     tenantId: input.tenantId,
