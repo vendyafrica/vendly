@@ -1,4 +1,3 @@
-import { CartProvider } from "@/components/storefront/primitives/CartProvider";
 
 export default function StorefrontLayout({
   children,
@@ -6,8 +5,6 @@ export default function StorefrontLayout({
   children: React.ReactNode;
 }) {
   return (
-    <CartProvider>
-      {children}
-    </CartProvider>
+    {children}
   );
 }

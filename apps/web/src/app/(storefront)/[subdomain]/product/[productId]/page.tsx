@@ -1,4 +1,4 @@
-import { StorefrontProduct } from "@/components/storefront/StorefrontProduct";
+
 
 export const dynamic = 'force-dynamic';
 
@@ -13,6 +13,6 @@ export default async function ProductPage({ params }: Props) {
     const { subdomain, productId } = await params;
 
     return (
-        <StorefrontProduct storeSlug={subdomain} productId={productId} />
+       <h1>hello</h1>
     );
 }

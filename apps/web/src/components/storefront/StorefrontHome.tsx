@@ -2,12 +2,11 @@
 
 import { useStorefrontStore } from "@/hooks/useStorefrontStore";
 import { useStorefrontProducts } from "@/hooks/useStorefrontProducts";
-import { BlockRenderer } from "./BlockRenderer";
 import { StoreLayout } from "@vendly/ui/components/storefront/primitives/StoreLayout";
 import { Footer } from "@vendly/ui/components/storefront/primitives/Footer";
 import { Render } from "@measured/puck";
 import { config } from "@vendly/ui/components/storefront/config";
-import "@measured/puck/puck.css";
+import "@measured/puck/puck.css"; 
 
 function toCssVarName(key: string) {
   return key.startsWith("--") ? key : `--${key}`;
@@ -159,22 +158,7 @@ export function StorefrontHome({ storeSlug }: { storeSlug: string }) {
 
   return (
     <div className="min-h-screen" style={cssVarStyle}>
-      <StoreLayout storeSlug={storeSlug} storeName={store.name}>
-        <div className="min-h-screen flex flex-col">
-          <BlockRenderer
-            sections={sections}
-            storeSlug={storeSlug}
-            storeName={store.name}
-            store={store}
-            products={products}
-          />
-          <Footer
-            storeSlug={storeSlug}
-            storeName={store.name}
-            content={content.footer}
-          />
-        </div>
-      </StoreLayout>
+      <h1>hello</h1>
     </div>
   );
 }

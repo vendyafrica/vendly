@@ -3,10 +3,4 @@ export { CartProvider, useCart } from "@vendly/ui/components/storefront/primitiv
 export { CartDrawer } from "@vendly/ui/components/storefront/primitives/CartDrawer";
 export { StoreLayout } from "@vendly/ui/components/storefront/primitives/StoreLayout";
 export { Footer } from "@vendly/ui/components/storefront/primitives/Footer";
-export { HeroSection } from "./primitives/HeroSection";
-export { CategoryTabs } from "./primitives/CategoryTabs";
-export { ProductCard } from "./primitives/ProductCard";
-export { ProductGrid } from "./primitives/ProductGrid";
-export { ProductDetail } from "./primitives/ProductDetail";
-export { FeaturedSections } from "./primitives/FeaturedSections";
 export { StorefrontHome } from "./StorefrontHome";

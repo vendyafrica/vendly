@@ -1,4 +1,3 @@
-import TenantPage from "../page";
 
 export const dynamic = 'force-dynamic';
 
@@ -8,5 +7,5 @@ type Props = {
 
 export default async function TenantPathPage({ params }: Props) {
   const { subdomain } = await params;
-  return TenantPage({ params: Promise.resolve({ subdomain }) });
+  return <h1>hello</h1>;
 }

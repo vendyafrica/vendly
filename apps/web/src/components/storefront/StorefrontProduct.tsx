@@ -3,7 +3,6 @@
 import { useStorefrontStore } from "@/hooks/useStorefrontStore";
 import { StoreLayout } from "@vendly/ui/components/storefront/primitives/StoreLayout";
 import { Footer } from "@vendly/ui/components/storefront/primitives/Footer";
-import { ProductDetail } from "./primitives/ProductDetail";
 
 function toCssVarName(key: string) {
     return key.startsWith("--") ? key : `--${key}`;
@@ -130,16 +129,7 @@ export function StorefrontProduct({ storeSlug, productId }: StorefrontProductPro
 
     return (
         <div className="min-h-screen" style={cssVarStyle}>
-            <StoreLayout storeSlug={storeSlug} storeName={store.name}>
-                <div className="min-h-screen flex flex-col">
-                    <ProductDetail storeSlug={storeSlug} productId={productId} />
-                    <Footer
-                        storeSlug={storeSlug}
-                        storeName={store.name}
-                        content={content.footer}
-                    />
-                </div>
-            </StoreLayout>
+          <h1>hello</h1>
         </div>
     );
 }
