@@ -7,6 +7,7 @@ import {
     updateStorefrontTheme,
     updateStorefrontContent,
     publishStorefront,
+    getStorefrontProducts,
 } from "./storefront-service";
 
 const sendError = (res: Response, status: number, message: string) => {
@@ -37,11 +38,11 @@ export const handleCreateStorefront = async (
         });
     } catch (error) {
         console.error("[Storefront] Create error:", error);
-        
+
         if (error instanceof Error && error.message === "Store slug already exists") {
             return sendError(res, 409, error.message);
         }
-        
+
         return sendError(res, 500, "Failed to create storefront");
     }
 };
@@ -152,5 +153,26 @@ export const handlePublishStorefront = async (
     } catch (error) {
         console.error("[Storefront] Publish error:", error);
         return sendError(res, 500, "Failed to publish storefront");
+    }
+};
+
+// Get storefront products (public)
+export const handleGetStorefrontProducts = async (
+    req: Request,
+    res: Response
+): Promise<void> => {
+    try {
+        const { slug } = req.params;
+        const limit = req.query.limit ? parseInt(req.query.limit as string) : 12;
+
+        const products = await getStorefrontProducts(slug, limit);
+
+        res.status(200).json({
+            success: true,
+            data: products,
+        });
+    } catch (error) {
+        console.error("[Storefront] Get products error:", error);
+        return sendError(res, 500, "Failed to get storefront products");
     }
 };

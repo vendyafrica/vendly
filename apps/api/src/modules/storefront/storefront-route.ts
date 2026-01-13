@@ -6,6 +6,7 @@ import {
     handleGetStorefrontById,
     handleUpdateStorefront,
     handlePublishStorefront,
+    handleGetStorefrontProducts,
 } from "./storefront-handler";
 
 export const createStorefrontRouter = (): Router => {
@@ -13,6 +14,7 @@ export const createStorefrontRouter = (): Router => {
 
     // Public routes
     router.get("/:slug", handleGetStorefrontBySlug);
+    router.get("/:slug/products", handleGetStorefrontProducts);
 
     // Protected routes
     router.post("/", authMiddleware, handleCreateStorefront);

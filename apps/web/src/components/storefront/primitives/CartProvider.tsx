@@ -1,8 +1,8 @@
 "use client";
 
-import { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import React, { createContext, useContext, useState, useEffect } from "react";
 
-export interface CartItem {
+interface CartItem {
   id: string;
   name: string;
   price: number;
@@ -11,69 +11,60 @@ export interface CartItem {
   quantity: number;
 }
 
-interface CartContextValue {
+interface CartContextType {
   items: CartItem[];
-  totalItems: number;
-  totalPrice: number;
-  addItem: (item: Omit<CartItem, "quantity"> & { quantity?: number }) => void;
+  addItem: (item: Omit<CartItem, "quantity">) => void;
   removeItem: (id: string) => void;
   updateQuantity: (id: string, quantity: number) => void;
   clearCart: () => void;
-  isOpen: boolean;
-  toggleCart: () => void;
-  closeCart: () => void;
-  openCart: () => void;
+  totalItems: number;
+  totalPrice: number;
 }
 
-const CartContext = createContext<CartContextValue | undefined>(undefined);
+const CartContext = createContext<CartContextType | undefined>(undefined);
 
-export function CartProvider({ children }: { children: ReactNode }) {
-  const [items, setItems] = useState<CartItem[]>([]);
-  const [isOpen, setIsOpen] = useState(false);
-
-  // Load cart from localStorage on mount
-  useEffect(() => {
+export function CartProvider({ children }: { children: React.ReactNode }) {
+  // Initialize state from localStorage
+  const [items, setItems] = useState<CartItem[]>(() => {
+    if (typeof window === "undefined") return [];
+    
     const savedCart = localStorage.getItem("cart");
     if (savedCart) {
       try {
-        // Use setTimeout to avoid synchronous setState in effect
-        setTimeout(() => setItems(JSON.parse(savedCart)), 0);
+        return JSON.parse(savedCart);
       } catch (error) {
         console.error("Failed to load cart from localStorage:", error);
+        return [];
       }
     }
-  }, []);
+    return [];
+  });
 
   // Save cart to localStorage whenever it changes
   useEffect(() => {
     localStorage.setItem("cart", JSON.stringify(items));
   }, [items]);
 
-  const totalItems = items.reduce((sum, item) => sum + item.quantity, 0);
-  const totalPrice = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
-
-  const addItem = (newItem: Omit<CartItem, "quantity"> & { quantity?: number }) => {
-    setItems((prevItems) => {
-      const existingItem = prevItems.find((item) =>
-        item.id === newItem.id && item.size === newItem.size
+  const addItem = (newItem: Omit<CartItem, "quantity">) => {
+    setItems((currentItems) => {
+      const existingItem = currentItems.find(
+        (item) => item.id === newItem.id && item.size === newItem.size
       );
 
-      const quantityToAdd = newItem.quantity || 1;
-
       if (existingItem) {
-        return prevItems.map((item) =>
+        return currentItems.map((item) =>
           item.id === newItem.id && item.size === newItem.size
-            ? { ...item, quantity: item.quantity + quantityToAdd }
+            ? { ...item, quantity: item.quantity + 1 }
             : item
         );
       }
 
-      return [...prevItems, { ...newItem, quantity: quantityToAdd }];
+      return [...currentItems, { ...newItem, quantity: 1 }];
     });
   };
 
   const removeItem = (id: string) => {
-    setItems((prevItems) => prevItems.filter((item) => item.id !== id));
+    setItems((currentItems) => currentItems.filter((item) => item.id !== id));
   };
 
   const updateQuantity = (id: string, quantity: number) => {
@@ -82,8 +73,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
       return;
     }
 
-    setItems((prevItems) =>
-      prevItems.map((item) =>
+    setItems((currentItems) =>
+      currentItems.map((item) =>
         item.id === id ? { ...item, quantity } : item
       )
     );
@@ -93,24 +84,22 @@ export function CartProvider({ children }: { children: ReactNode }) {
     setItems([]);
   };
 
-  const toggleCart = () => setIsOpen(!isOpen);
-  const closeCart = () => setIsOpen(false);
-  const openCart = () => setIsOpen(true);
+  const totalItems = items.reduce((total, item) => total + item.quantity, 0);
+  const totalPrice = items.reduce(
+    (total, item) => total + item.price * item.quantity,
+    0
+  );
 
   return (
     <CartContext.Provider
       value={{
         items,
-        totalItems,
-        totalPrice,
         addItem,
         removeItem,
         updateQuantity,
         clearCart,
-        isOpen,
-        toggleCart,
-        closeCart,
-        openCart,
+        totalItems,
+        totalPrice,
       }}
     >
       {children}
@@ -120,7 +109,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
 export function useCart() {
   const context = useContext(CartContext);
-  if (!context) {
+  if (context === undefined) {
     throw new Error("useCart must be used within a CartProvider");
   }
   return context;

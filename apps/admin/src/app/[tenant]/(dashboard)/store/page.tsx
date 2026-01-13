@@ -209,6 +209,15 @@ export default function StoreEditorPage() {
           <Button
             variant="outline"
             size="sm"
+            onClick={() => window.location.href = `/${tenant}/store/editor`}
+          >
+            <Monitor className="w-4 h-4 mr-2" />
+            Visual Editor
+          </Button>
+
+          <Button
+            variant="outline"
+            size="sm"
             onClick={() => window.open(`http://${tenant}.localhost:3000`, "_blank")}
           >
             <Eye className="w-4 h-4 mr-2" />

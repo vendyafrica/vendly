@@ -3,8 +3,11 @@
 import { useStorefrontStore } from "@/hooks/useStorefrontStore";
 import { useStorefrontProducts } from "@/hooks/useStorefrontProducts";
 import { BlockRenderer } from "./BlockRenderer";
-import { StoreLayout } from "./primitives/StoreLayout";
-import { Footer } from "./primitives/Footer";
+import { StoreLayout } from "@vendly/ui/components/storefront/primitives/StoreLayout";
+import { Footer } from "@vendly/ui/components/storefront/primitives/Footer";
+import { Render } from "@measured/puck";
+import { config } from "@vendly/ui/components/storefront/config";
+import "@measured/puck/puck.css";
 
 function toCssVarName(key: string) {
   return key.startsWith("--") ? key : `--${key}`;
@@ -31,6 +34,7 @@ const SPACING_MAP: Record<string, string> = {
   compact: "0.5",
   normal: "1",
   relaxed: "1.5",
+  tight: "0.5", // Added tight map if needed
 };
 
 const CONTAINER_MAP: Record<string, string> = {
@@ -125,25 +129,33 @@ export function StorefrontHome({ storeSlug }: { storeSlug: string }) {
 
   const cssVarStyle = buildCssVars(store.theme);
 
-  // Prepare sections
-  // Combine hero (if enabled) with other sections
+  // Use Puck editor data if available
   const content = store.content as any || {};
+  const editorData = content.editorData;
+
+  if (editorData && Object.keys(editorData.root || {}).length > 0) {
+    return (
+      <div className="min-h-screen" style={cssVarStyle}>
+        <StoreLayout storeSlug={storeSlug} storeName={store.name}>
+          <Render config={config} data={editorData} />
+          <Footer
+            storeSlug={storeSlug}
+            storeName={store.name}
+            content={content.footer}
+          />
+        </StoreLayout>
+      </div>
+    );
+  }
+
+  // Fallback to old block renderer
   const sections = [...(content.sections || [])];
-
   const heroConfig = content.hero || {};
-  // DEBUG: Effectively forcing hero for now to troubleshoot, unless specifically disabled with a special override?
-  // Or just trust the config.
-  // if (heroConfig.enabled !== false) {
-
-  // Actually, let's just add it. The Renderer will handle it.
   sections.unshift({
     type: "hero",
     ...heroConfig,
-    enabled: true, // Force enabled for legacy content porting
+    enabled: true,
   });
-  // }
-
-  console.log("[StorefrontHome] sections to render:", sections);
 
   return (
     <div className="min-h-screen" style={cssVarStyle}>

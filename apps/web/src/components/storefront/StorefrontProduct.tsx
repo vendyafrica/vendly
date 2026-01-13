@@ -1,8 +1,8 @@
 "use client";
 
 import { useStorefrontStore } from "@/hooks/useStorefrontStore";
-import { StoreLayout } from "./primitives/StoreLayout";
-import { Footer } from "./primitives/Footer";
+import { StoreLayout } from "@vendly/ui/components/storefront/primitives/StoreLayout";
+import { Footer } from "@vendly/ui/components/storefront/primitives/Footer";
 import { ProductDetail } from "./primitives/ProductDetail";
 
 function toCssVarName(key: string) {
