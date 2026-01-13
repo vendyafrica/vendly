@@ -4,8 +4,8 @@ import { toNodeHandler } from "better-auth/node";
 import { auth } from "@vendly/auth";
 
 import imageUploadRouter from "./modules/storage/blob-route";
-import { createOnboardingRouter } from "./modules/onboarding/onboarding-route";
-import { createStorefrontRouter } from "./modules/storefront/storefront-route";
+import { createOnboardingRouter } from "./modules/onboarding";
+import { createStorefrontRouter } from "./modules/storefront";
 
 export function createApp(): Express {
   const app = express();

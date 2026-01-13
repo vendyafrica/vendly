@@ -90,3 +90,4 @@ export const tenantMembershipsRelations = relations(tenantMemberships, ({ one })
 export type Tenant = typeof tenants.$inferSelect;
 export type NewTenant = typeof tenants.$inferInsert;
 export type TenantMembership = typeof tenantMemberships.$inferSelect;
+export type NewTenantMembership = typeof tenantMemberships.$inferInsert;

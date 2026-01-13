@@ -13,9 +13,7 @@ import {
 
 import { tenants } from "./tenant-schema";
 import { users } from "./auth-schema";
-import { storeRole, storeStatus, themePreset } from "../enums/storefront-enum";
-// import { storeCategories } from "./category-schema";
-// import { products, instagramMedia } from "./product-schema";
+import { storeRole, storeStatus } from "../enums/storefront-enum";
 
 /**
  * Templates
@@ -30,88 +28,20 @@ export const templates = pgTable(
         slug: text("slug").notNull().unique(), // e.g., 'old-money', 'minimalist'
         description: text("description"),
         thumbnailUrl: text("thumbnail_url"),
-        config: jsonb("config"),
 
         // Preview colors for the UI selection
         previewColors: jsonb("preview_colors").$type<string[]>(),
 
-        // 1. Theme Configuration (maps to store_themes)
-        themeConfig: jsonb("theme_config").$type<{
-            colors: {
-                background: string;
-                foreground: string;
-                primary: string;
-                primaryForeground: string;
-                secondary: string;
-                secondaryForeground: string;
-                muted: string;
-                mutedForeground: string;
-                accent: string;
-                accentForeground: string;
-                border: string;
-                input: string;
-                ring: string;
-                radius: string;
-                card: string;
-                cardForeground: string;
-            };
-            typography: {
-                fontFamily: string;
-                headingFont: string;
-                bodyFont: string;
-            };
-            layout?: any;
-            components?: any;
-            customCss?: string;
-        }>(),
+        // Default CSS Variables for this template
+        defaultCssVariables: jsonb("default_css_variables").$type<Record<string, string>>().notNull(),
 
-        // 2. Content Configuration (maps to store_content)
-        contentConfig: jsonb("content_config").$type<{
-            hero: {
-                enabled: boolean;
-                layout: "centered" | "split" | "fullscreen";
-                title: string;
-                subtitle: string;
-                ctaText: string;
-                imageUrl?: string;
-                backgroundOverlay?: boolean;
-            };
-            sections: Array<{
-                id: string;
-                type: string;
-                title?: string;
-                enabled: boolean;
-                settings?: any;
-                content?: any;
-            }>;
-            footer: {
-                description: string;
-                showSocialLinks: boolean;
-                showNewsletter: boolean;
-                newsletterTitle?: string;
-                copyright: string;
-            };
-        }>(),
-
-        // 3. Navigation Configuration (maps to store_navigation)
-        navigationConfig: jsonb("navigation_config").$type<Array<{
-            name: string; // "Main Menu", "Footer"
-            position: "header" | "footer" | "sidebar";
-            items: Array<{
-                label: string;
-                url: string; // Internal links or placeholders like '/shop'
-                type: "link" | "category" | "page";
-            }>;
-        }>>(),
-
-        // 4. Pages Configuration (maps to store_pages)
-        pagesConfig: jsonb("pages_config").$type<Array<{
-            title: string;
-            slug: string;
-            content: string; // HTML or Markdown
-            isPublished: boolean;
-            showInMenu: boolean;
-        }>>(),
+        // Default Puck data for each system page
+        defaultPages: jsonb("default_pages").$type<{
+            home: { content: any[]; root: { props: any }; zones: any };
+            product: { content: any[]; root: { props: any }; zones: any };
+            category: { content: any[]; root: { props: any }; zones: any };
+            checkout: { content: any[]; root: { props: any }; zones: any };
+        }>().notNull(),
 
         isActive: boolean("is_active").default(true).notNull(),
 
@@ -147,6 +77,11 @@ export const stores = pgTable(
         logoUrl: text("logo_url"),
         coverUrl: text("cover_url"),
         faviconUrl: text("favicon_url"),
+
+        // Domain Settings
+        customDomain: text("custom_domain").unique(),  // e.g., "shop.merchant.com"
+        domainVerified: boolean("domain_verified").default(false),
+        domainVerifiedAt: timestamp("domain_verified_at"),
 
         // Settings
         status: storeStatus("status").notNull().default("draft"),
@@ -235,60 +170,32 @@ export const storeThemes = pgTable(
         // Reference to the template used
         templateId: uuid("template_id").references(() => templates.id),
 
-        // Theme selection (kept for backward compatibility or as manual override)
-        preset: themePreset("preset").default("minimal"),
+        // CSS Variables (consumed by all Puck components)
+        cssVariables: jsonb("css_variables").$type<{
+            // Colors
+            "--color-background": string;
+            "--color-foreground": string;
+            "--color-primary": string;
+            "--color-primary-foreground": string;
+            "--color-secondary": string;
+            "--color-muted": string;
+            "--color-accent": string;
+            "--color-border": string;
 
-        // Color system
-        colors: jsonb("colors").$type<{
-            primary?: string;
-            secondary?: string;
-            accent?: string;
-            background?: string;
-            foreground?: string;
-            muted?: string;
-            mutedForeground?: string;
-            border?: string;
-            input?: string;
-            ring?: string;
-            // Additional theme-specific colors
-            [key: string]: string | undefined;
-        }>(),
+            // Typography
+            "--font-heading": string;
+            "--font-body": string;
+            "--font-size-base": string;
 
-        // Typography
-        typography: jsonb("typography").$type<{
-            fontFamily?: string;
-            headingFont?: string;
-            bodyFont?: string;
-            fontSize?: {
-                base?: string;
-                scale?: number;
-            };
-            fontWeights?: {
-                normal?: number;
-                medium?: number;
-                semibold?: number;
-                bold?: number;
-            };
-        }>(),
+            // Spacing & Layout
+            "--radius": string;
+            "--container-width": string;
 
-        // Layout preferences
-        layout: jsonb("layout").$type<{
-            containerWidth?: "narrow" | "normal" | "wide" | "full";
-            borderRadius?: "none" | "small" | "medium" | "large";
-            spacing?: "compact" | "normal" | "relaxed";
-            headerStyle?: "minimal" | "centered" | "sticky";
-            footerStyle?: "minimal" | "detailed";
-        }>(),
+            // Additional custom variables
+            [key: `--${string}`]: string;
+        }>().notNull(),
 
-        // Component styles
-        components: jsonb("components").$type<{
-            buttonStyle?: "solid" | "outline" | "ghost";
-            cardStyle?: "elevated" | "bordered" | "flat";
-            inputStyle?: "default" | "filled" | "underlined";
-            // Add more component customizations
-        }>(),
-
-        // Custom CSS variables (advanced users)
+        // Custom CSS (advanced users)
         customCss: text("custom_css"),
 
         createdAt: timestamp("created_at").defaultNow().notNull(),
@@ -300,103 +207,62 @@ export const storeThemes = pgTable(
     (table) => [
         index("store_themes_tenant_idx").on(table.tenantId),
         index("store_themes_store_idx").on(table.storeId),
-        index("store_themes_preset_idx").on(table.preset),
     ]
 );
 
 /**
- * Store Content
- * Page content and layout configuration
+ * Store Settings
+ * Global store settings that apply across all pages
  */
-export const storeContent = pgTable(
-    "store_content",
+export const storeSettings = pgTable(
+    "store_settings",
     {
         id: uuid("id").primaryKey().defaultRandom(),
-        tenantId: uuid("tenant_id")
-            .notNull()
-            .references(() => tenants.id, { onDelete: "cascade" }),
-        storeId: uuid("store_id")
-            .notNull()
-            .unique()
-            .references(() => stores.id, { onDelete: "cascade" }),
+        storeId: uuid("store_id").notNull().unique().references(() => stores.id, { onDelete: "cascade" }),
+        tenantId: uuid("tenant_id").notNull().references(() => tenants.id, { onDelete: "cascade" }),
 
-        // Puck/Plasmic editor data
-        editorData: jsonb("editor_data").$type<any>(), // Raw editor JSON
+        // Global Header Config (rendered on all pages)
+        headerConfig: jsonb("header_config").$type<{
+            logoUrl?: string;
+            showSearch: boolean;
+            showCart: boolean;
+            stickyHeader: boolean;
+            announcement?: { enabled: boolean; text: string; link?: string };
+        }>().notNull().default({
+            showSearch: true,
+            showCart: true,
+            stickyHeader: true,
+        }),
 
-        // Hero section
-        hero: jsonb("hero").$type<{
-            enabled?: boolean;
-            layout?: "centered" | "split" | "fullscreen";
-            label?: string;
-            title?: string;
-            subtitle?: string;
-            ctaText?: string;
-            ctaLink?: string;
-            secondaryCtaText?: string;
-            secondaryCtaLink?: string;
-            imageUrl?: string;
-            videoUrl?: string;
-            backgroundOverlay?: boolean;
-        }>(),
+        // Global Footer Config
+        footerConfig: jsonb("footer_config").$type<{
+            columns: Array<{ title: string; links: Array<{ label: string; url: string }> }>;
+            showNewsletter: boolean;
+            copyright: string;
+            socialLinks?: { facebook?: string; instagram?: string; twitter?: string };
+        }>().notNull().default({
+            columns: [],
+            showNewsletter: false,
+            copyright: "© {year} {storeName}",
+        }),
 
-        // Featured sections (products, categories, etc.)
-        sections: jsonb("sections").$type<Array<{
-            id: string;
-            type: "products" | "categories" | "instagram" | "banner" | "testimonials" | "custom";
-            title?: string;
-            subtitle?: string;
-            enabled?: boolean;
-            settings?: {
-                layout?: "grid" | "list" | "carousel" | "masonry";
-                columns?: 2 | 3 | 4 | 6;
-                showPrices?: boolean;
-                showDescriptions?: boolean;
-                autoplay?: boolean;
-                autoplayDelay?: number;
-                maxItems?: number;
-                sortBy?: string;
-                filter?: any;
-            };
-            items?: any[]; // Products, categories, or custom content
-            content?: any; // For custom HTML or rich text
-        }>>(),
-
-        // Footer configuration
-        footer: jsonb("footer").$type<{
-            description?: string;
-            showSocialLinks?: boolean;
-            showNewsletter?: boolean;
-            newsletterTitle?: string;
-            newsletterSubtitle?: string;
-            columns?: Array<{
-                title: string;
-                links: Array<{
-                    label: string;
-                    url: string;
-                }>;
-            }>;
-            copyright?: string;
-            // New fields to match template structure if needed
-        }>(),
-
-        // Announcement bar
-        announcement: jsonb("announcement").$type<{
-            enabled?: boolean;
-            text?: string;
-            link?: string;
-            backgroundColor?: string;
-            textColor?: string;
-        }>(),
+        // Checkout Config
+        checkoutConfig: jsonb("checkout_config").$type<{
+            allowGuestCheckout: boolean;
+            collectPhone: boolean;
+            collectShippingAddress: boolean;
+        }>().notNull().default({
+            allowGuestCheckout: true,
+            collectPhone: true,
+            collectShippingAddress: true,
+        }),
 
         createdAt: timestamp("created_at").defaultNow().notNull(),
-        updatedAt: timestamp("updated_at")
-            .defaultNow()
-            .$onUpdate(() => new Date())
-            .notNull(),
+        updatedAt: timestamp("updated_at").defaultNow().$onUpdate(() => new Date()).notNull(),
     },
     (table) => [
-        index("store_content_tenant_idx").on(table.tenantId),
-        index("store_content_store_idx").on(table.storeId),
+        index("store_settings_store_idx").on(table.storeId),
+        index("store_settings_tenant_idx").on(table.tenantId),
     ]
 );
 
@@ -415,19 +281,43 @@ export const storePages = pgTable(
             .notNull()
             .references(() => stores.id, { onDelete: "cascade" }),
 
+        // Page identity
+        slug: text("slug").notNull(),  // e.g., "home", "about", "product"
+        type: text("page_type").notNull().default("custom"),  // "home" | "product" | "category" | "checkout" | "custom"
         title: text("title").notNull(),
-        slug: text("slug").notNull(),
 
-        // Page content
-        content: text("content"), // Rich text/HTML
-        editorData: jsonb("editor_data").$type<any>(), // Puck/Plasmic data
+        // Puck Editor Data (the core visual content)
+        puckData: jsonb("puck_data").$type<{
+            content: Array<{
+                type: string;
+                props: { id: string;[key: string]: any };
+                readOnly?: Record<string, boolean>;
+            }>;
+            root: { props: Record<string, any> };
+            zones: Record<string, Array<{
+                type: string;
+                props: { id: string;[key: string]: any };
+            }>>;
+        }>().notNull().default({ content: [], root: { props: {} }, zones: {} }),
+
+        // Published version (frozen copy for live site)
+        publishedPuckData: jsonb("published_puck_data").$type<{
+            content: Array<{ type: string; props: Record<string, any> }>;
+            root: { props: Record<string, any> };
+            zones: Record<string, Array<{ type: string; props: Record<string, any> }>>;
+        }>(),
+        publishedAt: timestamp("published_at"),
 
         // SEO
         metaTitle: text("meta_title"),
         metaDescription: text("meta_description"),
+        ogImage: text("og_image"),
 
-        // Settings
-        isPublished: boolean("is_published").default(true),
+        // Status
+        isPublished: boolean("is_published").default(false).notNull(),
+        isSystem: boolean("is_system").default(false).notNull(),  // true = cannot delete (home, product, checkout)
+
+        // Menu settings
         showInMenu: boolean("show_in_menu").default(false),
         menuOrder: integer("menu_order").default(0),
 
@@ -441,8 +331,8 @@ export const storePages = pgTable(
         unique("store_pages_store_slug_unique").on(table.storeId, table.slug),
         index("store_pages_tenant_idx").on(table.tenantId),
         index("store_pages_store_idx").on(table.storeId),
+        index("store_pages_type_idx").on(table.type),
         index("store_pages_published_idx").on(table.isPublished),
-        index("store_pages_menu_order_idx").on(table.menuOrder), // Optional: add index for sorting
     ]
 );
 
@@ -490,21 +380,6 @@ export const storeNavigation = pgTable(
 );
 
 // Relations
-// export const storesRelations = relations(stores, ({ one, many }) => ({
-//     tenant: one(tenants, {
-//         fields: [stores.tenantId],
-//         references: [tenants.id],
-//     }),
-//     memberships: many(storeMemberships),
-//     categories: many(storeCategories),
-//     products: many(products),
-//     theme: one(storeThemes),
-//     content: one(storeContent),
-//     pages: many(storePages),
-//     navigation: many(storeNavigation),
-//     instagramMedia: many(instagramMedia),
-// }));
-
 export const storeMembershipsRelations = relations(storeMemberships, ({ one }) => ({
     tenant: one(tenants, {
         fields: [storeMemberships.tenantId],
@@ -535,13 +410,13 @@ export const storeThemesRelations = relations(storeThemes, ({ one }) => ({
     }),
 }));
 
-export const storeContentRelations = relations(storeContent, ({ one }) => ({
+export const storeSettingsRelations = relations(storeSettings, ({ one }) => ({
     tenant: one(tenants, {
-        fields: [storeContent.tenantId],
+        fields: [storeSettings.tenantId],
         references: [tenants.id],
     }),
     store: one(stores, {
-        fields: [storeContent.storeId],
+        fields: [storeSettings.storeId],
         references: [stores.id],
     }),
 }));
@@ -580,8 +455,8 @@ export type NewStoreMembership = typeof storeMemberships.$inferInsert;
 export type StoreTheme = typeof storeThemes.$inferSelect;
 export type NewStoreTheme = typeof storeThemes.$inferInsert;
 
-export type StoreContent = typeof storeContent.$inferSelect;
-export type NewStoreContent = typeof storeContent.$inferInsert;
+export type StoreSettings = typeof storeSettings.$inferSelect;
+export type NewStoreSettings = typeof storeSettings.$inferInsert;
 
 export type StorePage = typeof storePages.$inferSelect;
 export type NewStorePage = typeof storePages.$inferInsert;

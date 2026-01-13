@@ -7,9 +7,7 @@
     "outDir": "./dist",
     "baseUrl": ".",
     "paths": {
-      "@vendly/db/tenant-queries": ["../../packages/db/src/tenant-queries.ts"],
       "@vendly/db/schema": ["../../packages/db/src/schema/index.ts"],
-      "@vendly/db/v0-clone-queries": ["../../packages/db/src/v0-clone-queries.ts"],
       "@vendly/db": ["../../packages/db/src/index.ts"]
     }
   },
@@ -20,5 +18,5 @@
     ".",
     "../../packages/db/drizzle.config.ts",
     "../../packages/db/src/seed"
-, "../../packages/db/src/queries/instagram-queries.ts"  ]
+  ]
 }
