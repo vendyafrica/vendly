@@ -7,7 +7,6 @@ import { Button } from "@vendly/ui/components/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from "@vendly/ui/components/card";
 import { Input } from "@vendly/ui/components/input";
 import { Label } from "@vendly/ui/components/label";
-import { Textarea } from "@vendly/ui/components/textarea";
 import { useOnboarding } from '../../contexts/onboarding-context';
 import { useOnboardingSubmit } from '../../hooks/use-onboarding-submit';
 import { validateStoreStep } from '../../utils/validators';
@@ -19,9 +18,9 @@ export const StoreStep = () => {
     const { submit, isSubmitting, error } = useOnboardingSubmit();
 
     const [storeName, setStoreName] = useState(data.storeName);
-    const [description, setDescription] = useState(data.description || "");
     const [errors, setErrors] = useState<string[]>([]);
 
+    // Auto-generate slug from store name
     const tenantSlug = useMemo(() => {
         const base = storeName || data.tenantSlug || '';
         return sanitizeSubdomain(base);
@@ -40,7 +39,6 @@ export const StoreStep = () => {
         // Update local state
         updateData({
             storeName: storeName.trim(),
-            description: description.trim(),
             tenantSlug,
         });
 
@@ -48,13 +46,12 @@ export const StoreStep = () => {
         const response = await submit({
             ...data,
             storeName: storeName.trim(),
-            description: description.trim(),
             tenantSlug,
         });
 
-        if (response?.adminUrl) {
-            // Redirect to admin
-            window.location.href = response.adminUrl;
+        if (response?.success) {
+            // Redirect to preview page instead of admin
+            router.push('/sell/preview');
         }
     };
 
@@ -65,7 +62,7 @@ export const StoreStep = () => {
         <Card className="w-full max-w-4xl rounded-2xl py-10 gap-8">
             <CardHeader className="px-10">
                 <CardTitle className="text-xl">Store Setup</CardTitle>
-                <CardDescription>Set up your storefront</CardDescription>
+                <CardDescription>Choose a name for your store</CardDescription>
             </CardHeader>
 
             <CardContent className="px-10">
@@ -76,26 +73,17 @@ export const StoreStep = () => {
                             <Input
                                 id="storeName"
                                 type="text"
-                                placeholder="My Store"
+                                placeholder="My Awesome Store"
                                 value={storeName}
                                 onChange={(e) => setStoreName(e.target.value)}
                                 required
                             />
                             {storeUrl && (
-                                <p className="text-sm text-muted-foreground">
-                                    Your store URL: <span className="font-medium">{storeUrl}</span>
-                                </p>
+                                <div className="mt-2 p-3 rounded-lg bg-muted/50 border">
+                                    <p className="text-sm text-muted-foreground mb-1">Your store will be available at:</p>
+                                    <p className="text-sm font-medium text-primary">{storeUrl}</p>
+                                </div>
                             )}
-                        </div>
-
-                        <div className="grid gap-2">
-                            <Label htmlFor="description">Store Description</Label>
-                            <Textarea
-                                id="description"
-                                placeholder="Describe your store..."
-                                value={description}
-                                onChange={(e) => setDescription(e.target.value)}
-                            />
                         </div>
                     </div>
 
@@ -117,7 +105,7 @@ export const StoreStep = () => {
                     className="px-8"
                     disabled={isSubmitting || !storeName.trim()}
                 >
-                    {isSubmitting ? 'Creating...' : 'Create Store'}
+                    {isSubmitting ? 'Creating Store...' : 'Create Store'}
                 </Button>
             </CardFooter>
         </Card>

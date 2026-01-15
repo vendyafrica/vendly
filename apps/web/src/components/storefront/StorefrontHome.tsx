@@ -1,108 +1,51 @@
 "use client";
 
-import { useStorefrontStore } from "@/hooks/useStorefrontStore";
-import { useStorefrontProducts } from "@/hooks/useStorefrontProducts";
-import { StoreLayout } from "@vendly/ui/components/storefront/primitives/StoreLayout";
-import { Footer } from "@vendly/ui/components/storefront/primitives/Footer";
-import { Render } from "@measured/puck";
-import { config } from "@vendly/ui/components/storefront/config";
-import "@measured/puck/puck.css"; 
+import { useEffect, useState } from "react";
+import { client } from "@/sanity/client";
+import { storeSettingsQuery, homepageQuery, headerQuery, footerQuery } from "@/sanity/queries";
+import { buildCssVarsFromDesignSystem } from "@/sanity/lib/buildCssVars";
+import SectionRenderer from "@/components/sections/SectionRenderer";
+import Header from "@/components/marketplace/header";
+import Footer from "@/components/marketplace/footer";
 
-function toCssVarName(key: string) {
-  return key.startsWith("--") ? key : `--${key}`;
-}
-
-type ThemeLike = {
-  customCssVars?: Record<string, string> | null;
-  themeConfig?: Record<string, unknown> | null;
-  colors?: Record<string, string> | null;
-  typography?: Record<string, any> | null;
-  layout?: Record<string, any> | null;
-};
-
-// Helper maps for layout tokens
-const RADIUS_MAP: Record<string, string> = {
-  none: "0",
-  small: "0.2rem",
-  medium: "0.5rem",
-  large: "1rem",
-  full: "9999px",
-};
-
-const SPACING_MAP: Record<string, string> = {
-  compact: "0.5",
-  normal: "1",
-  relaxed: "1.5",
-  tight: "0.5", // Added tight map if needed
-};
-
-const CONTAINER_MAP: Record<string, string> = {
-  narrow: "800px",
-  normal: "1200px",
-  wide: "1400px",
-  full: "100%",
-};
-
-function buildCssVars(theme: unknown): React.CSSProperties {
-  if (!theme || typeof theme !== "object") return {};
-  const t = theme as ThemeLike;
-
-  const cssVars: Record<string, string> = t.customCssVars ?? {};
-
-  // Handle flattened storeThemes structure from DB schema
-  const colors = (t.colors as Record<string, string>) || {};
-  const typography = (t.typography as Record<string, any>) || {};
-  const layout = (t.layout as Record<string, any>) || {};
-
-  const style: React.CSSProperties = {};
-
-  // 1. Inject Custom CSS Vars
-  for (const [k, v] of Object.entries(cssVars)) {
-    if (typeof v === "string") {
-      (style as Record<string, string>)[toCssVarName(k)] = v;
-    }
-  }
-
-  // 2. Typography
-  if (typography.fontFamily) (style as Record<string, string>)["--font-sans"] = typography.fontFamily;
-  if (typography.headingFont) (style as Record<string, string>)["--font-heading"] = typography.headingFont;
-  if (typography.bodyFont) (style as Record<string, string>)["--font-body"] = typography.bodyFont;
-
-  // 3. Layout Tokens
-  if (layout.borderRadius && RADIUS_MAP[layout.borderRadius]) {
-    (style as Record<string, string>)["--radius"] = RADIUS_MAP[layout.borderRadius];
-  }
-  if (layout.spacing && SPACING_MAP[layout.spacing]) {
-    (style as Record<string, string>)["--spacing-factor"] = SPACING_MAP[layout.spacing];
-  }
-  if (layout.containerWidth && CONTAINER_MAP[layout.containerWidth]) {
-    (style as Record<string, string>)["--container-max"] = CONTAINER_MAP[layout.containerWidth];
-  }
-
-  // 4. Colors
-  // Map all color keys to CSS variables
-  for (const [key, value] of Object.entries(colors)) {
-    if (value && typeof value === "string") {
-      (style as Record<string, string>)[toCssVarName(key)] = value;
-    }
-  }
-
-  // Ensure defaults if not present
-  if (!(style as any)["--background"]) (style as any)["--background"] = "#ffffff";
-  if (!(style as any)["--foreground"]) (style as any)["--foreground"] = "#111111";
-  if (!(style as any)["--primary"]) (style as any)["--primary"] = "#111111";
-  if (!(style as any)["--radius"]) (style as any)["--radius"] = "0.5rem";
-
-  return style;
+interface StorefrontData {
+  settings: any;
+  homepage: any;
+  header: any;
+  footer: any;
 }
 
 export function StorefrontHome({ storeSlug }: { storeSlug: string }) {
-  const { store, isLoading: isStoreLoading, error: storeError } = useStorefrontStore(storeSlug);
-  const { products, isLoading: isProductsLoading, error: productsError } = useStorefrontProducts(storeSlug, {
-    limit: 12,
-  });
+  const [data, setData] = useState<StorefrontData | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
 
-  if (isStoreLoading || isProductsLoading) {
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        setIsLoading(true);
+
+        // Fetch all store content from Sanity
+        const [settings, homepage, header, footer] = await Promise.all([
+          client.fetch(storeSettingsQuery, { storeId: storeSlug }),
+          client.fetch(homepageQuery, { storeId: storeSlug }),
+          client.fetch(headerQuery, { storeId: storeSlug }),
+          client.fetch(footerQuery, { storeId: storeSlug }),
+        ]);
+
+        setData({ settings, homepage, header, footer });
+      } catch (err) {
+        console.error("Error fetching store data:", err);
+        setError(err as Error);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    fetchData();
+  }, [storeSlug]);
+
+  if (isLoading) {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="animate-pulse space-y-4 text-center">
@@ -113,52 +56,42 @@ export function StorefrontHome({ storeSlug }: { storeSlug: string }) {
     );
   }
 
-  if (storeError || productsError || !store) {
+  if (error || !data?.settings) {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="text-center">
           <h1 className="text-xl font-semibold">Store Unavailable</h1>
           <p className="mt-2 text-sm text-gray-500">
-            {(storeError || productsError)?.message || "We couldn't load this store."}
+            {error?.message || "We couldn't load this store. Please ensure it's set up in Sanity CMS."}
           </p>
         </div>
       </div>
     );
   }
 
-  const cssVarStyle = buildCssVars(store.theme);
-
-  // Use Puck editor data if available
-  const content = store.content as any || {};
-  const editorData = content.editorData;
-
-  if (editorData && Object.keys(editorData.root || {}).length > 0) {
-    return (
-      <div className="min-h-screen" style={cssVarStyle}>
-        <StoreLayout storeSlug={storeSlug} storeName={store.name}>
-          <Render config={config} data={editorData} />
-          <Footer
-            storeSlug={storeSlug}
-            storeName={store.name}
-            content={content.footer}
-          />
-        </StoreLayout>
-      </div>
-    );
-  }
-
-  // Fallback to old block renderer
-  const sections = [...(content.sections || [])];
-  const heroConfig = content.hero || {};
-  sections.unshift({
-    type: "hero",
-    ...heroConfig,
-    enabled: true,
-  });
+  // Build CSS variables from design system
+  const cssVarStyle = buildCssVarsFromDesignSystem(data.settings.designSystem);
 
   return (
     <div className="min-h-screen" style={cssVarStyle}>
-      <h1>hello</h1>
+      <Header />
+
+      {/* Render homepage sections from Sanity */}
+      {data.homepage?.sections && (
+        <SectionRenderer sections={data.homepage.sections} />
+      )}
+
+      {/* If no sections, show a default message */}
+      {(!data.homepage?.sections || data.homepage.sections.length === 0) && (
+        <div className="content-container py-24 px-6 text-center">
+          <h2 className="text-3xl font-bold mb-4">Welcome to {data.settings.storeName}</h2>
+          <p className="text-gray-600 mb-8">
+            Your store is ready! Add sections in Sanity Studio to build your homepage.
+          </p>
+        </div>
+      )}
+
+      <Footer />
     </div>
   );
 }

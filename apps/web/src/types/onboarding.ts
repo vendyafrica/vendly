@@ -1,17 +1,17 @@
 export interface OnboardingFormData {
+    // Personal Details
     fullName: string;
     phone: string;
+
+    // Business Info
+    businessType: ('online' | 'in-person')[];  // Can be both
+    location?: string;
     categories: string[];
-    description: string;
+
+    // Store Setup
     storeName: string;
     tenantSlug: string;
-    themeId: string;
-    location?: string;
-    socialLinks?: {
-        instagram?: string;
-        facebook?: string;
-        twitter?: string;
-    };
+    description?: string;
 }
 
 export interface OnboardingResponse {
@@ -20,6 +20,7 @@ export interface OnboardingResponse {
     storeId: string;
     subdomain: string;
     adminUrl: string;
+    storefrontUrl: string;
 }
 
-export type OnboardingStep = 'personal' | 'business' | 'store-setup' | 'success';
+export type OnboardingStep = 'personal' | 'business' | 'store-setup' | 'preview' | 'success';

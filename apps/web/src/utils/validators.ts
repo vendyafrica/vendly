@@ -20,6 +20,10 @@ export const validatePersonalStep = (data: Partial<OnboardingFormData>) => {
 export const validateBusinessStep = (data: Partial<OnboardingFormData>) => {
     const errors: string[] = [];
 
+    if (!data.businessType || data.businessType.length === 0) {
+        errors.push("Select at least one business type");
+    }
+
     if (!data.categories || data.categories.length === 0) {
         errors.push("Select at least one category");
     }
