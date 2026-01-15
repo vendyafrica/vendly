@@ -1,5 +1,5 @@
 import type { Request, Response, NextFunction } from "express";
-import { productService } from "../services/product.service";
+import { productService } from "../services/product-service";
 import { z } from "zod";
 
 const createProductSchema = z.object({

@@ -1,5 +1,5 @@
-import { productRepository, type ProductRepository } from "../repositories/product.repository";
-import { mediaRepository, type MediaRepository } from "../repositories/media.repository";
+import { productRepository, type ProductRepository } from "../repositories/product-repository";
+import { mediaRepository, type MediaRepository } from "../repositories/media-repository";
 
 export class ProductService {
     constructor(
