@@ -4,3 +4,4 @@ export * from "./storefront-schema";
 export * from "./customer-schema";
 export * from "./category-schema";
 export * from "./product-schema";
+export * from "../enums";

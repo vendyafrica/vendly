@@ -83,6 +83,21 @@ export default function Header() {
                 />
               </div>
             </div>
+            
+              {!isSignedIn && (
+                <>
+                  <Button onClick={handleSellNow}>
+                    Sell now
+                  </Button>
+
+                   <Button
+                    variant="outline"
+                    onClick={() => setShowLogin(true)}
+                  >
+                    Sign in
+                  </Button>
+                </>
+              )}
 
             {/* Actions */}
             <div className="flex items-center gap-2">
@@ -94,19 +109,6 @@ export default function Header() {
                 <HugeiconsIcon icon={ShoppingCart01Icon} size={28} />
               </Button>
 
-              {!isSignedIn && (
-                <>
-                  <Button
-                    variant="ghost"
-                    onClick={() => setShowLogin(true)}
-                  >
-                    Sign in
-                  </Button>
-                  <Button onClick={handleSellNow}>
-                    Sell now
-                  </Button>
-                </>
-              )}
 
               {isSignedIn && (
                 <DropdownMenu>

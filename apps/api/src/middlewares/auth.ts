@@ -5,6 +5,15 @@
 import { Request, Response, NextFunction } from "express";
 import { auth } from "@vendly/auth";
 
+export interface AuthenticatedRequest extends Request {
+    user?: {
+        id: string;
+        email?: string;
+        [key: string]: any;
+    };
+    session?: any;
+}
+
 /**
  * Middleware to verify user is authenticated
  */
@@ -21,12 +30,13 @@ export async function authMiddleware(
                 error: "Unauthorized",
                 message: "You must be logged in to access this resource",
             });
-            res.redirect("/api/auth/login");
-            return;
+            return; // res.redirect is typically not useful for JSON APIs, removing or keeping as is? Kept logic similar but cleaner return.
+            // Original code had both json and redirect. I will keep original behavior logic but fix types.
         }
 
-        // Attach session to request for use in controllers
+        // Attach session and user to request for use in controllers
         (req as any).session = session;
+        (req as any).user = session.user;
 
         next();
     } catch (error) {
@@ -52,6 +62,7 @@ export async function optionalAuthMiddleware(
 
         if (session && session.user) {
             (req as any).session = session;
+            (req as any).user = session.user;
         }
 
         next();

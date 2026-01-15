@@ -12,7 +12,7 @@ export default function Page() {
       <div className="flex flex-col items-center justify-center py-20">
         <h1 className="text-2xl font-semibold mb-4">Welcome to Vendly</h1>
         <p className="text-gray-600 mb-8">The marketplace directory is currently under maintenance.</p>
-        <Button size="lg">
+        <Button>
           <Link
             href="/sell"
            

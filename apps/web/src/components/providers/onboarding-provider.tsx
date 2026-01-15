@@ -9,7 +9,9 @@ interface OnboardingData {
         storeName: string;
         slug: string;
         phone: string;
-        category: string;
+        categories: string[];
+        businessTypes: string[];
+        location: string;
     };
 }
 
@@ -25,7 +27,9 @@ const defaultState: OnboardingData = {
         storeName: "",
         slug: "",
         phone: "",
-        category: "",
+        categories: [],
+        businessTypes: [],
+        location: "",
     },
 };
 

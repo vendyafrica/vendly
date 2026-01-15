@@ -29,6 +29,14 @@ export const tenants = pgTable(
         status: tenantStatus("status").notNull().default("onboarding"),
         plan: text("plan").default("free"),
         billingEmail: text("billing_email"),
+
+        // Onboarding fields
+        ownerName: text("owner_name"),
+        ownerPhone: text("owner_phone"),
+        businessType: text("business_type").array(),  // ['online', 'in-person']
+        categories: text("categories").array(),  // ['Men', 'Women', ...]
+        location: text("location"),
+
         createdAt: timestamp("created_at").defaultNow().notNull(),
         updatedAt: timestamp("updated_at")
             .defaultNow()

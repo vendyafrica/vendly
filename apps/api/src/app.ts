@@ -6,6 +6,7 @@ import { auth } from "@vendly/auth";
 import imageUploadRouter from "./modules/storage/blob-route";
 import { createOnboardingRouter } from "./modules/onboarding";
 import { createStorefrontRouter } from "./modules/storefront";
+import { createTenantRouter } from "./modules/tenants/routes/tenant-route";
 
 export function createApp(): Express {
   const app = express();
@@ -28,7 +29,7 @@ export function createApp(): Express {
         /\.vendlyafrica\.store$/,
       ],
       credentials: true,
-      methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+      methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
       allowedHeaders: ["Content-Type", "Authorization"],
     })
   );
@@ -42,10 +43,10 @@ export function createApp(): Express {
   app.use(express.urlencoded({ extended: true }));
 
   // ---------- Routes ----------
-  // app.use("/api/vercel", vercelDeploymentRouter);
   app.use("/api/upload", imageUploadRouter);
   app.use("/api/storefront", createStorefrontRouter());
   app.use("/api/onboarding", createOnboardingRouter());
+  app.use("/api/tenants", createTenantRouter());
 
   app.get("/", (_req, res) => {
     res.send("API is running");

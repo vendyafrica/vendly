@@ -1,10 +1,10 @@
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import "@vendly/ui/globals.css";
 import type { Metadata } from "next";
-import { Roboto,Geist_Mono,Geist } from "next/font/google";
+import { Geist, Geist_Mono, Nunito_Sans } from "next/font/google";
 import type { ReactNode } from "react";
 
-const roboto = Roboto({subsets:['latin'],variable:'--font-sans'});
+const nunitoSans = Nunito_Sans({subsets:['latin'],variable:'--font-sans'});
 
 
 const geistSans = Geist({
@@ -30,7 +30,7 @@ export default function RootLayout({
   children: ReactNode;
 }) {
    return (
-    <html lang="en" className={roboto.variable}>
+    <html lang="en" className={nunitoSans.variable}>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >

@@ -1,1 +1,1 @@
-export * from "./routes/storefront.routes";
+export * from "./routes/storefront-routes";

@@ -69,7 +69,7 @@ export default function BusinessInfoPage() {
                             />
                         </div>
                     </div>
-                    
+
                     <div className="space-y-2">
                         <Label htmlFor="category">Category</Label>
                         <div className="flex items-center space-x-2">

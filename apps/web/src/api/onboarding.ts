@@ -14,12 +14,11 @@ export const submitOnboarding = async (
         body: JSON.stringify({
             fullName: data.fullName,
             phone: data.phone,
+            businessType: data.businessType,
             categories: data.categories,
-            storeName: data.storeName,
-            description: data.description,
-            tenantSlug: data.tenantSlug,
-            themeId: data.themeId,
             location: data.location,
+            storeName: data.storeName,
+            tenantSlug: data.tenantSlug,
         }),
     });
 

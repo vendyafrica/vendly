@@ -10,7 +10,7 @@ import * as schema from "@vendly/db/schema";
 import { sendEmail, sendMagicLinkEmail } from "@vendly/transactional";
 import { getInstagramToken, getInstagramUserInfo } from "./instagram";
 
-const baseURL = "http://localhost:8000";
+const baseURL = process.env.BETTER_AUTH_URL;
 const secret = process.env.BETTER_AUTH_SECRET as string;
 
 /**
@@ -30,11 +30,30 @@ function extractNameFromEmail(email: string): string {
 
 /**
  * Trusted origins for CORS
+ * Using a function to dynamically match ngrok and other patterns
  */
-const trustedOrigins = [
-  "http://localhost:3000",
-  "http://localhost:8000",
-].filter((origin): origin is string => Boolean(origin));
+const trustedOrigins = (request: Request | undefined) => {
+  const origins = [
+    "http://localhost:3000",
+    "http://localhost:8000",
+    "https://harmonically-carpetless-janna.ngrok-free.dev",
+  ];
+
+  // Add the request origin if it matches allowed patterns
+  if (request) {
+    const origin = request.headers.get("origin");
+    if (origin) {
+      const isNgrok = /\.ngrok-free\.dev$/.test(origin) || /\.ngrok\.io$/.test(origin);
+      const isVercel = /\.vercel\.app$/.test(origin);
+      const isVendly = /\.vendlyafrica\.store$/.test(origin);
+      if (isNgrok || isVercel || isVendly) {
+        origins.push(origin);
+      }
+    }
+  }
+
+  return origins;
+};
 
 /**
  * Initialize Better Auth
@@ -158,10 +177,18 @@ export const auth = betterAuth({
   // Advanced configuration
   advanced: {
     cookiePrefix: "vendly",
-    useSecureCookies: process.env.NODE_ENV === "production",
+    // Specifically configure the OAuth state cookie to work with cross-origin requests
+    cookies: {
+      state: {
+        attributes: {
+          sameSite: "none",
+          secure: true,
+        },
+      },
+    },
     defaultCookieAttributes: {
-      sameSite: "lax",
-      secure: process.env.NODE_ENV === "production",
+      sameSite: "none",
+      secure: true,
     },
   },
 });
