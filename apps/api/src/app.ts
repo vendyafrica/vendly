@@ -5,7 +5,6 @@ import { auth } from "@vendly/auth";
 import { authMiddleware } from "./middlewares/auth";
 
 import imageUploadRouter from "./modules/storage/blob-route";
-import { createOnboardingRouter } from "./modules/onboarding";
 import { createStorefrontRouter } from "./modules/storefront";
 import { createTenantRouter } from "./modules/tenants/routes/tenant-route";
 
@@ -36,7 +35,6 @@ export function createApp(): Express {
   );
 
   // ---------- Auth ----------
-  // Must be before express.json()
   app.all("/api/auth/*splat", toNodeHandler(auth));
 
   // ---------- Core middleware ----------
@@ -46,7 +44,6 @@ export function createApp(): Express {
   // ---------- Routes ----------
   app.use("/api/upload", imageUploadRouter);
   app.use("/api/storefront", createStorefrontRouter());
-  app.use("/api/onboarding", authMiddleware, createOnboardingRouter());
   app.use("/api/tenants", authMiddleware, createTenantRouter());
 
   app.get("/", (_req, res) => {

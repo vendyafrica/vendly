@@ -19,7 +19,6 @@ import {
   DropdownMenuTrigger,
 } from "@vendly/ui/components/dropdown-menu";
 import { LoginOverlay } from "@/components/ui/overlay";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 export default function Header() {

@@ -1,14 +1,19 @@
-export interface OnboardingInput {
+export interface CompleteOnboardingResult {
+    success: boolean;
+    tenantId: string;
+    storeId: string;
+    subdomain: string;
+    adminUrl: string;
+    storefrontUrl: string;
+}
+
+export interface CompleteOnboardingInput {
+    userId: string;
     fullName: string;
-    email: string;
-    phoneNumber: string;
-    businessInfo: {
-        location: string;
-        categories: string[];
-        mode: string;
-    }
-    storeInfo: {
-        name: string;
-        slug: string;
-    }
+    phone: string;
+    businessType: string;
+    categories: string[];
+    location: string;
+    storeName: string;
+    tenantSlug: string;
 }

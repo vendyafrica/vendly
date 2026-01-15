@@ -3,23 +3,6 @@ import { tenants, tenantMemberships, type Tenant, type NewTenant, type NewTenant
 import { eq } from "drizzle-orm";
 
 export const tenantRepository = {
-    async findById(id: string): Promise<Tenant | null> {
-        const [tenant] = await db
-            .select()
-            .from(tenants)
-            .where(eq(tenants.id, id))
-            .limit(1);
-        return tenant ?? null;
-    },
-
-    async findBySlug(slug: string): Promise<Tenant | null> {
-        const [tenant] = await db
-            .select()
-            .from(tenants)
-            .where(eq(tenants.slug, slug))
-            .limit(1);
-        return tenant ?? null;
-    },
 
     async create(data: NewTenant): Promise<Tenant> {
         const [tenant] = await db.insert(tenants).values(data).returning();
@@ -33,8 +16,23 @@ export const tenantRepository = {
             .where(eq(tenants.id, id))
             .returning();
         return updated ?? null;
-    }
-};
+    },
+
+    async findById(id: string): Promise<Tenant | null> {
+        const [tenant] = await db
+            .select()
+            .from(tenants)
+            .where(eq(tenants.id, id))
+            .limit(1);
+        return tenant ?? null;
+    },
+
+    async findAll(): Promise<Tenant[]> {
+        const result = await db.select().from(tenants);
+        return result;
+    },
+}
+
 
 export const membershipRepository = {
     async create(data: NewTenantMembership) {
