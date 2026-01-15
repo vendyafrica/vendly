@@ -19,7 +19,7 @@ import {
   DropdownMenuTrigger,
 } from "@vendly/ui/components/dropdown-menu";
 import { LoginOverlay } from "@/components/ui/overlay";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 export default function Header() {
   const { data: session } = useSession();
@@ -27,6 +27,7 @@ export default function Header() {
   const [isVisible, setIsVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
   const [showLogin, setShowLogin] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -42,6 +43,14 @@ export default function Header() {
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, [lastScrollY]);
+
+  const handleSellNow = () => {
+    if (!isSignedIn) {
+      setShowLogin(true);
+    } else {
+      router.push("/sell");
+    }
+  };
 
   return (
     <>
@@ -73,6 +82,21 @@ export default function Header() {
                 />
               </div>
             </div>
+            
+              {!isSignedIn && (
+                <>
+                  <Button onClick={handleSellNow}>
+                    Sell now
+                  </Button>
+
+                   <Button
+                    variant="outline"
+                    onClick={() => setShowLogin(true)}
+                  >
+                    Sign in
+                  </Button>
+                </>
+              )}
 
             {/* Actions */}
             <div className="flex items-center gap-2">
@@ -84,21 +108,6 @@ export default function Header() {
                 <HugeiconsIcon icon={ShoppingCart01Icon} size={28} />
               </Button>
 
-              {!isSignedIn && (
-                <>
-                  <Button
-                    variant="ghost"
-                    onClick={() => setShowLogin(true)}
-                  >
-                    Sign in
-                  </Button>
-                  <Link href="/sell">
-                    <Button>
-                      Sell now
-                    </Button>
-                  </Link>
-                </>
-              )}
 
               {isSignedIn && (
                 <DropdownMenu>
@@ -112,11 +121,9 @@ export default function Header() {
                   </DropdownMenuTrigger>
 
                   <DropdownMenuContent align="end">
-                    <Link href="/sell">
-                      <DropdownMenuItem>
-                        Sell now
-                      </DropdownMenuItem>
-                    </Link>
+                    <DropdownMenuItem onClick={() => router.push("/sell")}>
+                      Sell now
+                    </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => SignOut()}>
                       Sign out
                     </DropdownMenuItem>
@@ -156,14 +163,12 @@ export default function Header() {
                       Sign in
                     </Button>
 
-                    <Link href="/sell">
-                      <Button
-                        size="sm"
-
-                      >
-                        Sell now
-                      </Button>
-                    </Link>
+                    <Button
+                      size="sm"
+                      onClick={handleSellNow}
+                    >
+                      Sell now
+                    </Button>
                   </>
                 )}
               </div>

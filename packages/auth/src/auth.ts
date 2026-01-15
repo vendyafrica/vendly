@@ -1,17 +1,69 @@
+/**
+ * Better Auth Configuration
+ * Main authentication setup with cleaner structure
+ */
 import { betterAuth } from "better-auth";
 import { genericOAuth, magicLink, oneTap } from "better-auth/plugins";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
-import { nodeDb } from "@vendly/db/db";
+import { db } from "@vendly/db/db";
 import * as schema from "@vendly/db/schema";
 import { sendEmail, sendMagicLinkEmail } from "@vendly/transactional";
+import { getInstagramToken, getInstagramUserInfo } from "./instagram";
 
-const baseURL = process.env.BETTER_AUTH_URL as string;
+const baseURL = process.env.BETTER_AUTH_URL;
+const secret = process.env.BETTER_AUTH_SECRET as string;
 
+/**
+ * Extract user name from email
+ */
+function extractNameFromEmail(email: string): string {
+  const emailPrefix = email.split("@")[0];
+  return emailPrefix
+    .split(/[._-]/)
+    .map(
+      (part: string) =>
+        part.charAt(0).toUpperCase() + part.slice(1).toLowerCase()
+    )
+    .join(" ")
+    .split(" ")[0];
+}
+
+/**
+ * Trusted origins for CORS
+ * Using a function to dynamically match ngrok and other patterns
+ */
+const trustedOrigins = (request: Request | undefined) => {
+  const origins = [
+    "http://localhost:3000",
+    "http://localhost:8000",
+    "https://harmonically-carpetless-janna.ngrok-free.dev",
+  ];
+
+  // Add the request origin if it matches allowed patterns
+  if (request) {
+    const origin = request.headers.get("origin");
+    if (origin) {
+      const isNgrok = /\.ngrok-free\.dev$/.test(origin) || /\.ngrok\.io$/.test(origin);
+      const isVercel = /\.vercel\.app$/.test(origin);
+      const isVendly = /\.vendlyafrica\.store$/.test(origin);
+      if (isNgrok || isVercel || isVendly) {
+        origins.push(origin);
+      }
+    }
+  }
+
+  return origins;
+};
+
+/**
+ * Initialize Better Auth
+ */
 export const auth = betterAuth({
   baseURL,
-  secret: process.env.BETTER_AUTH_SECRET as string,
+  secret,
 
-  database: drizzleAdapter(nodeDb, {
+  // Database adapter
+  database: drizzleAdapter(db, {
     provider: "pg",
     schema: {
       user: schema.users,
@@ -21,39 +73,37 @@ export const auth = betterAuth({
     },
   }),
 
+  // Email & Password authentication
   emailAndPassword: {
     enabled: true,
     requireEmailVerification: true,
   },
+
+  // Email verification
   emailVerification: {
     sendOnSignUp: true,
     autoSignInAfterVerification: true,
-    async afterEmailVerification(user, request) {
-      console.log(`${user.email} has been successfully verified!`);
-    },
-    sendVerificationEmail: async ({ user, url }) => {
-      void sendEmail({
+    async sendVerificationEmail({ user, url }) {
+      await sendEmail({
         to: user.email,
         subject: "Verify your email",
         verificationUrl: url,
         name: user.name,
       });
     },
+    async afterEmailVerification(user, request) {
+      console.log(`${user.email} has been successfully verified!`);
+    },
   },
 
+  // Database hooks
   databaseHooks: {
     user: {
       create: {
         before: async (user) => {
+          // Auto-generate name from email if not provided
           if (!user.name || user.name === user.email) {
-            const emailPrefix = user.email.split("@")[0];
-            const name = emailPrefix
-              .split(/[._-]/)
-              .map((part: string) =>
-                part.charAt(0).toUpperCase() + part.slice(1).toLowerCase()
-              )
-              .join(" ")
-              .split(" ")[0];
+            const name = extractNameFromEmail(user.email);
             return {
               data: {
                 ...user,
@@ -66,12 +116,10 @@ export const auth = betterAuth({
     },
   },
 
-  trustedOrigins: [
-    "http://localhost:3000",
-    "http://localhost:8000",
-    process.env.NGROK_URL,
-  ].filter((origin): origin is string => Boolean(origin)),
+  // CORS configuration
+  trustedOrigins,
 
+  // Social providers
   socialProviders: {
     google: {
       clientId: process.env.GOOGLE_CLIENT_ID as string,
@@ -79,6 +127,7 @@ export const auth = betterAuth({
     },
   },
 
+  // Plugins
   plugins: [
     genericOAuth({
       config: [
@@ -92,151 +141,55 @@ export const auth = betterAuth({
             "instagram_business_manage_messages",
             "instagram_business_manage_comments",
             "instagram_business_content_publish",
-            "instagram_business_manage_insights"
+            "instagram_business_manage_insights",
           ],
-          redirectURI: `${baseURL}/api/auth/callback/instagram`,
-          // Instagram requires form-urlencoded for token exchange
-          getToken: async ({ code, redirectURI }: { code: string; redirectURI: string }) => {
-            console.log("[Auth Debug] Exchanging code for token...");
-            console.log("[Auth Debug] Redirect URI:", redirectURI);
-
-            const params = new URLSearchParams({
-              client_id: process.env.INSTAGRAM_CLIENT_ID as string,
-              client_secret: process.env.INSTAGRAM_CLIENT_SECRET as string,
-              grant_type: "authorization_code",
-              redirect_uri: redirectURI,
-              code,
-            });
-
-            console.log("[Auth Debug] Token exchange params (sanitized):", `client_id=..., code=..., redirect_uri=${redirectURI}`);
-
-            const response = await fetch("https://api.instagram.com/oauth/access_token", {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/x-www-form-urlencoded",
-              },
-              body: params.toString(),
-            });
-
-            console.log("[Auth Debug] Token exchange response status:", response.status);
-            const responseText = await response.text();
-            console.log("[Auth Debug] Token exchange raw response:", responseText);
-
-            const data = JSON.parse(responseText);
-
-            if (data.error_type || data.error_message) {
-              console.error("[Auth Debug] Token exchange error:", data);
-              throw new Error(data.error_message || "Failed to exchange code for token");
-            }
-
-            // Instagram returns { access_token, user_id } for short-lived token
-            // We need to exchange it for a long-lived token
-            console.log("[Auth Debug] Short-lived token obtained, exchanging for long-lived...");
-
-            const longLivedResponse = await fetch(
-              `https://graph.instagram.com/access_token?grant_type=ig_exchange_token&client_secret=${process.env.INSTAGRAM_CLIENT_SECRET}&access_token=${data.access_token}`
-            );
-
-            console.log("[Auth Debug] Long-lived token response status:", longLivedResponse.status);
-            const longLivedText = await longLivedResponse.text();
-            console.log("[Auth Debug] Long-lived token raw response:", longLivedText);
-
-            const longLivedData = JSON.parse(longLivedText);
-
-            if (longLivedData.error) {
-              console.error("[Auth Debug] Long-lived token error:", longLivedData.error);
-              // Fall back to short-lived token if long-lived fails
-              return {
-                accessToken: data.access_token,
-                refreshToken: undefined,
-                accessTokenExpiresAt: undefined,
-                raw: data,
-              };
-            }
-
-            return {
-              accessToken: longLivedData.access_token || data.access_token,
-              refreshToken: undefined,
-              accessTokenExpiresAt: longLivedData.expires_in
-                ? new Date(Date.now() + longLivedData.expires_in * 1000)
-                : undefined,
-              raw: { ...data, ...longLivedData },
-            };
-          },
-          getUserInfo: async (tokens) => {
-            const accessToken = tokens.accessToken;
-            if (!accessToken) {
-              console.error("[Auth Debug] No access token provided");
-              throw new Error("No access token provided");
-            }
-            console.log("[Auth Debug] Fetching user info with token:", accessToken.substring(0, 20) + "...");
-            console.log("[Auth Debug] Raw token data:", JSON.stringify(tokens.raw));
-
-            // Use raw.user_id from token exchange if available
-            const userId = tokens.raw?.user_id as string | undefined;
-
-            // Instagram Business API only provides: id, username, account_type, profile_picture_url
-            // Note: 'name' is NOT available in Instagram Business API
-            const response = await fetch(
-              `https://graph.instagram.com/v18.0/me?fields=id,username,account_type,profile_picture_url&access_token=${accessToken}`
-            );
-
-            console.log("[Auth Debug] Instagram API Response Status:", response.status);
-            const responseText = await response.text();
-            console.log("[Auth Debug] Instagram API Raw Response:", responseText);
-
-            const data = JSON.parse(responseText);
-
-            if (data.error) {
-              console.error("[Auth Debug] Instagram API Error:", data.error);
-              throw new Error(`Instagram API Error: ${data.error.message}`);
-            }
-
-            // Ensure we have a valid ID
-            const finalId = data.id || userId;
-            if (!finalId) {
-              console.error("[Auth Debug] No user ID found in response or token data");
-              throw new Error("No Instagram user ID found");
-            }
-
-            const userProfile = {
-              id: finalId,
-              name: data.username || `instagram_user_${finalId}`,
-              email: `instagram_${finalId}@vendly.local`,
-              image: data.profile_picture_url || null,
-              emailVerified: true,
-            };
-            console.log("[Auth Debug] Constructed User Profile:", userProfile);
-            return userProfile;
-          },
+          redirectURI: `${process.env.BETTER_AUTH_URL}/api/auth/callback/instagram`,
+          getToken: getInstagramToken,
+          getUserInfo: getInstagramUserInfo,
         },
       ],
     }),
 
+    // Google One Tap
     oneTap(),
+
+    // Magic Link authentication
     magicLink({
-      sendMagicLink: async ({ email, url }) => {
+      async sendMagicLink({ email, url }) {
         await sendMagicLinkEmail({
           to: email,
           url,
         });
       },
-    })
+    }),
   ],
 
+  // Session configuration
   session: {
     expiresIn: 60 * 60 * 24 * 7, // 7 days
-    updateAge: 60 * 60 * 24, // Refresh session every 1 day
+    updateAge: 60 * 60 * 24, // Refresh every 1 day
     cookieCache: {
       enabled: true,
-      maxAge: 60 * 5,
-      refreshCache: true, // Enable automatic refresh
+      maxAge: 60 * 5, // 5 minutes
     },
   },
 
+  // Advanced configuration
   advanced: {
     cookiePrefix: "vendly",
-    useSecureCookies: false,
+    // Specifically configure the OAuth state cookie to work with cross-origin requests
+    cookies: {
+      state: {
+        attributes: {
+          sameSite: "none",
+          secure: true,
+        },
+      },
+    },
+    defaultCookieAttributes: {
+      sameSite: "none",
+      secure: true,
+    },
   },
 });
 

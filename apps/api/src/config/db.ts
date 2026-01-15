@@ -1,3 +1,3 @@
-import { db } from '@vendly/db/db';
+import { nodeDb } from '@vendly/db/db';
 
-export default db;
+export default nodeDb;

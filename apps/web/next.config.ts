@@ -25,10 +25,12 @@ const nextConfig: NextConfig = {
       },
     ],
   },
-  // Disable Turbopack for production builds to fix middleware.js.nft.json error
-  // turbopack: {
-  //   root: repoRoot,
-  // },
-};
+  // async rewrites() {
+  //   return [{
+  //     source: '/api/:path*',
+  //     destination: process.env.NEXT_PUBLIC_API_URL + '/api/:path*'
+  //   }];
+  // }
+}
 
 export default nextConfig;

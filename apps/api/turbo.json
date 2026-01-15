@@ -1,5 +1,7 @@
 {
-  "extends": ["//"],
+  "extends": [
+    "//"
+  ],
   "tasks": {
     "build": {
       "env": [
@@ -13,9 +15,13 @@
         "INSTAGRAM_CLIENT_SECRET",
         "RESEND_API_KEY",
         "V0_API_URL",
-        "ROOT_DOMAIN"
+        "ROOT_DOMAIN",
+        "VERCEL_API_TOKEN",
+        "VERCEL_PROJECT_ID"
       ],
-      "outputs": ["dist/**"]
+      "outputs": [
+        "dist/**"
+      ]
     }
   }
 }

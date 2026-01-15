@@ -17,6 +17,7 @@
     "@types/sharp": "^0.32.0",
     "@vendly/auth": "workspace:*",
     "@vendly/db": "workspace:*",
+    "@vendly/sanity": "workspace:^",
     "@vendly/transactional": "workspace:*",
     "@vendly/typescript-config": "workspace:*",
     "@vercel/blob": "^2.0.0",
@@ -30,10 +31,12 @@
     "express": "5.2.1",
     "morgan": "^1.10.0",
     "multer": "^2.0.2",
+    "postgres": "^3.4.7",
     "resend": "^6.5.2",
     "sharp": "^0.34.5",
     "tsup": "^8.5.0",
-    "v0-sdk": "^0.15.3"
+    "v0-sdk": "^0.15.3",
+    "zod": "^4.0.0"
   },
   "devDependencies": {
     "@types/body-parser": "^1.19.5",

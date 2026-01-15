@@ -31,31 +31,51 @@ export default async function ProductsPage({
     return <ProductsClient products={[]} tenantSlug={tenantSlug} />
   }
 
-  // 3. Get Products for the store with their images
+  // 3. Get Products for the store with their images, variants and inventory
   const dbProducts = await db.query.products.findMany({
     where: (products, { eq }) => eq(products.storeId, store.id),
     with: {
-      images: true
+      media: {
+        with: {
+          media: true
+        }
+      },
+      variants: {
+        with: {
+          inventory: true
+        }
+      }
     },
     orderBy: (products, { desc }) => [desc(products.createdAt)]
   })
 
   // 4. Map to UI Model
   const mappedProducts: Product[] = dbProducts.map(p => {
-    // Find the image with the lowest sortOrder or just the first one
-    const sortedImages = p.images?.sort((a, b) => a.sortOrder - b.sortOrder)
-    const mainImage = sortedImages && sortedImages.length > 0 ? sortedImages[0].url : undefined
+    // Find the image with the lowest sortOrder
+    const sortedMedia = p.media?.sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0))
+    const mainImage = sortedMedia && sortedMedia.length > 0 ? sortedMedia[0].media?.blobUrl : undefined
+
+    // Calculate total stock from all variants
+    const totalStock = p.variants.reduce((acc, v) => acc + (v.inventory?.quantityOnHand || 0), 0)
+
+    // Determine display price (use base price or first variant price)
+    const price = (p.basePriceAmount || p.variants[0]?.priceAmount || 0) / 100
+
+    // Variant info string
+    const variantInfo = p.variants.length > 1
+      ? `${p.variants.length} variants`
+      : (p.variants[0]?.title && p.variants[0]?.title !== "Default" ? p.variants[0]?.title : "")
 
     return {
       id: p.id,
       name: p.title,
-      variant: "", 
-      price: p.priceAmount / 100,
-      sales: "0", 
-      revenue: "$0.00", 
-      stock: p.inventoryQuantity,
+      variant: variantInfo,
+      price: price,
+      sales: "0",
+      revenue: "$0.00",
+      stock: totalStock,
       status: p.status,
-      rating: 0, 
+      rating: 0,
       selected: false,
       image: mainImage
     }

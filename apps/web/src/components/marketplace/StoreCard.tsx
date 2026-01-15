@@ -19,7 +19,7 @@ export function StoreCard({ store }: StoreCardProps) {
         className="block bg-white rounded-3xl overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-300 active:scale-[0.98]"
       >
         <div className="aspect-square relative">
-          <StoreCarousel images={store.images} className="w-full h-full" />
+          <StoreCarousel images={store.images ?? []} className="w-full h-full" />
         </div>
       </Link>
 
@@ -28,12 +28,19 @@ export function StoreCard({ store }: StoreCardProps) {
         {/* Profile Picture and Store Name */}
         <div className="flex items-center gap-2">
           <div className="relative w-6 h-6 rounded-full overflow-hidden bg-gray-100">
-            <Image
-              src={store.logoUrl}
-              alt={`${store.name} logo`}
-              fill
-              className="object-cover"
-            />
+            {store.logoUrl ? (
+              <Image
+                src={store.logoUrl}
+                alt={`${store.name} logo`}
+                fill
+                sizes="24px"
+                className="object-cover"
+              />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center text-[10px] font-semibold text-gray-500">
+                {store.name?.slice(0, 1) || "S"}
+              </div>
+            )}
           </div>
           <Link
             href={`/store/${store.slug}`}

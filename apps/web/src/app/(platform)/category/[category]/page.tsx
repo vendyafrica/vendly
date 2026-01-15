@@ -7,7 +7,7 @@ import { HugeiconsIcon } from "@hugeicons/react";
 import { ArrowLeft02Icon, Store01Icon } from "@hugeicons/core-free-icons";
 import Header from "@/components/marketplace/header";
 import Footer from "@/components/marketplace/footer";
-import { CategoryContent } from "./CategoryContent";
+import { CategoryContent } from "./category-content";
 
 interface CategoryPageProps {
   params: Promise<{

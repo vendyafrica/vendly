@@ -1,5 +1,3 @@
-export * from "./schema/index";
-export * from "./queries/v0-clone-queries";
-export * from "./queries/tenant-queries";
-export * from "./queries/storefront-queries";
-export { db } from "./db";
+export { db, sql } from "./db";
+export * from "./schema";
+export * from "drizzle-orm";

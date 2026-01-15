@@ -2,14 +2,14 @@
 
 import * as React from "react"
 
-import { cn } from "@vendly/ui/lib/utils"
+import { cn } from "../lib/utils"
 
 function Table({ className, ...props }: React.ComponentProps<"table">) {
   return (
     <div data-slot="table-container" className="relative w-full overflow-x-auto">
       <table
         data-slot="table"
-        className={cn("w-full caption-bottom text-xs", className)}
+        className={cn("w-full caption-bottom text-sm", className)}
         {...props}
       />
     </div>
@@ -83,7 +83,7 @@ function TableCaption({
   return (
     <caption
       data-slot="table-caption"
-      className={cn("text-muted-foreground mt-4 text-xs", className)}
+      className={cn("text-muted-foreground mt-4 text-sm", className)}
       {...props}
     />
   )

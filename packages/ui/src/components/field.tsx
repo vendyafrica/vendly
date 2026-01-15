@@ -3,7 +3,7 @@
 import { useMemo } from "react"
 import { cva, type VariantProps } from "class-variance-authority"
 
-import { cn } from "@vendly/ui/lib/utils"
+import { cn } from "../lib/utils"
 import { Label } from "./label"
 import { Separator } from "./separator"
 
@@ -37,7 +37,7 @@ function FieldGroup({ className, ...props }: React.ComponentProps<"div">) {
     <div
       data-slot="field-group"
       className={cn(
-        "gap-5 data-[slot=checkbox-group]:gap-3 *:data-[slot=field-group]:gap-4 group/field-group @container/field-group flex w-full flex-col",
+        "gap-5 data-[slot=checkbox-group]:gap-3 [&>[data-slot=field-group]]:gap-4 group/field-group @container/field-group flex w-full flex-col",
         className
       )}
       {...props}
@@ -179,9 +179,9 @@ function FieldError({
       return null
     }
 
-    const uniqueErrors = [
-      ...Array.from(new Map(errors.map((error) => [error?.message, error])).values()),
-    ]
+    const uniqueErrors = Array.from(
+      new Map(errors.map((error) => [error?.message, error])).values()
+    )
 
     if (uniqueErrors?.length == 1) {
       return uniqueErrors[0]?.message
