@@ -51,7 +51,7 @@ export default function BusinessInfoPage() {
                         <Input
                             id="storeName"
                             placeholder="e.g. Acme Clothing"
-                            value={localInfo.storeName}
+                            value={localInfo.storeName || ""}
                             onChange={handleNameChange}
                             required
                         />
@@ -62,7 +62,7 @@ export default function BusinessInfoPage() {
                         <div className="flex items-center space-x-2">
                             <Input
                                 id="slug"
-                                value={localInfo.slug}
+                                value={localInfo.slug || ""}
                                 placeholder="e.g. acme-clothing"
                                 onChange={(e) => setLocalInfo({ ...localInfo, slug: e.target.value })}
                                 required
@@ -75,7 +75,7 @@ export default function BusinessInfoPage() {
                         <div className="flex items-center space-x-2">
                             <Input
                                 id="category"
-                                value={localInfo.category}
+                                value={localInfo.category || ""}
                                 placeholder="e.g. acme-clothing"
                                 onChange={(e) => setLocalInfo({ ...localInfo, category: e.target.value })}
                                 required

@@ -26,6 +26,18 @@ export class StoreService {
             status: "draft",
         });
 
+        // 3. Create default Sanity content
+        try {
+            const { createDefaultStoreContent } = await import('@vendly/sanity'); // Dynamic import to avoid build cyclic issues if any, or standard import
+            await createDefaultStoreContent({
+                storeSlug: store.slug,
+                storeName: store.name
+            });
+        } catch (error) {
+            console.error('Failed to create default store content:', error);
+            // Non-fatal? Or should we rollback? For MVP non-fatal but log it.
+        }
+
         return store;
     }
 

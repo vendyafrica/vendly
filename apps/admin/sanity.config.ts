@@ -1,67 +1,39 @@
 import { defineConfig } from 'sanity'
-import { structureTool } from 'sanity/structure'
-import { visionTool } from '@sanity/vision'
 import { presentationTool } from 'sanity/presentation'
 import { colorInput } from '@sanity/color-input'
-
 import { apiVersion, dataset, projectId, schemaTypes } from '@vendly/sanity'
+import { locations } from './src/lib/presentation/resolve'
+
+// Extract tenant slug from URL path (e.g., /asird/studio -> asird)
+function getTenantFromPath(): string {
+    if (typeof window === 'undefined') return 'default'
+    const match = window.location.pathname.match(/^\/([^/]+)\/studio/)
+    return match?.[1] || 'default'
+}
+
+const tenant = getTenantFromPath()
 
 export default defineConfig({
-    name: 'vendly',
-    title: 'Vendly CMS',
+    name: tenant,
+    title: `${tenant} Studio`,
     projectId,
     dataset,
-    basePath: '/studio',
+    basePath: `/${tenant}/studio`,
 
     plugins: [
-        structureTool({
-            structure: (S: { list: () => { (): any; new(): any; title: { (arg0: string): { (): any; new(): any; items: { (arg0: any[]): any; new(): any } }; new(): any } }; listItem: () => { (): any; new(): any; title: { (arg0: string): { (): any; new(): any; child: { (arg0: any): any; new(): any } }; new(): any } }; documentTypeList: (arg0: string) => { (): any; new(): any; title: { (arg0: string): any; new(): any } }; divider: () => any }) =>
-                S.list()
-                    .title('Content')
-                    .items([
-                        S.listItem()
-                            .title('Design Systems')
-                            .child(
-                                S.documentTypeList('designSystem')
-                                    .title('Design Systems')
-                            ),
-                        S.divider(),
-                        S.listItem()
-                            .title('Store Settings')
-                            .child(
-                                S.documentTypeList('storeSettings')
-                                    .title('Store Settings')
-                            ),
-                        S.divider(),
-                        S.listItem()
-                            .title('Homepage')
-                            .child(
-                                S.documentTypeList('homepage')
-                                    .title('Homepage')
-                            ),
-                        S.listItem()
-                            .title('Header')
-                            .child(
-                                S.documentTypeList('header')
-                                    .title('Header')
-                            ),
-                        S.listItem()
-                            .title('Footer')
-                            .child(
-                                S.documentTypeList('footer')
-                                    .title('Footer')
-                            ),
-                    ]),
-        }),
         presentationTool({
+            resolve: { locations },
             previewUrl: {
-                origin: process.env.SANITY_STUDIO_PREVIEW_URL || 'http://localhost:3000',
+                // Use the tenant subdomain for preview
+                origin: typeof window !== 'undefined'
+                    ? `${window.location.protocol}//${tenant}.${window.location.hostname.replace('admin.', '').split(':')[0]}:3000`
+                    : 'http://localhost:3000',
                 previewMode: {
                     enable: '/api/draft-mode/enable',
+                    disable: '/api/draft-mode/disable',
                 },
             },
         }),
-        visionTool({ defaultApiVersion: apiVersion }),
         colorInput(),
     ],
 

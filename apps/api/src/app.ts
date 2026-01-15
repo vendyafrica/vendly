@@ -2,6 +2,7 @@ import express, { Express, Request, Response } from "express";
 import cors from "cors";
 import { toNodeHandler } from "better-auth/node";
 import { auth } from "@vendly/auth";
+import { authMiddleware } from "./middlewares/auth";
 
 import imageUploadRouter from "./modules/storage/blob-route";
 import { createOnboardingRouter } from "./modules/onboarding";
@@ -45,8 +46,8 @@ export function createApp(): Express {
   // ---------- Routes ----------
   app.use("/api/upload", imageUploadRouter);
   app.use("/api/storefront", createStorefrontRouter());
-  app.use("/api/onboarding", createOnboardingRouter());
-  app.use("/api/tenants", createTenantRouter());
+  app.use("/api/onboarding", authMiddleware, createOnboardingRouter());
+  app.use("/api/tenants", authMiddleware, createTenantRouter());
 
   app.get("/", (_req, res) => {
     res.send("API is running");

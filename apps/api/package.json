@@ -17,6 +17,7 @@
     "@types/sharp": "^0.32.0",
     "@vendly/auth": "workspace:*",
     "@vendly/db": "workspace:*",
+    "@vendly/sanity": "workspace:^",
     "@vendly/transactional": "workspace:*",
     "@vendly/typescript-config": "workspace:*",
     "@vercel/blob": "^2.0.0",

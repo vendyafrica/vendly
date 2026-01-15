@@ -24,7 +24,9 @@ export const homepage = defineType({
             type: 'array',
             of: [
                 { type: 'heroSection' },
+                { type: 'collectionsSection' },
                 { type: 'productGridSection' },
+                { type: 'offersSection' },
                 { type: 'bannerSection' },
             ],
             description: 'Add, remove, and reorder sections to build your homepage',

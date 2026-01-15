@@ -1,4 +1,5 @@
-import { Request, Response } from "express";
+import { Response } from "express";
+import { AuthenticatedRequest } from "../../../middlewares/auth";
 import { onboardingService } from "../services/onboarding-service";
 
 export class OnboardingController {
@@ -6,7 +7,7 @@ export class OnboardingController {
      * Complete onboarding - create tenant, store, and Sanity content
      * POST /api/onboarding/complete
      */
-    async completeOnboarding(req: Request, res: Response) {
+    async completeOnboarding(req: AuthenticatedRequest, res: Response) {
         try {
             const userId = req.user?.id;  // From auth middleware
 

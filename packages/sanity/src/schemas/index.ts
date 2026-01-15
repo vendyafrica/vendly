@@ -6,6 +6,9 @@ import { footer } from './footer'
 import { heroSection } from './sections/hero'
 import { productGridSection } from './sections/productGrid'
 import { bannerSection } from './sections/banner'
+import { collectionsSection } from './sections/collectionsSection'
+import { offersSection } from './sections/offersSection'
+import { productDetailsPage } from './productDetailsPage'
 
 export const schemaTypes = [
     // Design System
@@ -16,6 +19,7 @@ export const schemaTypes = [
 
     // Pages
     homepage,
+    productDetailsPage,
 
     // Layout
     header,
@@ -23,6 +27,8 @@ export const schemaTypes = [
 
     // Sections
     heroSection,
+    collectionsSection,
     productGridSection,
+    offersSection,
     bannerSection,
 ]
