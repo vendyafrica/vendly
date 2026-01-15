@@ -11,12 +11,8 @@ import {
 
 import { tenants } from "./tenant-schema";
 import { users } from "./auth-schema";
-import { storeRole, storeStatus } from "../enums/storefront-enum";
 
-/**
- * Stores
- * Individual storefronts owned by tenants
- */
+
 export const stores = pgTable(
     "stores",
     {
@@ -25,40 +21,16 @@ export const stores = pgTable(
             .notNull()
             .references(() => tenants.id, { onDelete: "cascade" }),
 
-        // Basic Info
         name: text("name").notNull(),
         slug: text("slug").notNull(),
         description: text("description"),
 
-        // Sanity Integration
-        sanityStoreId: text("sanity_store_id").notNull(),  // Maps to storeId in Sanity (same as slug)
-        sanityDesignSystem: text("sanity_design_system").default('design-system-modern'),  // Reference to Sanity design system
-
-        // Branding
-        logoUrl: text("logo_url"),
-        coverUrl: text("cover_url"),
-        faviconUrl: text("favicon_url"),
-
-        // Domain Settings
-        customDomain: text("custom_domain").unique(),  // e.g., "shop.merchant.com"
+        customDomain: text("custom_domain").unique(),
         domainVerified: boolean("domain_verified").default(false),
         domainVerifiedAt: timestamp("domain_verified_at"),
-
-        // Settings
-        status: storeStatus("status").notNull().default("draft"),
+        status: boolean("status").notNull().default(false),
         defaultCurrency: text("default_currency").default("KES").notNull(),
 
-        // SEO
-        metaTitle: text("meta_title"),
-        metaDescription: text("meta_description"),
-
-        // Social
-        facebookUrl: text("facebook_url"),
-        instagramUrl: text("instagram_url"),
-        twitterUrl: text("twitter_url"),
-        whatsappNumber: text("whatsapp_number"),
-
-        // Contact
         email: text("email"),
         phone: text("phone"),
         address: text("address"),
@@ -74,15 +46,9 @@ export const stores = pgTable(
         unique("stores_tenant_slug_unique").on(table.tenantId, table.slug),
         index("stores_tenant_idx").on(table.tenantId),
         index("stores_slug_idx").on(table.slug),
-        index("stores_sanity_idx").on(table.sanityStoreId),
-        index("stores_status_idx").on(table.status),
     ]
 );
 
-/**
- * Store Memberships
- * Team members with access to manage stores
- */
 export const storeMemberships = pgTable(
     "store_memberships",
     {
@@ -97,7 +63,7 @@ export const storeMemberships = pgTable(
             .notNull()
             .references(() => users.id, { onDelete: "cascade" }),
 
-        role: storeRole("role").notNull(),
+        role: text("role").notNull(),
 
         createdAt: timestamp("created_at").defaultNow().notNull(),
         updatedAt: timestamp("updated_at")
@@ -113,7 +79,6 @@ export const storeMemberships = pgTable(
     ]
 );
 
-// Relations
 export const storeMembershipsRelations = relations(storeMemberships, ({ one }) => ({
     tenant: one(tenants, {
         fields: [storeMemberships.tenantId],

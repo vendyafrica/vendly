@@ -6,15 +6,9 @@ import {
     boolean,
     index,
 } from "drizzle-orm/pg-core";
-
-// Import tenant tables to reference them
 import { tenantMemberships } from "./tenant-schema";
 
-/**
- * Users table
- * Managed by auth provider but core to the system.
- * Not tenant-scoped (users can belong to multiple tenants).
- */
+
 export const users = pgTable("user", {
     id: text("id").primaryKey(),
     name: text("name").notNull(),
@@ -28,9 +22,6 @@ export const users = pgTable("user", {
         .notNull(),
 });
 
-/**
- * Auth Sessions
- */
 export const session = pgTable(
     "session",
     {
@@ -50,9 +41,6 @@ export const session = pgTable(
     (table) => [index("session_userId_idx").on(table.userId)],
 );
 
-/**
- * Auth Accounts
- */
 export const account = pgTable(
     "account",
     {
@@ -76,9 +64,6 @@ export const account = pgTable(
     (table) => [index("account_userId_idx").on(table.userId)],
 );
 
-/**
- * Auth Verification Tokens
- */
 export const verification = pgTable(
     "verification",
     {
@@ -95,7 +80,6 @@ export const verification = pgTable(
     (table) => [index("verification_identifier_idx").on(table.identifier)],
 );
 
-// Relations
 export const usersRelations = relations(users, ({ many }) => ({
     tenantMemberships: many(tenantMemberships),
     sessions: many(session),

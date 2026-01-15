@@ -5,7 +5,7 @@
 import { betterAuth } from "better-auth";
 import { genericOAuth, magicLink, oneTap } from "better-auth/plugins";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
-import { nodeDb } from "@vendly/db/db";
+import { db } from "@vendly/db/db";
 import * as schema from "@vendly/db/schema";
 import { sendEmail, sendMagicLinkEmail } from "@vendly/transactional";
 import { getInstagramToken, getInstagramUserInfo } from "./instagram";
@@ -63,7 +63,7 @@ export const auth = betterAuth({
   secret,
 
   // Database adapter
-  database: drizzleAdapter(nodeDb, {
+  database: drizzleAdapter(db, {
     provider: "pg",
     schema: {
       user: schema.users,

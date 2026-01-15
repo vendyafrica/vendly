@@ -44,41 +44,6 @@
             "types": "./dist/schema/index.d.ts",
             "import": "./dist/schema/index.js",
             "require": "./dist/schema/index.cjs"
-        },
-        "./v0-clone-queries": {
-            "types": "./dist/v0-clone-queries.d.ts",
-            "import": "./dist/v0-clone-queries.js",
-            "require": "./dist/v0-clone-queries.cjs"
-        },
-        "./tenant-queries": {
-            "types": "./dist/tenant-queries.d.ts",
-            "import": "./dist/tenant-queries.js",
-            "require": "./dist/tenant-queries.cjs"
-        },
-        "./storefront-queries": {
-            "types": "./dist/storefront-queries.d.ts",
-            "import": "./dist/storefront-queries.js",
-            "require": "./dist/storefront-queries.cjs"
-        },
-        "./product-queries": {
-            "types": "./dist/product-queries.d.ts",
-            "import": "./dist/product-queries.js",
-            "require": "./dist/product-queries.cjs"
-        },
-        "./instagram-queries": {
-            "types": "./dist/instagram-queries.d.ts",
-            "import": "./dist/instagram-queries.js",
-            "require": "./dist/instagram-queries.cjs"
-        },
-        "./media-queries": {
-            "types": "./dist/media-queries.d.ts",
-            "import": "./dist/media-queries.js",
-            "require": "./dist/media-queries.cjs"
-        },
-        "./cart-queries": {
-            "types": "./dist/cart-queries.d.ts",
-            "import": "./dist/cart-queries.js",
-            "require": "./dist/cart-queries.cjs"
         }
     }
 }
