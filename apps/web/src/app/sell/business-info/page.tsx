@@ -69,15 +69,18 @@ export default function BusinessInfoPage() {
                             />
                         </div>
                     </div>
-
-                    <div className="space-y-2 ">
-                        <Input
-                            id="category"
-                            placeholder="e.g. Fashion & Apparel"
-                            value={localInfo.category}
-                            onChange={(e) => setLocalInfo({ ...localInfo, category: e.target.value })}
-                            required
-                        />
+                    
+                    <div className="space-y-2">
+                        <Label htmlFor="category">Category</Label>
+                        <div className="flex items-center space-x-2">
+                            <Input
+                                id="category"
+                                value={localInfo.category}
+                                placeholder="e.g. acme-clothing"
+                                onChange={(e) => setLocalInfo({ ...localInfo, category: e.target.value })}
+                                required
+                            />
+                        </div>
                     </div>
 
                     <Button type="submit" className="w-full">

@@ -4,8 +4,7 @@ import { visionTool } from '@sanity/vision'
 import { presentationTool } from 'sanity/presentation'
 import { colorInput } from '@sanity/color-input'
 
-import { apiVersion, dataset, projectId } from './src/sanity/env'
-import { schemaTypes } from './src/sanity/schemas'
+import { apiVersion, dataset, projectId, schemaTypes } from '@vendly/sanity'
 
 export default defineConfig({
     name: 'vendly',
@@ -16,7 +15,7 @@ export default defineConfig({
 
     plugins: [
         structureTool({
-            structure: (S) =>
+            structure: (S: { list: () => { (): any; new(): any; title: { (arg0: string): { (): any; new(): any; items: { (arg0: any[]): any; new(): any } }; new(): any } }; listItem: () => { (): any; new(): any; title: { (arg0: string): { (): any; new(): any; child: { (arg0: any): any; new(): any } }; new(): any } }; documentTypeList: (arg0: string) => { (): any; new(): any; title: { (arg0: string): any; new(): any } }; divider: () => any }) =>
                 S.list()
                     .title('Content')
                     .items([

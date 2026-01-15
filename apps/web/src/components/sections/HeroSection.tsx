@@ -2,7 +2,7 @@
 
 import Image from 'next/image'
 import Link from 'next/link'
-import { urlFor } from '../../../sanity/lib/image'
+import { urlFor } from '../../sanity/lib/image'
 
 interface HeroSectionProps {
     title?: string
@@ -21,7 +21,11 @@ export default function HeroSection({
     ctaLink,
     layout = 'centered',
 }: HeroSectionProps) {
-    const imageUrl = backgroundImage ? urlFor(backgroundImage).width(1920).height(1080).url() : null
+    const imageUrl = typeof backgroundImage === 'string'
+        ? backgroundImage
+        : backgroundImage
+            ? urlFor(backgroundImage).width(1920).height(1080).url()
+            : null
 
     if (layout === 'centered') {
         return (

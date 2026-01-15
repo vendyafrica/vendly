@@ -1,16 +1,10 @@
-import { createClient } from 'next-sanity'
+import { getClient } from '@vendly/sanity'
 
-import { apiVersion, dataset, projectId, token } from './env'
-
-export const client = createClient({
-    projectId,
-    dataset,
-    apiVersion,
-    useCdn: false, // Set to false for admin to always get fresh data
-    token,
+export const client = getClient({
+    useCdn: false,
     perspective: 'published',
     stega: {
-        enabled: false, // Disable stega in admin, enable in web for visual editing
+        enabled: false,
         studioUrl: '/studio',
     },
 })

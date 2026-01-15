@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useOnboarding } from '../../contexts/onboarding-context';
+import { useOnboarding } from '../providers/onboarding-provider';
 import { Button } from "@vendly/ui/components/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from "@vendly/ui/components/card";
 import Header from '../marketplace/header';
@@ -13,14 +13,14 @@ import BannerSection from '../sections/BannerSection';
 
 export const PreviewStep = () => {
     const router = useRouter();
-    const { data } = useOnboarding();
+    const { businessInfo } = useOnboarding();
     const [isRedirecting, setIsRedirecting] = useState(false);
 
     // Redirect to admin studio after viewing preview
     const handleContinueToStudio = () => {
         setIsRedirecting(true);
         // Redirect to admin studio
-        const adminUrl = `${process.env.NEXT_PUBLIC_ADMIN_URL || 'http://localhost:4000'}/${data.tenantSlug}/studio`;
+        const adminUrl = `${process.env.NEXT_PUBLIC_ADMIN_URL || 'http://localhost:4000'}/${businessInfo.slug}/studio`;
         window.location.href = adminUrl;
     };
 
@@ -50,8 +50,9 @@ export const PreviewStep = () => {
 
                 {/* Hero Section */}
                 <HeroSection
-                    title={`Welcome to ${data.storeName}`}
+                    title={`Welcome to ${businessInfo.storeName}`}
                     subtitle="Discover amazing products curated just for you"
+                    backgroundImage="https://images.unsplash.com/photo-1441986300917-64674bd600d8"
                     layout="centered"
                     ctaText="Shop Now"
                     ctaLink="/collections"

@@ -1,13 +1,7 @@
-import { createClient } from 'next-sanity'
+import { getClient } from '@vendly/sanity'
 
-import { apiVersion, dataset, projectId, token } from './env'
-
-export const client = createClient({
-    projectId,
-    dataset,
-    apiVersion,
-    useCdn: true, // Use CDN for faster reads in production
-    token,
+export const client = getClient({
+    useCdn: true,
     perspective: 'published',
     stega: {
         enabled: process.env.NODE_ENV === 'development',

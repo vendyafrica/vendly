@@ -22,6 +22,7 @@
     "@vendly/auth": "workspace:*",
     "@vendly/db": "workspace:*",
     "@vendly/ui": "workspace:*",
+    "@vendly/sanity": "workspace:*",
     "@vercel/speed-insights": "^1.3.1",
     "class-variance-authority": "^0.7.1",
     "dotenv": "^17.2.3",
