@@ -18,7 +18,6 @@ import {
     TableRow,
 } from "@vendly/ui/components/table"
 import { cn } from "@vendly/ui/lib/utils"
-// Import Input and Select components
 import { Input } from "@vendly/ui/components/input"
 import {
     Select,
@@ -42,8 +41,9 @@ import {
     DialogTrigger,
 } from "@vendly/ui/components/dialog"
 import { createProduct, deleteProduct, updateProduct } from "./actions"
+import { BulkUploadSheet } from "./bulk-upload-sheet";
 
-// Icons (Inline for safety/speed without checking external icon lib availability)
+
 const Icons = {
     Filter: (props: React.SVGProps<SVGSVGElement>) => (
         <svg
@@ -619,6 +619,7 @@ export default function ProductsClient({ products: initialProducts, tenantSlug }
                         <Icons.Download className={cn("h-4 w-4", isSyncing && "animate-spin")} />
                         {isSyncing ? "Syncing..." : "Sync Media"}
                     </Button>
+                    <BulkUploadSheet tenantSlug={tenantSlug} />
                     <Dialog open={isAdding} onOpenChange={setIsAdding}>
                         <DialogTrigger
                             render={

@@ -27,10 +27,12 @@ export const mediaObjects = pgTable(
         blobPathname: text("blob_pathname").notNull(),
         contentType: text("content_type").notNull(),
 
-        source: text("source").notNull().default("upload"),  
+        source: text("source").notNull().default("upload"),
         sourceMediaId: text("source_media_id"),
+        sourceMetadata: jsonb("source_metadata"), // Instagram permalink, caption, etc.
         isPublic: boolean("is_public").default(true).notNull(),
 
+        lastSyncedAt: timestamp("last_synced_at"), // For Instagram media sync tracking
         createdAt: timestamp("created_at").defaultNow().notNull(),
         updatedAt: timestamp("updated_at").defaultNow().$onUpdate(() => new Date()).notNull(),
     },
@@ -58,7 +60,7 @@ export const products = pgTable(
         priceAmount: integer("price_amount").notNull().default(0),
         currency: text("currency").notNull().default("KES"),
 
-        source: text("source").notNull().default("manual"),  
+        source: text("source").notNull().default("manual"),
         sourceId: text("source_id"),
         sourceUrl: text("source_url"),
 
@@ -137,7 +139,7 @@ export const productMedia = pgTable(
         index("product_media_media_idx").on(table.mediaId),
         index("product_media_sort_idx").on(table.productId, table.sortOrder),
     ]
-);  
+);
 
 // Relations
 export const mediaObjectsRelations = relations(mediaObjects, ({ one, many }) => ({

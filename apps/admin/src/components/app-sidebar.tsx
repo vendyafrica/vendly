@@ -45,7 +45,7 @@ type SidebarNavItem = {
   items?: SidebarNavSubItem[];
 };
 
-const items: SidebarNavItem[] = [
+const tenantAdminItems: SidebarNavItem[] = [
   {
     title: "Dashboard",
     url: "/",
@@ -79,6 +79,19 @@ const items: SidebarNavItem[] = [
   {
     title: "Store Manager",
     url: "/store",
+    icon: Store01Icon,
+  },
+];
+
+const superAdminItems: SidebarNavItem[] = [
+  {
+    title: "Tenants",
+    url: "/tenants",
+    icon: UserGroupIcon,
+  },
+  {
+    title: "Stores",
+    url: "/stores",
     icon: Store01Icon,
   },
 ];
@@ -126,6 +139,9 @@ export function AppSidebar({
 
   // Ensure basePath is available for other uses
   const basePath = normalizePath(basePathProp ?? (tenant ? `/${tenant}` : ""));
+
+  // Select items based on whether we are in a tenant context
+  const items = tenant || basePathProp ? tenantAdminItems : superAdminItems;
 
   return (
     <Sidebar variant="inset" collapsible="icon" {...props} className="cursor-pointer">

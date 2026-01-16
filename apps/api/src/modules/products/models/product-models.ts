@@ -1,0 +1,77 @@
+import { z } from "zod";
+import type { Product, ProductMedia, MediaObject } from "@vendly/db/schema";
+
+/**
+ * Product creation input
+ */
+export const createProductSchema = z.object({
+    storeId: z.string().uuid(),
+    title: z.string().min(1).max(255),
+    description: z.string().optional(),
+    priceAmount: z.number().int().min(0).default(0),
+    currency: z.string().length(3).default("KES"),
+    source: z.enum(["manual", "instagram", "bulk-upload"]).default("manual"),
+    sourceId: z.string().optional(),
+    sourceUrl: z.string().url().optional(),
+    isFeatured: z.boolean().default(false),
+});
+
+export type CreateProductInput = z.infer<typeof createProductSchema>;
+
+/**
+ * Bulk upload configuration
+ */
+export const bulkUploadSchema = z.object({
+    storeId: z.string().uuid(),
+    defaultCurrency: z.string().length(3).default("KES"),
+    defaultPrice: z.number().int().min(0).default(0),
+    generateTitles: z.boolean().default(true), // Auto-generate titles from filenames
+    markAsFeatured: z.boolean().default(false),
+});
+
+export type BulkUploadInput = z.infer<typeof bulkUploadSchema>;
+
+/**
+ * Product with media populated
+ */
+export interface ProductWithMedia extends Product {
+    media: Array<MediaObject & { sortOrder: number; isFeatured: boolean }>;
+}
+
+/**
+ * Product query filters
+ */
+export const productQuerySchema = z.object({
+    storeId: z.string().uuid().optional(),
+    source: z.enum(["manual", "instagram", "bulk-upload"]).optional(),
+    isFeatured: z.boolean().optional(),
+    page: z.number().int().min(1).default(1),
+    limit: z.number().int().min(1).max(100).default(20),
+    search: z.string().optional(),
+});
+
+export type ProductFilters = z.infer<typeof productQuerySchema>;
+
+/**
+ * Product update input
+ */
+export const updateProductSchema = z.object({
+    title: z.string().min(1).max(255).optional(),
+    description: z.string().optional(),
+    priceAmount: z.number().int().min(0).optional(),
+    currency: z.string().length(3).optional(),
+    isFeatured: z.boolean().optional(),
+});
+
+export type UpdateProductInput = z.infer<typeof updateProductSchema>;
+
+/**
+ * Media attachment input
+ */
+export const attachMediaSchema = z.object({
+    mediaIds: z.array(z.string().uuid()).min(1),
+    sortOrders: z.array(z.number().int()).optional(),
+    featuredMediaId: z.string().uuid().optional(),
+});
+
+export type AttachMediaInput = z.infer<typeof attachMediaSchema>;

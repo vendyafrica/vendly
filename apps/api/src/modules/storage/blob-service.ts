@@ -255,6 +255,74 @@ export class UploadService {
             );
         }
     }
+    /**
+     * Upload product media files
+     */
+    async uploadProductMedia(
+        files: UploadFile[],
+        tenantSlug: string,
+        productId: string
+    ): Promise<MultipleUploadResult> {
+        return this.uploadMultiple(files, {
+            tenantSlug,
+            productId,
+            size: "product",
+        });
+    }
+
+    /**
+     * Upload from external URL (e.g. Instagram)
+     */
+    async uploadFromUrl(
+        url: string,
+        tenantSlug: string,
+        pathname: string
+    ): Promise<UploadResult> {
+        console.log(`[UploadService] Uploading from URL for ${tenantSlug}: ${url}`);
+
+        try {
+            // Download file
+            const response = await fetch(url);
+            if (!response.ok) {
+                throw new Error(`Failed to fetch image: ${response.statusText}`);
+            }
+
+            const arrayBuffer = await response.arrayBuffer();
+            const buffer = Buffer.from(arrayBuffer);
+            const contentType =
+                response.headers.get("content-type") || "image/jpeg";
+            const size = buffer.length;
+
+            console.log(`[UploadService] Downloaded ${size} bytes`);
+
+            // Process image (consistency)
+            const dimensions = IMAGE_SIZES["product"];
+            const processedBuffer = await this.processImage(buffer, dimensions);
+
+            // Upload to Vercel
+            const result = await put(pathname, processedBuffer, {
+                access: "public",
+                contentType: "image/jpeg", // Always convert to jpeg
+                addRandomSuffix: false,
+            });
+
+            console.log(`[UploadService] Upload from URL successful: ${result.url}`);
+
+            return {
+                url: result.url,
+                pathname: result.pathname,
+                contentType: "image/jpeg",
+                size: dimensions,
+                originalSize: size,
+                processedSize: processedBuffer.length,
+            };
+        } catch (error) {
+            console.error("[UploadService] Upload from URL failed:", error);
+            throw new Error(
+                error instanceof Error ? error.message : "Upload from URL failed"
+            );
+        }
+    }
 }
 
 export const uploadService = new UploadService();

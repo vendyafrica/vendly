@@ -31,7 +31,7 @@ export default async function ProductsPage({
     return <ProductsClient products={[]} tenantSlug={tenantSlug} />
   }
 
-  // 3. Get Products for the store with their images, variants and inventory
+  // 3. Get Products for the store with their images and variants
   const dbProducts = await db.query.products.findMany({
     where: (products, { eq }) => eq(products.storeId, store.id),
     with: {
@@ -40,11 +40,7 @@ export default async function ProductsPage({
           media: true
         }
       },
-      variants: {
-        with: {
-          inventory: true
-        }
-      }
+      variants: true
     },
     orderBy: (products, { desc }) => [desc(products.createdAt)]
   })
@@ -55,11 +51,11 @@ export default async function ProductsPage({
     const sortedMedia = p.media?.sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0))
     const mainImage = sortedMedia && sortedMedia.length > 0 ? sortedMedia[0].media?.blobUrl : undefined
 
-    // Calculate total stock from all variants
-    const totalStock = p.variants.reduce((acc, v) => acc + (v.inventory?.quantityOnHand || 0), 0)
+    // Stock removed for now
+    const totalStock = 0
 
     // Determine display price (use base price or first variant price)
-    const price = (p.basePriceAmount || p.variants[0]?.priceAmount || 0) / 100
+    const price = (p.priceAmount || p.variants[0]?.priceAmount || 0) / 100
 
     // Variant info string
     const variantInfo = p.variants.length > 1
@@ -74,7 +70,7 @@ export default async function ProductsPage({
       sales: "0",
       revenue: "$0.00",
       stock: totalStock,
-      status: p.status,
+      status: "Active", // Fixed string as status is missing from schema
       rating: 0,
       selected: false,
       image: mainImage

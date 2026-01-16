@@ -1,9 +1,10 @@
 "use server"
 
 import { db } from "@vendly/db"
-import { products, tenants, stores, productVariants, inventoryItems, mediaObjects, productMedia } from "@vendly/db/schema"
+import { products, tenants, stores, productVariants, mediaObjects, productMedia } from "@vendly/db/schema"
 import { eq } from "drizzle-orm"
 import { revalidatePath } from "next/cache"
+import { put } from "@vercel/blob";
 
 export async function updateProduct(
     productId: string,
@@ -46,11 +47,7 @@ export async function updateProduct(
                     .set({ priceAmount: Math.round(data.price * 100) })
                     .where(eq(productVariants.id, variantId))
             }
-            if (data.stock !== undefined) {
-                await db.update(inventoryItems)
-                    .set({ quantityOnHand: data.stock })
-                    .where(eq(inventoryItems.variantId, variantId));
-            }
+            // Stock update removed - inventory table not available
         }
 
         return { success: true }
@@ -98,12 +95,7 @@ export async function createProduct(
             options: {},
         }).returning();
 
-        // 4. Create Inventory Link
-        await db.insert(inventoryItems).values({
-            tenantId: tenant.id,
-            variantId: newVariant.id,
-            quantityOnHand: data.stock
-        });
+        // 4. Inventory creation removed - inventory table not available
 
         // 5. Create Image if provided
         if (data.imageUrl) {
@@ -154,3 +146,74 @@ export async function deleteAllProducts(tenantSlug: string) {
     }
 }
 
+
+
+export async function createBulkProducts(tenantSlug: string, formData: FormData) {
+    const count = parseInt(formData.get("count") as string || "0");
+    if (count === 0) return { success: false, error: "No files provided" };
+
+    // 1. Get Tenant and Store
+    const [tenant] = await db.select().from(tenants).where(eq(tenants.slug, tenantSlug));
+    if (!tenant) throw new Error("Tenant not found");
+
+    const [store] = await db.select().from(stores).where(eq(stores.tenantId, tenant.id)).limit(1);
+    if (!store) throw new Error("Store not found");
+
+    // 2. Process each file
+    for (let i = 0; i < count; i++) {
+        const file = formData.get(`file_${i}`) as File;
+        const rawData = formData.get(`data_${i}`) as string;
+        const data = JSON.parse(rawData);
+
+        if (!file) continue;
+
+        const randomId = Math.random().toString(36).substring(7);
+        const blob = await put(`${tenant.slug}/products/${randomId}-${file.name}`, file, {
+            access: 'public',
+            token: process.env.BLOB_READ_WRITE_TOKEN, // Ensure this is set or available
+        });
+
+        const [media] = await db.insert(mediaObjects).values({
+            tenantId: tenant.id,
+            blobUrl: blob.url,
+            blobPathname: blob.pathname,
+            contentType: file.type || "application/octet-stream",
+            source: "upload",
+            isPublic: true,
+        }).returning();
+
+        const slug = data.title.toLowerCase().replace(/[^a-z0-9]+/g, "-") + "-" + randomId;
+
+        const [product] = await db.insert(products).values({
+            tenantId: tenant.id,
+            storeId: store.id,
+            title: data.title,
+            slug: slug,
+            description: data.description,
+            basePriceAmount: Math.round(data.price * 100),
+            status: data.status,
+        }).returning();
+
+        const [variant] = await db.insert(productVariants).values({
+            tenantId: tenant.id,
+            productId: product.id,
+            title: "Default",
+            priceAmount: Math.round(data.price * 100),
+            isActive: true,
+        }).returning();
+
+        // Inventory creation removed - inventory table not available
+
+        await db.insert(productMedia).values({
+            tenantId: tenant.id,
+            productId: product.id,
+            mediaId: media.id,
+            variantId: variant.id,
+            isFeatured: true,
+            sortOrder: 0,
+        });
+    }
+
+    revalidatePath(`/${tenantSlug}/products`);
+    return { success: true };
+}
