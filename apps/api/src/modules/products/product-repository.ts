@@ -5,7 +5,7 @@ import {
     type NewProduct,
 } from "@vendly/db/schema";
 import { eq, and, desc, sql, like, or } from "drizzle-orm";
-import type { ProductFilters } from "../models/product-models";
+import type { ProductFilters } from "./product-models";
 
 export class ProductRepository {
     /**

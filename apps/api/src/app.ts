@@ -4,9 +4,9 @@ import { toNodeHandler } from "better-auth/node";
 import { auth } from "@vendly/auth";
 import { authMiddleware } from "./middlewares/auth";
 
-import imageUploadRouter from "./modules/storage/blob-route";
+import imageUploadRouter from "./modules/media/media-route";
 import { createStorefrontRouter } from "./modules/storefront";
-import { createTenantRouter } from "./modules/tenants/routes/tenant-route";
+import { createTenantRouter } from "./modules/tenants/tenant-route";
 
 export function createApp(): Express {
   const app = express();

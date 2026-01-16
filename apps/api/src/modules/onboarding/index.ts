@@ -1,1 +1,1 @@
-export * from "./routes/onboarding-routes";
+export * from "./onboarding-routes";

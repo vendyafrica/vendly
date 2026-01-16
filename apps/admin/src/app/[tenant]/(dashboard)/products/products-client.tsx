@@ -4,12 +4,6 @@ import * as React from "react"
 import { Badge } from "@vendly/ui/components/badge"
 import { Button } from "@vendly/ui/components/button"
 import {
-    Card,
-    CardContent,
-    CardHeader,
-    CardTitle,
-} from "@vendly/ui/components/card"
-import {
     Table,
     TableBody,
     TableCell,

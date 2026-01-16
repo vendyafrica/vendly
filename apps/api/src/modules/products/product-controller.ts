@@ -1,13 +1,11 @@
 
 import { Request, Response } from "express";
-import { productService } from "../services/product-service";
+import { productService } from "./index";
 import {
     createProductSchema,
     productQuerySchema,
     bulkUploadSchema,
-    updateProductSchema,
-    attachMediaSchema
-} from "../models/product-models";
+} from "./product-models";
 import { z } from "zod";
 
 export class ProductController {

@@ -1,5 +1,5 @@
 import { z } from "zod";
-import type { Product, ProductMedia, MediaObject } from "@vendly/db/schema";
+import type { Product, MediaObject } from "@vendly/db/schema";
 
 /**
  * Product creation input

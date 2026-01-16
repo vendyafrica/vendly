@@ -58,6 +58,7 @@ export type CreateInstagramConnectionInput = z.infer<
  * Sync request input
  */
 export const syncRequestSchema = z.object({
+    storeId: z.string().uuid(),
     limit: z.number().int().min(1).max(100).default(50),
     skipExisting: z.boolean().default(true),
     defaultPrice: z.number().int().min(0).default(0),

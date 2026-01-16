@@ -1,4 +1,4 @@
-import { InstagramMediaResponse, InstagramMediaItem } from "../models/instagram-models";
+import { InstagramMediaResponse, InstagramMediaItem } from "./instagram-models";
 
 export class InstagramMediaService {
     private readonly GRAPH_API_URL = "https://graph.instagram.com/v19.0"; // Using latest version
