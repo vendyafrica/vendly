@@ -1,59 +1,59 @@
 import Link from "next/link";
+import { StorefrontHeader } from "./components/header";
+import { FeaturedSection } from "./components/featured";
+import { ProductGrid } from "./components/product-grid";
+import { StorefrontFooter } from "./components/footer";
+import { Hero } from "./components/hero";
+import Image from "next/image"; // Added Image import as it was missing in the provided new content, but used in JSX
 
-interface StorefrontHomeProps {
-    params: Promise<{ storefront: string }>;
-}
-
-export default async function StorefrontHomePage({ params }: StorefrontHomeProps) {
-    const { storefront } = await params;
-
+export default async function StorefrontHomePage() {
     return (
-        <main className="min-h-screen">
-            {/* Header */}
-            <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-100">
-                <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-                    <h1 className="text-xl font-semibold tracking-tight">{storefront}</h1>
-                    <nav className="flex items-center gap-6">
-                        <Link href={`/${storefront}/categories`} className="text-sm text-gray-600 hover:text-gray-900">
-                            Categories
-                        </Link>
-                        <Link href={`/${storefront}/collections`} className="text-sm text-gray-600 hover:text-gray-900">
-                            Collections
-                        </Link>
-                    </nav>
-                </div>
-            </header>
+        <div className="min-h-screen bg-white">
+            <StorefrontHeader />
 
-            {/* Hero Section */}
-            <section className="relative h-[60vh] bg-gradient-to-br from-gray-900 to-gray-700 flex items-center justify-center">
-                <div className="text-center text-white">
-                    <h2 className="text-4xl md:text-5xl font-bold mb-4">Welcome to {storefront}</h2>
-                    <p className="text-lg text-gray-300 mb-8">Discover our curated collection</p>
-                    <Link
-                        href={`/${storefront}/products`}
-                        className="inline-flex items-center px-6 py-3 bg-white text-gray-900 rounded-full font-medium hover:bg-gray-100 transition-colors"
-                    >
-                        Shop Now
-                    </Link>
-                </div>
-            </section>
+            <Hero />
 
-            {/* Products Section Placeholder */}
-            <section className="container mx-auto px-4 py-16">
-                <h3 className="text-2xl font-semibold mb-8">Featured Products</h3>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-                    {[1, 2, 3, 4].map((i) => (
-                        <div key={i} className="aspect-[3/4] bg-gray-100 rounded-lg animate-pulse" />
+            <div className="max-w-7xl mx-auto px-6 py-12">
+                <h1 className="text-2xl font-bold m-8">New Arrivals</h1>
+
+                {/* Categories */}
+                <div className="flex gap-4 m-6  overflow-x-auto no-scrollbar pb-4">
+                    {[
+                        { name: "Women's Fashion", image: "/images/trench-coat.png" },
+                        { name: "Men's Fashion", image: "/images/navy-blazer.png" },
+                        { name: "Accessories", image: "/images/tortoiseshell-sunglasses.png" },
+                        { name: "Shoes", image: "/images/leather-loafers.png" },
+                        { name: "Shirts", image: "/images/linen-shirt.png" },
+                        { name: "Knitwear", image: "/images/cable-knit-sweater.png" },
+                    ].map((category) => (
+                        <div key={category.name} className="flex flex-col items-center gap-2 shrink-0 cursor-pointer group">
+                            <div className="w-24 h-24 md:w-32 md:h-32 relative rounded-2xl overflow-hidden bg-neutral-100 border border-transparent group-hover:border-neutral-200 transition-all">
+                                <Image
+                                    src={category.image}
+                                    alt={category.name}
+                                    fill
+                                    className="object-cover mix-blend-multiply opacity-90 group-hover:opacity-100 group-hover:scale-105 transition-all duration-500"
+                                />
+                            </div>
+                            <span className="text-xs md:text-sm font-medium text-neutral-600 group-hover:text-black text-center">
+                                {category.name}
+                            </span>
+                        </div>
                     ))}
                 </div>
-            </section>
 
-            {/* Footer */}
-            <footer className="bg-gray-900 text-white py-12">
-                <div className="container mx-auto px-4 text-center">
-                    <p className="text-gray-400">© {new Date().getFullYear()} {storefront}. Powered by Vendly.</p>
-                </div>
-            </footer>
-        </main>
+                {/* Product Grid */}
+                <h3 className="text-lg font-semibold m-8">All Products</h3>
+                <ProductGrid />
+
+                {/* Spacing */}
+                <div className="my-20" />
+
+                {/* Featured Section */}
+                <FeaturedSection />
+            </div>
+
+            <StorefrontFooter />
+        </div>
     );
 }
