@@ -2,7 +2,6 @@ import { Request, Response } from "express";
 import { instagramSyncService } from "./instagram-sync-service";
 import { instagramConnectionRepository } from "./instagram-repository";
 import { syncRequestSchema } from "./instagram-models";
-import { z } from "zod";
 
 export class InstagramController {
 

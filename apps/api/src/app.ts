@@ -4,8 +4,8 @@ import { toNodeHandler } from "better-auth/node";
 import { auth } from "@vendly/auth";
 import { authMiddleware } from "./middlewares/auth";
 
-import imageUploadRouter from "./modules/media/media-route";
-import { createStorefrontRouter } from "./modules/storefront";
+// import imageUploadRouter from "./modules/media/media-route";
+// import { createStorefrontRouter } from "./modules/storefront";
 import { createTenantRouter } from "./modules/tenants/tenant-route";
 
 export function createApp(): Express {
@@ -13,7 +13,6 @@ export function createApp(): Express {
 
   app.set("trust proxy", true);
 
-  // ---------- CORS ----------
   app.use(
     cors({
       origin: [
@@ -34,23 +33,19 @@ export function createApp(): Express {
     })
   );
 
-  // ---------- Auth ----------
   app.all("/api/auth/*splat", toNodeHandler(auth));
 
-  // ---------- Core middleware ----------
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
 
-  // ---------- Routes ----------
-  app.use("/api/upload", imageUploadRouter);
-  app.use("/api/storefront", createStorefrontRouter());
+  // app.use("/api/upload", imageUploadRouter);
+  // app.use("/api/storefront", createStorefrontRouter());
   app.use("/api/tenants", authMiddleware, createTenantRouter());
 
   app.get("/", (_req, res) => {
     res.send("API is running");
   });
 
-  // ---------- 404 ----------
   app.use((_req, res) => {
     res.status(404).json({
       message: "Route not found",
@@ -58,7 +53,6 @@ export function createApp(): Express {
     });
   });
 
-  // ---------- Error handler ----------
   app.use(
     (err: Error & { status?: number }, _req: Request, res: Response) => {
       console.error("Error:", err);

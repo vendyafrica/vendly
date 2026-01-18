@@ -7,7 +7,7 @@ import cors from "cors";
 import bodyParser from "body-parser";
 
 import { productRoutes } from "./modules/products/product-routes";
-import { instagramRoutes } from "./modules/instagram/routes/instagram-routes";
+import { instagramRoutes } from "./modules/instagram/instagram-routes";
 
 const PORT = process.env.PORT || 8000;
 

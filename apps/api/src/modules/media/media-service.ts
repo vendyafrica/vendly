@@ -1,7 +1,6 @@
 import { MediaRepository } from "./media-repository";
-import { uploadService } from "../../lib/blob-service";
+import { uploadService } from "./blob-service";
 import { UploadFile } from "./media-model";
-import type { MediaObject } from "@vendly/db/schema";
 
 export class MediaService {
     constructor(private mediaRepo: MediaRepository) { }
@@ -45,55 +44,6 @@ export class MediaService {
         );
 
         return mediaObjects;
-    }
-
-    /**
-     * Create product media from external URL (Instagram, etc.)
-     * Downloads from URL, uploads to blob storage, and links to product
-     */
-    async createProductMediaFromUrl(
-        tenantId: string,
-        tenantSlug: string,
-        productId: string,
-        mediaUrl: string,
-        metadata: {
-            source: string;
-            sourceMediaId: string;
-            sourceMetadata: any;
-        }
-    ): Promise<MediaObject> {
-        // 1. Generate pathname for the media
-        const pathname = `${tenantSlug}/${metadata.source}/${metadata.sourceMediaId}.jpg`;
-
-        // 2. Download from URL and upload to blob storage
-        const uploadResult = await uploadService.uploadFromUrl(
-            mediaUrl,
-            tenantSlug,
-            pathname
-        );
-
-        // 3. Create media object with source metadata
-        const mediaObject = await this.mediaRepo.createMediaObject({
-            tenantId,
-            blobUrl: uploadResult.url,
-            blobPathname: uploadResult.pathname,
-            contentType: "image/jpeg",
-            source: metadata.source,
-            sourceMediaId: metadata.sourceMediaId,
-            sourceMetadata: metadata.sourceMetadata,
-            lastSyncedAt: new Date(),
-        });
-
-        // 4. Link to product
-        await this.mediaRepo.createProductMedia({
-            tenantId,
-            productId,
-            mediaId: mediaObject.id,
-            sortOrder: 0,
-            isFeatured: true,
-        });
-
-        return mediaObject;
     }
 
     async getMediaForProduct(
