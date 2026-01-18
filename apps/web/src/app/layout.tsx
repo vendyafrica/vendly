@@ -3,7 +3,6 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono, Nunito_Sans } from "next/font/google";
 import type { ReactNode } from "react";
 import { SpeedInsights } from "@vercel/speed-insights/next"
-import VisualEditing from "../components/VisualEditing";
 
 const nunitoSans = Nunito_Sans({ variable: '--font-sans' });
 
@@ -22,7 +21,7 @@ export const metadata: Metadata = {
     default: "Vendly",
     template: "%s | Vendly",
   },
-  description: "Vendly",
+  description: "Vendly - Find your next favorite product",
 };
 
 export default function RootLayout({
@@ -36,7 +35,6 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <SpeedInsights />
-        <VisualEditing />
         {children}
       </body>
     </html>

@@ -1,6 +1,8 @@
-export { Header } from "@vendly/ui/components/storefront/primitives/Header";
-export { CartProvider, useCart } from "@vendly/ui/components/storefront/primitives/CartProvider";
-export { CartDrawer } from "@vendly/ui/components/storefront/primitives/CartDrawer";
-export { StoreLayout } from "@vendly/ui/components/storefront/primitives/StoreLayout";
-export { Footer } from "@vendly/ui/components/storefront/primitives/Footer";
-export { StorefrontHome } from "./StorefrontHome";
+export { StorefrontTemplate } from "./store-front";
+export { ProductDetailsTemplate } from "./product-detail";
+export { StorefrontHeader } from "./header-section";
+export { StorefrontFooter } from "./footer-section";
+export { HeroCarousel } from "./hero";
+export { ProductCard } from "./product-card";
+export { NewArrivalsSection } from "./featured-section";
+export { AllProductsGrid } from "./products-grid";
