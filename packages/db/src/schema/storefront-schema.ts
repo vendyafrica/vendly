@@ -7,6 +7,7 @@ import {
     index,
     unique,
     boolean,
+    jsonb,
 } from "drizzle-orm/pg-core";
 
 import { tenants } from "./tenant-schema";
@@ -34,6 +35,9 @@ export const stores = pgTable(
         email: text("email"),
         phone: text("phone"),
         address: text("address"),
+
+        theme: jsonb("theme").default({}),
+        content: jsonb("content").default({}),
 
         createdAt: timestamp("created_at").defaultNow().notNull(),
         updatedAt: timestamp("updated_at")

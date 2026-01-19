@@ -4,56 +4,103 @@ import { FeaturedSection } from "./components/featured";
 import { ProductGrid } from "./components/product-grid";
 import { StorefrontFooter } from "./components/footer";
 import { Hero } from "./components/hero";
-import Image from "next/image"; // Added Image import as it was missing in the provided new content, but used in JSX
+import { Categories } from "./components/categories";
+import { StoreConfiguration } from "@vendly/ui/src/types/store-config";
+import { StoreThemeProvider } from "@vendly/ui/components/theme-provider";
+
+const DUMMY_STORE_CONFIG: StoreConfiguration = {
+    id: "store_123",
+    theme: {
+        colors: {
+            // Changed to a deep blue to demonstrate the theme engine working
+            primary: "#1e3a8a",
+            secondary: "#ffffff",
+            accent: "#f3f4f6",
+            background: "#ffffff",
+            foreground: "#000000"
+        },
+        typography: {
+            fontFamily: "serif" // Changed to serif to show font switching
+        },
+        radius: "0.5rem"
+    },
+    content: {
+        header: {
+            storeName: "My Custom Store", // Changed text
+            navLinks: [
+                { label: "Home", href: "/" },
+                { label: "New Arrivals", href: "/collections" }, // Changed text
+                { label: "Categories", href: "/categories" }
+            ]
+        },
+        hero: {
+            headline: "Configuration Driven \n Design System", // Changed text
+            subheadline: "It Works!", // Changed text
+            backgroundImage: "/images/hero-desktop.png",
+            ctaText: "Explore Now", // Changed text
+            ctaLink: "/products"
+        },
+        featured: {
+            title: "Featured Collections",
+            items: [
+                {
+                    id: "f1",
+                    title: "Classic Elegance",
+                    imageUrl: "/images/woman-fashion.png",
+                    link: "/collections/women",
+                    ctaText: "Shop Women"
+                },
+                {
+                    id: "f2",
+                    title: "Refined Gentleman",
+                    imageUrl: "/images/man-fashion.png",
+                    link: "/collections/men",
+                    ctaText: "Shop Men"
+                }
+            ]
+        },
+        categories: {
+            title: "New Arrivals",
+            items: [
+                { name: "Women's Fashion", slug: "womens-fashion", imageUrl: "/images/trench-coat.png" },
+                { name: "Men's Fashion", slug: "mens-fashion", imageUrl: "/images/navy-blazer.png" },
+                { name: "Accessories", slug: "accessories", imageUrl: "/images/tortoiseshell-sunglasses.png" },
+                { name: "Shoes", slug: "shoes", imageUrl: "/images/leather-loafers.png" },
+                { name: "Shirts", slug: "shirts", imageUrl: "/images/linen-shirt.png" },
+                { name: "Knitwear", slug: "knitwear", imageUrl: "/images/cable-knit-sweater.png" },
+            ]
+        },
+        footer: {
+            copyrightText: "© 2024 vendly. All rights reserved."
+        }
+    }
+};
 
 export default async function StorefrontHomePage() {
     return (
-        <div className="min-h-screen bg-white">
-            <StorefrontHeader />
+        <StoreThemeProvider config={DUMMY_STORE_CONFIG.theme}>
+            <div className="min-h-screen bg-white">
+                <StorefrontHeader config={DUMMY_STORE_CONFIG.content.header} />
 
-            <Hero />
+                <Hero config={DUMMY_STORE_CONFIG.content.hero} />
 
-            <div className="max-w-7xl mx-auto px-6 py-12">
-                <h1 className="text-2xl font-bold m-8">New Arrivals</h1>
+                <div className="max-w-7xl mx-auto px-6 py-12">
+                    {/* Categories */}
+                    <Categories config={DUMMY_STORE_CONFIG.content.categories} />
 
-                {/* Categories */}
-                <div className="flex gap-4 m-6  overflow-x-auto no-scrollbar pb-4">
-                    {[
-                        { name: "Women's Fashion", image: "/images/trench-coat.png" },
-                        { name: "Men's Fashion", image: "/images/navy-blazer.png" },
-                        { name: "Accessories", image: "/images/tortoiseshell-sunglasses.png" },
-                        { name: "Shoes", image: "/images/leather-loafers.png" },
-                        { name: "Shirts", image: "/images/linen-shirt.png" },
-                        { name: "Knitwear", image: "/images/cable-knit-sweater.png" },
-                    ].map((category) => (
-                        <div key={category.name} className="flex flex-col items-center gap-2 shrink-0 cursor-pointer group">
-                            <div className="w-24 h-24 md:w-32 md:h-32 relative rounded-2xl overflow-hidden bg-neutral-100 border border-transparent group-hover:border-neutral-200 transition-all">
-                                <Image
-                                    src={category.image}
-                                    alt={category.name}
-                                    fill
-                                    className="object-cover mix-blend-multiply opacity-90 group-hover:opacity-100 group-hover:scale-105 transition-all duration-500"
-                                />
-                            </div>
-                            <span className="text-xs md:text-sm font-medium text-neutral-600 group-hover:text-black text-center">
-                                {category.name}
-                            </span>
-                        </div>
-                    ))}
+                    {/* Product Grid */}
+                    <h3 className="text-lg font-semibold m-8">All Products</h3>
+                    <ProductGrid />
+
+                    {/* Spacing */}
+                    <div className="my-20" />
+
+                    {/* Featured Section */}
+                    <FeaturedSection config={DUMMY_STORE_CONFIG.content.featured} />
                 </div>
 
-                {/* Product Grid */}
-                <h3 className="text-lg font-semibold m-8">All Products</h3>
-                <ProductGrid />
-
-                {/* Spacing */}
-                <div className="my-20" />
-
-                {/* Featured Section */}
-                <FeaturedSection />
+                <StorefrontFooter />
             </div>
-
-            <StorefrontFooter />
-        </div>
+        </StoreThemeProvider>
     );
 }

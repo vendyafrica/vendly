@@ -11,13 +11,15 @@
     "prefix": ""
   },
   "iconLibrary": "hugeicons",
+  "menuColor": "default",
+  "menuAccent": "subtle",
   "aliases": {
     "components": "@vendly/ui/components",
     "utils": "@vendly/ui/lib/utils",
-    "lib": "@vendly/ui/lib",
-    "ui": "@vendly/ui/components"
+    "ui": "@vendly/ui/components",
+    "lib": "@vendly/ui/lib"
   },
-  "menuColor": "default",
-  "menuAccent": "subtle",
-  "registries": {}
+  "registries": {
+    "@plate": "https://platejs.org/r/{name}.json"
+  }
 }

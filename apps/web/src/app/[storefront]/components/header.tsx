@@ -11,15 +11,21 @@ import {
     StarIcon,
 } from "@hugeicons/core-free-icons";
 import { Niconne } from 'next/font/google';
+import { StoreHeaderConfig } from "@vendly/ui/src/types/store-config";
 
 const niconne = Niconne({
-    weight: ['400'], // Choose the weights you need
+    weight: ['400'],
     subsets: ['latin'],
     display: 'swap',
 });
 
-export function StorefrontHeader() {
+interface StorefrontHeaderProps {
+    config: StoreHeaderConfig;
+}
+
+export function StorefrontHeader({ config }: StorefrontHeaderProps) {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const { storeName, navLinks } = config;
 
     return (
         <>
@@ -30,30 +36,16 @@ export function StorefrontHeader() {
                         <div className="flex items-center">
                             <nav className="hidden md:block">
                                 <ul className="flex space-x-4">
-                                    <li>
-                                        <Link
-                                            href="/"
-                                            className="text-sm text-black transition"
-                                        >
-                                            Home
-                                        </Link>
-                                    </li>
-                                    <li>
-                                        <Link
-                                            href="/collections"
-                                            className="text-sm text-black transition"
-                                        >
-                                            Collections
-                                        </Link>
-                                    </li>
-                                    <li>
-                                        <Link
-                                            href="/categories"
-                                            className="text-sm text-black transition"
-                                        >
-                                            Categories
-                                        </Link>
-                                    </li>
+                                    {navLinks.map((link) => (
+                                        <li key={link.href}>
+                                            <Link
+                                                href={link.href}
+                                                className="text-sm text-black transition"
+                                            >
+                                                {link.label}
+                                            </Link>
+                                        </li>
+                                    ))}
                                 </ul>
                             </nav>
                         </div>
@@ -62,7 +54,7 @@ export function StorefrontHeader() {
                             href="/"
                             className={`${niconne.className} text-3xl font-semibold text-black`}
                         >
-                            vendly.
+                            {storeName}
                         </Link>
 
                         {/* Right: Icons + Mobile Menu Button */}
@@ -97,7 +89,7 @@ export function StorefrontHeader() {
                 <div className="fixed inset-0 z-50 bg-white flex flex-col">
                     <div className="flex justify-between items-center p-6 border-b border-gray-100">
                         <Link href="/" className="text-xl font-bold items-start text-black">
-                            vendly.
+                            {storeName}
                         </Link>
                         <button
                             onClick={() => setIsMenuOpen(false)}
@@ -115,27 +107,16 @@ export function StorefrontHeader() {
                         >
                             Home
                         </Link>
-                        <Link
-                            href="/collections"
-                            onClick={() => setIsMenuOpen(false)}
-                            className="text-3xl font-medium text-gray-800 hover:text-black transition"
-                        >
-                            Collections
-                        </Link>
-                        <Link
-                            href="/categories"
-                            onClick={() => setIsMenuOpen(false)}
-                            className="text-3xl font-medium text-gray-800 hover:text-black transition"
-                        >
-                            Categories
-                        </Link>
-                        <Link
-                            href="/contact"
-                            onClick={() => setIsMenuOpen(false)}
-                            className="text-3xl font-medium text-gray-800 hover:text-black transition"
-                        >
-                            Contact
-                        </Link>
+                        {navLinks.map((link) => (
+                            <Link
+                                key={link.href}
+                                href={link.href}
+                                onClick={() => setIsMenuOpen(false)}
+                                className="text-3xl font-medium text-gray-800 hover:text-black transition"
+                            >
+                                {link.label}
+                            </Link>
+                        ))}
                     </nav>
                 </div>
             )}
