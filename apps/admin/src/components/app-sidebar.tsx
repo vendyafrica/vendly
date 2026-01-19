@@ -12,6 +12,11 @@ import {
   CustomerServiceIcon,
   Settings01Icon,
   Store01Icon,
+  UserMultiple02Icon,
+  GroupLayersIcon,
+  Payment02Icon,
+  PackageOpenIcon,
+  UserShield02Icon
 } from "@hugeicons/core-free-icons";
 
 import {
@@ -87,13 +92,39 @@ const superAdminItems: SidebarNavItem[] = [
   {
     title: "Tenants",
     url: "/tenants",
-    icon: UserGroupIcon,
+    icon: UserMultiple02Icon,
   },
   {
     title: "Stores",
     url: "/stores",
     icon: Store01Icon,
   },
+  {
+    title: "Categories",
+    url: "/categories",
+    icon: GroupLayersIcon,
+  },
+  {
+    title: "Users",
+    url: "/users",
+    icon: UserGroupIcon,
+  },
+  {
+    title: "Payments",
+    url: "/payments",
+    icon: Payment02Icon,
+  },
+  {
+    title: "Orders",
+    url: "/orders",
+    icon: PackageOpenIcon,
+  },
+  {
+    title: "Reports & Analytics",
+    url: "/analytics",
+    icon: Analytics02Icon,
+  },
+
 ];
 
 function normalizePath(path: string) {
@@ -235,7 +266,7 @@ export function AppSidebar({
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" render={<a href="#" />}>
               <div>
-                <HugeiconsIcon icon={UserGroupIcon} className="size-4" />
+                <HugeiconsIcon icon={UserShield02Icon} className="size-4" />
               </div>
               <div className="flex flex-col gap-0.5 leading-none">
                 <span className="font-medium">Admin User</span>
