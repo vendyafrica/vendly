@@ -10,7 +10,7 @@ import {
 import { Input } from "@vendly/ui/components/input"
 import { HugeiconsIcon } from "@hugeicons/react"
 import { Store01FreeIcons,Payment01FreeIcons,Analytics01FreeIcons } from "@hugeicons/core-free-icons"
-import { signInWithGoogle, signUp } from "@/lib/auth"
+import { signInWithGoogle } from "@/lib/auth"
 
 export default function Welcome() {
 
@@ -24,10 +24,8 @@ export default function Welcome() {
     };
 
     return (
-        <div className="border-0 shadow-none bg-muted/30">
-
+        <div className="border-0 shadow-sm rounded-sm bg-muted/30">
             <div className="grid p-0 md:grid-cols-2 gap-4">
-
               {/* LEFT — Marketing / Context */}
                 <div className="hidden md:flex flex-col justify-center items-start p-10 max-w-xl">
                     <h2 className="text-xl font-semibold tracking-tight mb-4">

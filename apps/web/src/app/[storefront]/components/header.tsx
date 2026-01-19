@@ -11,7 +11,8 @@ import {
     StarIcon,
 } from "@hugeicons/core-free-icons";
 import { Niconne } from 'next/font/google';
-import { StoreHeaderConfig } from "@vendly/ui/src/types/store-config";
+import { StoreHeaderConfig } from "../../../types/store-config";
+import { cn, themeClasses, animations } from "../../../lib/theme-utils";
 
 const niconne = Niconne({
     weight: ['400'],
@@ -29,7 +30,7 @@ export function StorefrontHeader({ config }: StorefrontHeaderProps) {
 
     return (
         <>
-            <header className="bg-white">
+            <header className={cn(themeClasses.background.card, "border-b", themeClasses.border.default)}>
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex items-center justify-between h-20">
                         {/* Left: Logo + Desktop Nav */}
@@ -40,7 +41,12 @@ export function StorefrontHeader({ config }: StorefrontHeaderProps) {
                                         <li key={link.href}>
                                             <Link
                                                 href={link.href}
-                                                className="text-sm text-black transition"
+                                                className={cn(
+                                                    "text-sm",
+                                                    themeClasses.text.default,
+                                                    themeClasses.hover.accent,
+                                                    animations.transition
+                                                )}
                                             >
                                                 {link.label}
                                             </Link>
@@ -52,29 +58,59 @@ export function StorefrontHeader({ config }: StorefrontHeaderProps) {
 
                         <Link
                             href="/"
-                            className={`${niconne.className} text-3xl font-semibold text-black`}
+                            className={cn(
+                                niconne.className,
+                                "text-3xl font-semibold",
+                                themeClasses.text.primary,
+                                themeClasses.hover.primary,
+                                animations.transition
+                            )}
                         >
                             {storeName}
                         </Link>
 
                         {/* Right: Icons + Mobile Menu Button */}
                         <div className="flex items-center space-x-6">
-
-                            <Link href="/account" className="text-black transition">
+                            <Link 
+                                href="/account" 
+                                className={cn(
+                                    themeClasses.text.default,
+                                    themeClasses.hover.accent,
+                                    animations.transition
+                                )}
+                            >
                                 <HugeiconsIcon icon={UserIcon} size={19} />
                             </Link>
 
-                            <Link href="/cart" className="text-black transition">
+                            <Link 
+                                href="/cart" 
+                                className={cn(
+                                    themeClasses.text.default,
+                                    themeClasses.hover.accent,
+                                    animations.transition
+                                )}
+                            >
                                 <HugeiconsIcon icon={ShoppingBag02Icon} size={19} />
                             </Link>
 
-
-                            <Link href="/cart" className="text-black transition">
+                            <Link 
+                                href="/wishlist" 
+                                className={cn(
+                                    themeClasses.text.default,
+                                    themeClasses.hover.accent,
+                                    animations.transition
+                                )}
+                            >
                                 <HugeiconsIcon icon={StarIcon} size={19} />
                             </Link>
 
                             <button
-                                className="md:hidden text-black transition"
+                                className={cn(
+                                    "md:hidden",
+                                    themeClasses.text.default,
+                                    themeClasses.hover.accent,
+                                    animations.transition
+                                )}
                                 onClick={() => setIsMenuOpen(true)}
                             >
                                 <HugeiconsIcon icon={Menu01Icon} size={19} />
@@ -86,14 +122,30 @@ export function StorefrontHeader({ config }: StorefrontHeaderProps) {
 
             {/* Mobile Menu Overlay */}
             {isMenuOpen && (
-                <div className="fixed inset-0 z-50 bg-white flex flex-col">
-                    <div className="flex justify-between items-center p-6 border-b border-gray-100">
-                        <Link href="/" className="text-xl font-bold items-start text-black">
+                <div className={cn(
+                    "fixed inset-0 z-50 flex flex-col",
+                    themeClasses.background.card
+                )}>
+                    <div className={cn(
+                        "flex justify-between items-center p-6 border-b",
+                        themeClasses.border.default
+                    )}>
+                        <Link 
+                            href="/" 
+                            className={cn(
+                                "text-xl font-bold items-start",
+                                themeClasses.text.primary
+                            )}
+                        >
                             {storeName}
                         </Link>
                         <button
                             onClick={() => setIsMenuOpen(false)}
-                            className="text-gray-600 hover:text-black transition"
+                            className={cn(
+                                themeClasses.text.muted,
+                                themeClasses.hover.accent,
+                                animations.transition
+                            )}
                         >
                             <HugeiconsIcon icon={Cancel01Icon} size={20} />
                         </button>
@@ -103,7 +155,12 @@ export function StorefrontHeader({ config }: StorefrontHeaderProps) {
                         <Link
                             href="/"
                             onClick={() => setIsMenuOpen(false)}
-                            className="text-3xl font-medium text-gray-800 hover:text-black transition"
+                            className={cn(
+                                "text-3xl font-medium",
+                                themeClasses.text.default,
+                                themeClasses.hover.primary,
+                                animations.transition
+                            )}
                         >
                             Home
                         </Link>
@@ -112,7 +169,12 @@ export function StorefrontHeader({ config }: StorefrontHeaderProps) {
                                 key={link.href}
                                 href={link.href}
                                 onClick={() => setIsMenuOpen(false)}
-                                className="text-3xl font-medium text-gray-800 hover:text-black transition"
+                                className={cn(
+                                    "text-3xl font-medium",
+                                    themeClasses.text.default,
+                                    themeClasses.hover.primary,
+                                    animations.transition
+                                )}
                             >
                                 {link.label}
                             </Link>

@@ -10,7 +10,7 @@ import { Textarea } from "@vendly/ui/components/textarea"
 export default function StoreInfo() {
     return (
         <div className="mx-auto w-full max-w-lg rounded-xl p-6 md:p-8 ">
-            <form className="space-y-6">
+            <form className="space-y-6 rounded-md p-8 shadow-md">
                 {/* Header */}
                 <div className="space-y-1">
                     <h1 className="text-xl font-semibold">

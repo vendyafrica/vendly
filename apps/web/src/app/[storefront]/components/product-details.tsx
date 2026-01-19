@@ -10,12 +10,11 @@ import {
     Share01Icon,
     MinusSignIcon,
     PlusSignIcon,
-    DeliveryTruck01Icon,
-    ReloadIcon,
     Tick01Icon
 } from "@hugeicons/core-free-icons";
-import { cn } from "@vendly/ui/lib/utils";
+
 import { Avatar, AvatarImage, AvatarFallback } from "@vendly/ui/components/avatar";
+import { cn, themeClasses, animations } from "../../../lib/theme-utils";
 
 export function ProductDetails() {
     const [quantity, setQuantity] = useState(1);
@@ -34,9 +33,11 @@ export function ProductDetails() {
 
     return (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16">
+
             {/* Left Column: Images */}
             <div className="space-y-6">
-                <div className="relative overflow-hidden aspect-square flex items-center justify-center p-8 group">
+                <div className={cn("relative overflow-hidden aspect-square flex items-center justify-center p-8 group", themeClasses.background.card, themeClasses.border.default, "border", animations.transition)}>
+
                     <Image
                         src="/images/green-bottle.png"
                         alt="Eco-Friendly Reusable Water Bottle"
@@ -48,10 +49,10 @@ export function ProductDetails() {
 
                     {/* Floating Actions */}
                     <div className="absolute top-10 right-10 flex flex-col gap-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                        <Button size="icon" variant="secondary" className="rounded-full bg-transparent backdrop-blur-sm shadow-sm h-9 w-9  cursor-pointer">
+                        <Button size="icon" variant="secondary" className={cn("rounded-full backdrop-blur-sm shadow-sm h-9 w-9 cursor-pointer", themeClasses.button.secondary)}>
                             <HugeiconsIcon icon={Share01Icon} size={16} />
                         </Button>
-                        <Button size="icon" variant="secondary" className="rounded-full bg-transparent backdrop-blur-sm shadow-sm h-9 w-9 cursor-pointer">
+                        <Button size="icon" variant="secondary" className={cn("rounded-full backdrop-blur-sm shadow-sm h-9 w-9 cursor-pointer", themeClasses.button.secondary)}>
                             <HugeiconsIcon icon={FavouriteIcon} size={16} />
                         </Button>
                     </div>
@@ -64,9 +65,11 @@ export function ProductDetails() {
                             key={i}
                             className={cn(
                                 "rounded-2xl overflow-hidden aspect-square p-2 border-2 transition-all",
-                                i === 1 ? "border-black" : "border-transparent hover:border-gray-200"
+                                i === 1 ? themeClasses.border.default : "border-transparent hover:border-(--color-border)",
+                                themeClasses.background.card
                             )}
                         >
+
                             <Image
                                 src="/images/green-bottle.png"
                                 alt={`View ${i}`}
@@ -86,26 +89,26 @@ export function ProductDetails() {
                         <AvatarImage src="https://github.com/shadcn.png" />
                         <AvatarFallback>CN</AvatarFallback>
                     </Avatar>
-                    <p className="text-black text-sm font-medium tracking-wide">Vendly </p>
+                    <p className={cn("text-sm font-medium tracking-wide", themeClasses.text.default)}>Vendly </p>
                 </div>
 
-                <h1 className="text-md font-semibold text-neutral-500 mb-3 leading-tight">
+                <h1 className={cn("text-md font-semibold mb-3 leading-tight", themeClasses.text.default)}>
                     Eco-Friendly Reusable Water Bottle
                 </h1>
 
                 <div className="flex items-center justify-between mb-8">
-                    <div className="text-md font-semibold text-neutral-900">
+                    <div className={cn("text-md font-semibold", themeClasses.text.primary)}>
                         $24.99
                     </div>
-                    <div className="flex items-center gap-1.5 bg-neutral-50 px-3 py-1.5 rounded-full">
-                        <HugeiconsIcon icon={StarIcon} size={16} className="text-orange-400 fill-orange-400" />
-                        <span className="font-semibold text-neutral-900 text-sm">4.5</span>
-                        <span className="text-neutral-400 text-sm">(128 reviews)</span>
+                    <div className={cn("flex items-center gap-1.5 px-3 py-1.5 rounded-full", themeClasses.background.muted)}>
+                        <HugeiconsIcon icon={StarIcon} size={16} className="text-[#f7d2c4] fill-[#f7d2c4]" />
+                        <span className={cn("font-semibold text-sm", themeClasses.text.default)}>4.5</span>
+                        <span className={cn("text-sm", themeClasses.text.muted)}>(128 reviews)</span>
                     </div>
                 </div>
 
                 <div className="mb-8">
-                    <h3 className="text-sm font-medium text-neutral-500 mb-4 tracking-wide">Choose a Color</h3>
+                    <h3 className={cn("text-sm font-medium mb-4 tracking-wide", themeClasses.text.default)}>Choose a Color</h3>
                     <div className="flex gap-3">
                         {colors.map((color) => (
                             <button
@@ -115,7 +118,7 @@ export function ProductDetails() {
                                     "w-6 h-6 rounded-full flex items-center justify-center transition-all",
                                     color.class,
                                     selectedColor === color.name
-                                        ? "ring-2 ring-offset-2 ring-black scale-110"
+                                        ? "ring-2 ring-offset-2 ring-[#3498db] scale-110"
                                         : "hover:scale-105"
                                 )}
                                 aria-label={`Select ${color.name}`}
@@ -134,12 +137,12 @@ export function ProductDetails() {
 
                 {/* Quantity */}
                 <div className="mb-8">
-                    <h3 className="text-sm font-medium text-neutral-500 mb-4 tracking-wide">Quantity</h3>
+                    <h3 className={cn("text-sm font-medium mb-4 tracking-wide", themeClasses.text.default)}>Quantity</h3>
                     <div className="flex items-center gap-3">
-                        <div className="flex items-center border border-neutral-200 rounded-lg p-1">
+                        <div className={cn("flex items-center rounded-lg p-1 border", themeClasses.border.default, themeClasses.background.card)}>
                             <button
                                 onClick={() => handleQuantityChange(-1)}
-                                className="w-10 h-10 flex items-center justify-center text-neutral-500 hover:text-black hover:bg-neutral-50 rounded-md transition-colors"
+                                className={cn("w-10 h-10 flex items-center justify-center rounded-md", themeClasses.text.muted, animations.transition, themeClasses.hover.accent)}
                             >
                                 <HugeiconsIcon icon={MinusSignIcon} size={16} />
                             </button>
@@ -148,24 +151,26 @@ export function ProductDetails() {
                             </div>
                             <button
                                 onClick={() => handleQuantityChange(1)}
-                                className="w-10 h-10 flex items-center justify-center text-neutral-500 hover:text-black hover:bg-neutral-50 rounded-md transition-colors"
+                                className={cn("w-10 h-10 flex items-center justify-center rounded-md", themeClasses.text.muted, animations.transition, themeClasses.hover.accent)}
                             >
                                 <HugeiconsIcon icon={PlusSignIcon} size={16} />
                             </button>
+
                         </div>
                     </div>
                 </div>
 
                 {/* Actions */}
                 <div className="flex flex-col gap-4">
-                    <Button className="w-full cursor-pointer rounded-xl h-12 bg-amber-700 text-white hover:bg-amber-800">
+                    <Button className={cn("w-full cursor-pointer rounded-xl h-12", themeClasses.button.default)}>
                         Add To Cart
                     </Button>
-                    <Button variant="outline" className="w-full rounded-xl h-12 bg-green-700 hover:bg-green-800 hover:text-white text-white  cursor-pointer">
+                    <Button variant="outline" className={cn("w-full rounded-xl h-12 cursor-pointer", themeClasses.button.outline)}>
                         Add to Wishlist
                     </Button>
                 </div>
             </div>
         </div>
+
     );
 }

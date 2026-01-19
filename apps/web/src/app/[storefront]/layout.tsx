@@ -1,6 +1,10 @@
 
 import type { ReactNode } from "react";
-import type { Metadata } from "next";
+
+interface StorefrontLayoutProps {
+    children: ReactNode;
+    params: Promise<{ storefront: string }>;
+}
 
 export default async function StorefrontLayout({
     children,

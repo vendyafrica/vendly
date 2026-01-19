@@ -62,6 +62,9 @@
         "./components/storefront/*": "./src/components/storefront/*",
         "./components/*": "./src/components/*.tsx",
         "./hooks/*": "./src/hooks/*.ts",
-        "./src/types/*": "./src/types/*.ts"
+        "./src/types/*": "./src/types/*.ts",
+        "./src/lib/*": "./src/lib/*.ts",
+        "./src/themes/*": "./src/themes/*.ts",
+        "./components/theme-provider": "./src/components/theme-provider.tsx"
     }
 }

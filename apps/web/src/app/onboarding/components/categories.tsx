@@ -25,7 +25,7 @@ export default function CategoriesSelector() {
     };
 
     return (
-        <div className="mx-auto w-full max-w-lg rounded-xl p-6 md:p-8">
+        <div className="mx-auto w-full max-w-lg rounded-xl p-6 md:p-8 shadow-md">
             <div className="space-y-6">
                 <div className="space-y-2">
                     <h1 className="text-xl font-semibold">
