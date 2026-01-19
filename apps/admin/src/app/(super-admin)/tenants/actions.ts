@@ -18,7 +18,6 @@ export async function createTenant(formData: FormData) {
 
     await db.insert(tenants).values({
         fullName,
-        slug,
         phoneNumber: phoneNumber || null,
         billingEmail: billingEmail || null,
         plan: plan || "free",

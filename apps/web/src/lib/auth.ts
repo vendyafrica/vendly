@@ -26,6 +26,15 @@ export async function signInWithMagicLink(email: string) {
   return data;
 }
 
+export async function signUp(email: string, password: string, name: string) {
+    const data = await authClient.signUp.email({
+        email,
+        password,
+        name,
+    });
+    return data;
+}
+
 export async function signInWithInstagram() {
   const data = await authClient.signIn.social({
     provider: "instagram",

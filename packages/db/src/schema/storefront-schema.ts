@@ -8,6 +8,8 @@ import {
     unique,
     boolean,
     jsonb,
+    integer,
+    numeric,
 } from "drizzle-orm/pg-core";
 
 import { tenants } from "./tenant-schema";
@@ -53,8 +55,8 @@ export const stores = pgTable(
     ]
 );
 
-export const storeMemberships = pgTable(
-    "store_memberships",
+export const storeCustomers = pgTable(
+    "store_customers",
     {
         id: uuid("id").primaryKey().defaultRandom(),
         tenantId: uuid("tenant_id")
@@ -67,7 +69,10 @@ export const storeMemberships = pgTable(
             .notNull()
             .references(() => users.id, { onDelete: "cascade" }),
 
-        role: text("role").notNull(),
+
+        totalOrders: integer("total_orders").default(0),
+        totalSpend: numeric("total_spend", { precision: 12, scale: 2 }).default("0"),
+        lastOrderAt: timestamp("last_order_at"),
 
         createdAt: timestamp("created_at").defaultNow().notNull(),
         updatedAt: timestamp("updated_at")
@@ -76,24 +81,24 @@ export const storeMemberships = pgTable(
             .notNull(),
     },
     (table) => [
-        unique("store_memberships_unique").on(table.storeId, table.userId),
-        index("store_memberships_tenant_idx").on(table.tenantId),
-        index("store_memberships_store_idx").on(table.storeId),
-        index("store_memberships_user_idx").on(table.userId),
+        unique("store_customers_unique").on(table.storeId, table.userId),
+        index("store_customers_tenant_idx").on(table.tenantId),
+        index("store_customers_store_idx").on(table.storeId),
+        index("store_customers_user_idx").on(table.userId),
     ]
 );
 
-export const storeMembershipsRelations = relations(storeMemberships, ({ one }) => ({
+export const storeCustomersRelations = relations(storeCustomers, ({ one }) => ({
     tenant: one(tenants, {
-        fields: [storeMemberships.tenantId],
+        fields: [storeCustomers.tenantId],
         references: [tenants.id],
     }),
     store: one(stores, {
-        fields: [storeMemberships.storeId],
+        fields: [storeCustomers.storeId],
         references: [stores.id],
     }),
     user: one(users, {
-        fields: [storeMemberships.userId],
+        fields: [storeCustomers.userId],
         references: [users.id],
     }),
 }));
@@ -101,5 +106,5 @@ export const storeMembershipsRelations = relations(storeMemberships, ({ one }) =
 export type Store = typeof stores.$inferSelect;
 export type NewStore = typeof stores.$inferInsert;
 
-export type StoreMembership = typeof storeMemberships.$inferSelect;
-export type NewStoreMembership = typeof storeMemberships.$inferInsert;
+export type StoreCustomer = typeof storeCustomers.$inferSelect;
+export type NewStoreCustomer = typeof storeCustomers.$inferInsert;

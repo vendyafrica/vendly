@@ -1,103 +1,119 @@
-/**
- * Auth Middleware
- * Validates user session for protected routes
- */
 import { Request, Response, NextFunction } from "express";
 import { auth } from "@vendly/auth";
+import { AuthenticatedRequest,TenantRole,PlatformRole } from "../types/auth-types";
+import { db } from "@vendly/db";
+import { tenantMemberships , platformRoles } from "@vendly/db";
+import { and, eq } from "drizzle-orm";
 
-export interface AuthenticatedRequest extends Request {
-    user?: {
-        id: string;
-        email?: string;
-        [key: string]: any;
-    };
-    session?: any;
-}
 
 /**
- * Middleware to verify user is authenticated
+ * Ensures the request is authenticated
+ * Builds the base auth context (identity only)
  */
-export async function authMiddleware(
+export async function requireAuth(
     req: Request,
     res: Response,
     next: NextFunction
-): Promise<void> {
+) {
     try {
         const session = await auth.api.getSession({ headers: req.headers });
 
-        if (!session || !session.user) {
-            res.status(401).json({
+        if (!session?.user) {
+            return res.status(401).json({
                 error: "Unauthorized",
-                message: "You must be logged in to access this resource",
+                message: "Authentication required",
             });
-            return; // res.redirect is typically not useful for JSON APIs, removing or keeping as is? Kept logic similar but cleaner return.
-            // Original code had both json and redirect. I will keep original behavior logic but fix types.
         }
 
-        // Attach session and user to request for use in controllers
-        (req as any).session = session;
-        (req as any).user = session.user;
+        (req as AuthenticatedRequest).auth = {
+            userId: session.user.id,
+            email: session.user.email,
+        };
 
         next();
-    } catch (error) {
-        console.error("[AuthMiddleware] Error:", error);
-        res.status(401).json({
-            error: "Authentication failed",
-            message: error instanceof Error ? error.message : "Unknown error",
+    } catch (err) {
+        console.error("[Auth] Session error:", err);
+        return res.status(401).json({
+            error: "Unauthorized",
+            message: "Invalid or expired session",
         });
-        res.redirect("/api/auth/login");
     }
 }
 
-/**
- * Optional auth middleware - doesn't block if no session
- */
-export async function optionalAuthMiddleware(
+//for public routes
+export async function optionalAuth(
     req: Request,
-    res: Response,
+    _res: Response,
     next: NextFunction
-): Promise<void> {
+) {
     try {
         const session = await auth.api.getSession({ headers: req.headers });
 
-        if (session && session.user) {
-            (req as any).session = session;
-            (req as any).user = session.user;
+        if (session?.user) {
+            (req as AuthenticatedRequest).auth = {
+                userId: session.user.id,
+                email: session.user.email,
+            };
         }
 
         next();
-    } catch (error) {
-        console.error("[OptionalAuthMiddleware] Error:", error);
+    } catch {
         next();
     }
 }
 
-/**
- * Middleware to check for specific role
- */
-export function requireRole(role: string) {
-    return async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-        const session = (req as any).session;
+export function requireTenantRole(allowedRoles: TenantRole[]) {
+    return async (req: Request, res: Response, next: NextFunction) => {
+        const auth = (req as AuthenticatedRequest).auth;
+        const tenantId = req.params.tenantId;
 
-        if (!session) {
-            res.status(401).json({
-                error: "Unauthorized",
-                message: "You must be logged in to access this resource",
-            });
-            return;
+        if (!auth || !tenantId) {
+            return res.status(401).json({ error: "Unauthorized" });
         }
 
-        // Extend this based on your role system
-        const userRole = (session.user as any).role;
+        const membership = await db.query.tenantMemberships.findFirst({
+            where: and(
+                eq(tenantMemberships.userId, auth.userId),
+                eq(tenantMemberships.tenantId, tenantId)
+            ),
+        });
 
-        if (userRole !== role && userRole !== "admin") {
-            res.status(403).json({
+        if (!membership || !allowedRoles.includes(membership.role as TenantRole)) {
+            return res.status(403).json({
                 error: "Forbidden",
-                message: "You do not have permission to access this resource",
+                message: "Insufficient tenant permissions",
             });
-            return;
         }
 
+        auth.tenant = {
+            tenantId,
+            role: membership.role as TenantRole,
+        };
+
+        next();
+    };
+}
+
+export function requirePlatformRole(allowed: PlatformRole[]) {
+    return async (req: Request, res: Response, next: NextFunction) => {
+        const auth = (req as AuthenticatedRequest).auth;
+
+        if (!auth) {
+            return res.status(401).json({ error: "Unauthorized" });
+        }
+
+        const role = await db.query.platformRoles.findFirst({
+            where: eq(platformRoles.userId, auth.userId),
+        });
+
+        if (!role || !allowed.includes(role.role as PlatformRole)) {
+            return res.status(403).json({
+                error: "Forbidden",
+                message: "Platform access denied",
+            });
+        }
+
+        auth.platformRole = role.role as PlatformRole;
         next();
     };
 }

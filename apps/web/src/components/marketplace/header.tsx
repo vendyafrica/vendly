@@ -18,8 +18,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@vendly/ui/components/dropdown-menu";
-import { LoginOverlay } from "@/components/ui/overlay";
 import { useRouter } from "next/navigation";
+import { LoginOverlay } from "@/app/(auth)/login/page";
 
 export default function Header() {
   const { data: session } = useSession();
@@ -45,11 +45,7 @@ export default function Header() {
   }, [lastScrollY]);
 
   const handleSellNow = () => {
-    if (!isSignedIn) {
-      setShowLogin(true);
-    } else {
-      router.push("/sell");
-    }
+    router.push("/onboarding");
   };
 
   return (

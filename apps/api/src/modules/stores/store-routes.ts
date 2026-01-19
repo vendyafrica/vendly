@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { storeController } from "../controllers/store-controller";
+import { storeController } from "./store-controller";
 
 const authenticate = (req: any, res: any, next: any) => next();
 

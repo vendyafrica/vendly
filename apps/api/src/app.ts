@@ -2,11 +2,9 @@ import express, { Express, Request, Response } from "express";
 import cors from "cors";
 import { toNodeHandler } from "better-auth/node";
 import { auth } from "@vendly/auth";
-import { authMiddleware } from "./middlewares/auth";
+// import { authMiddleware } from "./middlewares/auth";
 
-// import imageUploadRouter from "./modules/media/media-route";
-// import { createStorefrontRouter } from "./modules/storefront";
-import { createTenantRouter } from "./modules/tenants/tenant-route";
+// import { createTenantRouter } from "./modules/tenants/tenant-route";
 
 export function createApp(): Express {
   const app = express();
@@ -17,7 +15,7 @@ export function createApp(): Express {
     cors({
       origin: [
         "http://localhost:3000",
-        "http://localhost:5000",
+        "http://localhost:4000",
         /^http:\/\/localhost:\d+$/,
         /^http:\/\/[\w-]+\.localhost:\d+$/,
         "https://vendly-web.vercel.app",
@@ -29,7 +27,7 @@ export function createApp(): Express {
       ],
       credentials: true,
       methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
-      allowedHeaders: ["Content-Type", "Authorization"],
+      allowedHeaders: ["Content-Type", "Authorization","X-Request-With"],
     })
   );
 
@@ -40,7 +38,7 @@ export function createApp(): Express {
 
   // app.use("/api/upload", imageUploadRouter);
   // app.use("/api/storefront", createStorefrontRouter());
-  app.use("/api/tenants", authMiddleware, createTenantRouter());
+  // app.use("/api/tenants", authMiddleware, createTenantRouter());
 
   app.get("/", (_req, res) => {
     res.send("API is running");

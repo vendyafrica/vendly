@@ -11,6 +11,8 @@ import {
 } from "@vendly/ui/components/field"
 import { Input } from "@vendly/ui/components/input"
 import { signInWithGoogle, signInWithMagicLink } from "@/lib/auth"
+import { HugeiconsIcon } from "@hugeicons/react"
+import { MailReceive02Icon } from "@hugeicons/core-free-icons"
 
 type FormState = "idle" | "loading" | "sent"
 
@@ -42,28 +44,12 @@ export function LoginForm({
         }
     }
 
-    // Show success state after magic link is sent
     if (formState === "sent") {
         return (
             <div className={cn("flex flex-col gap-6", className)} {...props}>
                 <div className="flex flex-col items-center text-center gap-4 py-4">
-                    {/* Email icon */}
                     <div className="flex h-14 w-14 items-center justify-center rounded-full bg-primary/10">
-                        <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            width="28"
-                            height="28"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            className="text-primary"
-                        >
-                            <rect width="16" height="13" x="4" y="5" rx="2" />
-                            <path d="m4 8 8 4 8-4" />
-                        </svg>
+                        <HugeiconsIcon icon={MailReceive02Icon} size={28} />
                     </div>
                     <div className="space-y-2">
                         <h2 className="text-xl font-semibold">Check your email</h2>
