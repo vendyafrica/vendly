@@ -62,7 +62,7 @@ export function StorefrontHeader({ config }: StorefrontHeaderProps) {
                                 niconne.className,
                                 "text-3xl font-semibold",
                                 themeClasses.text.primary,
-                                themeClasses.hover.primary,
+                                themeClasses.hover.accent,
                                 animations.transition
                             )}
                         >
@@ -152,18 +152,6 @@ export function StorefrontHeader({ config }: StorefrontHeaderProps) {
                     </div>
 
                     <nav className="flex-1 flex flex-col items-center justify-center space-y-10">
-                        <Link
-                            href="/"
-                            onClick={() => setIsMenuOpen(false)}
-                            className={cn(
-                                "text-3xl font-medium",
-                                themeClasses.text.default,
-                                themeClasses.hover.primary,
-                                animations.transition
-                            )}
-                        >
-                            Home
-                        </Link>
                         {navLinks.map((link) => (
                             <Link
                                 key={link.href}

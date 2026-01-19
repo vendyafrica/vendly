@@ -11,7 +11,7 @@ export const MINIMAL_STORE: StoreConfiguration = {
             navLinks: [
                 { label: "Home", href: "/" },
                 { label: "Shop", href: "/products" },
-                { label: "About", href: "/about" }
+                { label: "Contact", href: "/contact" }
             ]
         },
         hero: {
@@ -50,7 +50,7 @@ export const MINIMAL_STORE: StoreConfiguration = {
             ]
         },
         footer: {
-            copyrightText: "© 2024 Minimalist Boutique. All rights reserved."
+            copyrightText: "© 2026 {storeName}. All rights reserved."
         }
     }
 };
@@ -108,7 +108,7 @@ export const WARM_STORE: StoreConfiguration = {
             ]
         },
         footer: {
-            copyrightText: "© 2024 Cozy Corner. Embrace the warmth."
+            copyrightText: "© 2026 {storeName}. Embrace the warmth."
         }
     }
 };
@@ -167,7 +167,7 @@ export const COOL_STORE: StoreConfiguration = {
             ]
         },
         footer: {
-            copyrightText: "© 2026 Cool. Redefining professional style."
+            copyrightText: "© 2026 {storeName}. Redefining professional style."
         }
     }
 };

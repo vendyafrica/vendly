@@ -64,7 +64,7 @@ const themes: Record<ThemeVariant, StoreTheme> = {
       primaryForeground: "#ffffff",
       secondary: "#f8fafc",
       secondaryForeground: "#0f172a",
-      accent: "#e2e8f0",
+      accent: "#fffff",
       accentForeground: "#0f172a",
       background: "#ffffff",
       foreground: "#0f172a",
