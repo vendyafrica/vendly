@@ -5,46 +5,42 @@ import Link from "next/link";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { InstagramIcon, NewTwitterIcon, Facebook01Icon } from "@hugeicons/core-free-icons";
 import { Button } from "@vendly/ui/components/button";
-import { StoreFooterConfig } from "../../../types/store-config";
-import { cn, themeClasses, animations } from "../../../lib/theme-utils";
 
-interface StorefrontFooterProps {
-    config: StoreFooterConfig;
-}
 
-export function StorefrontFooter({ config }: StorefrontFooterProps) {
-    const [email, setEmail] = useState("");
+
+export function StorefrontFooter() {
+    const [Number, setNumber] = useState("");
     const [subscribed, setSubscribed] = useState(false);
 
     const handleSubscribe = (e: React.FormEvent) => {
-        e.preventDefault();
+        e.preventDefault(); 
         setSubscribed(true);
-        setEmail("");
+        setNumber("");
     };
 
     return (
-        <footer className={cn("pt-12 pb-7 border-t", themeClasses.background.card, themeClasses.border.default)}>
+        <footer className="pt-12 pb-7 border-t bg-[#F9F9F7] border-neutral-200">
             <div className="max-w-7xl mx-auto px-6">
-                {/* Main footer content */}
+               
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-16">
-                    {/* Store info */}
+                    
                     <div>
-                        <h3 className={cn("text-base font-medium mb-2", themeClasses.text.primary)}>{config?.copyrightText?.split(".")?.[0] ?? "vendly"}</h3>
-                        <p className={cn("text-sm leading-relaxed", themeClasses.text.muted)}>
-                            Curated collection of premium products.
+                        <h3 className="text-base font-medium mb-2 text-neutral-900">vendly</h3>
+                        <p className="text-sm leading-relaxed text-neutral-500">
+                            Curated collections.
                         </p>
                     </div>
 
-                    {/* Quick links */}
+                    
                     <div>
-                        <h4 className={cn("text-sm font-medium uppercase tracking-wider mb-4", themeClasses.text.muted)}>
+                        <h4 className="text-sm font-medium uppercase tracking-wider mb-4 text-neutral-500">
                             Shop
                         </h4>
                         <ul className="space-y-3">
                             <li>
                                 <Link
                                     href="#products"
-                                    className={cn("text-sm transition-colors", themeClasses.text.default, themeClasses.hover.accent, animations.transition)}
+                                    className="text-sm transition-colors duration-200 text-neutral-900 hover:text-neutral-500"
                                 >
                                     All Products
                                 </Link>
@@ -52,7 +48,7 @@ export function StorefrontFooter({ config }: StorefrontFooterProps) {
                             <li>
                                 <Link
                                     href="#"
-                                    className={cn("text-sm transition-colors", themeClasses.text.default, themeClasses.hover.accent, animations.transition)}
+                                    className="text-sm transition-colors duration-200 text-neutral-900 hover:text-neutral-500"
                                 >
                                     New Arrivals
                                 </Link>
@@ -60,7 +56,7 @@ export function StorefrontFooter({ config }: StorefrontFooterProps) {
                             <li>
                                 <Link
                                     href="#"
-                                    className={cn("text-sm transition-colors", themeClasses.text.default, themeClasses.hover.accent, animations.transition)}
+                                    className=  "text-sm transition-colors duration-200 text-neutral-900 hover:text-neutral-500"
                                 >
                                     Best Sellers
                                 </Link>
@@ -70,14 +66,14 @@ export function StorefrontFooter({ config }: StorefrontFooterProps) {
 
                     {/* Support */}
                     <div>
-                        <h4 className={cn("text-sm font-medium uppercase tracking-wider mb-4", themeClasses.text.muted)}>
+                        <h4 className="text-sm font-medium uppercase tracking-wider mb-4 text-neutral-500">
                             Support
                         </h4>
                         <ul className="space-y-3">
                             <li>
                                 <Link
                                     href="#"
-                                    className={cn("text-sm transition-colors", themeClasses.text.default, themeClasses.hover.accent, animations.transition)}
+                                    className="text-sm transition-colors duration-200 text-neutral-900 hover:text-neutral-500"
                                 >
                                     Contact Us
                                 </Link>
@@ -85,7 +81,7 @@ export function StorefrontFooter({ config }: StorefrontFooterProps) {
                             <li>
                                 <Link
                                     href="#"
-                                    className={cn("text-sm transition-colors", themeClasses.text.default, themeClasses.hover.accent, animations.transition)}
+                                    className="text-sm transition-colors duration-200 text-neutral-900 hover:text-neutral-500"
                                 >
                                     Shipping
                                 </Link>
@@ -93,7 +89,7 @@ export function StorefrontFooter({ config }: StorefrontFooterProps) {
                             <li>
                                 <Link
                                     href="#"
-                                    className={cn("text-sm transition-colors", themeClasses.text.default, themeClasses.hover.accent, animations.transition)}
+                                    className="text-sm transition-colors duration-200 text-neutral-900 hover:text-neutral-500"
                                 >
                                     Returns
                                 </Link>
@@ -103,26 +99,25 @@ export function StorefrontFooter({ config }: StorefrontFooterProps) {
 
                     {/* Newsletter */}
                     <div>
-                        <h4 className={cn("text-sm font-medium uppercase tracking-wider mb-4", themeClasses.text.muted)}>
+                        <h4 className="text-sm font-medium uppercase tracking-wider mb-4 text-neutral-500">
                             Store Updates
                         </h4>
                         {subscribed ? (
-                            <p className={cn("text-sm", themeClasses.text.default)}>
+                            <p className="text-sm text-neutral-900">
                                 Thanks for subscribing!
                             </p>
                         ) : (
                             <form onSubmit={handleSubscribe} className="space-y-3">
                                 <input
-                                    type="number"
-                                    value={email}
-                                    onChange={(e) => setEmail(e.target.value)}
+                                    value={Number}
+                                    onChange={(e) => setNumber(e.target.value)}
                                     placeholder="Your phone number"
                                     required
-                                    className={cn("w-full px-4 py-3 text-sm rounded", themeClasses.border.default, themeClasses.background.card, themeClasses.text.default, animations.transition, themeClasses.focus.ring)}
+                                    className="w-full px-4 py-3 text-sm rounded border border-neutral-200 bg-white text-neutral-900 transition-all duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
                                 />
                                 <Button
                                     type="submit"
-                                    className={cn("w-full h-11 text-sm font-medium", themeClasses.button.default)}
+                                    className="w-full h-11 text-sm font-medium bg-neutral-900 text-white hover:bg-primary rounded transition-colors duration-200"
                                 >
                                     Subscribe
                                 </Button>
@@ -135,21 +130,21 @@ export function StorefrontFooter({ config }: StorefrontFooterProps) {
                 <div className="flex justify-center gap-6 mb-8">
                     <a
                         href="#"
-                        className={cn(themeClasses.text.muted, themeClasses.hover.primary, animations.transition)}
+                        className="text-neutral-500 hover:text-primary transition-all duration-200 ease-in-out"
                         aria-label="Instagram"
                     >
                         <HugeiconsIcon icon={InstagramIcon} size={20} />
                     </a>
                     <a
                         href="#"
-                        className={cn(themeClasses.text.muted, themeClasses.hover.primary, animations.transition)}
+                        className="text-neutral-500 hover:text-primary transition-all duration-200 ease-in-out"
                         aria-label="Twitter"
                     >
                         <HugeiconsIcon icon={NewTwitterIcon} size={20} />
                     </a>
                     <a
                         href="#"
-                        className={cn(themeClasses.text.muted, themeClasses.hover.primary, animations.transition)}
+                        className="text-neutral-500 hover:text-primary transition-all duration-200 ease-in-out"
                         aria-label="Facebook"
                     >
                         <HugeiconsIcon icon={Facebook01Icon} size={20} />
@@ -158,11 +153,11 @@ export function StorefrontFooter({ config }: StorefrontFooterProps) {
 
                 {/* Bottom bar */}
                 <div className="pt-8 text-center">
-                    <p className={cn("text-xs", themeClasses.text.muted)}>
+                    <p className="text-xs text-neutral-500">
                         Powered by{" "}
                         <Link
                             href="https://vendlyafrica.store"
-                            className={cn("font-medium", themeClasses.text.default, themeClasses.hover.primary, animations.transition)}
+                            className="font-medium text-neutral-900 hover:text-primary transition-all duration-200 ease-in-out"
                             target="_blank"
                             rel="noopener noreferrer"
                         >

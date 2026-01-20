@@ -1,46 +1,60 @@
 "use client";
 
-import Image from "next/image";
 import Link from 'next/link';
-import { StoreCategoriesConfig } from "../../../types/store-config";
-import { cn, themeClasses, animations } from "../../../lib/theme-utils";
+import Image from 'next/image';
 
-interface CategoriesProps {
-    config: StoreCategoriesConfig;
-}
-
-export function Categories({ config }: CategoriesProps) {
-    const { title, items } = config;
+export function Categories() {
+    const categories = [
+        {
+            slug: "hoodies",
+            name: "Hoodies",
+            image: "/images/green-bottle.png",
+        },
+        {
+            slug: "sweatpants",
+            name: "Sweatpants",
+            image: "/images/woman-fashion.png",
+        },
+        {
+            slug: "all-products",
+            name: "All Products",
+            image: "/images/trench-coat.png",
+        },
+        {
+            slug: "loungewear",
+            name: "Loungewear",
+            image: "/images/leather-loafers.png",
+        },
+    ]
 
     return (
-        <section className="py-16">
-            <h2 className={cn("text-2xl font-light mb-8", themeClasses.text.default)}>{title}</h2>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-                {items.map((category) => (
-                    <Link
-                        key={category.slug}
-                        href={`/categories/${category.slug}`}
-                        className={cn("group flex flex-col gap-2", animations.transition)}
-                    >
-                        <div className={cn(
-                            "relative aspect-square rounded-(--radius)] overflow-hidden",
-                            themeClasses.background.muted,
-                            animations.hover
-                        )}>
-                            <Image
-                                src={category.imageUrl}
-                                alt={category.name}
-                                fill
-                                className="object-cover"
-                            />
-                        </div>
-                        <div className="text-center">
-                            <h3 className={cn("text-sm font-medium", themeClasses.text.default)}>
+        <section className="py-12 bg-[#F9F9F7]">
+            <h2 className="text-2xl font-semibold mb-6 px-8 text-neutral-900">Featured</h2>
+            
+            <div className="w-full px-8">
+                <div className="flex gap-6 overflow-x-auto scrollbar-hide pb-4">
+                    {categories.map((category) => (
+                        <Link
+                            key={category.slug}
+                            href={`/categories/${category.slug}`}
+                            className="group shrink-0"
+                        >
+                            <div className="relative w-[320px] aspect-4/3 rounded-lg overflow-hidden bg-neutral-200">
+                                <Image
+                                    src={category.image}
+                                    alt={category.name}
+                                    fill
+                                    sizes="320px"
+                                    className="object-cover transition-transform duration-500 ease-out group-hover:scale-105"
+                                />
+                            </div>
+
+                            <p className="mt-4 text-sm uppercase tracking-wider font-bold text-neutral-900">
                                 {category.name}
-                            </h3>
-                        </div>
-                    </Link>
-                ))}
+                            </p>
+                        </Link>
+                    ))}
+                </div>
             </div>
         </section>
     );

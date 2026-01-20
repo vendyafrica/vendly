@@ -1,62 +1,23 @@
-import { StorefrontHeader } from "./components/header";
-import { FeaturedSection } from "./components/featured";
 import { ProductGrid } from "./components/product-grid";
 import { StorefrontFooter } from "./components/footer";
-import { Hero } from "./components/hero";
 import { Categories } from "./components/categories";
-import { StoreThemeProvider } from "../../components/theme-provider";
-import { FloatingThemeSwitcher } from "../../components/theme-switcher";
-import { cn, themeClasses } from "../../lib/theme-utils";
-import { MINIMAL_STORE } from "../../data/sample-stores";
-
-const SAMPLE_STORE_CONFIG = MINIMAL_STORE;
+import { Hero } from "./components/hero";
 
 export default async function StorefrontHomePage() {
-  const isGalleryMode = SAMPLE_STORE_CONFIG.defaultView === "gallery";
-
-  if (isGalleryMode) {
-    return (
-      <StoreThemeProvider
-        defaultVariant={SAMPLE_STORE_CONFIG.themeVariant}
-        storeId={SAMPLE_STORE_CONFIG.id}
-      >
-        <FloatingThemeSwitcher />
-      </StoreThemeProvider>
-    )
-  }
-
   return (
-    <StoreThemeProvider
-      defaultVariant={SAMPLE_STORE_CONFIG.themeVariant}
-      storeId={SAMPLE_STORE_CONFIG.id}
-    >
-      <div className={cn("min-h-screen", themeClasses.background.default)}>
-        <StorefrontHeader config={SAMPLE_STORE_CONFIG.content.header} />
-
-        <Hero config={SAMPLE_STORE_CONFIG.content.hero} />
-
-        <div className="max-w-7xl mx-auto px-6 py-12">
-          <Categories config={SAMPLE_STORE_CONFIG.content.categories} />
-
-          <h3
-            className={cn(
-              "text-lg font-semibold m-8",
-              themeClasses.text.default,
-            )}
-          >
-            All Products
-          </h3>
-          <ProductGrid />
-
-          <div className="my-20" />
-
-          <FeaturedSection config={SAMPLE_STORE_CONFIG.content.featured} />
+    <div className="min-h-screen">
+      <Hero />
+      <div className="w-full">
+        <Categories />
+        <div className="px-8">
+           <h3 className="text-lg font-semibold my-8 text-neutral-900">
+             All Products
+           </h3>
+           <ProductGrid />
         </div>
-
-        <StorefrontFooter config={SAMPLE_STORE_CONFIG.content.footer} />
-
-        <FloatingThemeSwitcher />
+        <div className="my-20" />
       </div>
-    </StoreThemeProvider>
+      <StorefrontFooter />
+    </div>
   );
 }

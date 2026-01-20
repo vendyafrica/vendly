@@ -1,6 +1,3 @@
-import { Card } from "@vendly/ui/components/card";
-import { HugeiconsIcon } from "@hugeicons/react";
-import { StarIcon, HeartAddIcon } from "@hugeicons/core-free-icons";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -12,50 +9,36 @@ interface ProductCardProps {
     rating: number;
 }
 
-export function ProductCard({ id, title, price, image, rating }: ProductCardProps) {
-    return (
-        <Link href={`/store/products/${id}`} className="flex flex-col group">
-            {/* Image / Media */}
-            <Card className="relative aspect-square overflow-hidden rounded-xl transition-shadow hover:shadow-md cursor-pointer border-none bg-[#F2F0EA]">
-                <Image
-                    src={image}
-                    alt={title}
-                    fill
-                    className="object-cover transition-transform duration-500 group-hover:scale-105"
-                />
+export function ProductCard({ id, title, price, image }: ProductCardProps) {
+  return (
+    <Link href={`/store/products/${id}`} className="group block break-inside-avoid mb-8">
+      <div className="relative overflow-hidden rounded-none border-none bg-[#F2F0EA]">
+        <Image
+          src={image}
+          alt={title}
+          width={500}
+          height={500}
+          className="w-full h-auto aspect-3/4 md:aspect-4/5 object-cover transition-transform duration-500 ease-out group-hover:scale-105"
+        />
 
-                {/* Wishlist button */}
-                <button
-                    className="absolute top-3 right-3 z-10 rounded-full bg-white/80 p-2 backdrop-blur-sm
-                               transition-all hover:bg-white cursor-pointer opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0 duration-300"
-                    aria-label="Add to wishlist"
-                >
-                    <HugeiconsIcon
-                        icon={HeartAddIcon}
-                        className="w-5 h-5 text-gray-600 transition-colors hover:text-red-500"
-                    />
-                </button>
-            </Card>
+        <div className="absolute bottom-3 left-3">
+          <span className="
+            inline-block
+            rounded-sm
+            bg-neutral-300/50 text-neutral-900/80 backdrop-blur-sm
+            px-3 py-1
+            text-sm font-semibold
+          ">
+            {price}
+          </span>
+        </div>
+      </div>
 
-            {/* Details */}
-            <div className="mt-4 space-y-1">
-                <div className="flex justify-between items-start gap-2">
-                    <div className="flex flex-col">
-                        <h3 className="text-base font-medium leading-tight text-neutral-900 group-hover:text-neutral-700 transition-colors">
-                            {title}
-                        </h3>
-                        <p className="text-sm font-semibold text-neutral-900 mt-1">{price}</p>
-                    </div>
-
-                    <div className="flex items-center gap-1 text-xs font-medium text-neutral-600 bg-neutral-100 px-2 py-1 rounded-full">
-                        <HugeiconsIcon
-                            icon={StarIcon}
-                            className="w-3 h-3 text-orange-400 fill-orange-400"
-                        />
-                        <span>{rating}</span>
-                    </div>
-                </div>
-            </div>
-        </Link>
-    );
+      <div className="mt-3">
+        <h3 className="text-sm md:text-base font-medium text-neutral-800 leading-snug">
+          {title}
+        </h3>
+      </div>
+    </Link>
+  );
 }

@@ -1,20 +1,20 @@
-
 import type { ReactNode } from "react";
+import { StorefrontHeader } from "./components/header"; // Adjust path as needed
 
-interface StorefrontLayoutProps {
-    children: ReactNode;
-    params: Promise<{ storefront: string }>;
-}
+export default function StorefrontLayout({
+  children,
+}: {
+  children: ReactNode;
+}) {
+  return (
+    <div className="relative min-h-screen bg-[#F9F9F7] antialiased">
+      
+      <StorefrontHeader />
 
-export default async function StorefrontLayout({
-    children,
-    params
-}: StorefrontLayoutProps) {
-    const { storefront } = await params;
+      <main className="flex flex-col w-full">
+        {children}
+      </main>
 
-    return (
-        <div className="min-h-screen bg-[#FAF9F6]" data-storefront={storefront}>
-            {children}
-        </div>
-    );
+    </div>
+  );
 }

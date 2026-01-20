@@ -3,173 +3,34 @@
 import { useState } from "react";
 import Link from "next/link";
 import { HugeiconsIcon } from "@hugeicons/react";
-import {
-    ShoppingBag02Icon,
-    UserIcon,
-    Menu01Icon,
-    Cancel01Icon,
-    StarIcon,
-} from "@hugeicons/core-free-icons";
-import { Niconne } from 'next/font/google';
-import { StoreHeaderConfig } from "../../../types/store-config";
-import { cn, themeClasses, animations } from "../../../lib/theme-utils";
+import { ShoppingBag02Icon, UserIcon, StarIcon, Cancel01Icon } from "@hugeicons/core-free-icons";
+import { Button } from "@vendly/ui/components/button";
 
-const niconne = Niconne({
-    weight: ['400'],
-    subsets: ['latin'],
-    display: 'swap',
-});
-
-interface StorefrontHeaderProps {
-    config: StoreHeaderConfig;
-}
-
-export function StorefrontHeader({ config }: StorefrontHeaderProps) {
+export function StorefrontHeader() {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
-    const { storeName, navLinks } = config;
 
     return (
-        <>
-            <header className={cn(themeClasses.background.card, "border-b", themeClasses.border.default)}>
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="flex items-center justify-between h-20">
-                        {/* Left: Logo + Desktop Nav */}
-                        <div className="flex items-center">
-                            <nav className="hidden md:block">
-                                <ul className="flex space-x-4">
-                                    {navLinks.map((link) => (
-                                        <li key={link.href}>
-                                            <Link
-                                                href={link.href}
-                                                className={cn(
-                                                    "text-sm",
-                                                    themeClasses.text.default,
-                                                    themeClasses.hover.accent,
-                                                    animations.transition
-                                                )}
-                                            >
-                                                {link.label}
-                                            </Link>
-                                        </li>
-                                    ))}
-                                </ul>
-                            </nav>
-                        </div>
+        <header className="fixed top-0 left-0 right-0 z-50 bg-transparent transition-all duration-300">
+            <div className="max-w-[1440px] mx-auto px-6 md:px-12">
+                <div className="flex items-center justify-between h-24">
+                    
+                    <Link href="/" className="text-white font-serif text-2xl tracking-tight">
+                        Asird
+                    </Link>
 
-                        <Link
-                            href="/"
-                            className={cn(
-                                niconne.className,
-                                "text-3xl font-semibold",
-                                themeClasses.text.primary,
-                                themeClasses.hover.accent,
-                                animations.transition
-                            )}
-                        >
-                            {storeName}
-                        </Link>
-
-                        {/* Right: Icons + Mobile Menu Button */}
-                        <div className="flex items-center space-x-6">
-                            <Link 
-                                href="/account" 
-                                className={cn(
-                                    themeClasses.text.default,
-                                    themeClasses.hover.accent,
-                                    animations.transition
-                                )}
-                            >
-                                <HugeiconsIcon icon={UserIcon} size={19} />
-                            </Link>
-
-                            <Link 
-                                href="/cart" 
-                                className={cn(
-                                    themeClasses.text.default,
-                                    themeClasses.hover.accent,
-                                    animations.transition
-                                )}
-                            >
-                                <HugeiconsIcon icon={ShoppingBag02Icon} size={19} />
-                            </Link>
-
-                            <Link 
-                                href="/wishlist" 
-                                className={cn(
-                                    themeClasses.text.default,
-                                    themeClasses.hover.accent,
-                                    animations.transition
-                                )}
-                            >
-                                <HugeiconsIcon icon={StarIcon} size={19} />
-                            </Link>
-
-                            <button
-                                className={cn(
-                                    "md:hidden",
-                                    themeClasses.text.default,
-                                    themeClasses.hover.accent,
-                                    animations.transition
-                                )}
-                                onClick={() => setIsMenuOpen(true)}
-                            >
-                                <HugeiconsIcon icon={Menu01Icon} size={19} />
-                            </button>
-                        </div>
+                    <div className="flex items-center space-x-3">
+                        <Button variant="ghost" size="icon" className="bg-white/10 backdrop-blur-md text-white border border-white/20 rounded-full hover:bg-white/20 transition-all">
+                            <HugeiconsIcon icon={UserIcon} size={20} />
+                        </Button>
+                        <Button variant="ghost" size="icon" className="bg-white/10 backdrop-blur-md text-white border border-white/20 rounded-full hover:bg-white/20 transition-all">
+                            <HugeiconsIcon icon={ShoppingBag02Icon} size={20} />
+                        </Button>
+                        <Button variant="ghost" size="icon" className="bg-white/10 backdrop-blur-md text-white border border-white/20 rounded-full hover:bg-white/20 transition-all">
+                            <HugeiconsIcon icon={StarIcon} size={20} />
+                        </Button>
                     </div>
                 </div>
-            </header>
-
-            {/* Mobile Menu Overlay */}
-            {isMenuOpen && (
-                <div className={cn(
-                    "fixed inset-0 z-50 flex flex-col",
-                    themeClasses.background.card
-                )}>
-                    <div className={cn(
-                        "flex justify-between items-center p-6 border-b",
-                        themeClasses.border.default
-                    )}>
-                        <Link 
-                            href="/" 
-                            className={cn(
-                                "text-xl font-bold items-start",
-                                themeClasses.text.primary
-                            )}
-                        >
-                            {storeName}
-                        </Link>
-                        <button
-                            onClick={() => setIsMenuOpen(false)}
-                            className={cn(
-                                themeClasses.text.muted,
-                                themeClasses.hover.accent,
-                                animations.transition
-                            )}
-                        >
-                            <HugeiconsIcon icon={Cancel01Icon} size={20} />
-                        </button>
-                    </div>
-
-                    <nav className="flex-1 flex flex-col items-center justify-center space-y-10">
-                        {navLinks.map((link) => (
-                            <Link
-                                key={link.href}
-                                href={link.href}
-                                onClick={() => setIsMenuOpen(false)}
-                                className={cn(
-                                    "text-3xl font-medium",
-                                    themeClasses.text.default,
-                                    themeClasses.hover.primary,
-                                    animations.transition
-                                )}
-                            >
-                                {link.label}
-                            </Link>
-                        ))}
-                    </nav>
-                </div>
-            )}
-        </>
+            </div>
+        </header>
     );
 }
