@@ -1,71 +1,53 @@
-// Utility function to merge classes
 export function cn(...classes: (string | undefined | null | boolean)[]) {
-  return classes.filter(Boolean).join(' ');
+  return classes.filter(Boolean).join(" ");
 }
 
-// Theme-aware class generators
 export const themeClasses = {
-  // Background variants
   background: {
-    default: "bg-[var(--color-background)] text-[var(--color-foreground)]",
-    muted: "bg-[var(--color-muted)] text-[var(--color-muted-foreground)]",
-    card: "bg-[var(--color-card)] text-[var(--color-card-foreground)]",
-    accent: "bg-[var(--color-accent)] text-[var(--color-accent-foreground)]",
-    primary: "bg-[var(--color-primary)] text-[var(--color-primary-foreground)]",
-    secondary: "bg-[var(--color-secondary)] text-[var(--color-secondary-foreground)]",
+    default: "bg-[var(--color-background)] text-[var(--color-text)]",
+    card: "bg-[var(--color-background)] text-[var(--color-text)]",
+    muted: "bg-[color-mix(in srgb,var(--color-background) 92%,#000)] text-[color-mix(in srgb,var(--color-text) 70%,#000)]",
+    primary: "bg-[var(--button-bg)] text-[var(--button-text)]",
   },
-  
-  // Text variants
+
   text: {
-    default: "text-[var(--color-foreground)]",
-    muted: "text-[var(--color-muted-foreground)]",
-    primary: "text-[var(--color-primary)]",
-    secondary: "text-[var(--color-secondary)]",
-    accent: "text-[var(--color-accent-foreground)]",
+    default: "text-[var(--color-text)]",
+    muted: "text-[color-mix(in srgb,var(--color-text) 75%,#000)]",
+    primary: "text-[var(--color-text)]",
   },
-  
-  // Border variants
+
   border: {
-    default: "border-[var(--color-border)]",
-    muted: "border-[var(--color-muted)]",
-    accent: "border-[var(--color-accent)]",
-    primary: "border-[var(--color-primary)]",
+    default: "border-[color-mix(in srgb,var(--color-text) 35%,#000)]",
+    primary: "border-[var(--button-bg)]",
   },
-  
-  // Button variants
+
   button: {
-    default: "bg-[var(--color-primary)] text-[var(--color-primary-foreground)] hover:opacity-90",
-    secondary: "bg-[var(--color-secondary)] text-[var(--color-secondary-foreground)] hover:bg-[var(--color-accent)]",
-    outline: "border border-[var(--color-border)] bg-transparent hover:bg-[var(--color-accent)] hover:text-[var(--color-accent-foreground)]",
-    ghost: "bg-transparent hover:bg-[var(--color-accent)] hover:text-[var(--color-accent-foreground)]",
-    destructive: "bg-[var(--color-destructive)] text-[var(--color-destructive-foreground)] hover:opacity-90",
+    default: "bg-[var(--button-bg)] text-[var(--button-text)] hover:bg-[var(--button-hover-bg)] hover:text-[var(--button-hover-text)] rounded-[var(--button-radius)] transition-colors duration-200",
+    outline: "border border-[var(--button-bg)] bg-transparent text-[var(--button-bg)] hover:bg-[var(--button-bg)] hover:text-[var(--button-text)] rounded-[var(--button-radius)] transition-colors duration-200",
+    ghost: "bg-transparent text-[var(--button-bg)] hover:bg-[var(--button-bg)] hover:text-[var(--button-text)] rounded-[var(--button-radius)] transition-colors duration-200",
   },
-  
-  // Interactive states
+
   hover: {
-    accent: "hover:bg-[var(--color-accent)] hover:text-[var(--color-accent-foreground)]",
-    primary: "hover:bg-[var(--color-primary)] hover:text-[var(--color-primary-foreground)]",
-    muted: "hover:bg-[var(--color-muted)]",
+    accent: "hover:bg-[var(--button-bg)] hover:text-[var(--button-text)]",
+    primary: "hover:bg-[var(--button-bg)] hover:text-[var(--button-text)]",
+    muted: "hover:bg-[color-mix(in srgb,var(--color-background) 88%,#000)]",
   },
-  
-  // Focus states
+
   focus: {
-    ring: "focus:outline-none focus:ring-2 focus:ring-[var(--color-ring)] focus:ring-offset-2",
-    border: "focus:border-[var(--color-primary)]",
+    ring: "focus:outline-none focus:ring-2 focus:ring-[var(--button-bg)] focus:ring-offset-2",
+    border: "focus:border-[var(--button-bg)]",
   },
-  
-  // Common patterns
-  card: "rounded-[var(--radius)] border border-[var(--color-border)] bg-[var(--color-card)] text-[var(--color-card-foreground)]",
-  input: "border border-[var(--color-border)] bg-[var(--color-input)] text-[var(--color-foreground)] rounded-[var(--radius)]",
+
+  card: "rounded-[var(--button-radius)] border border-[color-mix(in srgb,var(--color-text) 35%,#000)] bg-[var(--color-background)] text-[var(--color-text)]",
+  input: "border border-[color-mix(in srgb,var(--color-text) 35%,#000)] bg-[var(--color-background)] text-[var(--color-text)] rounded-[var(--button-radius)]",
   shadow: {
-    sm: "shadow-[var(--shadow-sm)]",
-    base: "shadow-[var(--shadow-base)]",
-    md: "shadow-[var(--shadow-md)]",
-    lg: "shadow-[var(--shadow-lg)]",
+    sm: "shadow-sm",
+    base: "shadow",
+    md: "shadow-md",
+    lg: "shadow-lg",
   },
 } as const;
 
-// Generate theme-aware classes based on variant
 export function getThemeClasses(
   type: keyof typeof themeClasses,
   variant: string = "default",
@@ -75,10 +57,10 @@ export function getThemeClasses(
   if (typeof baseClasses === "string") {
     return cn(baseClasses, additionalClasses);
   }
-  
-  const variantClasses = (baseClasses as Record<string, string>)[variant] || 
-                        (baseClasses as Record<string, string>).default || "";
-  
+
+  const variantClasses = (baseClasses as Record<string, string>)[variant] ||
+    (baseClasses as Record<string, string>).default || "";
+
   return cn(variantClasses, additionalClasses);
 }
 

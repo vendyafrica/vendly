@@ -69,6 +69,7 @@ export interface StoreConfiguration {
   name: string;
   domain?: string;
   themeVariant: ThemeVariant;
+  defaultView?: "grid" | "gallery";
   content: StoreContent;
   createdAt?: Date;
   updatedAt?: Date;

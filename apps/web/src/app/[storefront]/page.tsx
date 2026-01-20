@@ -12,6 +12,19 @@ import { MINIMAL_STORE } from "../../data/sample-stores";
 const SAMPLE_STORE_CONFIG = MINIMAL_STORE;
 
 export default async function StorefrontHomePage() {
+  const isGalleryMode = SAMPLE_STORE_CONFIG.defaultView === "gallery";
+
+  if (isGalleryMode) {
+    return (
+      <StoreThemeProvider
+        defaultVariant={SAMPLE_STORE_CONFIG.themeVariant}
+        storeId={SAMPLE_STORE_CONFIG.id}
+      >
+        <FloatingThemeSwitcher />
+      </StoreThemeProvider>
+    )
+  }
+
   return (
     <StoreThemeProvider
       defaultVariant={SAMPLE_STORE_CONFIG.themeVariant}

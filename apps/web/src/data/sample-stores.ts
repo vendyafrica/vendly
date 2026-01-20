@@ -3,7 +3,8 @@ import { StoreConfiguration } from "../types/store-config";
 export const MINIMAL_STORE: StoreConfiguration = {
     id: "minimal_store_001",
     name: "Minimalist Boutique",
-    themeVariant: "minimal",
+    themeVariant: "default",
+    defaultView: "gallery",
     domain: "minimal.vendly.com",
     content: {
         header: {
@@ -58,7 +59,7 @@ export const MINIMAL_STORE: StoreConfiguration = {
 export const WARM_STORE: StoreConfiguration = {
     id: "warm_store_001",
     name: "Cozy Corner",
-    themeVariant: "warm",
+    themeVariant: "harvest",
     domain: "cozy.vendly.com",
     content: {
         header: {
@@ -116,7 +117,7 @@ export const WARM_STORE: StoreConfiguration = {
 export const COOL_STORE: StoreConfiguration = {
     id: "cool_store_001",
     name: "Cool",
-    themeVariant: "cool",
+    themeVariant: "glacier",
     domain: "cool.vendly.com",
     content: {
         header: {

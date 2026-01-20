@@ -118,7 +118,7 @@ export function useTheme(): ThemeContextType {
 
 // Theme-aware components
 export interface ThemedProps extends React.HTMLAttributes<HTMLDivElement> {
-  variant?: "default" | "muted" | "accent";
+  variant?: "default" | "outline" | "ghost";
   asChild?: boolean;
 }
 
@@ -130,9 +130,9 @@ export function ThemedContainer({
 }: ThemedProps) {
   const baseClasses = "transition-colors duration-200";
   const variantClasses = {
-    default: "bg-[var(--color-background)] text-[var(--color-foreground)]",
-    muted: "bg-[var(--color-muted)] text-[var(--color-muted-foreground)]",
-    accent: "bg-[var(--color-accent)] text-[var(--color-accent-foreground)]",
+    default: "bg-[var(--color-background)] text-[var(--color-text)]",
+    outline: "border border-[var(--color-text)] bg-[var(--color-background)] text-[var(--color-text)]",
+    ghost: "bg-transparent text-[var(--color-text)]",
   };
 
   return (
@@ -151,11 +151,11 @@ export function ThemedButton({
   className = "",
   ...props
 }: ThemedProps & React.ButtonHTMLAttributes<HTMLButtonElement>) {
-  const baseClasses = "px-4 py-2 rounded-[var(--radius)] transition-all duration-200 font-medium focus:outline-none focus:ring-2 focus:ring-[var(--color-ring)] focus:ring-offset-2";
+  const baseClasses = "px-4 py-2 transition-all duration-200 font-medium focus:outline-none focus:ring-2 focus:ring-offset-2";
   const variantClasses = {
-    default: "bg-[var(--color-primary)] text-[var(--color-primary-foreground)] hover:opacity-90",
-    muted: "bg-[var(--color-muted)] text-[var(--color-muted-foreground)] hover:bg-[var(--color-accent)]",
-    accent: "bg-[var(--color-accent)] text-[var(--color-accent-foreground)] hover:bg-[var(--color-primary)] hover:text-[var(--color-primary-foreground)]",
+    default: "bg-[var(--button-bg)] text-[var(--button-text)] hover:bg-[var(--button-hover-bg)] hover:text-[var(--button-hover-text)] rounded-[var(--button-radius)]",
+    outline: "border-2 border-[var(--button-bg)] bg-transparent text-[var(--button-bg)] hover:bg-[var(--button-bg)] hover:text-[var(--button-text)] rounded-[var(--button-radius)]",
+    ghost: "bg-transparent text-[var(--button-bg)] hover:bg-[var(--button-bg)] hover:text-[var(--button-text)] rounded-[var(--button-radius)]",
   };
 
   return (
@@ -173,7 +173,7 @@ export function ThemedCard({
   className = "",
   ...props
 }: ThemedProps) {
-  const baseClasses = "rounded-[var(--radius)] border border-[var(--color-border)] shadow-[var(--shadow-sm)] bg-[var(--color-card)] text-[var(--color-card-foreground)] transition-shadow duration-200 hover:shadow-[var(--shadow-md)]";
+  const baseClasses = "rounded-[var(--button-radius)] border border-[var(--color-text)] bg-[var(--color-background)] text-[var(--color-text)] transition-shadow duration-200 shadow-sm hover:shadow-md";
 
   return (
     <div 

@@ -12,9 +12,6 @@ interface CategoriesProps {
 export function Categories({ config }: CategoriesProps) {
     const { title, items } = config;
 
-    // Default categorized images if none provided (fallback or just rely on config)
-    // For now, we rely on config.
-
     return (
         <section className="py-16">
             <h2 className={cn("text-2xl font-light mb-8", themeClasses.text.default)}>{title}</h2>

@@ -68,10 +68,10 @@ export function ThemeSwitcher({ className, showLabels = true }: ThemeSwitcherPro
     <div className={cn("flex flex-col gap-4", className)}>
       {showLabels && (
         <div>
-          <h3 className={cn("text-lg font-semibold mb-2", themeClasses.text.default)}>
+          <h3 className="text-lg font-semibold mb-2 text-(--color-text)">
             Theme Switcher
           </h3>
-          <p className={cn("text-sm", themeClasses.text.muted)}>
+          <p className="text-sm text-(--color-text) opacity-70">
             Switch between different theme variants to see the storefront adapt
           </p>
         </div>
@@ -86,8 +86,8 @@ export function ThemeSwitcher({ className, showLabels = true }: ThemeSwitcherPro
               "flex flex-col items-center p-4 rounded-lg border-2 transition-all duration-200",
               "hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2",
               variant === theme.key
-                ? cn(themeClasses.border.primary, themeClasses.background.accent)
-                : cn(themeClasses.border.default, themeClasses.background.card, "hover:border-primary")
+                ? "border-(--button-bg) bg-(--color-background)"
+                : "border-gray-200 bg-white hover:border-(--button-bg)"
             )}
           >
             {/* Theme Preview Color Dots */}

@@ -1,75 +1,19 @@
+// Simplified theme structure - only button styles, fonts, and background colors
+export interface ThemeButton {
+  backgroundColor: string;
+  textColor: string;
+  hoverBackgroundColor: string;
+  hoverTextColor: string;
+  borderRadius: string;
+}
+
 export interface ThemeColors {
-  // Primary brand colors
-  primary: string;
-  primaryForeground: string;
-  secondary: string;
-  secondaryForeground: string;
-  accent: string;
-  accentForeground: string;
-  
-  // Background colors
   background: string;
-  foreground: string;
-  muted: string;
-  mutedForeground: string;
-  
-  // Interactive elements
-  card: string;
-  cardForeground: string;
-  border: string;
-  input: string;
-  ring: string;
-  
-  // State colors
-  destructive: string;
-  destructiveForeground: string;
-  success: string;
-  successForeground: string;
-  warning: string;
-  warningForeground: string;
+  textColor: string;
 }
 
 export interface ThemeTypography {
-  fontFamily: "sans" | "serif" | "mono";
-  fontSize: {
-    xs: string;
-    sm: string;
-    base: string;
-    lg: string;
-    xl: string;
-    "2xl": string;
-    "3xl": string;
-    "4xl": string;
-    "5xl": string;
-    "6xl": string;
-  };
-  lineHeight: {
-    tight: string;
-    snug: string;
-    normal: string;
-    relaxed: string;
-    loose: string;
-  };
-  letterSpacing: {
-    tighter: string;
-    tight: string;
-    normal: string;
-    wide: string;
-    wider: string;
-    widest: string;
-  };
-}
-
-export interface ThemeSpacing {
-  radius: string;
-  shadow: {
-    sm: string;
-    base: string;
-    md: string;
-    lg: string;
-    xl: string;
-    "2xl": string;
-  };
+  fontFamily: string;
 }
 
 export interface StoreTheme {
@@ -77,11 +21,9 @@ export interface StoreTheme {
   name: string;
   colors: ThemeColors;
   typography: ThemeTypography;
-  spacing: ThemeSpacing;
-  customCSS?: string;
+  button: ThemeButton;
 }
 
-// Content Configuration Types
 export interface StoreHeaderConfig {
   storeName: string;
   navLinks: Array<{
@@ -155,10 +97,8 @@ export interface StoreConfiguration {
   updatedAt?: Date;
 }
 
-// Theme variants - 8 comprehensive schemes
 export type ThemeVariant = "default" | "glacier" | "harvest" | "lavender" | "brutalist" | "obsidian" | "orchid" | "solar";
 
-// Component theme props
 export interface ThemeableProps {
   variant?: "default" | "secondary" | "outline" | "ghost";
   size?: "sm" | "default" | "lg";
