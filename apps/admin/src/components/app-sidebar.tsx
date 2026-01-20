@@ -82,8 +82,8 @@ const tenantAdminItems: SidebarNavItem[] = [
     icon: CustomerServiceIcon,
   },
   {
-    title: "Store Manager",
-    url: "/store",
+    title: "Studio",
+    url: "/studio",
     icon: Store01Icon,
   },
 ];
