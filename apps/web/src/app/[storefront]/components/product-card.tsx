@@ -2,23 +2,32 @@ import Image from "next/image";
 import Link from "next/link";
 
 interface ProductCardProps {
-    id: number;
-    title: string;
-    price: string;
-    image: string;
-    rating: number;
+  title: string;
+  slug: string;
+  price: string;
+  image: string;
+  rating: number;
+  index?: number;
 }
 
-export function ProductCard({ id, title, price, image }: ProductCardProps) {
+const aspectVariants = [
+  "aspect-[3/4]",
+  "aspect-[4/5]",
+  "aspect-[5/6]",
+  "aspect-[1/1]",
+];
+
+export function ProductCard({ title, slug, price, image, index = 0 }: ProductCardProps) {
+  const aspectClass = aspectVariants[index % aspectVariants.length];
   return (
-    <Link href={`/store/products/${id}`} className="group block break-inside-avoid mb-8">
-      <div className="relative overflow-hidden rounded-none border-none bg-[#F2F0EA]">
+    <Link href={`/store/products/${slug}`} className="group block break-inside-avoid mb-8">
+      <div className={`relative overflow-hidden rounded-none border-none bg-[#F2F0EA] ${aspectClass}`}>
         <Image
           src={image}
           alt={title}
           width={500}
           height={500}
-          className="w-full h-auto aspect-3/4 md:aspect-4/5 object-cover transition-transform duration-500 ease-out group-hover:scale-105"
+          className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-105"
         />
 
         <div className="absolute bottom-3 left-3">

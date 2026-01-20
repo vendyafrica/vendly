@@ -1,36 +1,22 @@
-import { StorefrontHeader } from "../../components/header";
-import { StorefrontFooter } from "../../components/footer";
 import { ProductDetails } from "../../components/product-details";
-import { FeaturedSection } from "../../components/featured";
-import { StoreThemeProvider } from "../../../../components/theme-provider";
-import { FloatingThemeSwitcher } from "../../../../components/theme-switcher";
-import { cn, themeClasses } from "../../../../lib/theme-utils";
-import { COOL_STORE } from "../../../../data/sample-stores";
+import { ProductGridReveal } from "../../components/product-grid-reveal";
 
-export default function ProductPage() {
-    const STORE_CONFIG = COOL_STORE;
+interface PageProps {
+    params: Promise<{
+        storefront: string;
+        slug: string;
+    }>;
+}
+
+export default async function ProductPage({ params }: PageProps) {
+    const { slug } = await params;
 
     return (
-        <StoreThemeProvider
-            defaultVariant={STORE_CONFIG.themeVariant}
-            storeId={STORE_CONFIG.id}
-        >
-            <div className={cn("min-h-screen", themeClasses.background.default)}>
-                <StorefrontHeader config={STORE_CONFIG.content.header} />
-
-                <div className="max-w-7xl mx-auto px-6 py-12">
-                    <ProductDetails />
-
-                    <div className="my-24" />
-
-                    {/* Related / featured products */}
-                    <FeaturedSection config={STORE_CONFIG.content.featured} />
-                </div>
-
-                <StorefrontFooter config={STORE_CONFIG.content.footer} />
-
-                <FloatingThemeSwitcher />
+        <main className="bg-white min-h-screen">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-20">
+                <ProductDetails slug={slug} />
             </div>
-        </StoreThemeProvider>
+            <ProductGridReveal />
+        </main>
     );
 }
