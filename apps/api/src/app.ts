@@ -2,9 +2,7 @@ import express, { Express, Request, Response } from "express";
 import cors from "cors";
 import { toNodeHandler } from "better-auth/node";
 import { auth } from "@vendly/auth";
-// import { authMiddleware } from "./middlewares/auth";
-
-// import { createTenantRouter } from "./modules/tenants/tenant-route";
+import onboardingRoutes from "./modules/onboarding/onboarding-routes";
 
 export function createApp(): Express {
   const app = express();
@@ -24,10 +22,12 @@ export function createApp(): Express {
         "https://admin.vendlyafrica.store",
         /\.vercel\.app$/,
         /\.vendlyafrica\.store$/,
+        /\.ngrok-free\.dev$/,
+        /\.ngrok\.io$/,
       ],
       credentials: true,
       methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
-      allowedHeaders: ["Content-Type", "Authorization","X-Request-With"],
+      allowedHeaders: ["Content-Type", "Authorization", "X-Request-With"],
     })
   );
 
@@ -36,9 +36,8 @@ export function createApp(): Express {
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
 
-  // app.use("/api/upload", imageUploadRouter);
-  // app.use("/api/storefront", createStorefrontRouter());
-  // app.use("/api/tenants", authMiddleware, createTenantRouter());
+  // Onboarding routes
+  app.use("/api/onboarding", onboardingRoutes);
 
   app.get("/", (_req, res) => {
     res.send("API is running");

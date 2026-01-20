@@ -7,7 +7,6 @@ import {
     index,
     unique,
     boolean,
-    jsonb,
     integer,
     numeric,
 } from "drizzle-orm/pg-core";
@@ -27,6 +26,7 @@ export const stores = pgTable(
         name: text("name").notNull(),
         slug: text("slug").notNull(),
         description: text("description"),
+        categories: text("categories").array().default([]),
 
         customDomain: text("custom_domain").unique(),
         domainVerified: boolean("domain_verified").default(false),
@@ -37,9 +37,6 @@ export const stores = pgTable(
         email: text("email"),
         phone: text("phone"),
         address: text("address"),
-
-        theme: jsonb("theme").default({}),
-        content: jsonb("content").default({}),
 
         createdAt: timestamp("created_at").defaultNow().notNull(),
         updatedAt: timestamp("updated_at")

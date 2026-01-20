@@ -66,7 +66,7 @@ const getProductData = (slug: string) => {
 export function ProductDetails({ slug }: ProductDetailsProps) {
     const product = getProductData(slug);
     const [quantity, setQuantity] = useState(1);
-    const [selectedColor, setSelectedColor] = useState("green");
+    // const [selectedColor, setSelectedColor] = useState("green");
 
 
     const hardcodedBrand = {
@@ -75,11 +75,11 @@ export function ProductDetails({ slug }: ProductDetailsProps) {
     };
     const hardcodedRating = 4.8;
     const hardcodedReviews = 124;
-    const hardcodedColors = [
-        { name: "green", class: "bg-[#5D6B35]" },
-        { name: "brown", class: "bg-[#5C5338]" },
-        { name: "dark-green", class: "bg-[#2A4B4E]" },
-    ];
+    // const hardcodedColors = [
+    //     { name: "green", class: "bg-[#5D6B35]" },
+    //     { name: "brown", class: "bg-[#5C5338]" },
+    //     { name: "dark-green", class: "bg-[#2A4B4E]" },
+    // ];
 
     if (!product) {
         return (
@@ -92,7 +92,7 @@ export function ProductDetails({ slug }: ProductDetailsProps) {
     const handleQuantityChange = (delta: number) => {
         setQuantity(prev => Math.max(1, prev + delta));
     };
-
+ 
     return (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-16 min-h-screen px-3 sm:px-4 md:px-8 bg-white">
 
@@ -188,7 +188,7 @@ export function ProductDetails({ slug }: ProductDetailsProps) {
 
                     <div className="w-full h-px bg-neutral-200" />
 
-                    <div>
+                    {/* <div>
                         <span className="text-xs font-semibold uppercase tracking-wider text-neutral-500 mb-3 block">Color — {selectedColor}</span>
                         <div className="flex flex-wrap gap-3">
                             {hardcodedColors.map((color) => (
@@ -202,7 +202,7 @@ export function ProductDetails({ slug }: ProductDetailsProps) {
                                 </button>
                             ))}
                         </div>
-                    </div>
+                    </div> */}
 
                     <div className="space-y-4 pt-4">
                         <div className="flex items-center gap-4">

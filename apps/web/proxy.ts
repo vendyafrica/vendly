@@ -60,7 +60,7 @@ export function proxy(req: NextRequest) {
     if (pathParts.length > 0) {
       const potentialSlug = pathParts[0];
       // Skip known routes that are not tenant slugs
-      const knownRoutes = new Set(['sell', 'api', 'admin', '_next', 'favicon.ico', 'images', 'fonts', 'plasmic-host', 'plasmic-demo']);
+      const knownRoutes = new Set(['sell', 'api', 'admin', '_next', 'favicon.ico', 'images', 'fonts', 'plasmic-host', 'plasmic-demo', 'onboarding', 'dashboard']);
       if (!knownRoutes.has(potentialSlug) && !potentialSlug.startsWith('_')) {
         // This could be a tenant slug - let it pass through to [subdomain] route
         return NextResponse.next();

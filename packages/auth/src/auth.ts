@@ -21,28 +21,15 @@ function extractNameFromEmail(email: string): string {
     .split(" ")[0];
 }
 
-const trustedOrigins = (request: Request | undefined) => {
-  const origins = [
-    "http://localhost:3000",
-    "http://localhost:4000",
-    "http://localhost:8000",
-    "https://harmonically-carpetless-janna.ngrok-free.dev",
-  ];
-
-  if (request) {
-    const origin = request.headers.get("origin");
-    if (origin) {
-      const isNgrok = /\.ngrok-free\.dev$/.test(origin) || /\.ngrok\.io$/.test(origin);
-      const isVercel = /\.vercel\.app$/.test(origin);
-      const isVendly = /\.vendlyafrica\.store$/.test(origin);
-      if (isNgrok || isVercel || isVendly) {
-        origins.push(origin);
-      }
-    }
-  }
-
-  return origins;
-};
+const trustedOrigins = [
+  "http://localhost:3000",
+  "http://localhost:4000",
+  "http://localhost:8000",
+  "https://harmonically-carpetless-janna.ngrok-free.dev",
+  "https://vendly-web.vercel.app",
+  "https://www.vendlyafrica.store",
+  "https://vendlyafrica.store",
+];
 
 export const auth = betterAuth({
   baseURL,

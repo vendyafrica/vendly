@@ -8,18 +8,17 @@ import {
     FieldLabel,
 } from "@vendly/ui/components/field";
 import { Input } from "@vendly/ui/components/input";
-import { Textarea } from "@vendly/ui/components/textarea";
 import { useOnboarding } from "../context/onboarding-context";
 
-export default function StoreInfo() {
-    const { data, saveStore, goBack, isLoading, error } = useOnboarding();
+export default function PersonalInfo() {
+    const { data, savePersonal, goBack, isLoading, error } = useOnboarding();
 
-    const [storeName, setStoreName] = useState(data.store?.storeName ?? "");
-    const [storeDescription, setStoreDescription] = useState(data.store?.storeDescription ?? "");
+    const [fullName, setFullName] = useState(data.personal?.fullName ?? "");
+    const [phoneNumber, setPhoneNumber] = useState(data.personal?.phoneNumber ?? "");
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        await saveStore({ storeName, storeDescription });
+        await savePersonal({ fullName, phoneNumber });
     };
 
     return (
@@ -28,10 +27,10 @@ export default function StoreInfo() {
                 {/* Header */}
                 <div className="space-y-1">
                     <h1 className="text-xl font-semibold">
-                        Tell us about your store
+                        Tell us about you
                     </h1>
                     <p className="text-sm text-muted-foreground">
-                        This helps us personalize your storefront
+                        This helps your customers reach you
                     </p>
                 </div>
 
@@ -43,30 +42,31 @@ export default function StoreInfo() {
 
                 <FieldGroup>
                     <Field>
-                        <FieldLabel htmlFor="storeName">
-                            Store name
+                        <FieldLabel htmlFor="fullName">
+                            Full Name
                         </FieldLabel>
                         <Input
-                            id="storeName"
+                            id="fullName"
                             type="text"
-                            placeholder="Acme Fashion"
+                            placeholder="Steve McQueen"
                             required
-                            value={storeName}
-                            onChange={(e) => setStoreName(e.target.value)}
+                            value={fullName}
+                            onChange={(e) => setFullName(e.target.value)}
                             className="focus-visible:border-primary/50 focus-visible:ring-primary/10"
                         />
                     </Field>
 
                     <Field>
-                        <FieldLabel htmlFor="storeDescription">
-                            Store description
+                        <FieldLabel htmlFor="phoneNumber">
+                            Phone Number
                         </FieldLabel>
-                        <Textarea
-                            id="storeDescription"
-                            placeholder="What do you sell? Tell your customers about your store..."
-                            rows={3}
-                            value={storeDescription}
-                            onChange={(e) => setStoreDescription(e.target.value)}
+                        <Input
+                            id="phoneNumber"
+                            placeholder="+254 700 000 000"
+                            type="tel"
+                            required
+                            value={phoneNumber}
+                            onChange={(e) => setPhoneNumber(e.target.value)}
                             className="focus-visible:border-primary/50 focus-visible:ring-primary/10"
                         />
                     </Field>
