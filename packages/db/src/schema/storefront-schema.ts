@@ -8,7 +8,6 @@ import {
     unique,
     boolean,
     integer,
-    numeric,
 } from "drizzle-orm/pg-core";
 
 import { tenants } from "./tenant-schema";
@@ -28,6 +27,8 @@ export const stores = pgTable(
         slug: text("slug").notNull(),
         description: text("description"),
         categories: text("categories").array().default([]),
+        storeRating: integer("store_rating").default(0),
+        storeRatingCount: integer("store_rating_count").default(0),
 
         customDomain: text("custom_domain").unique(),
         domainVerified: boolean("domain_verified").default(false),

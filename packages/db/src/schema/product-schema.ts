@@ -32,6 +32,8 @@ export const products = pgTable(
         quantity: integer("quantity").notNull().default(0),
 
         status: text("status").notNull().default("draft"),
+        rating: integer("rating").default(0),
+        ratingCount: integer("rating_count").default(0),
 
         source: text("source").notNull().default("manual"),
         sourceId: text("source_id"),
@@ -66,8 +68,9 @@ export const productVariants = pgTable(
         variantName: text("variant_name"),
         priceAmount: integer("price_amount").notNull(),
         currency: text("currency").default("KES"),
+        quantity: integer("quantity").notNull().default(0),
 
-        options: jsonb("options"),
+        options: jsonb("options").$type<{ size?: string; color?: string }>(),
 
         isActive: boolean("is_active").default(true),
         sortOrder: integer("sort_order").default(0),

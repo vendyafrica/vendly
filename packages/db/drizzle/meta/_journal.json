@@ -162,6 +162,13 @@
       "when": 1769006351703,
       "tag": "0022_next_miss_america",
       "breakpoints": true
+    },
+    {
+      "idx": 23,
+      "version": "7",
+      "when": 1769016065591,
+      "tag": "0023_lame_starbolt",
+      "breakpoints": true
     }
   ]
 }
