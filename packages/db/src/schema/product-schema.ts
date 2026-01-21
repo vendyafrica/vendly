@@ -59,13 +59,17 @@ export const products = pgTable(
 
         priceAmount: integer("price_amount").notNull().default(0),
         currency: text("currency").notNull().default("KES"),
+        quantity: integer("quantity").notNull().default(0),
+
+        // Product lifecycle status
+        status: text("status").notNull().default("draft"), // 'draft' | 'ready' | 'published'
 
         source: text("source").notNull().default("manual"),
         sourceId: text("source_id"),
         sourceUrl: text("source_url"),
 
         isFeatured: boolean("is_featured").default(false),
-        hasVariants: boolean("has_variants").default(false),
+        hasContentVariants: boolean("has_content_variants").default(false),
 
         viewCount: integer("view_count").default(0).notNull(),
 
@@ -75,6 +79,7 @@ export const products = pgTable(
     },
     (table) => [
         index("products_tenant_store_idx").on(table.tenantId, table.storeId),
+        index("products_status_idx").on(table.status),
     ]
 );
 
