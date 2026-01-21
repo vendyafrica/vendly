@@ -13,6 +13,7 @@ import {
 
 import { tenants } from "./tenant-schema";
 import { users } from "./auth-schema";
+import { storeCustomers } from "./customer-schema";
 
 
 export const stores = pgTable(
@@ -34,9 +35,9 @@ export const stores = pgTable(
         status: boolean("status").notNull().default(false),
         defaultCurrency: text("default_currency").default("KES").notNull(),
 
-        email: text("email"),
-        phone: text("phone"),
-        address: text("address"),
+        storeContactPhone: text("store_contact_phone"),
+        storeContactEmail: text("store_contact_email"),
+        storeAddress: text("store_address"),
 
         createdAt: timestamp("created_at").defaultNow().notNull(),
         updatedAt: timestamp("updated_at")
@@ -49,39 +50,6 @@ export const stores = pgTable(
         unique("stores_tenant_slug_unique").on(table.tenantId, table.slug),
         index("stores_tenant_idx").on(table.tenantId),
         index("stores_slug_idx").on(table.slug),
-    ]
-);
-
-export const storeCustomers = pgTable(
-    "store_customers",
-    {
-        id: uuid("id").primaryKey().defaultRandom(),
-        tenantId: uuid("tenant_id")
-            .notNull()
-            .references(() => tenants.id, { onDelete: "cascade" }),
-        storeId: uuid("store_id")
-            .notNull()
-            .references(() => stores.id, { onDelete: "cascade" }),
-        userId: text("user_id")
-            .notNull()
-            .references(() => users.id, { onDelete: "cascade" }),
-
-
-        totalOrders: integer("total_orders").default(0),
-        totalSpend: numeric("total_spend", { precision: 12, scale: 2 }).default("0"),
-        lastOrderAt: timestamp("last_order_at"),
-
-        createdAt: timestamp("created_at").defaultNow().notNull(),
-        updatedAt: timestamp("updated_at")
-            .defaultNow()
-            .$onUpdate(() => new Date())
-            .notNull(),
-    },
-    (table) => [
-        unique("store_customers_unique").on(table.storeId, table.userId),
-        index("store_customers_tenant_idx").on(table.tenantId),
-        index("store_customers_store_idx").on(table.storeId),
-        index("store_customers_user_idx").on(table.userId),
     ]
 );
 

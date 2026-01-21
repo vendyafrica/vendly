@@ -10,13 +10,9 @@ import {
 } from "drizzle-orm/pg-core";
 
 import { tenants } from "./tenant-schema";
-import { products, mediaObjects } from "./product-schema";
+import { products } from "./product-schema";
+import { mediaObjects } from "./media-schema";
 
-/**
- * Content Variants - AI-generated content representations of products
- * These are NOT SKU variants (size/color). They represent different
- * visual/content styles of the same product for storefront display.
- */
 export const contentVariants = pgTable(
     "content_variants",
     {
@@ -28,18 +24,14 @@ export const contentVariants = pgTable(
             .notNull()
             .references(() => products.id, { onDelete: "cascade" }),
 
-        // Link to the generated image stored in blob
         mediaId: uuid("media_id")
             .references(() => mediaObjects.id, { onDelete: "set null" }),
 
-        // AI-generated content
         caption: text("caption"),
+        
+        tone: text("tone").notNull(),
+        stylePrompt: text("style_prompt"),
 
-        // Variant metadata
-        tone: text("tone").notNull(), // 'minimal', 'bold', 'lifestyle', 'editorial'
-        stylePrompt: text("style_prompt"), // The prompt used to generate
-
-        // Status
         isActive: boolean("is_active").default(true).notNull(),
         sortOrder: integer("sort_order").default(0).notNull(),
 
@@ -56,7 +48,6 @@ export const contentVariants = pgTable(
     ]
 );
 
-// Relations
 export const contentVariantsRelations = relations(contentVariants, ({ one }) => ({
     tenant: one(tenants, {
         fields: [contentVariants.tenantId],
@@ -72,6 +63,5 @@ export const contentVariantsRelations = relations(contentVariants, ({ one }) => 
     }),
 }));
 
-// Type exports
 export type ContentVariant = typeof contentVariants.$inferSelect;
 export type NewContentVariant = typeof contentVariants.$inferInsert;

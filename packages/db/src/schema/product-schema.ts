@@ -13,35 +13,7 @@ import {
 
 import { tenants } from "./tenant-schema";
 import { stores } from "./storefront-schema";
-
-
-export const mediaObjects = pgTable(
-    "media_objects",
-    {
-        id: uuid("id").primaryKey().defaultRandom(),
-        tenantId: uuid("tenant_id")
-            .notNull()
-            .references(() => tenants.id, { onDelete: "cascade" }),
-
-        blobUrl: text("blob_url").notNull(),
-        blobPathname: text("blob_pathname").notNull(),
-        contentType: text("content_type").notNull(),
-
-        source: text("source").notNull().default("upload"),
-        sourceMediaId: text("source_media_id"),
-        sourceMetadata: jsonb("source_metadata"), // Instagram permalink, caption, etc.
-        isPublic: boolean("is_public").default(true).notNull(),
-
-        lastSyncedAt: timestamp("last_synced_at"), // For Instagram media sync tracking
-        createdAt: timestamp("created_at").defaultNow().notNull(),
-        updatedAt: timestamp("updated_at").defaultNow().$onUpdate(() => new Date()).notNull(),
-    },
-    (table) => [
-        index("media_objects_tenant_idx").on(table.tenantId),
-        index("media_objects_blob_pathname_idx").on(table.blobPathname),
-        index("media_objects_source_idx").on(table.source),
-    ]
-);
+import { mediaObjects } from "./media-schema";
 
 export const products = pgTable(
     "products",
@@ -54,15 +26,12 @@ export const products = pgTable(
             .notNull()
             .references(() => stores.id, { onDelete: "cascade" }),
 
-        title: text("title").notNull(),
-        description: text("description"),
-
+        productName: text("product_name").notNull(),
         priceAmount: integer("price_amount").notNull().default(0),
         currency: text("currency").notNull().default("KES"),
         quantity: integer("quantity").notNull().default(0),
 
-        // Product lifecycle status
-        status: text("status").notNull().default("draft"), // 'draft' | 'ready' | 'published'
+        status: text("status").notNull().default("draft"),
 
         source: text("source").notNull().default("manual"),
         sourceId: text("source_id"),
@@ -94,8 +63,7 @@ export const productVariants = pgTable(
             .notNull()
             .references(() => products.id, { onDelete: "cascade" }),
 
-        sku: text("sku"),
-        title: text("title"),
+        variantName: text("variant_name"),
         priceAmount: integer("price_amount").notNull(),
         currency: text("currency").default("KES"),
 
@@ -111,9 +79,7 @@ export const productVariants = pgTable(
             .notNull(),
     },
     (table) => [
-        unique("product_variants_tenant_sku_unique").on(table.tenantId, table.sku),
         index("product_variants_product_idx").on(table.productId),
-        index("product_variants_sku_idx").on(table.sku),
     ]
 );
 
@@ -146,7 +112,6 @@ export const productMedia = pgTable(
     ]
 );
 
-// Relations
 export const mediaObjectsRelations = relations(mediaObjects, ({ one, many }) => ({
     tenant: one(tenants, {
         fields: [mediaObjects.tenantId],
@@ -200,7 +165,7 @@ export const productMediaRelations = relations(productMedia, ({ one }) => ({
 }));
 
 
-// Type exports
+
 export type MediaObject = typeof mediaObjects.$inferSelect;
 export type NewMediaObject = typeof mediaObjects.$inferInsert;
 

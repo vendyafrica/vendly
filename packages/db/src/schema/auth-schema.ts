@@ -5,10 +5,9 @@ import {
     timestamp,
     boolean,
     index,
-    integer,
-    numeric
 } from "drizzle-orm/pg-core";
 import { tenantMemberships } from "./tenant-schema";
+
 
 
 export const users = pgTable("user", {
@@ -82,35 +81,6 @@ export const verification = pgTable(
     (table) => [index("verification_identifier_idx").on(table.identifier)],
 );
 
-export const platformRoles = pgTable(
-    "platform_roles",
-    {
-        userId: text("user_id").references(() => users.id, { onDelete: "cascade" }),
-        name: text("name").notNull(),
-        role: text("role").notNull(),
-        createdAt: timestamp("created_at").defaultNow().notNull(),
-        updatedAt: timestamp("updated_at")
-            .defaultNow()
-            .$onUpdate(() => new Date())
-            .notNull(),
-    },
-    (table) => [index("platform_roles_name_idx").on(table.name)],
-)
-
-export const platformCustomers = pgTable(
-    "platform_customers",
-    {
-        userId: text("user_id").references(() => users.id, { onDelete: "cascade" }),
-        lifetimeOrders: integer("lifetime_orders").default(0),
-        lifetimeSpend: numeric("lifetime_spend", { precision: 12, scale: 2 }).default("0"),
-        createdAt: timestamp("created_at").defaultNow().notNull(),
-        updatedAt: timestamp("updated_at")
-            .defaultNow()
-            .$onUpdate(() => new Date())
-            .notNull(),
-    },
-    (table) => [index("platform_customers_userId_idx").on(table.userId)],
-)
 
 export const usersRelations = relations(users, ({ many }) => ({
     tenantMemberships: many(tenantMemberships),

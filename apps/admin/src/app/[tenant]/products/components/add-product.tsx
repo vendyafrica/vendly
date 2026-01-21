@@ -81,10 +81,11 @@ export function AddProduct({ storeId, onProductCreated }: AddProductProps) {
 
     return (
         <Dialog open={open} onOpenChange={handleOpenChange}>
-            <DialogTrigger render={<Button />}>
+            <DialogTrigger render={<Button className="gap-2" />}>
                 <HugeiconsIcon icon={Add01Icon} className="size-4" />
                 Add Product
             </DialogTrigger>
+
             <DialogContent className="sm:max-w-md">
                 <DialogHeader>
                     <DialogTitle>Add New Product</DialogTitle>
@@ -169,7 +170,10 @@ export function AddProduct({ storeId, onProductCreated }: AddProductProps) {
                         )}
                     </div>
 
-                    <DialogFooter>
+                    <DialogFooter className="flex gap-2">
+                        <Button type="button" variant="outline" onClick={() => setOpen(false)}>
+                            Cancel
+                        </Button>
                         <Button type="submit" disabled={isSubmitting}>
                             {isSubmitting ? "Creating..." : "Create Product"}
                         </Button>

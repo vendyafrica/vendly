@@ -7,19 +7,11 @@ import {
     index,
     unique,
     jsonb,
-    pgEnum,
 } from "drizzle-orm/pg-core";
 import { users } from "./auth-schema";
+import { onboardingStepEnum } from "../enums/onboarding";
 
 
-// Onboarding step enum
-export const onboardingStepEnum = pgEnum("onboarding_step", [
-    "signup",
-    "personal",
-    "store",
-    "business",
-    "complete"
-]);
 
 export const tenants = pgTable(
     "tenants",
@@ -32,7 +24,6 @@ export const tenants = pgTable(
         plan: text("plan").default("free"),
         billingEmail: text("billing_email"),
 
-        // Onboarding tracking
         onboardingStep: onboardingStepEnum("onboarding_step").default("signup").notNull(),
         onboardingData: jsonb("onboarding_data").default({}),
 

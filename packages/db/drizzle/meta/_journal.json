@@ -155,6 +155,13 @@
       "when": 1768815498726,
       "tag": "0021_cloudy_wrecker",
       "breakpoints": true
+    },
+    {
+      "idx": 22,
+      "version": "7",
+      "when": 1769006351703,
+      "tag": "0022_next_miss_america",
+      "breakpoints": true
     }
   ]
 }

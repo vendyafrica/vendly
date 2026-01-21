@@ -14,12 +14,9 @@ import {
 import { tenants } from "./tenant-schema";
 import { users } from "./auth-schema";
 
-/**
- * Instagram Connections
- * Tracks Instagram account connections per tenant
- */
-export const instagramConnections = pgTable(
-    "instagram_connections",
+
+export const instagramAccounts = pgTable(
+    "instagram_accounts",
     {
         id: uuid("id").primaryKey().defaultRandom(),
         tenantId: uuid("tenant_id")
@@ -29,9 +26,9 @@ export const instagramConnections = pgTable(
             .notNull()
             .references(() => users.id, { onDelete: "cascade" }),
 
-        accountId: text("account_id").notNull(), // Instagram account ID
+        accountId: text("account_id").notNull(),
         username: text("username"),
-        accountType: text("account_type"), // 'BUSINESS' or 'CREATOR'
+        accountType: text("account_type"),
 
         isActive: boolean("is_active").default(true).notNull(),
         lastSyncedAt: timestamp("last_synced_at"),
@@ -43,60 +40,56 @@ export const instagramConnections = pgTable(
             .notNull(),
     },
     (table) => [
-        unique("instagram_connections_tenant_account_unique").on(
+        unique("instagram_accounts_tenant_account_unique").on(
             table.tenantId,
             table.accountId
         ),
-        index("instagram_connections_tenant_idx").on(table.tenantId),
-        index("instagram_connections_user_idx").on(table.userId),
+        index("instagram_accounts_tenant_idx").on(table.tenantId),
+        index("instagram_accounts_user_idx").on(table.userId),
     ]
 );
 
-/**
- * Instagram Sync Jobs
- * Tracks sync operations and their status
- */
 export const instagramSyncJobs = pgTable(
-    "instagram_sync_jobs",
+    "instagram_media_jobs",
     {
         id: uuid("id").primaryKey().defaultRandom(),
         tenantId: uuid("tenant_id")
             .notNull()
             .references(() => tenants.id, { onDelete: "cascade" }),
-        connectionId: uuid("connection_id")
+        accountId: uuid("account_id")
             .notNull()
-            .references(() => instagramConnections.id, { onDelete: "cascade" }),
+            .references(() => instagramAccounts.id, { onDelete: "cascade" }),
 
-        status: text("status").notNull().default("pending"), // 'pending', 'running', 'completed', 'failed'
+        status: text("status").notNull().default("pending"),
 
         mediaFetched: integer("media_fetched").default(0).notNull(),
         productsCreated: integer("products_created").default(0).notNull(),
         productsSkipped: integer("products_skipped").default(0).notNull(),
 
-        errors: jsonb("errors"), // Array of error messages
+        errors: jsonb("errors"),
 
         startedAt: timestamp("started_at"),
         completedAt: timestamp("completed_at"),
         createdAt: timestamp("created_at").defaultNow().notNull(),
     },
     (table) => [
-        index("instagram_sync_jobs_tenant_idx").on(table.tenantId),
-        index("instagram_sync_jobs_connection_idx").on(table.connectionId),
-        index("instagram_sync_jobs_status_idx").on(table.status),
-        index("instagram_sync_jobs_created_idx").on(table.createdAt),
+        index("instagram_media_jobs_tenant_idx").on(table.tenantId),
+        index("instagram_media_jobs_account_idx").on(table.accountId),
+        index("instagram_media_jobs_status_idx").on(table.status),
+        index("instagram_media_jobs_created_idx").on(table.createdAt),
     ]
 );
 
 // Relations
-export const instagramConnectionsRelations = relations(
-    instagramConnections,
+export const instagramAccountsRelations = relations(
+    instagramAccounts,
     ({ one, many }) => ({
         tenant: one(tenants, {
-            fields: [instagramConnections.tenantId],
+            fields: [instagramAccounts.tenantId],
             references: [tenants.id],
         }),
         user: one(users, {
-            fields: [instagramConnections.userId],
+            fields: [instagramAccounts.userId],
             references: [users.id],
         }),
         syncJobs: many(instagramSyncJobs),
@@ -110,16 +103,15 @@ export const instagramSyncJobsRelations = relations(
             fields: [instagramSyncJobs.tenantId],
             references: [tenants.id],
         }),
-        connection: one(instagramConnections, {
-            fields: [instagramSyncJobs.connectionId],
-            references: [instagramConnections.id],
+        account: one(instagramAccounts, {
+            fields: [instagramSyncJobs.accountId],
+            references: [instagramAccounts.id],
         }),
     })
 );
 
-// Type exports
-export type InstagramConnection = typeof instagramConnections.$inferSelect;
-export type NewInstagramConnection = typeof instagramConnections.$inferInsert;
+export type InstagramAccount = typeof instagramAccounts.$inferSelect;
+export type NewInstagramAccount = typeof instagramAccounts.$inferInsert;
 
 export type InstagramSyncJob = typeof instagramSyncJobs.$inferSelect;
 export type NewInstagramSyncJob = typeof instagramSyncJobs.$inferInsert;

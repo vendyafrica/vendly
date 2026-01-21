@@ -2,6 +2,10 @@
 
 import { ProductTable, type ProductTableRow } from "./components/product-table";
 import { AddProduct } from "./components/add-product";
+import { ProductStats } from "./components/product-header";
+import { Button } from "@vendly/ui/components/button";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { Download04Icon, FilterIcon } from "@hugeicons/core-free-icons";
 
 // Mock data - will be replaced with API calls
 const mockProducts: ProductTableRow[] = [
@@ -55,22 +59,41 @@ export default function ProductsPage() {
 
     return (
         <div className="space-y-6 p-6">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                    <h1 className="text-2xl font-semibold">Products</h1>
-                    <p className="text-muted-foreground text-sm">
-                        Manage your product catalog and content variants
+                    <h1 className="text-2xl font-bold tracking-tight">Products</h1>
+                    <p className="text-sm text-muted-foreground">
+                        Manage your product catalog and view their performance.
                     </p>
                 </div>
-                <AddProduct onProductCreated={handleProductCreated} />
+                <div className="flex items-center gap-2">
+                    <Button variant="outline" className="gap-2">
+                        <HugeiconsIcon icon={Download04Icon} className="h-4 w-4" />
+                        Export
+                    </Button>
+                    <Button variant="outline" className="gap-2">
+                        <HugeiconsIcon icon={FilterIcon} className="h-4 w-4" />
+                        Filter
+                    </Button>
+                    <AddProduct onProductCreated={handleProductCreated} />
+                </div>
             </div>
 
-            <ProductTable
-                products={mockProducts}
-                onEdit={handleEdit}
-                onDelete={handleDelete}
-                onGenerateVariants={handleGenerateVariants}
+            <ProductStats
+                totalProducts={mockProducts.length}
+                activeNow={mockProducts.filter((p) => p.status === "published" || p.status === "ready").length}
+                newProducts={mockProducts.filter((p) => p.status === "draft").length}
+                lowStock={3}
             />
+
+            <div className="rounded-md border bg-card p-2 sm:p-4">
+                <ProductTable
+                    products={mockProducts}
+                    onEdit={handleEdit}
+                    onDelete={handleDelete}
+                    onGenerateVariants={handleGenerateVariants}
+                />
+            </div>
         </div>
     );
 }
