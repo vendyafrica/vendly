@@ -13,19 +13,19 @@ interface StatCardProps {
 function StatCard({ label, value, change, changeType = "neutral", isLoading = false }: StatCardProps) {
     const changeColorClass =
         changeType === "positive"
-            ? "text-green-600 dark:text-green-400"
+            ? "text-emerald-600"
             : changeType === "negative"
-                ? "text-red-600 dark:text-red-400"
+                ? "text-rose-600"
                 : "text-muted-foreground";
 
     if (isLoading) {
         return (
-            <Card>
+            <Card className="border border-border/70 shadow-none bg-card/70">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                     <div className="h-4 w-24 bg-muted rounded animate-pulse" />
                 </CardHeader>
-                <CardContent>
-                    <div className="h-8 w-16 bg-muted rounded animate-pulse mb-2" />
+                <CardContent className="space-y-2">
+                    <div className="h-8 w-16 bg-muted rounded animate-pulse" />
                     <div className="h-3 w-32 bg-muted rounded animate-pulse" />
                 </CardContent>
             </Card>
@@ -33,13 +33,13 @@ function StatCard({ label, value, change, changeType = "neutral", isLoading = fa
     }
 
     return (
-        <Card>
+        <Card className="border border-border/70 shadow-none bg-card/70">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">{label}</CardTitle>
+                <CardTitle className="text-sm font-medium text-muted-foreground">{label}</CardTitle>
+                <span className={`text-xs font-medium ${changeColorClass}`}>{change}</span>
             </CardHeader>
             <CardContent>
-                <div className="text-2xl font-bold">{value}</div>
-                <p className={`text-xs ${changeColorClass}`}>{change}</p>
+                <div className="text-2xl font-semibold text-foreground">{value}</div>
             </CardContent>
         </Card>
     );

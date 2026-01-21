@@ -48,7 +48,9 @@ export default function ProductsPage() {
     const fetchProducts = React.useCallback(async () => {
         if (!tenantId) return;
 
-        setIsLoading(true);
+        if (products.length === 0) {
+            setIsLoading(true);
+        }
         setError(null);
 
         try {
@@ -159,20 +161,12 @@ export default function ProductsPage() {
         <div className="space-y-6 p-6">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                    <h1 className="text-2xl font-bold tracking-tight">Products</h1>
+                    <h1 className="text-3xl font-semibold tracking-tight">Products</h1>
                     <p className="text-sm text-muted-foreground">
-                        Manage your product catalog and view their performance.
+                        Keep your catalog tidy and stay on top of stock.
                     </p>
                 </div>
-                <div className="flex items-center gap-2">
-                    <Button variant="outline" className="gap-2">
-                        <HugeiconsIcon icon={Download04Icon} className="h-4 w-4" />
-                        Export
-                    </Button>
-                    <Button variant="outline" className="gap-2">
-                        <HugeiconsIcon icon={FilterIcon} className="h-4 w-4" />
-                        Filter
-                    </Button>
+                <div className="flex flex-wrap items-center gap-2">
                     <AddProductButton
                         onUploadClick={() => setUploadModalOpen(true)}
                         onManualClick={() => setAddManualOpen(true)}

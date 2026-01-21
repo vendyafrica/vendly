@@ -44,8 +44,8 @@ export function EditProductModal({
     onProductUpdated,
 }: EditProductModalProps) {
     const [productName, setProductName] = React.useState("");
-    const [priceAmount, setPriceAmount] = React.useState(0);
-    const [quantity, setQuantity] = React.useState(0);
+    const [priceAmount, setPriceAmount] = React.useState<string>("");
+    const [quantity, setQuantity] = React.useState<string>("");
     const [isSaving, setIsSaving] = React.useState(false);
     const [error, setError] = React.useState<string | null>(null);
 
@@ -53,8 +53,8 @@ export function EditProductModal({
     React.useEffect(() => {
         if (product) {
             setProductName(product.productName);
-            setPriceAmount(product.priceAmount);
-            setQuantity(product.quantity);
+            setPriceAmount(product.priceAmount ? String(product.priceAmount) : "");
+            setQuantity(product.quantity ? String(product.quantity) : "");
             setError(null);
         }
     }, [product]);
@@ -67,6 +67,9 @@ export function EditProductModal({
         setError(null);
 
         try {
+            const priceValue = Math.round(Number(priceAmount || 0));
+            const quantityValue = Number(quantity || 0);
+
             const response = await fetch(`${API_BASE}/api/products/${product.id}`, {
                 method: "PATCH",
                 headers: {
@@ -75,8 +78,8 @@ export function EditProductModal({
                 },
                 body: JSON.stringify({
                     productName,
-                    priceAmount,
-                    quantity,
+                    priceAmount: priceValue,
+                    quantity: quantityValue,
                     status: "active", // Mark as published when done editing
                 }),
             });
@@ -134,38 +137,27 @@ export function EditProductModal({
                         />
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-3">
                         <div className="space-y-2">
                             <Label htmlFor="price">Price (KES)</Label>
                             <Input
                                 id="price"
-                                type="number"
-                                min="0"
+                                type="text"
                                 value={priceAmount}
-                                onChange={(e) => setPriceAmount(Number(e.target.value))}
+                                onChange={(e) => setPriceAmount(e.target.value)}
+                                placeholder="Enter price"
                             />
                         </div>
                         <div className="space-y-2">
                             <Label htmlFor="quantity">Quantity</Label>
                             <Input
                                 id="quantity"
-                                type="number"
-                                min="0"
+                                type="text"
                                 value={quantity}
-                                onChange={(e) => setQuantity(Number(e.target.value))}
+                                onChange={(e) => setQuantity(e.target.value)}
+                                placeholder="Enter quantity"
                             />
                         </div>
-                    </div>
-
-                    {/* Sales (read-only) */}
-                    <div className="space-y-2">
-                        <Label>Sales Generated</Label>
-                        <div className="text-lg font-semibold text-muted-foreground">
-                            KES {((product.salesAmount || 0) / 100).toLocaleString()}
-                        </div>
-                        <p className="text-xs text-muted-foreground">
-                            This field cannot be edited
-                        </p>
                     </div>
 
                     <DialogFooter className="flex gap-2">

@@ -156,7 +156,7 @@ export function UploadModal({
 
                     {/* Drop zone */}
                     <div
-                        className="border-2 border-dashed rounded-lg p-8 text-center cursor-pointer hover:bg-muted/50 transition-colors"
+                        className="border-2 border-dashed border-border/70 rounded-lg p-8 text-center cursor-pointer hover:bg-muted/50 transition-colors"
                         onClick={() => !isUploading && fileInputRef.current?.click()}
                     >
                         <HugeiconsIcon
@@ -183,7 +183,7 @@ export function UploadModal({
                     {/* Preview grid */}
                     {files.length > 0 && (
                         <div className="space-y-2">
-                            <p className="text-sm font-medium">
+                            <p className="text-sm font-medium text-foreground">
                                 {files.length} image{files.length > 1 ? "s" : ""} selected
                             </p>
                             <div className="grid grid-cols-5 gap-2 max-h-48 overflow-y-auto">

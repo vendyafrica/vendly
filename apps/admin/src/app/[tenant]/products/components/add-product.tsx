@@ -81,7 +81,13 @@ export function AddProduct({ storeId, onProductCreated }: AddProductProps) {
 
     return (
         <Dialog open={open} onOpenChange={handleOpenChange}>
-            <DialogTrigger render={<Button className="gap-2" />}>
+            <DialogTrigger
+                render={
+                    <Button
+                        className="gap-2 rounded-lg border border-border/70 bg-foreground text-background shadow-sm hover:bg-foreground/90"
+                    />
+                }
+            >
                 <HugeiconsIcon icon={Add01Icon} className="size-4" />
                 Add Product
             </DialogTrigger>
@@ -109,9 +115,8 @@ export function AddProduct({ storeId, onProductCreated }: AddProductProps) {
                             <Input
                                 id="price"
                                 name="priceAmount"
-                                type="number"
-                                min="0"
-                                placeholder="0"
+                                type="text"
+                                placeholder="Enter price"
                                 required
                             />
                         </div>
@@ -120,9 +125,8 @@ export function AddProduct({ storeId, onProductCreated }: AddProductProps) {
                             <Input
                                 id="quantity"
                                 name="quantity"
-                                type="number"
-                                min="0"
-                                placeholder="0"
+                                type="text"
+                                placeholder="Enter quantity"
                             />
                         </div>
                     </div>
@@ -130,7 +134,7 @@ export function AddProduct({ storeId, onProductCreated }: AddProductProps) {
                     <div className="space-y-2">
                         <Label>Product Images</Label>
                         <div
-                            className="border-2 border-dashed rounded-lg p-4 text-center cursor-pointer hover:bg-muted/50 transition-colors"
+                            className="border-2 border-dashed border-border/70 rounded-lg p-4 text-center cursor-pointer hover:bg-muted/50 transition-colors"
                             onClick={() => fileInputRef.current?.click()}
                         >
                             <HugeiconsIcon icon={Upload04Icon} className="size-8 mx-auto text-muted-foreground" />

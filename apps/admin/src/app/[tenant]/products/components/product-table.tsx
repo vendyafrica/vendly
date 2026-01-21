@@ -52,33 +52,33 @@ function formatPrice(amount: number, currency: string): string {
         style: "currency",
         currency,
         minimumFractionDigits: 0,
-    }).format(amount / 100);
+    }).format(amount);
 }
 
 function StatusBadge({ status }: { status: ProductStatus }) {
     const variants: Record<ProductStatus, { label: string; className: string }> = {
         draft: {
             label: "Draft",
-            className: "bg-gray-100 text-gray-700 border-gray-200",
+            className: "bg-muted text-muted-foreground border-dashed",
         },
         ready: {
             label: "Ready",
-            className: "bg-orange-100 text-orange-700 border-orange-200",
+            className: "bg-amber-50 text-amber-700 border-amber-100",
         },
         active: {
             label: "Published",
-            className: "bg-green-100 text-green-700 border-green-200",
+            className: "bg-emerald-50 text-emerald-700 border-emerald-100",
         },
         "sold-out": {
             label: "Sold Out",
-            className: "bg-red-100 text-red-700 border-red-200",
+            className: "bg-rose-50 text-rose-700 border-rose-100",
         },
     };
 
     const { label, className } = variants[status];
 
     return (
-        <Badge variant="outline" className={className}>
+        <Badge variant="outline" className={`px-2.5 py-1 text-xs font-medium ${className}`}>
             {label}
         </Badge>
     );
@@ -99,18 +99,18 @@ function ProductActions({
         <DropdownMenu>
             <DropdownMenuTrigger
                 render={
-                    <div className="inline-flex items-center justify-center size-8 rounded-md hover:bg-accent cursor-pointer shrink-0">
+                    <div className="inline-flex items-center justify-center size-8 rounded-md border border-border/60 bg-card hover:bg-muted/70 cursor-pointer shrink-0 transition-colors">
                         <HugeiconsIcon icon={MoreHorizontalIcon} className="size-4" />
                         <span className="sr-only">Actions</span>
                     </div>
                 }
             />
-            <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => onEdit?.(productId)}>
+            <DropdownMenuContent align="end" className="min-w-44">
+                <DropdownMenuItem onClick={() => onEdit?.(productId)} className="p-2 cursor-pointer">
                     <HugeiconsIcon icon={Edit02Icon} className="size-4" />
                     Edit
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => onGenerateVariants?.(productId)}>
+                <DropdownMenuItem onClick={() => onGenerateVariants?.(productId)} className="p-2 cursor-pointer">
                     <HugeiconsIcon icon={SparklesIcon} className="size-4" />
                     Generate Variants
                 </DropdownMenuItem>
@@ -118,6 +118,7 @@ function ProductActions({
                 <DropdownMenuItem
                     variant="destructive"
                     onClick={() => onDelete?.(productId)}
+                    className="p-2 cursor-pointer"
                 >
                     <HugeiconsIcon icon={Delete02Icon} className="size-4" />
                     Delete
@@ -131,10 +132,11 @@ function TableSkeleton() {
     return (
         <div className="space-y-3">
             {[1, 2, 3, 4, 5].map((i) => (
-                <div key={i} className="flex items-center gap-4 p-2">
+                <div key={i} className="flex items-center gap-4 rounded-lg border border-dashed border-border/60 p-3 bg-muted/30">
                     <div className="size-10 bg-muted rounded-md animate-pulse shrink-0" />
                     <div className="flex-1 space-y-2">
                         <div className="h-4 bg-muted rounded w-1/3 animate-pulse" />
+                        <div className="h-4 bg-muted rounded w-24 animate-pulse" />
                     </div>
                     <div className="h-4 bg-muted rounded w-16 animate-pulse shrink-0" />
                     <div className="h-4 bg-muted rounded w-12 animate-pulse shrink-0" />
@@ -160,32 +162,32 @@ export function ProductTable({
 
     if (products.length === 0) {
         return (
-            <div className="flex flex-col items-center justify-center py-12 text-center">
-                <p className="text-muted-foreground">No products yet</p>
-                <p className="text-muted-foreground text-sm">
-                    Add your first product to get started
+            <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-border/70 bg-muted/40 py-10 text-center">
+                <p className="text-base font-medium text-foreground">No products yet</p>
+                <p className="text-muted-foreground text-sm mt-1">
+                    Add your first product to get started.
                 </p>
             </div>
         );
     }
 
     return (
-        <Table className="table-fixed w-full">
+        <Table className="w-full text-sm">
             <TableHeader>
                 <TableRow>
                     <TableHead className="w-16 shrink-0">Image</TableHead>
-                    <TableHead className="w-[30%]">Name</TableHead>
-                    <TableHead className="w-[15%] shrink-0">Price</TableHead>
-                    <TableHead className="w-[10%] shrink-0">Qty</TableHead>
-                    <TableHead className="w-[15%] shrink-0">Sales</TableHead>
-                    <TableHead className="w-[15%] shrink-0">Status</TableHead>
+                    <TableHead className="w-[32%]">Name</TableHead>
+                    <TableHead className="w-[18%] min-w-[120px] shrink-0">Price</TableHead>
+                    <TableHead className="w-[10%] min-w-[80px] shrink-0">Qty</TableHead>
+                    <TableHead className="w-[15%] min-w-[110px] shrink-0">Sales</TableHead>
+                    <TableHead className="w-[15%] min-w-[110px] shrink-0">Status</TableHead>
                     <TableHead className="w-16 shrink-0">Actions</TableHead>
                 </TableRow>
             </TableHeader>
 
             <TableBody>
                 {products.map((product) => (
-                    <TableRow key={product.id}>
+                    <TableRow key={product.id} className="hover:bg-muted/40">
                         <TableCell className="shrink-0">
                             <div className="relative size-10 overflow-hidden rounded-md bg-muted">
                                 {product.thumbnailUrl ? (
@@ -212,15 +214,15 @@ export function ProductTable({
                             </div>
                         </TableCell>
 
-                        <TableCell className="shrink-0">
+                        <TableCell className="shrink-0 whitespace-nowrap">
                             {formatPrice(product.priceAmount, product.currency)}
                         </TableCell>
 
-                        <TableCell className="shrink-0">
+                        <TableCell className="shrink-0 whitespace-nowrap">
                             {product.quantity}
                         </TableCell>
 
-                        <TableCell className="shrink-0">
+                        <TableCell className="shrink-0 whitespace-nowrap">
                             {formatPrice(product.salesAmount || 0, product.currency)}
                         </TableCell>
 

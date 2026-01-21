@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { HugeiconsIcon } from "@hugeicons/react";
-import { Add01Icon, Upload04Icon, InstagramIcon, ArrowDown01Icon } from "@hugeicons/core-free-icons";
+import { Add01Icon, Upload02Icon, InstagramIcon, ArrowDown01Icon } from "@hugeicons/core-free-icons";
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -27,23 +27,21 @@ export function AddProductButton({
             <DropdownMenuTrigger
                 nativeButton={false}
                 render={(props) => (
-                    <Button {...props} className="gap-2">
+                    <Button
+                        {...props}
+                        className="rounded-lg border border-border/70 bg-primary text-background shadow-sm hover:bg-primary/90"
+                    >
                         <HugeiconsIcon icon={Add01Icon} className="size-4" />
                         Add Products
-                        <HugeiconsIcon icon={ArrowDown01Icon} className="size-4" />
                     </Button>
                 )}
             />
-            <DropdownMenuContent align="end" className="w-48">
-                <DropdownMenuItem onClick={onUploadClick}>
-                    <HugeiconsIcon icon={Upload04Icon} className="size-4" />
+            <DropdownMenuContent align="end" className="w-52 p-4 m-3 ">
+                <DropdownMenuItem onClick={onUploadClick} className="cursor-pointer p-2">
+                    <HugeiconsIcon icon={Upload02Icon} className="size-4 " />
                     Upload Images
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={onManualClick}>
-                    <HugeiconsIcon icon={Add01Icon} className="size-4" />
-                    Add Manually
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={onInstagramClick} className="opacity-50">
+                <DropdownMenuItem onClick={onInstagramClick} className="cursor-pointer p-1">
                     <HugeiconsIcon icon={InstagramIcon} className="size-4" />
                     Import from Instagram
                 </DropdownMenuItem>
