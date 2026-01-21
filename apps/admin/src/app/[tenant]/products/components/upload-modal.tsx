@@ -87,6 +87,7 @@ export function UploadModal({
             formData.append("generateTitles", "true");
             formData.append("defaultPrice", "0");
             formData.append("defaultCurrency", "KES");
+            formData.append("status", "active");
 
             files.forEach((f) => formData.append("files", f.file));
 

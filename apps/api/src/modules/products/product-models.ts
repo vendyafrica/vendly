@@ -27,6 +27,7 @@ export const bulkUploadSchema = z.object({
     defaultPrice: z.number().int().min(0).default(0),
     generateTitles: z.boolean().default(true), // Auto-generate titles from filenames
     markAsFeatured: z.boolean().default(false),
+    status: z.enum(["draft", "ready", "active", "sold-out"]).default("draft"),
 });
 
 export type BulkUploadInput = z.infer<typeof bulkUploadSchema>;

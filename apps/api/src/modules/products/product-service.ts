@@ -68,6 +68,7 @@ export class ProductService {
                 currency: config.defaultCurrency,
                 source: "bulk-upload",
                 isFeatured: config.markAsFeatured,
+                status: config.status,
             });
 
             // Upload and attach the single file to this product
