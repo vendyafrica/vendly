@@ -16,6 +16,7 @@ export interface PersonalInfoDto {
 export interface StoreInfoDto {
     storeName: string;
     storeDescription: string;
+    storeLocation: string;
 }
 
 export interface BusinessInfoDto {

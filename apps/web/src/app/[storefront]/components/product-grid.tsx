@@ -1,80 +1,88 @@
-import { ProductCard } from './product-card';
+"use client";
 
-const products = [
-    {
-        id: 1,
-        title: "Classic Trench Coat",
-        slug: "classic-trench-coat",
-        price: "$299.00",
-        image: "/images/trench-coat.png",
-        rating: 4.8
-    },
-    {
-        id: 2,
-        title: "Navy Heritage Blazer",
-        slug: "navy-heritage-blazer",
-        price: "$249.00",
-        image: "/images/navy-blazer.png",
-        rating: 4.9
-    },
-    {
-        id: 3,
-        title: "Penny Loafers",
-        slug: "penny-loafers",
-        price: "$189.00",
-        image: "/images/leather-loafers.png",
-        rating: 4.7
-    },
-    {
-        id: 4,
-        title: "Premium Linen Shirt",
-        slug: "premium-linen-shirt",
-        price: "$89.00",
-        image: "/images/linen-shirt.png",
-        rating: 4.6
-    },
-    {
-        id: 5,
-        title: "Cable Knit Sweater",
-        slug: "cable-knit-sweater",
-        price: "$129.00",
-        image: "/images/cable-knit-sweater.png",
-        rating: 4.8
-    },
-    {
-        id: 6,
-        title: "Tortoiseshell Shades",
-        slug: "tortoiseshell-shades",
-        price: "$159.00",
-        image: "/images/tortoiseshell-sunglasses.png",
-        rating: 4.5
-    },
-    {
-        id: 7,
-        title: "Premium Linen Shirt Blue",
-        slug: "premium-linen-shirt-blue",
-        price: "$89.00",
-        image: "/images/linen-shirt.png",
-        rating: 4.6
-    },
-    {
-        id: 8,
-        title: "Premium Linen Shirt White",
-        slug: "premium-linen-shirt-white",
-        price: "$89.00",
-        image: "/images/linen-shirt.png",
-        rating: 4.6
-    }
+import { useState, useEffect } from "react";
+import { useParams } from "next/navigation";
+import { ProductCard } from './product-card';
+import { ProductGridSkeleton } from "./skeletons";
+
+interface Product {
+    id: string;
+    slug: string;
+    name: string;
+    price: number;
+    currency: string;
+    image: string | null;
+    rating: number;
+}
+
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+
+// Fallback images when no product image
+const FALLBACK_IMAGES = [
+    "/images/trench-coat.png",
+    "/images/navy-blazer.png",
+    "/images/leather-loafers.png",
+    "/images/linen-shirt.png",
+    "/images/cable-knit-sweater.png",
+    "/images/tortoiseshell-sunglasses.png",
 ];
 
 export function ProductGrid() {
+    const params = useParams();
+    const [products, setProducts] = useState<Product[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchProducts = async () => {
+            const slug = params?.storefront as string;
+            if (!slug) {
+                setLoading(false);
+                return;
+            }
+
+            try {
+                const res = await fetch(`${API_BASE}/api/storefront/${slug}/products`);
+                if (res.ok) {
+                    setProducts(await res.json());
+                }
+            } catch (error) {
+                console.error("Failed to fetch products:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchProducts();
+    }, [params?.storefront]);
+
+    if (loading) return <ProductGridSkeleton />;
+
+    if (products.length === 0) {
+        return (
+            <div className="text-center py-12">
+                <p className="text-neutral-500">No products available yet.</p>
+            </div>
+        );
+    }
+
+    // Format price for display
+    const formatPrice = (amount: number, currency: string) => {
+        if (currency === "KES") {
+            return `KES ${amount.toLocaleString()}`;
+        }
+        return `$${(amount / 100).toFixed(2)}`;
+    };
+
     return (
         <div className="columns-2 sm:columns-2 md:columns-3 lg:columns-4 gap-4 md:gap-5 px-3 sm:px-4 lg:px-6 [column-fill:balance]">
             {products.map((product, index) => (
                 <ProductCard
                     key={product.id}
                     index={index}
-                    {...product}
+                    title={product.name}
+                    slug={product.slug}
+                    price={formatPrice(product.price, product.currency)}
+                    image={product.image || FALLBACK_IMAGES[index % FALLBACK_IMAGES.length]}
+                    rating={product.rating}
                 />
             ))}
         </div>

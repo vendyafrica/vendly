@@ -16,10 +16,11 @@ export default function StoreInfo() {
 
     const [storeName, setStoreName] = useState(data.store?.storeName ?? "");
     const [storeDescription, setStoreDescription] = useState(data.store?.storeDescription ?? "");
+    const [storeLocation, setStoreLocation] = useState(data.store?.storeLocation ?? "");
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        await saveStore({ storeName, storeDescription });
+        await saveStore({ storeName, storeDescription, storeLocation });
     };
 
     return (
@@ -67,6 +68,19 @@ export default function StoreInfo() {
                             rows={3}
                             value={storeDescription}
                             onChange={(e) => setStoreDescription(e.target.value)}
+                            className="focus-visible:border-primary/50 focus-visible:ring-primary/10"
+                        />
+                    </Field>
+
+                      <Field>
+                        <FieldLabel htmlFor="location">
+                            Store location
+                        </FieldLabel>
+                        <Input
+                            id="location"
+                            placeholder="Location"
+                            value={storeLocation}
+                            onChange={(e) => setStoreLocation(e.target.value)}
                             className="focus-visible:border-primary/50 focus-visible:ring-primary/10"
                         />
                     </Field>

@@ -3,6 +3,7 @@ import cors from "cors";
 import { toNodeHandler } from "better-auth/node";
 import { auth } from "@vendly/auth";
 import onboardingRoutes from "./modules/onboarding/onboarding-routes";
+import storefrontRoutes from "./modules/storefront/storefront-routes";
 
 export function createApp(): Express {
   const app = express();
@@ -38,6 +39,9 @@ export function createApp(): Express {
 
   // Onboarding routes
   app.use("/api/onboarding", onboardingRoutes);
+
+  // Storefront routes (public - no auth required)
+  app.use("/api/storefront", storefrontRoutes);
 
   app.get("/", (_req, res) => {
     res.send("API is running");

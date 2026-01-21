@@ -13,6 +13,7 @@ export interface PersonalInfo {
 export interface StoreInfo {
     storeName: string;
     storeDescription: string;
+    storeLocation: string;
 }
 
 export interface BusinessInfo {

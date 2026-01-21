@@ -125,8 +125,9 @@ class OnboardingRepository {
             slug: storeSlug,
             description: data.store.storeDescription,
             categories: data.business.categories,
-            email: userEmail,
-            phone: data.personal.phoneNumber,
+            storeContactEmail: userEmail,
+            storeContactPhone: data.personal.phoneNumber,
+            storeAddress: data.store.storeLocation ?? null,
             status: true,
         }).returning();
 
