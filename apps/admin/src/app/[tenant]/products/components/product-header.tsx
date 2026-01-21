@@ -7,15 +7,30 @@ interface StatCardProps {
     value: string;
     change: string;
     changeType?: "positive" | "negative" | "neutral";
+    isLoading?: boolean;
 }
 
-function StatCard({ label, value, change, changeType = "neutral" }: StatCardProps) {
+function StatCard({ label, value, change, changeType = "neutral", isLoading = false }: StatCardProps) {
     const changeColorClass =
         changeType === "positive"
             ? "text-green-600 dark:text-green-400"
             : changeType === "negative"
                 ? "text-red-600 dark:text-red-400"
                 : "text-muted-foreground";
+
+    if (isLoading) {
+        return (
+            <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <div className="h-4 w-24 bg-muted rounded animate-pulse" />
+                </CardHeader>
+                <CardContent>
+                    <div className="h-8 w-16 bg-muted rounded animate-pulse mb-2" />
+                    <div className="h-3 w-32 bg-muted rounded animate-pulse" />
+                </CardContent>
+            </Card>
+        );
+    }
 
     return (
         <Card>
@@ -36,6 +51,7 @@ interface ProductStatsProps {
     activeNow?: number;
     newProducts?: number;
     lowStock?: number;
+    isLoading?: boolean;
 }
 
 export function ProductStats({
@@ -43,7 +59,8 @@ export function ProductStats({
     totalSales = 0,
     activeNow = 0,
     newProducts = 0,
-    lowStock = 3,
+    lowStock = 0,
+    isLoading = false,
 }: ProductStatsProps) {
     return (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -52,24 +69,28 @@ export function ProductStats({
                 value={totalProducts.toLocaleString()}
                 change="+12.5% from last month"
                 changeType="positive"
+                isLoading={isLoading}
             />
             <StatCard
                 label="Active Now"
                 value={activeNow.toLocaleString()}
                 change="+5 since last hour"
                 changeType="positive"
+                isLoading={isLoading}
             />
             <StatCard
                 label="New This Month"
                 value={`+${newProducts}`}
                 change="+5% from last month"
                 changeType="positive"
+                isLoading={isLoading}
             />
             <StatCard
                 label="Low Stock"
                 value={lowStock.toLocaleString()}
-                change="-2 from last month"
-                changeType="negative"
+                change={lowStock > 0 ? "Needs attention" : "All stocked"}
+                changeType={lowStock > 0 ? "negative" : "positive"}
+                isLoading={isLoading}
             />
         </div>
     );

@@ -75,7 +75,7 @@ export function Categories() {
                             href={`/categories/${category.slug}`}
                             className="group shrink-0"
                         >
-                            <div className="relative w-[320px] aspect-[4/3] rounded-lg overflow-hidden bg-neutral-200">
+                            <div className="relative w-[320px] aspect-4/3 rounded-lg overflow-hidden bg-neutral-200">
                                 <Image
                                     src={category.image || FALLBACK_IMAGES[index % FALLBACK_IMAGES.length]}
                                     alt={category.name}

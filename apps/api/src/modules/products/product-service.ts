@@ -25,8 +25,7 @@ export class ProductService {
         const product = await this.productRepo.create({
             tenantId,
             storeId: data.storeId,
-            title: data.title,
-            description: data.description,
+            productName: data.title,
             priceAmount: data.priceAmount,
             currency: data.currency,
             source: data.source,
@@ -57,14 +56,14 @@ export class ProductService {
 
         // Create products for each file
         const productPromises = files.map(async (file, index) => {
-            const title = config.generateTitles
+            const productName = config.generateTitles
                 ? this.generateTitleFromFilename(file.originalname)
                 : `Product ${index + 1}`;
 
             const product = await this.productRepo.create({
                 tenantId,
                 storeId: config.storeId,
-                title,
+                productName: productName,
                 priceAmount: config.defaultPrice,
                 currency: config.defaultCurrency,
                 source: "bulk-upload",
@@ -139,6 +138,29 @@ export class ProductService {
             tenantId
         );
         return { ...product, media };
+    }
+
+    /**
+     * Update a product
+     */
+    async updateProduct(
+        id: string,
+        tenantId: string,
+        data: Partial<{
+            productName: string;
+            description: string;
+            priceAmount: number;
+            currency: string;
+            quantity: number;
+            status: string;
+            isFeatured: boolean;
+        }>
+    ): Promise<ProductWithMedia> {
+        const updated = await this.productRepo.update(id, tenantId, data);
+        if (!updated) {
+            throw new Error("Product not found");
+        }
+        return this.getProductWithMedia(id, tenantId);
     }
 
     async deleteProduct(

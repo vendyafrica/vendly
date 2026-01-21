@@ -4,6 +4,7 @@ import { toNodeHandler } from "better-auth/node";
 import { auth } from "@vendly/auth";
 import onboardingRoutes from "./modules/onboarding/onboarding-routes";
 import storefrontRoutes from "./modules/storefront/storefront-routes";
+import { productRoutes } from "./modules/products/product-routes";
 
 export function createApp(): Express {
   const app = express();
@@ -28,7 +29,7 @@ export function createApp(): Express {
       ],
       credentials: true,
       methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
-      allowedHeaders: ["Content-Type", "Authorization", "X-Request-With"],
+      allowedHeaders: ["Content-Type", "Authorization", "X-Request-With", "x-tenant-id", "x-tenant-slug"],
     })
   );
 
@@ -42,6 +43,9 @@ export function createApp(): Express {
 
   // Storefront routes (public - no auth required)
   app.use("/api/storefront", storefrontRoutes);
+
+  // Product routes
+  app.use("/api/products", productRoutes);
 
   app.get("/", (_req, res) => {
     res.send("API is running");

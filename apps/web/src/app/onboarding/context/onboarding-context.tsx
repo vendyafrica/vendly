@@ -228,10 +228,18 @@ export function OnboardingProvider({ children }: ProviderProps) {
 
             const result = await apiCall<{
                 success: boolean;
+                tenantId: string;
+                storeId: string;
                 storeSlug: string;
             }>("/complete", { method: "POST" });
 
             if (result.success) {
+                // Store tenant and store IDs in localStorage for admin app
+                if (typeof window !== "undefined") {
+                    localStorage.setItem("vendly_tenant_id", result.tenantId);
+                    localStorage.setItem("vendly_store_id", result.storeId);
+                }
+
                 setState(prev => ({
                     ...prev,
                     currentStep: "complete",

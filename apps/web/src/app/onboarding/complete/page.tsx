@@ -71,7 +71,15 @@ export default function Complete() {
           <Button
             size="lg"
             className="w-full cursor-pointer"
-            onClick={() => router.push("/dashboard")}
+            onClick={() => {
+              // Navigate to the admin dashboard
+              const storeSlug = data.store?.storeName
+                ?.toLowerCase()
+                .replace(/[^a-z0-9]+/g, "-")
+                .replace(/^-|-$/g, "");
+              const adminUrl = process.env.NEXT_PUBLIC_ADMIN_URL || "http://localhost:4000";
+              window.location.href = `${adminUrl}/${storeSlug || "store"}`;
+            }}
           >
             Go to Dashboard
           </Button>

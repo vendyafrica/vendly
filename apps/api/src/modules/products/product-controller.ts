@@ -5,6 +5,7 @@ import {
     createProductSchema,
     productQuerySchema,
     bulkUploadSchema,
+    updateProductSchema,
 } from "./product-models";
 import { z } from "zod";
 
@@ -141,6 +142,37 @@ export class ProductController {
             return res.json({ success: true, data: product });
         } catch (error) {
             return res.status(404).json({ error: "Product not found" });
+        }
+    }
+
+    /**
+     * Update Product
+     */
+    async update(req: Request, res: Response) {
+        try {
+            const { id } = req.params;
+            const tenantId = req.headers["x-tenant-id"] as string;
+
+            if (!tenantId) {
+                return res.status(400).json({ error: "Tenant context missing" });
+            }
+
+            const rawBody = req.body;
+            // Coerce form data types
+            if (rawBody.priceAmount) rawBody.priceAmount = Number(rawBody.priceAmount);
+            if (rawBody.quantity) rawBody.quantity = Number(rawBody.quantity);
+
+            const data = updateProductSchema.parse(rawBody);
+
+            const product = await productService.updateProduct(id, tenantId, data);
+
+            return res.json({ success: true, data: product });
+        } catch (error) {
+            console.error("Update product error:", error);
+            if (error instanceof z.ZodError) {
+                return res.status(400).json({ error: "Validation failed", details: error.issues });
+            }
+            return res.status(500).json({ error: error instanceof Error ? error.message : "Update failed" });
         }
     }
 

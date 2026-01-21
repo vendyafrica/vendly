@@ -24,6 +24,7 @@ router.get("/", productController.list);
 router.get("/:id", productController.get);
 
 // Update/Delete
+router.patch("/:id", productController.update);
 router.delete("/:id", productController.delete);
 
 export const productRoutes: Router = router;

@@ -56,10 +56,12 @@ export type ProductFilters = z.infer<typeof productQuerySchema>;
  * Product update input
  */
 export const updateProductSchema = z.object({
-    title: z.string().min(1).max(255).optional(),
+    productName: z.string().min(1).max(255).optional(),
     description: z.string().optional(),
     priceAmount: z.number().int().min(0).optional(),
     currency: z.string().length(3).optional(),
+    quantity: z.number().int().min(0).optional(),
+    status: z.enum(["draft", "ready", "active", "sold-out"]).optional(),
     isFeatured: z.boolean().optional(),
 });
 
