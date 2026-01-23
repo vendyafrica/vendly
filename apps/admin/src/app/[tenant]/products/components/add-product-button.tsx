@@ -19,13 +19,12 @@ interface AddProductButtonProps {
 
 export function AddProductButton({
     onUploadClick,
-    onManualClick,
     onInstagramClick,
 }: AddProductButtonProps) {
     return (
         <DropdownMenu>
             <DropdownMenuTrigger
-                nativeButton={false}
+                nativeButton={true}
                 render={(props) => (
                     <Button
                         {...props}

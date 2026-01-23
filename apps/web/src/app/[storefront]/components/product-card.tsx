@@ -1,5 +1,8 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
+import { useParams } from "next/navigation";
 
 interface ProductCardProps {
   title: string;
@@ -18,9 +21,12 @@ const aspectVariants = [
 ];
 
 export function ProductCard({ title, slug, price, image, index = 0 }: ProductCardProps) {
+  const params = useParams();
+  const storeSlug = params?.storefront as string;
   const aspectClass = aspectVariants[index % aspectVariants.length];
+
   return (
-    <Link href={`/store/products/${slug}`} className="group block break-inside-avoid mb-8">
+    <Link href={`/${storeSlug}/products/${slug}`} className="group block break-inside-avoid mb-8">
       <div className={`relative overflow-hidden rounded-none border-none bg-[#F2F0EA] ${aspectClass}`}>
         <Image
           src={image}

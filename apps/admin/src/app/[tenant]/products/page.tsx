@@ -169,7 +169,6 @@ export default function ProductsPage() {
                 <div className="flex flex-wrap items-center gap-2">
                     <AddProductButton
                         onUploadClick={() => setUploadModalOpen(true)}
-                        onManualClick={() => setAddManualOpen(true)}
                         onInstagramClick={() => {
                             // TODO: Instagram import
                         }}
@@ -186,7 +185,7 @@ export default function ProductsPage() {
                         className="ml-4"
                         onClick={fetchProducts}
                     >
-                        Retry
+                        Retry   
                     </Button>
                 </div>
             )}

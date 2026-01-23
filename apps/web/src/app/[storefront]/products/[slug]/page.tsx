@@ -1,5 +1,6 @@
 import { ProductDetails } from "../../components/product-details";
 import { ProductGridReveal } from "../../components/product-grid-reveal";
+import { StorefrontFooter } from "../../components/footer";
 
 interface PageProps {
     params: Promise<{
@@ -17,6 +18,7 @@ export default async function ProductPage({ params }: PageProps) {
                 <ProductDetails slug={slug} />
             </div>
             <ProductGridReveal />
+            <StorefrontFooter />
         </main>
     );
 }

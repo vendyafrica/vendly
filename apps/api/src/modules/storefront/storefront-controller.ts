@@ -85,3 +85,42 @@ export async function getStoreProducts(req: Request, res: Response) {
         return res.status(500).json({ error: "Failed to fetch products" });
     }
 }
+
+/**
+ * GET /api/storefront/:slug/products/:productSlug
+ * Returns a single product by slug
+ */
+export async function getStoreProductBySlug(req: Request, res: Response) {
+    try {
+        const { slug, productSlug } = req.params;
+        const store = await storefrontRepository.findStoreBySlug(slug);
+
+        if (!store) {
+            return res.status(404).json({ error: "Store not found" });
+        }
+
+        const product = await storefrontRepository.getStoreProductBySlug(store.id, productSlug);
+
+        if (!product) {
+            return res.status(404).json({ error: "Product not found" });
+        }
+
+        return res.json({
+            id: product.id,
+            slug: product.productName.toLowerCase().replace(/\s+/g, "-"),
+            name: product.productName,
+            description: product.description,
+            price: product.priceAmount,
+            currency: product.currency,
+            images: product.media.map((m) => m.media?.blobUrl ?? null).filter(Boolean),
+            rating: 0,
+            store: {
+                name: store.name,
+                slug: store.slug,
+            },
+        });
+    } catch (error) {
+        console.error("Error fetching product:", error);
+        return res.status(500).json({ error: "Failed to fetch product" });
+    }
+}

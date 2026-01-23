@@ -31,6 +31,31 @@ class StorefrontRepository {
             },
         });
     }
+
+    /**
+     * Get a single product by slug for a store
+     * We generate the slug from the product name, so we need to fetch all products and filter
+     */
+    async getStoreProductBySlug(storeId: string, productSlug: string) {
+        const allProducts = await db.query.products.findMany({
+            where: and(
+                eq(products.storeId, storeId),
+                eq(products.status, "active"),
+                isNull(products.deletedAt)
+            ),
+            with: {
+                media: {
+                    with: { media: true },
+                    orderBy: (media, { asc }) => [asc(media.sortOrder)],
+                },
+            },
+        });
+
+        // Find product where the slugified name matches
+        return allProducts.find(
+            (p) => p.productName.toLowerCase().replace(/\s+/g, "-") === productSlug
+        );
+    }
 }
 
 export const storefrontRepository = new StorefrontRepository();

@@ -80,7 +80,7 @@ export function EditProductModal({
                     productName,
                     priceAmount: priceValue,
                     quantity: quantityValue,
-                    status: "active", // Mark as published when done editing
+                    status: "active", 
                 }),
             });
 
