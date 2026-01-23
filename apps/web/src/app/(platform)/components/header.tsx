@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { Button } from "@vendly/ui/components/button";
 import { Input } from "@vendly/ui/components/input";
 import { useState, useEffect } from "react";
@@ -20,6 +21,7 @@ import {
 } from "@vendly/ui/components/dropdown-menu";
 import { useRouter } from "next/navigation";
 import { LoginOverlay } from "@/app/(auth)/login/page";
+import Search from "./search";
 
 export default function Header() {
   const { data: session } = useSession();
@@ -65,34 +67,22 @@ export default function Header() {
               </span>
             </div>
 
-            {/* Search */}
-            <div className="flex flex-1 justify-center">
-              <div className="relative w-full max-w-2xl">
-                <div className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2">
-                  <HugeiconsIcon icon={Search01Icon} size={15} />
-                </div>
-                <Input
-                  type="search"
-                  placeholder="Search products, stores, creators…"
-                  className="h-10 pl-9 rounded-full"
-                />
-              </div>
-            </div>
-            
-              {!isSignedIn && (
-                <>
-                  <Button onClick={handleSellNow}>
-                    Sell now
-                  </Button>
+            <Search />
 
-                   <Button
-                    variant="outline"
-                    onClick={() => setShowLogin(true)}
-                  >
-                    Sign in
-                  </Button>
-                </>
-              )}
+            {!isSignedIn && (
+              <>
+                <Button onClick={handleSellNow}>
+                  Sell now
+                </Button>
+
+                <Button
+                  variant="outline"
+                  onClick={() => setShowLogin(true)}
+                >
+                  Sign in
+                </Button>
+              </>
+            )}
 
             {/* Actions */}
             <div className="flex items-center gap-2">
@@ -140,13 +130,12 @@ export default function Header() {
             </div>
 
             <div className="flex items-center gap-2">
-              <Button variant="ghost" size="icon-lg">
-                <HugeiconsIcon icon={FavouriteIcon} size={22} />
-              </Button>
-
-              <Button variant="ghost" size="icon-lg">
-                <HugeiconsIcon icon={ShoppingCart01Icon} size={22} />
-              </Button>
+              <Link href="/favourite">
+                <HugeiconsIcon icon={FavouriteIcon} size={24} />
+              </Link>
+              <Link href="/cart">
+                <HugeiconsIcon icon={ShoppingCart01Icon} size={24} />
+              </Link>
               <div className="flex items-center gap-2">
                 {!isSignedIn && (
                   <>

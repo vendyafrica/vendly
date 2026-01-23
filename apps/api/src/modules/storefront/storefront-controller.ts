@@ -115,6 +115,7 @@ export async function getStoreProductBySlug(req: Request, res: Response) {
             images: product.media.map((m) => m.media?.blobUrl ?? null).filter(Boolean),
             rating: 0,
             store: {
+                id: store.id,
                 name: store.name,
                 slug: store.slug,
             },

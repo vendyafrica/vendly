@@ -2,8 +2,8 @@
 
 import { useEffect } from "react";
 import Link from "next/link";
-import Header from "@/components/marketplace/header";
-import Footer from "@/components/marketplace/footer";
+import Header from "@/app/(platform)/components/header";
+import Footer from "@/app/(platform)/components/footer";
 import { Button } from "@Vendly/ui/components/button";
 import { signInWithOneTap } from "@/lib/auth";
 

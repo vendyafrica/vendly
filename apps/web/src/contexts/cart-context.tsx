@@ -1,120 +1,112 @@
 "use client";
 
-import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from "react";
+import React, { createContext, useContext, useState, useEffect } from "react";
 
 export interface CartItem {
-    id: string; // unique cart item id
-    productId: string;
-    storeId: string;
-    storeName: string;
-    storeSlug: string;
-    name: string;
-    variant?: string; // e.g., "Off-white / XXS"
-    price: number;
-    currency: string;
+    id: string; // Product ID
     quantity: number;
-    image?: string;
+    product: {
+        id: string;
+        name: string;
+        price: number;
+        currency: string;
+        image?: string;
+        slug: string;
+    };
+    store: {
+        id: string;
+        name: string;
+        slug: string;
+    };
 }
 
 interface CartContextType {
     items: CartItem[];
-    addItem: (item: Omit<CartItem, "id">) => void;
-    removeItem: (id: string) => void;
-    updateQuantity: (id: string, quantity: number) => void;
+    addItem: (item: Omit<CartItem, "quantity">, quantity?: number) => void;
+    removeItem: (productId: string) => void;
+    updateQuantity: (productId: string, quantity: number) => void;
     clearCart: () => void;
-    getItemsByStore: () => Map<string, CartItem[]>;
+    clearStoreFromCart: (storeId: string) => void;
+    cartTotal: number;
     itemCount: number;
-    subtotal: number;
-    currency: string;
+    itemsByStore: Record<string, CartItem[]>; // Grouped by storeId
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
-const CART_STORAGE_KEY = "vendly_cart";
-
-export function CartProvider({ children }: { children: ReactNode }) {
+export function CartProvider({ children }: { children: React.ReactNode }) {
     const [items, setItems] = useState<CartItem[]>([]);
-    const [isLoaded, setIsLoaded] = useState(false);
 
-    // Load cart from localStorage on mount
+    // Load from localStorage on mount
     useEffect(() => {
-        try {
-            const stored = localStorage.getItem(CART_STORAGE_KEY);
-            if (stored) {
+        const stored = localStorage.getItem("vendly_cart");
+        if (stored) {
+            try {
                 setItems(JSON.parse(stored));
+            } catch (e) {
+                console.error("Failed to parse cart storage", e);
             }
-        } catch (e) {
-            console.error("Failed to load cart:", e);
         }
-        setIsLoaded(true);
     }, []);
 
-    // Persist cart to localStorage
+    // Save to localStorage on change
     useEffect(() => {
-        if (isLoaded) {
-            try {
-                localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(items));
-            } catch (e) {
-                console.error("Failed to save cart:", e);
-            }
-        }
-    }, [items, isLoaded]);
+        localStorage.setItem("vendly_cart", JSON.stringify(items));
+    }, [items]);
 
-    const addItem = useCallback((item: Omit<CartItem, "id">) => {
+    const addItem = (newItem: Omit<CartItem, "quantity">, quantity = 1) => {
         setItems((prev) => {
-            // Check if item already exists (same product + variant)
-            const existing = prev.find(
-                (i) => i.productId === item.productId && i.variant === item.variant
-            );
-
+            const existing = prev.find((item) => item.id === newItem.id);
             if (existing) {
-                // Update quantity
-                return prev.map((i) =>
-                    i.id === existing.id
-                        ? { ...i, quantity: i.quantity + item.quantity }
-                        : i
+                return prev.map((item) =>
+                    item.id === newItem.id
+                        ? { ...item, quantity: item.quantity + quantity }
+                        : item
                 );
             }
-
-            // Add new item
-            const newItem: CartItem = {
-                ...item,
-                id: `${item.productId}-${item.variant || "default"}-${Date.now()}`,
-            };
-            return [...prev, newItem];
+            return [...prev, { ...newItem, quantity }];
         });
-    }, []);
+    };
 
-    const removeItem = useCallback((id: string) => {
-        setItems((prev) => prev.filter((i) => i.id !== id));
-    }, []);
+    const removeItem = (productId: string) => {
+        setItems((prev) => prev.filter((item) => item.id !== productId));
+    };
 
-    const updateQuantity = useCallback((id: string, quantity: number) => {
+    const updateQuantity = (productId: string, quantity: number) => {
         if (quantity < 1) {
-            removeItem(id);
+            removeItem(productId);
             return;
         }
         setItems((prev) =>
-            prev.map((i) => (i.id === id ? { ...i, quantity } : i))
+            prev.map((item) =>
+                item.id === productId ? { ...item, quantity } : item
+            )
         );
-    }, [removeItem]);
+    };
 
-    const clearCart = useCallback(() => {
+    const clearCart = () => {
         setItems([]);
-    }, []);
+    };
 
-    const getItemsByStore = useCallback(() => {
-        const grouped = new Map<string, CartItem[]>();
-        items.forEach((item) => {
-            const existing = grouped.get(item.storeId) || [];
-            grouped.set(item.storeId, [...existing, item]);
-        });
-        return grouped;
-    }, [items]);
+    const clearStoreFromCart = (storeId: string) => {
+        setItems((prev) => prev.filter((item) => item.store.id !== storeId));
+    };
 
-    const itemCount = items.reduce((sum, item) => sum + item.quantity, 0);
-    const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
-    const currency = items[0]?.currency || "KES";
+    const cartTotal = items.reduce(
+        (total, item) => total + item.product.price * item.quantity,
+        0
+    );
+
+    const itemCount = items.reduce((count, item) => count + item.quantity, 0);
+
+    const itemsByStore = items.reduce((groups, item) => {
+        const storeId = item.store.id;
+        if (!groups[storeId]) {
+            groups[storeId] = [];
+        }
+        groups[storeId].push(item);
+        return groups;
+    }, {} as Record<string, CartItem[]>);
 
     return (
         <CartContext.Provider
@@ -124,10 +116,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
                 removeItem,
                 updateQuantity,
                 clearCart,
-                getItemsByStore,
+                clearStoreFromCart,
+                cartTotal,
                 itemCount,
-                subtotal,
-                currency,
+                itemsByStore,
             }}
         >
             {children}
@@ -137,7 +129,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
 export function useCart() {
     const context = useContext(CartContext);
-    if (!context) {
+    if (context === undefined) {
         throw new Error("useCart must be used within a CartProvider");
     }
     return context;
