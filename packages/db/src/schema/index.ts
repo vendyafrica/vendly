@@ -8,4 +8,5 @@ export * from "./content-variant-schema";
 export * from "./customer-schema";
 export * from "./media-schema";
 export * from "./roles-schema";
+export * from "./order-schema";
 

@@ -13,6 +13,7 @@ import {
     Loading03Icon,
 } from "@hugeicons/core-free-icons";
 import { Avatar, AvatarImage, AvatarFallback } from "@vendly/ui/components/avatar";
+import { Checkout } from "./checkout";
 
 interface ProductDetailsProps {
     slug: string;
@@ -44,6 +45,7 @@ export function ProductDetails({ slug }: ProductDetailsProps) {
     const [error, setError] = useState<string | null>(null);
     const [quantity, setQuantity] = useState(1);
     const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+    const [checkoutOpen, setCheckoutOpen] = useState(false);
 
     useEffect(() => {
         const fetchProduct = async () => {
@@ -229,13 +231,34 @@ export function ProductDetails({ slug }: ProductDetailsProps) {
                             <Button className="w-full rounded-full h-14 text-lg font-medium shadow-xl shadow-neutral-200 hover:shadow-neutral-300 transition-shadow">
                                 Add to Cart
                             </Button>
-                            <Button variant="outline" className="w-full rounded-full h-14 text-base font-medium border-neutral-300 hover:bg-neutral-50">
+                            <Button
+                                variant="outline"
+                                className="w-full rounded-full h-14 text-base font-medium border-neutral-300 hover:bg-neutral-50"
+                                onClick={() => setCheckoutOpen(true)}
+                            >
                                 Buy Now
                             </Button>
                         </div>
                     </div>
                 </div>
             </div>
+
+            {/* Checkout Modal */}
+            {product && (
+                <Checkout
+                    open={checkoutOpen}
+                    onOpenChange={setCheckoutOpen}
+                    storeSlug={storeSlug}
+                    product={{
+                        id: product.id,
+                        name: product.name,
+                        price: product.price,
+                        currency: product.currency,
+                        image: product.images[0],
+                    }}
+                    quantity={quantity}
+                />
+            )}
         </div>
     );
 }

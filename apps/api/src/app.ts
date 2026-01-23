@@ -5,6 +5,7 @@ import { auth } from "@vendly/auth";
 import onboardingRoutes from "./modules/onboarding/onboarding-routes";
 import storefrontRoutes from "./modules/storefront/storefront-routes";
 import { productRoutes } from "./modules/products/product-routes";
+import { orderRoutes } from "./modules/orders/order-routes";
 
 export function createApp(): Express {
   const app = express();
@@ -46,6 +47,9 @@ export function createApp(): Express {
 
   // Product routes
   app.use("/api/products", productRoutes);
+
+  // Order routes (admin)
+  app.use("/api/orders", orderRoutes);
 
   app.get("/", (_req, res) => {
     res.send("API is running");
