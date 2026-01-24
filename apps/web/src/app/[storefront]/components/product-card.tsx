@@ -8,12 +8,16 @@ interface ProductCardProps {
   title: string;
   slug: string;
   price: string;
-  image: string;
+  image: string | null;
   rating: number;
   index?: number;
 }
 
 const aspectVariants = [
+  "aspect-[3/4]",
+  "aspect-[4/5]",
+  "aspect-[5/6]",
+  "aspect-[1/1]",
   "aspect-[3/4]",
   "aspect-[4/5]",
   "aspect-[5/6]",
@@ -28,13 +32,19 @@ export function ProductCard({ title, slug, price, image, index = 0 }: ProductCar
   return (
     <Link href={`/${storeSlug}/products/${slug}`} className="group block break-inside-avoid mb-8">
       <div className={`relative overflow-hidden rounded-none border-none bg-[#F2F0EA] ${aspectClass}`}>
-        <Image
-          src={image}
-          alt={title}
-          width={500}
-          height={500}
-          className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-105"
-        />
+        {image ? (
+          <Image
+            src={image}
+            alt={title}
+            width={500}
+            height={500}
+            className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-105"
+          />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center text-neutral-400">
+            <span className="text-sm">No Image</span>
+          </div>
+        )}
 
         <div className="absolute bottom-3 left-3">
           <span className="

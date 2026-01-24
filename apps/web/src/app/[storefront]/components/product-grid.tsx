@@ -17,16 +17,6 @@ interface Product {
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
-// Fallback images when no product image
-const FALLBACK_IMAGES = [
-    "/images/trench-coat.png",
-    "/images/navy-blazer.png",
-    "/images/leather-loafers.png",
-    "/images/linen-shirt.png",
-    "/images/cable-knit-sweater.png",
-    "/images/tortoiseshell-sunglasses.png",
-];
-
 export function ProductGrid() {
     const params = useParams();
     const [products, setProducts] = useState<Product[]>([]);
@@ -81,7 +71,7 @@ export function ProductGrid() {
                     title={product.name}
                     slug={product.slug}
                     price={formatPrice(product.price, product.currency)}
-                    image={product.image || FALLBACK_IMAGES[index % FALLBACK_IMAGES.length]}
+                    image={product.image}
                     rating={product.rating}
                 />
             ))}

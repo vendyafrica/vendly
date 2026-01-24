@@ -7,7 +7,6 @@ import { Button } from "@vendly/ui/components/button";
 import { HugeiconsIcon } from "@hugeicons/react";
 import {
     StarIcon,
-    FavouriteIcon,
     MinusSignIcon,
     PlusSignIcon,
     Loading03Icon,
@@ -140,12 +139,10 @@ export function ProductDetails({ slug }: ProductDetailsProps) {
 
     return (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-16 min-h-screen px-3 sm:px-4 md:px-8 bg-white">
-
-            {/* Mobile horizontal gallery */}
             <div className="lg:hidden w-full">
                 <div className="flex gap-4 overflow-x-auto scrollbar-hide pb-4">
                     {images.map((img, i) => (
-                        <div key={i} className="relative shrink-0 w-64 aspect-4/5 bg-[#F0F0F0] rounded-xl overflow-hidden">
+                        <div key={i} className="relative shrink-0 w-64 aspect-4/5 bg-neutral-100/70 rounded-xl overflow-hidden">
                             <Image
                                 src={img}
                                 alt={`${product.name} view ${i + 1}`}
@@ -165,28 +162,35 @@ export function ProductDetails({ slug }: ProductDetailsProps) {
                         <div
                             key={i}
                             onClick={() => setSelectedImageIndex(i)}
-                            className={`relative shrink-0 w-20 md:w-full aspect-square bg-[#F0F0F0] rounded-lg overflow-hidden cursor-pointer transition-all ${selectedImageIndex === i ? "ring-2 ring-black" : "hover:ring-2 ring-black/50"
-                                }`}
+                            className="relative shrink-0 w-20 md:w-full aspect-4/5 rounded-lg bg-neutral-100/70 overflow-hidden cursor-pointer group"
                         >
                             <Image
                                 src={img}
                                 alt={`${product.name} view ${i + 1}`}
                                 fill
                                 sizes="100px"
-                                className="object-cover mix-blend-multiply"
+                                className="object-cover"
+                            />
+
+                            <span
+                                className={`absolute inset-0 rounded-lg pointer-events-none transition-all
+                                    ${selectedImageIndex === i
+                                        ? "border-2 border-primary"
+                                        : "border border-transparent group-hover:border-primary/50"
+                                    }`}
                             />
                         </div>
                     ))}
                 </div>
 
                 {/* Main Product Image */}
-                <div className="flex-1 relative overflow-hidden bg-[#F0F0F0] rounded-2xl aspect-4/5 flex items-center justify-center group">
+                <div className="flex-1 relative overflow-hidden bg-neutral-100/70 rounded-3xl aspect-4/5 flex items-center justify-center group">
                     <Image
                         src={currentImage}
                         alt={product.name}
-                        width={800}
-                        height={1000}
-                        className="object-cover w-full h-full mix-blend-multiply"
+                        width={400}
+                        height={600}
+                        className="object-cover w-full h-full"
                         priority
                     />
 
@@ -200,35 +204,34 @@ export function ProductDetails({ slug }: ProductDetailsProps) {
 
             {/* Details column */}
             <div className="lg:col-span-5 h-full lg:h-screen overflow-visible lg:overflow-y-auto pr-0 lg:pr-1">
-                <div className="space-y-8 py-3 md:py-4">
+                <div className="space-y-10 py-6">
 
                     <div className="space-y-4">
                         <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-3 bg-white/50 backdrop-blur-sm px-3 py-1.5 rounded-full border border-black/5 w-fit">
-                                <Avatar className="h-6 w-6">
-                                    <AvatarImage src={`/images/store-avatar.png`} />
-                                    <AvatarFallback>{product.store.name.substring(0, 2).toUpperCase()}</AvatarFallback>
+                            <div className="flex items-center gap-3 w-fit">
+                                <Avatar>
+                                    <AvatarImage
+                                        src="https://github.com/shadcn.png"
+                                        alt="@shadcn"
+                                        className="grayscale"
+                                    />
+                                    <AvatarFallback>CN</AvatarFallback>
                                 </Avatar>
-                                <span className="text-xs font-semibold tracking-wide uppercase text-neutral-600">{product.store.name}</span>
+                                <span className="text-md font-semibold tracking-wide text-neutral-800">{product.store.name}</span>
                             </div>
 
                             <div className="flex items-center gap-1">
-                                <Button size="icon" variant="ghost" className="rounded-full h-10 w-10 hover:bg-neutral-100">
-                                    <HugeiconsIcon icon={FavouriteIcon} size={24} />
-                                </Button>
+                                <HugeiconsIcon icon={StarIcon} size={16} className="text-neutral-700 fill-neutral-700" />
+                                <span className="font-medium text-sm">{product.rating.toFixed(1)}</span>
                             </div>
                         </div>
 
-                        <h1 className="text-xl md:text-xl font-medium tracking-tight text-neutral-900 leading-[1.1]">
+                        <h1 className="text-xl md:text-2xl font-semibold tracking-tight leading-tight text-neutral-900">
                             {product.name}
                         </h1>
 
                         <div className="flex items-center gap-4">
-                            <span className="text-lg font-medium text-neutral-700">{product.currency} {product.price.toLocaleString()}</span>
-                            <div className="flex items-center gap-1.5">
-                                <HugeiconsIcon icon={StarIcon} size={16} className="text-black fill-black" />
-                                <span className="font-medium text-sm">{product.rating.toFixed(1)}</span>
-                            </div>
+                            <span className="text-md font-medium text-neutral-600">{product.currency} {product.price.toLocaleString()}</span>
                         </div>
 
                         {product.description && (
@@ -240,7 +243,7 @@ export function ProductDetails({ slug }: ProductDetailsProps) {
 
                     <div className="w-full h-px bg-neutral-200" />
 
-                    <div className="space-y-4 pt-4">
+                    <div className="space-y-4 pt-6 bg-neutral-50/60 rounded-xl p-4">
                         <div className="flex items-center gap-4">
                             <div className="flex items-center border border-neutral-300 rounded-full px-2 py-1">
                                 <button
@@ -264,7 +267,7 @@ export function ProductDetails({ slug }: ProductDetailsProps) {
                         <div className="grid grid-cols-1 gap-3">
                             <Button
                                 onClick={handleAddToCart}
-                                className="w-full rounded-full h-14 text-lg font-medium shadow-xl shadow-neutral-200 hover:shadow-neutral-300 transition-shadow"
+                                className="w-full rounded-md h-12 text-md font-medium shadow-xl shadow-neutral-200 hover:shadow-neutral-300 transition-shadow"
                             >
                                 {isAdded ? (
                                     <>
@@ -277,7 +280,7 @@ export function ProductDetails({ slug }: ProductDetailsProps) {
                             </Button>
                             <Button
                                 variant="outline"
-                                className="w-full rounded-full h-14 text-base font-medium border-neutral-300 hover:bg-neutral-50"
+                                className="w-full rounded-md h-12 text-md font-medium border-neutral-300 hover:bg-neutral-50"
                                 onClick={handleBuyNow}
                             >
                                 Buy Now
