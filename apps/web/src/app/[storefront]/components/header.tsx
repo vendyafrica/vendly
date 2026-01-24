@@ -82,8 +82,8 @@ export function StorefrontHeader() {
                         <Button variant="ghost" size="icon" className="text-neutral-800 hover:bg-neutral-100 rounded-full">
                             <HugeiconsIcon icon={StarIcon} size={20} />
                         </Button>
-                        <Button className="bg-black text-white px-6 h-8">
-                            Login
+                        <Button className="bg-primary text-white px-6 h-8">
+                            Admin
                         </Button>
                     </div>
                 </div>

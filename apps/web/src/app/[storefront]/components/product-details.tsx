@@ -11,12 +11,18 @@ import {
     PlusSignIcon,
     Loading03Icon,
     Tick02Icon,
+    FlashIcon,
 } from "@hugeicons/core-free-icons";
 import { Avatar, AvatarImage, AvatarFallback } from "@vendly/ui/components/avatar";
 import { useCart } from "../../../contexts/cart-context";
 
 interface ProductDetailsProps {
     slug: string;
+}
+
+interface MediaItem {
+    url: string;
+    type: "image" | "video";
 }
 
 interface Product {
@@ -27,6 +33,7 @@ interface Product {
     price: number;
     currency: string;
     images: string[];
+    videos?: string[];
     rating: number;
     store: {
         id: string;
@@ -47,8 +54,11 @@ export function ProductDetails({ slug }: ProductDetailsProps) {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [quantity, setQuantity] = useState(1);
-    const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+    const [selectedMediaIndex, setSelectedMediaIndex] = useState(0);
     const [isAdded, setIsAdded] = useState(false);
+
+    const [selectedSize, setSelectedSize] = useState<string>("");
+    const sizes = ["XS", "S", "M", "L", "XL", "1X", "2X", "3X"];
 
     useEffect(() => {
         const fetchProduct = async () => {
@@ -120,7 +130,7 @@ export function ProductDetails({ slug }: ProductDetailsProps) {
 
     if (loading) {
         return (
-            <div className="flex items-center justify-center py-24">
+            <div className="flex items-center justify-center min-h-screen">
                 <HugeiconsIcon icon={Loading03Icon} size={32} className="animate-spin text-neutral-400" />
             </div>
         );
@@ -134,154 +144,194 @@ export function ProductDetails({ slug }: ProductDetailsProps) {
         );
     }
 
-    const images = product.images.length > 0 ? product.images : ["/images/placeholder-product.png"];
-    const currentImage = images[selectedImageIndex] || images[0];
+    const validImages = product.images && product.images.length > 0
+        ? product.images
+        : ["/images/placeholder-product.png"];
+
+    // Ensure we always have 5 images for the gallery layout
+    // If we have fewer than 5, we repeat the existing images to fill the slots
+    const galleryImages = [...validImages];
+    while (galleryImages.length < 5) {
+        galleryImages.push(...validImages);
+    }
+    // Take exactly the first 5
+    const displayImages = galleryImages.slice(0, 5);
+
+    const currentImage = displayImages[selectedMediaIndex];
+
+    const handleBack = () => {
+        router.back();
+    };
 
     return (
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-16 min-h-screen px-3 sm:px-4 md:px-8 bg-white">
-            <div className="lg:hidden w-full">
-                <div className="flex gap-4 overflow-x-auto scrollbar-hide pb-4">
-                    {images.map((img, i) => (
-                        <div key={i} className="relative shrink-0 w-64 aspect-4/5 bg-neutral-100/70 rounded-xl overflow-hidden">
-                            <Image
-                                src={img}
-                                alt={`${product.name} view ${i + 1}`}
-                                fill
-                                sizes="256px"
-                                className="object-cover mix-blend-multiply"
-                            />
-                        </div>
-                    ))}
-                </div>
+        <div className="min-h-screen bg-white pb-20">
+            {/* Top Navigation */}
+            <div className="max-w-7xl mx-auto px-4 lg:px-8 py-6 lg:py-8">
+                <button
+                    onClick={handleBack}
+                    className="flex items-center gap-2 text-sm font-medium text-neutral-600 hover:text-neutral-900 transition-colors"
+                >
+                    <HugeiconsIcon icon={MinusSignIcon} size={16} className="rotate-90" />
+                    Back
+                </button>
             </div>
 
-            {/* Desktop sticky gallery */}
-            <div className="hidden lg:flex lg:col-span-7 flex-col-reverse md:flex-row gap-4 lg:h-screen lg:sticky lg:top-0 lg:py-8 lg:overflow-hidden">
-                <div className="flex md:flex-col gap-3 md:max-h-full w-full md:w-20 lg:w-24 shrink-0 overflow-hidden">
-                    {images.map((img, i) => (
-                        <div
-                            key={i}
-                            onClick={() => setSelectedImageIndex(i)}
-                            className="relative shrink-0 w-20 md:w-full aspect-4/5 rounded-lg bg-neutral-100/70 overflow-hidden cursor-pointer group"
-                        >
-                            <Image
-                                src={img}
-                                alt={`${product.name} view ${i + 1}`}
-                                fill
-                                sizes="100px"
-                                className="object-cover"
-                            />
+            <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-[1.5fr_1fr] gap-12 lg:gap-20 px-4 lg:px-8">
+                {/* Left: Gallery */}
+                <div className="flex flex-col-reverse lg:flex-row gap-4 lg:gap-6">
+                    {/* Thumbnails - Vertical on desktop, horizontal/grid on mobile */}
+                    <div className="flex lg:flex-col gap-3 overflow-x-auto lg:overflow-visible pb-2 lg:pb-0 w-full lg:w-20 shrink-0 scrollbar-hide">
+                        {displayImages.map((img, index) => (
+                            <button
+                                key={index}
+                                onClick={() => setSelectedMediaIndex(index)}
+                                onMouseEnter={() => setSelectedMediaIndex(index)}
+                                className={`
+                                    relative w-16 h-20 lg:w-full lg:h-24 shrink-0 overflow-hidden border transition-all duration-300
+                                    ${selectedMediaIndex === index
+                                        ? "border-neutral-900 opacity-100"
+                                        : "border-transparent opacity-70 hover:opacity-100 hover:border-neutral-200"
+                                    }
+                                `}
+                            >
+                                <Image
+                                    src={img}
+                                    alt={`View ${index + 1}`}
+                                    fill
+                                    sizes="100px"
+                                    className="object-cover"
+                                />
+                            </button>
+                        ))}
+                    </div>
 
-                            <span
-                                className={`absolute inset-0 rounded-lg pointer-events-none transition-all
-                                    ${selectedImageIndex === i
-                                        ? "border-2 border-primary"
-                                        : "border border-transparent group-hover:border-primary/50"
-                                    }`}
-                            />
-                        </div>
-                    ))}
-                </div>
-
-                {/* Main Product Image */}
-                <div className="flex-1 relative overflow-hidden bg-neutral-100/70 rounded-3xl aspect-4/5 flex items-center justify-center group">
-                    <Image
-                        src={currentImage}
-                        alt={product.name}
-                        width={400}
-                        height={600}
-                        className="object-cover w-full h-full"
-                        priority
-                    />
-
-                    <div className="absolute top-4 right-4 z-10">
-                        <span className="inline-block rounded-sm bg-neutral-300/50 text-neutral-900/80 backdrop-blur-sm px-4 py-2 text-sm font-semibold">
-                            {product.currency} {product.price.toLocaleString()}
-                        </span>
+                    {/* Main Image */}
+                    <div className="flex-1 relative aspect-4/5 bg-neutral-50 overflow-hidden">
+                        <Image
+                            src={currentImage}
+                            alt={product.name}
+                            fill
+                            sizes="(max-width: 1024px) 100vw, 60vw"
+                            className="object-cover"
+                            priority
+                        />
                     </div>
                 </div>
-            </div>
 
-            {/* Details column */}
-            <div className="lg:col-span-5 h-full lg:h-screen overflow-visible lg:overflow-y-auto pr-0 lg:pr-1">
-                <div className="space-y-10 py-6">
-
-                    <div className="space-y-4">
-                        <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-3 w-fit">
-                                <Avatar>
-                                    <AvatarImage
-                                        src="https://github.com/shadcn.png"
-                                        alt="@shadcn"
-                                        className="grayscale"
-                                    />
-                                    <AvatarFallback>CN</AvatarFallback>
-                                </Avatar>
-                                <span className="text-md font-semibold tracking-wide text-neutral-800">{product.store.name}</span>
-                            </div>
-
+                {/* Right: Product Details */}
+                <div className="flex flex-col pt-2 lg:pl-10">
+                    {/* Store Info */}
+                    <div className="flex items-center gap-3 mb-8">
+                        <Avatar className="h-8 w-8">
+                            <AvatarImage
+                                src="https://github.com/shadcn.png"
+                                alt={product.store.name}
+                            />
+                            <AvatarFallback>{product.store.name[0]}</AvatarFallback>
+                        </Avatar>
+                        <div>
+                            <p className="text-sm font-medium text-neutral-900">{product.store.name}</p>
                             <div className="flex items-center gap-1">
-                                <HugeiconsIcon icon={StarIcon} size={16} className="text-neutral-700 fill-neutral-700" />
-                                <span className="font-medium text-sm">{product.rating.toFixed(1)}</span>
+                                <HugeiconsIcon icon={StarIcon} size={12} className="fill-neutral-900 text-neutral-900" />
+                                <span className="text-xs text-neutral-500">{product.rating.toFixed(1)} Rating</span>
                             </div>
                         </div>
-
-                        <h1 className="text-xl md:text-2xl font-semibold tracking-tight leading-tight text-neutral-900">
-                            {product.name}
-                        </h1>
-
-                        <div className="flex items-center gap-4">
-                            <span className="text-md font-medium text-neutral-600">{product.currency} {product.price.toLocaleString()}</span>
-                        </div>
-
-                        {product.description && (
-                            <p className="text-sm text-neutral-500 leading-relaxed">
-                                {product.description}
-                            </p>
-                        )}
                     </div>
 
-                    <div className="w-full h-px bg-neutral-200" />
+                    {/* Title */}
+                    <h1 className="text-xl lg:text-xl font-normal text-neutral-900 leading-tight mb-2">
+                        {product.name}
+                    </h1>
 
-                    <div className="space-y-4 pt-6 bg-neutral-50/60 rounded-xl p-4">
-                        <div className="flex items-center gap-4">
-                            <div className="flex items-center border border-neutral-300 rounded-full px-2 py-1">
+                    {/* Price */}
+                    <div className="text-md text-neutral-900 mb-8 font-medium">
+                        {product.currency} {product.price.toLocaleString()}
+                    </div>
+
+                    {/* Description */}
+                    {product.description && (
+                        <div className="mb-10 text-sm leading-relaxed text-neutral-600 max-w-sm">
+                            <p>{product.description}</p>
+                        </div>
+                    )}
+
+                    {/* Size Selector */}
+                    <div className="mb-8">
+                        <div className="flex items-center gap-2 mb-3">
+                            <span className="text-sm font-medium text-neutral-900">Size</span>
+                            <span className="text-sm text-neutral-300">|</span>
+                            <button className="text-sm text-neutral-600 underline decoration-neutral-300 underline-offset-4 hover:text-neutral-900 transition-colors">
+                                View Size Guide
+                            </button>
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                            {sizes.map((size) => (
+                                <button
+                                    key={size}
+                                    onClick={() => setSelectedSize(size)}
+                                    className={`
+                                        h-10 px-4 min-w-12 border flex items-center justify-center text-sm font-medium transition-all duration-200
+                                        ${selectedSize === size
+                                            ? "border-neutral-900 bg-neutral-900 text-white"
+                                            : "border-neutral-200 text-neutral-600 hover:border-neutral-900 hover:text-neutral-900"
+                                        }
+                                    `}
+                                >
+                                    {size === "2X" && (
+                                        <HugeiconsIcon
+                                            icon={FlashIcon}
+                                            size={12}
+                                            className={`mr-1.5 ${selectedSize === size ? "text-yellow-400" : "text-yellow-500"}`}
+                                        />
+                                    )}
+                                    {size}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Actions */}
+                    <div className="max-w-sm mt-2">
+                        {/* Quantity */}
+                        <div className="flex items-center justify-between border-b border-neutral-200 pb-4">
+                            <span className="text-sm text-neutral-600">Quantity</span>
+                            <div className="flex items-center gap-4">
                                 <button
                                     onClick={() => handleQuantityChange(-1)}
-                                    className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-neutral-100 transition-colors"
+                                    className="p-1 hover:text-neutral-900 text-neutral-500 transition-colors"
                                 >
                                     <HugeiconsIcon icon={MinusSignIcon} size={16} />
                                 </button>
-                                <div className="w-10 text-center font-medium text-sm">
-                                    {quantity}
-                                </div>
+                                <span className="text-sm font-medium w-4 text-center">{quantity}</span>
                                 <button
                                     onClick={() => handleQuantityChange(1)}
-                                    className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-neutral-100 transition-colors"
+                                    className="p-1 hover:text-neutral-900 text-neutral-500 transition-colors"
                                 >
                                     <HugeiconsIcon icon={PlusSignIcon} size={16} />
                                 </button>
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-1 gap-3">
+                        {/* Buttons */}
+                        <div className="grid gap-3 pt-4">
                             <Button
                                 onClick={handleAddToCart}
-                                className="w-full rounded-md h-12 text-md font-medium shadow-xl shadow-neutral-200 hover:shadow-neutral-300 transition-shadow"
+                                className="w-full h-12 rounded-none bg-primary text-white hover:bg-primary/80 uppercase text-xs tracking-wider"
+                                disabled={isAdded}
                             >
                                 {isAdded ? (
-                                    <>
-                                        <HugeiconsIcon icon={Tick02Icon} className="mr-2 h-5 w-5" />
+                                    <span className="flex items-center gap-2">
+                                        <HugeiconsIcon icon={Tick02Icon} size={16} />
                                         Added to Cart
-                                    </>
+                                    </span>
                                 ) : (
                                     "Add to Cart"
                                 )}
                             </Button>
                             <Button
-                                variant="outline"
-                                className="w-full rounded-md h-12 text-md font-medium border-neutral-300 hover:bg-neutral-50"
                                 onClick={handleBuyNow}
+                                variant="outline"
+                                className="w-full h-12 rounded-none border-neutral-200 text-neutral-900 hover:bg-neutral-50 uppercase text-xs tracking-wider"
                             >
                                 Buy Now
                             </Button>
