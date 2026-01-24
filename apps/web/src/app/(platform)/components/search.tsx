@@ -14,7 +14,7 @@ export default function Search() {
                 <Input
                   type="search"
                   placeholder="Search products, stores, creators…"
-                  className="h-10 pl-9 rounded-full"
+                  className="h-10 pl-9 rounded-md"
                 />
               </div>
             </div>

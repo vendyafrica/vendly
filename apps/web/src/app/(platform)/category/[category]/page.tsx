@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 import Link from "next/link";
-import { MarketplaceGridSkeleton } from "@/components/marketplace/MarketplaceGridSkeleton";
+import { MarketplaceGridSkeleton } from "@/app/(platform)/components/MarketplaceGridSkeleton";
 import type { Category } from "@/constants/stores";
 import { categories } from "@/constants/stores";
 import { HugeiconsIcon } from "@hugeicons/react";

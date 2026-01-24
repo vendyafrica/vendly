@@ -8,8 +8,10 @@ import { useState, useEffect } from "react";
 import { HugeiconsIcon } from "@hugeicons/react";
 import {
   FavouriteIcon,
-  ShoppingCart01Icon,
+  ShoppingBag02Icon,
   Search01Icon,
+  UserSquareIcon,
+  UserCircleIcon,
 } from "@hugeicons/core-free-icons";
 import { SignOut, useSession } from "@/lib/auth";
 import { Avatar, AvatarFallback, AvatarImage } from "@vendly/ui/components/avatar";
@@ -71,30 +73,26 @@ export default function Header() {
 
             {!isSignedIn && (
               <>
-                <Button onClick={handleSellNow}>
-                  Sell now
-                </Button>
-
-                <Button
-                  variant="outline"
-                  onClick={() => setShowLogin(true)}
+                <Link
+                  href="#"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setShowLogin(true);
+                  }}
                 >
-                  Sign in
+                  <HugeiconsIcon icon={UserCircleIcon} size={22} />
+                </Link>
+                <Link href="/cart">
+                  <HugeiconsIcon icon={ShoppingBag02Icon} size={24} />
+                </Link>
+                <Button onClick={handleSellNow} className="hidden md:block">
+                  Sell now
                 </Button>
               </>
             )}
 
             {/* Actions */}
-            <div className="flex items-center gap-2">
-              <Button variant="ghost" size="icon-lg">
-                <HugeiconsIcon icon={FavouriteIcon} size={28} />
-              </Button>
-
-              <Button variant="ghost" size="icon-lg">
-                <HugeiconsIcon icon={ShoppingCart01Icon} size={28} />
-              </Button>
-
-
+            <div className="flex items-center gap-4">
               {isSignedIn && (
                 <DropdownMenu>
                   <DropdownMenuTrigger className="outline-none">
@@ -126,30 +124,26 @@ export default function Header() {
           <div className="flex items-center justify-between px-4 py-4">
             <div className="flex items-center gap-3">
               <Image src="/vendly.png" alt="Vendly" width={32} height={32} />
-              <span className="font-semibold">vendly</span>
             </div>
 
             <div className="flex items-center gap-2">
-              <Link href="/favourite">
-                <HugeiconsIcon icon={FavouriteIcon} size={24} />
-              </Link>
-              <Link href="/cart">
-                <HugeiconsIcon icon={ShoppingCart01Icon} size={24} />
-              </Link>
-              <div className="flex items-center gap-2">
+
+              <div className="flex items-center gap-4">
                 {!isSignedIn && (
                   <>
-
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setShowLogin(true)}
+                    <Link
+                      href="#"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        setShowLogin(true);
+                      }}
                     >
-                      Sign in
-                    </Button>
-
+                      <HugeiconsIcon icon={UserCircleIcon} size={24} />
+                    </Link>
+                    <Link href="/cart">
+                      <HugeiconsIcon icon={ShoppingBag02Icon} size={24} />
+                    </Link>
                     <Button
-                      size="sm"
                       onClick={handleSellNow}
                     >
                       Sell now
@@ -157,6 +151,7 @@ export default function Header() {
                   </>
                 )}
               </div>
+
             </div>
           </div>
 
@@ -170,7 +165,7 @@ export default function Header() {
               <Input
                 type="search"
                 placeholder="Search products, stores, creators…"
-                className="h-12 pl-10 rounded-full"
+                className="h-12 pl-10 rounded-md"
               />
             </div>
           </div>

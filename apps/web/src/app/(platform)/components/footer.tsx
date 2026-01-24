@@ -109,7 +109,7 @@ export default function Footer() {
         <div className="border-t mt-12 pt-8">
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <p className="text-sm text-muted-foreground">
-              © 2025 Vendly. All rights reserved.
+              © 2026 vendly. All rights reserved.
             </p>
             <div className="flex gap-6">
               <a
