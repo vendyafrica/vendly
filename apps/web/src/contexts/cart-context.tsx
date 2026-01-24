@@ -1,6 +1,9 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect } from "react";
+import { useSession } from "../lib/auth";
+
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
 export interface CartItem {
     id: string; // Product ID
@@ -35,26 +38,49 @@ interface CartContextType {
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
+    const { data: session } = useSession();
     const [items, setItems] = useState<CartItem[]>([]);
+    const [isLoaded, setIsLoaded] = useState(false);
 
-    // Load from localStorage on mount
+    // Initial Load
     useEffect(() => {
-        const stored = localStorage.getItem("vendly_cart");
-        if (stored) {
-            try {
-                setItems(JSON.parse(stored));
-            } catch (e) {
-                console.error("Failed to parse cart storage", e);
+        const loadCart = async () => {
+            if (session?.user) {
+                try {
+                    const res = await fetch(`${API_BASE}/api/cart`, {
+                        headers: { "x-user-id": session.user.id }
+                    });
+                    if (res.ok) {
+                        const data = await res.json();
+                        setItems(data);
+                    }
+                } catch (e) {
+                    console.error("Failed to fetch cart", e);
+                }
+            } else {
+                const stored = localStorage.getItem("vendly_cart");
+                if (stored) {
+                    try {
+                        setItems(JSON.parse(stored));
+                    } catch (e) {
+                        console.error("Failed to parse cart storage", e);
+                    }
+                }
             }
-        }
-    }, []);
+            setIsLoaded(true);
+        };
+        loadCart();
+    }, [session]);
 
-    // Save to localStorage on change
+    // Save changes
     useEffect(() => {
-        localStorage.setItem("vendly_cart", JSON.stringify(items));
-    }, [items]);
+        if (isLoaded && !session?.user) {
+            localStorage.setItem("vendly_cart", JSON.stringify(items));
+        }
+    }, [items, session, isLoaded]);
 
-    const addItem = (newItem: Omit<CartItem, "quantity">, quantity = 1) => {
+    const addItem = async (newItem: Omit<CartItem, "quantity">, quantity = 1) => {
+        // Optimistic update
         setItems((prev) => {
             const existing = prev.find((item) => item.id === newItem.id);
             if (existing) {
@@ -66,30 +92,107 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
             }
             return [...prev, { ...newItem, quantity }];
         });
+
+        if (session?.user) {
+            // Find the new quantity
+            const currentItem = items.find(i => i.id === newItem.id);
+            const newQuantity = (currentItem?.quantity || 0) + quantity;
+
+            try {
+                await fetch(`${API_BASE}/api/cart/items`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "x-user-id": session.user.id
+                    },
+                    body: JSON.stringify({
+                        productId: newItem.product.id,
+                        storeId: newItem.store.id,
+                        quantity: newQuantity
+                    })
+                });
+            } catch (e) {
+                console.error("Failed to sync cart add", e);
+            }
+        }
     };
 
-    const removeItem = (productId: string) => {
+    const removeItem = async (productId: string) => {
         setItems((prev) => prev.filter((item) => item.id !== productId));
+
+        if (session?.user) {
+            try {
+                await fetch(`${API_BASE}/api/cart/items/${productId}`, {
+                    method: "DELETE",
+                    headers: { "x-user-id": session.user.id }
+                });
+            } catch (e) {
+                console.error("Failed to sync cart remove", e);
+            }
+        }
     };
 
-    const updateQuantity = (productId: string, quantity: number) => {
+    const updateQuantity = async (productId: string, quantity: number) => {
         if (quantity < 1) {
             removeItem(productId);
             return;
         }
+
+        const item = items.find(i => i.id === productId);
+        if (!item) return;
+
         setItems((prev) =>
             prev.map((item) =>
                 item.id === productId ? { ...item, quantity } : item
             )
         );
+
+        if (session?.user) {
+            try {
+                await fetch(`${API_BASE}/api/cart/items`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "x-user-id": session.user.id
+                    },
+                    body: JSON.stringify({
+                        productId: item.product.id,
+                        storeId: item.store.id,
+                        quantity
+                    })
+                });
+            } catch (e) {
+                console.error("Failed to sync cart update", e);
+            }
+        }
     };
 
-    const clearCart = () => {
+    const clearCart = async () => {
         setItems([]);
+        if (session?.user) {
+            try {
+                await fetch(`${API_BASE}/api/cart`, {
+                    method: "DELETE",
+                    headers: { "x-user-id": session.user.id }
+                });
+            } catch (e) {
+                console.error("Failed to sync clear cart", e);
+            }
+        }
     };
 
-    const clearStoreFromCart = (storeId: string) => {
+    const clearStoreFromCart = async (storeId: string) => {
         setItems((prev) => prev.filter((item) => item.store.id !== storeId));
+        if (session?.user) {
+            try {
+                await fetch(`${API_BASE}/api/cart?storeId=${storeId}`, {
+                    method: "DELETE",
+                    headers: { "x-user-id": session.user.id }
+                });
+            } catch (e) {
+                console.error("Failed to sync clear store cart", e);
+            }
+        }
     };
 
     const cartTotal = items.reduce(

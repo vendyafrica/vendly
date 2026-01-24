@@ -6,46 +6,10 @@ import { HugeiconsIcon } from "@hugeicons/react";
 import { Delete02Icon, MinusSignIcon, PlusSignIcon, ArrowLeft01Icon } from "@hugeicons/core-free-icons";
 import { Button } from "@vendly/ui/components/button";
 import { useCart } from "../../../contexts/cart-context";
+import { Avatar, AvatarFallback, AvatarImage } from "@vendly/ui/components/avatar";
 
 export default function CartPage() {
     const { items, itemsByStore, updateQuantity, removeItem, cartTotal, itemCount, addItem } = useCart();
-
-    // Mock data function for testing
-    const loadMockData = () => {
-        const mockStore1 = { id: "store_1", name: "Lamarel", slug: "lamarel" };
-        const mockStore2 = { id: "store_2", name: "Urban Outfit", slug: "urban-outfit" };
-
-        const mockProduct1 = {
-            id: "prod_1",
-            name: "MERINO WOOL CABLE-KNIT SWEATER",
-            price: 229.90,
-            currency: "€",
-            slug: "merino-wool-sweater",
-            image: "https://images.unsplash.com/photo-1576566588028-4147f3842f27?q=80&w=1000&auto=format&fit=crop"
-        };
-
-        const mockProduct2 = {
-            id: "prod_2",
-            name: "LAMAREL CAP",
-            price: 49.90,
-            currency: "€",
-            slug: "lamarel-cap",
-            image: "https://images.unsplash.com/photo-1588850561407-ed78c282e89b?q=80&w=1000&auto=format&fit=crop"
-        };
-
-        const mockProduct3 = {
-            id: "prod_3",
-            name: "Vintage Denim Jacket",
-            price: 89.00,
-            currency: "$",
-            slug: "vintage-denim",
-            image: "https://images.unsplash.com/photo-1523205771623-e0faa4d2813d?q=80&w=1000&auto=format&fit=crop"
-        };
-
-        addItem({ id: "item_1", product: mockProduct1, store: mockStore1 }, 1);
-        addItem({ id: "item_2", product: mockProduct2, store: mockStore1 }, 1);
-        addItem({ id: "item_3", product: mockProduct3, store: mockStore2 }, 1);
-    };
 
     if (itemCount === 0) {
         return (
@@ -63,54 +27,47 @@ export default function CartPage() {
                             Continue Shopping
                         </Button>
                     </Link>
-                    <Button variant="outline" onClick={loadMockData} className="rounded-full">
-                        Load Mock Data (Test)
-                    </Button>
                 </div>
             </div>
         );
     }
 
     return (
-        <div className="max-w-4xl mx-auto space-y-8">
-            <div className="flex items-center gap-2 mb-8">
-                <Link href="/" className="p-2 hover:bg-neutral-100 rounded-full transition-colors">
+        <div className="max-w-3xl mx-auto space-y-3">
+            <div className="flex items-center gap-1 mb-4">
+                <Link href="/" className="p-1 hover:bg-neutral-100 rounded-full transition-colors">
                     <HugeiconsIcon icon={ArrowLeft01Icon} className="h-5 w-5" />
                 </Link>
-                <h1 className="text-2xl font-bold">Shopping Cart ({itemCount})</h1>
+                <h1 className="text-xl font-semibold">Shopping Bag</h1>
             </div>
 
             {Object.entries(itemsByStore).map(([storeId, storeItems]) => {
                 const store = storeItems[0].store;
-                // Calculate subtotal for this specific store
                 const storeSubtotal = storeItems.reduce((acc, item) => acc + (item.product.price * item.quantity), 0);
                 const currency = storeItems[0]?.product.currency || "KES";
 
                 return (
                     <div key={storeId} className="bg-white rounded-3xl border border-neutral-200 overflow-hidden shadow-sm">
-
-                        {/* Store Header */}
-                        <div className="p-6 pb-4 flex items-center gap-4 border-b border-neutral-100">
-                            <div className="h-10 w-10 rounded-full bg-neutral-900 flex items-center justify-center text-white font-bold text-sm">
-                                {store.name.substring(0, 1)}
-                            </div>
+                        <div className="p-6 pb-3 flex items-center gap-4">
+                            <Avatar>
+                                <AvatarImage
+                                    src="https://github.com/shadcn.png"
+                                    alt="@shadcn"
+                                    className="grayscale"
+                                />
+                                <AvatarFallback>CN</AvatarFallback>
+                            </Avatar>
                             <div>
-                                <h2 className="font-bold text-lg">{store.name}</h2>
-                                <Link
-                                    href={`/${store.slug}`}
-                                    className="text-xs text-neutral-500 flex items-center gap-1 hover:text-blue-600"
-                                >
-                                    <HugeiconsIcon icon={ArrowLeft01Icon} className="h-3 w-3 rotate-180" />
-                                    shop{store.slug.replace(/-/g, '')}.com
+                                <Link href={`/${store.slug}`}>
+                                    <h2 className="font-semibold text-md hover:text-primary/80 transition-colors hover:underline">{store.name}</h2>
                                 </Link>
                             </div>
                         </div>
 
-                        {/* Items */}
                         <div className="divide-y divide-neutral-100">
                             {storeItems.map((item) => (
                                 <div key={item.id} className="p-6 flex gap-6">
-                                    <div className="relative h-32 w-32 bg-neutral-100 rounded-xl overflow-hidden shrink-0 border border-neutral-100">
+                                    <div className="relative h-20 w-20 bg-neutral-100 rounded-lg overflow-hidden shrink-0 border border-neutral-100">
                                         {item.product.image ? (
                                             <Image
                                                 src={item.product.image}
@@ -128,15 +85,14 @@ export default function CartPage() {
                                     <div className="flex-1 flex flex-col justify-between py-1">
                                         <div className="flex justify-between items-start">
                                             <div>
-                                                <h3 className="font-bold text-base uppercase tracking-tight mb-1">
-                                                    <Link href={`/${store.slug}/products/${item.product.slug}`} className="hover:underline">
+                                                <h3 className="font-semibold text-base uppercase tracking-tight mb-1">
+                                                    <Link href={`/${store.slug}/products/${item.product.slug}`}>
                                                         {item.product.name}
                                                     </Link>
                                                 </h3>
-                                                <p className="text-neutral-500 text-sm">Off-white / XXS</p>
                                             </div>
-                                            <div className="font-bold text-lg">
-                                                {item.product.currency}{item.product.price.toFixed(2)}
+                                            <div className="font-medium text-md">
+                                                {item.product.currency} {item.product.price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                             </div>
                                         </div>
 
@@ -167,7 +123,7 @@ export default function CartPage() {
                                                 onClick={() => removeItem(item.id)}
                                                 className="w-10 h-10 rounded-full border border-neutral-200 flex items-center justify-center hover:bg-neutral-50 text-neutral-400 hover:text-red-500 transition-colors"
                                             >
-                                                <HugeiconsIcon icon={Delete02Icon} className="h-5 w-5" /> // Changed to more generic dots if available, or keep delete
+                                                <HugeiconsIcon icon={Delete02Icon} className="h-4 w-4 cursor-pointer" />
                                             </button>
                                         </div>
                                     </div>
@@ -178,12 +134,12 @@ export default function CartPage() {
                         {/* Store Footer */}
                         <div className="p-6 bg-white border-t border-neutral-100 flex items-center justify-between">
                             <div className="text-lg font-medium">Subtotal</div>
-                            <div className="text-lg font-bold">{currency}{storeSubtotal.toFixed(2)}</div>
+                            <div className="text-lg font-semibold">{currency} {storeSubtotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
                         </div>
 
-                        <div className="p-4 bg-neutral-50">
+                        <div className="p-4">
                             <Link href={`/checkout?storeId=${store.id}`}>
-                                <Button className="w-full h-12 text-base font-semibold rounded-xl bg-indigo-600 hover:bg-indigo-700 shadow-lg shadow-indigo-600/20">
+                                <Button className="w-full h-12 text-base font-semibold rounded-4xl shadow-md shadow-indigo-600/20">
                                     Continue to checkout
                                 </Button>
                             </Link>

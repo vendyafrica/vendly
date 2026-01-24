@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import Image from "next/image";
 import { Button } from "@vendly/ui/components/button";
 import { HugeiconsIcon } from "@hugeicons/react";
@@ -11,9 +11,10 @@ import {
     MinusSignIcon,
     PlusSignIcon,
     Loading03Icon,
+    Tick02Icon,
 } from "@hugeicons/core-free-icons";
 import { Avatar, AvatarImage, AvatarFallback } from "@vendly/ui/components/avatar";
-import { Checkout } from "./checkout";
+import { useCart } from "../../../contexts/cart-context";
 
 interface ProductDetailsProps {
     slug: string;
@@ -29,6 +30,7 @@ interface Product {
     images: string[];
     rating: number;
     store: {
+        id: string;
         name: string;
         slug: string;
     };
@@ -38,14 +40,16 @@ const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
 export function ProductDetails({ slug }: ProductDetailsProps) {
     const params = useParams();
+    const router = useRouter();
     const storeSlug = params?.storefront as string;
+    const { addItem } = useCart();
 
     const [product, setProduct] = useState<Product | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [quantity, setQuantity] = useState(1);
     const [selectedImageIndex, setSelectedImageIndex] = useState(0);
-    const [checkoutOpen, setCheckoutOpen] = useState(false);
+    const [isAdded, setIsAdded] = useState(false);
 
     useEffect(() => {
         const fetchProduct = async () => {
@@ -83,6 +87,36 @@ export function ProductDetails({ slug }: ProductDetailsProps) {
 
     const handleQuantityChange = (delta: number) => {
         setQuantity(prev => Math.max(1, prev + delta));
+    };
+
+    const handleAddToCart = () => {
+        if (!product) return;
+
+        addItem({
+            id: product.id,
+            product: {
+                id: product.id,
+                name: product.name,
+                price: product.price,
+                currency: product.currency,
+                image: product.images[0],
+                slug: product.slug,
+            },
+            store: {
+                id: product.store.id,
+                name: product.store.name,
+                slug: product.store.slug,
+            },
+        }, quantity);
+
+        setIsAdded(true);
+        setTimeout(() => setIsAdded(false), 2000);
+    };
+
+    const handleBuyNow = () => {
+        if (!product) return;
+        handleAddToCart();
+        router.push(`/checkout?storeId=${product.store.id}`);
     };
 
     if (loading) {
@@ -228,13 +262,23 @@ export function ProductDetails({ slug }: ProductDetailsProps) {
                         </div>
 
                         <div className="grid grid-cols-1 gap-3">
-                            <Button className="w-full rounded-full h-14 text-lg font-medium shadow-xl shadow-neutral-200 hover:shadow-neutral-300 transition-shadow">
-                                Add to Cart
+                            <Button
+                                onClick={handleAddToCart}
+                                className="w-full rounded-full h-14 text-lg font-medium shadow-xl shadow-neutral-200 hover:shadow-neutral-300 transition-shadow"
+                            >
+                                {isAdded ? (
+                                    <>
+                                        <HugeiconsIcon icon={Tick02Icon} className="mr-2 h-5 w-5" />
+                                        Added to Cart
+                                    </>
+                                ) : (
+                                    "Add to Cart"
+                                )}
                             </Button>
                             <Button
                                 variant="outline"
                                 className="w-full rounded-full h-14 text-base font-medium border-neutral-300 hover:bg-neutral-50"
-                                onClick={() => setCheckoutOpen(true)}
+                                onClick={handleBuyNow}
                             >
                                 Buy Now
                             </Button>
@@ -242,23 +286,6 @@ export function ProductDetails({ slug }: ProductDetailsProps) {
                     </div>
                 </div>
             </div>
-
-            {/* Checkout Modal */}
-            {product && (
-                <Checkout
-                    open={checkoutOpen}
-                    onOpenChange={setCheckoutOpen}
-                    storeSlug={storeSlug}
-                    product={{
-                        id: product.id,
-                        name: product.name,
-                        price: product.price,
-                        currency: product.currency,
-                        image: product.images[0],
-                    }}
-                    quantity={quantity}
-                />
-            )}
         </div>
     );
 }

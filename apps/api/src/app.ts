@@ -6,6 +6,7 @@ import onboardingRoutes from "./modules/onboarding/onboarding-routes";
 import storefrontRoutes from "./modules/storefront/storefront-routes";
 import { productRoutes } from "./modules/products/product-routes";
 import { orderRoutes } from "./modules/orders/order-routes";
+import { cartRoutes } from "./modules/cart/cart-routes";
 
 export function createApp(): Express {
   const app = express();
@@ -50,6 +51,9 @@ export function createApp(): Express {
 
   // Order routes (admin)
   app.use("/api/orders", orderRoutes);
+
+  // Cart routes
+  app.use("/api/cart", cartRoutes);
 
   app.get("/", (_req, res) => {
     res.send("API is running");
