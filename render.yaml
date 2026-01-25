@@ -1,0 +1,27 @@
+services:
+  - type: web
+    name: api
+    runtime: node
+    plan: free 
+    region: oregon 
+
+    buildCommand: pnpm install --prod=false && pnpm turbo build --filter=./apps/api
+    startCommand: node apps/api/dist/server.js
+
+    buildFilter:
+      paths:
+        - apps/api/**
+        - packages/**
+        - package.json
+        - pnpm-lock.yaml
+        - turbo.json
+      ignoredPaths:
+        - apps/web/**
+        - apps/admin/**
+        - README.md
+
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
