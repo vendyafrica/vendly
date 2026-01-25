@@ -10,4 +10,5 @@ export * from "./media-schema";
 export * from "./roles-schema";
 export * from "./order-schema";
 export * from "./cart-schema";
+export * from "./category-schema";
 
