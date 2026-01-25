@@ -55,7 +55,7 @@ export default function Header() {
   return (
     <>
       <header
-        className={`sticky top-0 z-50 w-full bg-white transition-transform duration-300 ${isVisible ? "translate-y-0" : "-translate-y-full"
+        className={`sticky top-0 z-50 w-full bg-[#F9F9F7] transition-transform duration-300 ${isVisible ? "translate-y-0" : "-translate-y-full"
           }`}
       >
         {/* Desktop */}

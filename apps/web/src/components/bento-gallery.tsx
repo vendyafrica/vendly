@@ -45,7 +45,7 @@ const InteractiveImageBentoGallery: React.FC<
   return (
     <section
       ref={targetRef}
-      className="relative w-full overflow-hidden bg-background py-2 sm:py-4"
+      className="relative w-full overflow-hidden bg-[#F9F9F7] py-2 sm:py-4"
     >
       {/* Optional heading / intro */}
       <motion.div
