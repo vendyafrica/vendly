@@ -1,7 +1,7 @@
 "use client";
 
+import categories from "@/app/onboarding/components/categories";
 import Link from "next/link";
-import { MARKETPLACE_CATEGORIES, type MarketplaceCategory } from "@/types/marketplace";
 
 
 export function CategoryOverview() {
@@ -9,7 +9,7 @@ export function CategoryOverview() {
     <div className="px-4 sm:px-6 lg:px-8 py-6">
       {/* Mobile: 2 columns */}
       <div className="grid grid-cols-2 gap-3 md:hidden">
-        {MARKETPLACE_CATEGORIES.map((category: MarketplaceCategory) => (
+        {categories.map((category) => (
           <Link
             key={category}
             href={`/category/${category.toLowerCase()}`}
@@ -30,7 +30,7 @@ export function CategoryOverview() {
 
       {/* Desktop/Tablet: 3 columns */}
       <div className="hidden md:grid md:grid-cols-2 lg:grid-cols-3 gap-3">
-        {MARKETPLACE_CATEGORIES.map((category: MarketplaceCategory) => (
+        {categories.map((category) => (
           <Link
             key={category}
             href={`/category/${category.toLowerCase()}`}
