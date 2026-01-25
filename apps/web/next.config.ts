@@ -23,6 +23,18 @@ const nextConfig: NextConfig = {
         port: "",
         pathname: "/**",
       },
+      {
+        protocol: "https",
+        hostname: "www.cosmos.so",
+        port: "",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
+        hostname: "cdn.cosmos.so",
+        port: "",
+        pathname: "/**",
+      },
     ],
   },
   // async rewrites() {
