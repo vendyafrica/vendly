@@ -7,7 +7,7 @@ const nextConfig: NextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
-  transpilePackages: ["@vendly/ui"],
+  transpilePackages: ["@vendly/ui", "@vendly/auth"],
   outputFileTracingRoot: repoRoot,
   images: {
     remotePatterns: [

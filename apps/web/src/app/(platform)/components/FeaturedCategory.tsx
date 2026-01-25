@@ -4,7 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { ArrowRight01Icon, StarIcon } from "@hugeicons/core-free-icons";
-import { Avatar, AvatarFallback, AvatarImage } from "@Vendly/ui/components/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@vendly/ui/components/avatar";
 
 // Mock data based on the provided image
 const products = [

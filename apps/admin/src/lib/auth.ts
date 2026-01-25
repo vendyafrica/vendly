@@ -1,5 +1,5 @@
 
-import { authClient } from "@vendly/auth/client";
+import { authClient } from "@vendly/auth/auth-client";
 
 export async function signIn(email: string, password: string) {
     const data = await authClient.signIn.email({

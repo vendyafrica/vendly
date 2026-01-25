@@ -15,6 +15,15 @@
       "@vendly/ui/*": [
         "../../packages/ui/src/*"
       ],
+      "@vendly/auth": [
+        "../../packages/auth/src/index.ts"
+      ],
+      "@vendly/auth/auth-client": [
+        "../../packages/auth/src/auth-client.ts"
+      ],
+      "@vendly/transactional": [
+        "../../packages/transactional/index.ts"
+      ],
       "@/*": [
         "./src/*"
       ]

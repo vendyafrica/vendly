@@ -6,7 +6,7 @@ import CategoryCards from "@/app/(platform)/components/CategoryCards";
 import FeaturedCategory from "@/app/(platform)/components/FeaturedCategory";
 import Header from "@/app/(platform)/components/header";
 import Footer from "@/app/(platform)/components/footer";
-import { Button } from "@Vendly/ui/components/button";
+import { Button } from "@vendly/ui/components/button";
 import { signInWithOneTap } from "@/lib/auth";
 
 export default function HomePage() {
