@@ -102,16 +102,13 @@ const InteractiveImageBentoGallery: React.FC<
                 />
 
                 {/* Overlay */}
-                <div className="pointer-events-none absolute inset-0 bg-linear-to-t from-black/80 via-black/40 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
+                <div className="pointer-events-none absolute inset-0 bg-linear-to-t from-black/80 via-black/40 to-transparent" />
 
                 {/* Text */}
-                <div className="relative z-10 translate-y-4 opacity-0 transition-all duration-500 group-hover:translate-y-0 group-hover:opacity-100">
-                  <h3 className="text-base font-semibold text-white md:text-lg">
+                <div className="relative z-10">
+                  <h3 className="text-md font-semibold text-white md:text-md">
                     {item.title}
                   </h3>
-                  <p className="mt-1 text-xs text-white/80 md:text-sm">
-                    {item.desc}
-                  </p>
                 </div>
               </motion.div>
             ))}
