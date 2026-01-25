@@ -7,6 +7,7 @@ import {
     index,
     unique,
     integer,
+    foreignKey,
 } from "drizzle-orm/pg-core";
 import { stores } from "./storefront-schema";
 
@@ -16,12 +17,9 @@ export const categories = pgTable(
         id: uuid("id").primaryKey().defaultRandom(),
         name: text("name").notNull(),
         slug: text("slug").notNull().unique(),
-        description: text("description"),
-        image: text("image"), // URL to the category image
-        parentId: uuid("parent_id")
-            .references(() => categories.id, { onDelete: "set null" }),
-        level: integer("level").default(0).notNull(), // 0 for main, 1 for sub
-
+        image: text("image"),
+        parentId: uuid("parent_id"),
+        level: integer("level").default(0).notNull(),
         createdAt: timestamp("created_at").defaultNow().notNull(),
         updatedAt: timestamp("updated_at")
             .defaultNow()
@@ -30,6 +28,11 @@ export const categories = pgTable(
     },
     (table) => [
         index("categories_parent_idx").on(table.parentId),
+        foreignKey({
+            columns: [table.parentId],
+            foreignColumns: [table.id],
+            name: "categories_parent_id_fk",
+        }).onDelete("set null"),
         index("categories_slug_idx").on(table.slug),
     ]
 );

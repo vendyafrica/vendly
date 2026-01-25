@@ -112,7 +112,7 @@ export default function ProductCard({ product }: { product: ProductType }) {
                 </div>
 
                 {/* Rating */}
-                <div className="flex items-center gap-1 flex-shrink-0">
+                <div className="flex items-center gap-1 shrink-0">
                     <HugeiconsIcon icon={StarIcon} size={14} className="text-yellow-500 fill-yellow-500" />
                     <span className="text-xs text-gray-500">{product.rating}</span>
                 </div>

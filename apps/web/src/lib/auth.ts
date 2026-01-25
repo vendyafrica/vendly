@@ -6,7 +6,7 @@ const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
 export async function signInWithGoogle() {
   const data = await authClient.signIn.social({
     provider: "google",
-    callbackURL: `${APP_URL}/onboarding/personal`
+    callbackURL: "/"
   });
   return data;
 }
@@ -23,7 +23,7 @@ export async function signInWithOneTap(): Promise<void> {
 export async function signInWithMagicLink(email: string) {
   const data = await authClient.signIn.magicLink({
     email,
-    callbackURL: `${APP_URL}/onboarding/personal`
+    callbackURL: "/"
   });
   return data;
 }

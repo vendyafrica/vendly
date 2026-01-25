@@ -143,11 +143,13 @@ export default function Welcome() {
                 <Input
                   id="email"
                   type="email"
+                  inputMode="email"
+                  autoComplete="email"
                   placeholder="m@example.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
-                  className="focus-visible:border-primary/50 focus-visible:ring-primary/10"
+                  className="focus-visible:border-primary/50 focus-visible:ring-primary/10 h-11"
                 />
                 {error && (
                   <p className="text-sm text-destructive mt-1">{error}</p>
@@ -177,7 +179,7 @@ export default function Welcome() {
               <Field>
                 <Button
                   type="submit"
-                  className="w-full"
+                  className="w-full h-11"
                   disabled={formState === "loading"}
                 >
                   {formState === "loading" ? "Sending magic link…" : "Sign Up"}
@@ -190,7 +192,7 @@ export default function Welcome() {
                 <Button
                   variant="outline"
                   type="button"
-                  className="h-9"
+                  className="h-11"
                   onClick={handleGoogleSignIn}
                 >
                  <GoogleIcon />

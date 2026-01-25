@@ -169,6 +169,13 @@
       "when": 1769016065591,
       "tag": "0023_lame_starbolt",
       "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "7",
+      "when": 1769361249781,
+      "tag": "0024_omniscient_quicksilver",
+      "breakpoints": true
     }
   ]
 }

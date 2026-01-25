@@ -4,9 +4,7 @@ import {
     stores,
     users,
     categories,
-    storeCategories,
     type NewCategory,
-    type NewStoreCategory,
 } from "@vendly/db/schema";
 import { eq, desc, sql } from "drizzle-orm";
 
