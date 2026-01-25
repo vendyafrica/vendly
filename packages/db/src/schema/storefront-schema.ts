@@ -7,10 +7,12 @@ import {
     index,
     unique,
     boolean,
+    integer,
 } from "drizzle-orm/pg-core";
 
 import { tenants } from "./tenant-schema";
 import { users } from "./auth-schema";
+import { storeCustomers } from "./customer-schema";
 
 
 export const stores = pgTable(
@@ -24,6 +26,9 @@ export const stores = pgTable(
         name: text("name").notNull(),
         slug: text("slug").notNull(),
         description: text("description"),
+        categories: text("categories").array().default([]),
+        storeRating: integer("store_rating").default(0),
+        storeRatingCount: integer("store_rating_count").default(0),
 
         customDomain: text("custom_domain").unique(),
         domainVerified: boolean("domain_verified").default(false),
@@ -31,9 +36,9 @@ export const stores = pgTable(
         status: boolean("status").notNull().default(false),
         defaultCurrency: text("default_currency").default("KES").notNull(),
 
-        email: text("email"),
-        phone: text("phone"),
-        address: text("address"),
+        storeContactPhone: text("store_contact_phone"),
+        storeContactEmail: text("store_contact_email"),
+        storeAddress: text("store_address"),
 
         createdAt: timestamp("created_at").defaultNow().notNull(),
         updatedAt: timestamp("updated_at")
@@ -49,47 +54,17 @@ export const stores = pgTable(
     ]
 );
 
-export const storeMemberships = pgTable(
-    "store_memberships",
-    {
-        id: uuid("id").primaryKey().defaultRandom(),
-        tenantId: uuid("tenant_id")
-            .notNull()
-            .references(() => tenants.id, { onDelete: "cascade" }),
-        storeId: uuid("store_id")
-            .notNull()
-            .references(() => stores.id, { onDelete: "cascade" }),
-        userId: text("user_id")
-            .notNull()
-            .references(() => users.id, { onDelete: "cascade" }),
-
-        role: text("role").notNull(),
-
-        createdAt: timestamp("created_at").defaultNow().notNull(),
-        updatedAt: timestamp("updated_at")
-            .defaultNow()
-            .$onUpdate(() => new Date())
-            .notNull(),
-    },
-    (table) => [
-        unique("store_memberships_unique").on(table.storeId, table.userId),
-        index("store_memberships_tenant_idx").on(table.tenantId),
-        index("store_memberships_store_idx").on(table.storeId),
-        index("store_memberships_user_idx").on(table.userId),
-    ]
-);
-
-export const storeMembershipsRelations = relations(storeMemberships, ({ one }) => ({
+export const storeCustomersRelations = relations(storeCustomers, ({ one }) => ({
     tenant: one(tenants, {
-        fields: [storeMemberships.tenantId],
+        fields: [storeCustomers.tenantId],
         references: [tenants.id],
     }),
     store: one(stores, {
-        fields: [storeMemberships.storeId],
+        fields: [storeCustomers.storeId],
         references: [stores.id],
     }),
     user: one(users, {
-        fields: [storeMemberships.userId],
+        fields: [storeCustomers.userId],
         references: [users.id],
     }),
 }));
@@ -97,5 +72,5 @@ export const storeMembershipsRelations = relations(storeMemberships, ({ one }) =
 export type Store = typeof stores.$inferSelect;
 export type NewStore = typeof stores.$inferInsert;
 
-export type StoreMembership = typeof storeMemberships.$inferSelect;
-export type NewStoreMembership = typeof storeMemberships.$inferInsert;
+export type StoreCustomer = typeof storeCustomers.$inferSelect;
+export type NewStoreCustomer = typeof storeCustomers.$inferInsert;

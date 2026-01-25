@@ -9,6 +9,7 @@ import {
 import { tenantMemberships } from "./tenant-schema";
 
 
+
 export const users = pgTable("user", {
     id: text("id").primaryKey(),
     name: text("name").notNull(),
@@ -79,6 +80,7 @@ export const verification = pgTable(
     },
     (table) => [index("verification_identifier_idx").on(table.identifier)],
 );
+
 
 export const usersRelations = relations(users, ({ many }) => ({
     tenantMemberships: many(tenantMemberships),

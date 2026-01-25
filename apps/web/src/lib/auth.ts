@@ -1,12 +1,14 @@
 
 import { authClient } from "@vendly/auth/auth-client";
 
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+
 export async function signInWithGoogle() {
-	const data = await authClient.signIn.social({
-		provider: "google",
-		callbackURL:"http://localhost:3000"
-	});
-	return data;
+  const data = await authClient.signIn.social({
+    provider: "google",
+    callbackURL: "/"
+  });
+  return data;
 }
 
 export async function SignOut() {
@@ -21,7 +23,16 @@ export async function signInWithOneTap(): Promise<void> {
 export async function signInWithMagicLink(email: string) {
   const data = await authClient.signIn.magicLink({
     email,
-    callbackURL: "http://localhost:3000"
+    callbackURL: "/"
+  });
+  return data;
+}
+
+export async function signUp(email: string, password: string, name: string) {
+  const data = await authClient.signUp.email({
+    email,
+    password,
+    name,
   });
   return data;
 }
@@ -29,7 +40,7 @@ export async function signInWithMagicLink(email: string) {
 export async function signInWithInstagram() {
   const data = await authClient.signIn.social({
     provider: "instagram",
-    callbackURL:  "http://localhost:3000/sell/business?connected=true"
+    callbackURL: `${APP_URL}/sell/business?connected=true`
   });
   return data;
 }

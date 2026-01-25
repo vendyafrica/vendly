@@ -6,18 +6,27 @@ import {
     uuid,
     index,
     unique,
+    jsonb,
 } from "drizzle-orm/pg-core";
 import { users } from "./auth-schema";
+import { onboardingStepEnum } from "../enums/onboarding";
+
+
 
 export const tenants = pgTable(
     "tenants",
     {
         id: uuid("id").primaryKey().defaultRandom(),
         fullName: text("full_name").notNull(),
+        slug: text("slug").notNull().unique(),
         phoneNumber: text("phone_number"),
         status: text("status").notNull().default("onboarding"),
         plan: text("plan").default("free"),
         billingEmail: text("billing_email"),
+
+        onboardingStep: onboardingStepEnum("onboarding_step").default("signup").notNull(),
+        onboardingData: jsonb("onboarding_data").default({}),
+
         createdAt: timestamp("created_at").defaultNow().notNull(),
         updatedAt: timestamp("updated_at")
             .defaultNow()

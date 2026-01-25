@@ -1,12 +1,12 @@
 import { Suspense } from "react";
 import Link from "next/link";
-import { MarketplaceGridSkeleton } from "@/components/marketplace/MarketplaceGridSkeleton";
+import { MarketplaceGridSkeleton } from "@/app/(platform)/components/MarketplaceGridSkeleton";
 import type { Category } from "@/constants/stores";
 import { categories } from "@/constants/stores";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { ArrowLeft02Icon, Store01Icon } from "@hugeicons/core-free-icons";
-import Header from "@/components/marketplace/header";
-import Footer from "@/components/marketplace/footer";
+import Header from "@/app/(platform)/components/header";
+import Footer from "@/app/(platform)/components/footer";
 import { CategoryContent } from "./category-content";
 
 interface CategoryPageProps {

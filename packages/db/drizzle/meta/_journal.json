@@ -141,6 +141,41 @@
       "when": 1768509575666,
       "tag": "0019_minor_wendell_vaughn",
       "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "7",
+      "when": 1768804104793,
+      "tag": "0020_kind_loners",
+      "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "7",
+      "when": 1768815498726,
+      "tag": "0021_cloudy_wrecker",
+      "breakpoints": true
+    },
+    {
+      "idx": 22,
+      "version": "7",
+      "when": 1769006351703,
+      "tag": "0022_next_miss_america",
+      "breakpoints": true
+    },
+    {
+      "idx": 23,
+      "version": "7",
+      "when": 1769016065591,
+      "tag": "0023_lame_starbolt",
+      "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "7",
+      "when": 1769361249781,
+      "tag": "0024_omniscient_quicksilver",
+      "breakpoints": true
     }
   ]
 }

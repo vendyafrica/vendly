@@ -1,7 +1,3 @@
-/**
- * Better Auth Configuration
- * Main authentication setup with cleaner structure
- */
 import { betterAuth } from "better-auth";
 import { genericOAuth, magicLink, oneTap } from "better-auth/plugins";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
@@ -13,9 +9,6 @@ import { getInstagramToken, getInstagramUserInfo } from "./instagram";
 const baseURL = process.env.BETTER_AUTH_URL;
 const secret = process.env.BETTER_AUTH_SECRET as string;
 
-/**
- * Extract user name from email
- */
 function extractNameFromEmail(email: string): string {
   const emailPrefix = email.split("@")[0];
   return emailPrefix
@@ -28,41 +21,20 @@ function extractNameFromEmail(email: string): string {
     .split(" ")[0];
 }
 
-/**
- * Trusted origins for CORS
- * Using a function to dynamically match ngrok and other patterns
- */
-const trustedOrigins = (request: Request | undefined) => {
-  const origins = [
-    "http://localhost:3000",
-    "http://localhost:8000",
-    "https://harmonically-carpetless-janna.ngrok-free.dev",
-  ];
+const trustedOrigins = [
+  "http://localhost:3000",
+  "http://localhost:4000",
+  "http://localhost:8000",
+  "https://harmonically-carpetless-janna.ngrok-free.dev",
+  "https://vendly-web.vercel.app",
+  "https://www.vendlyafrica.store",
+  "https://vendlyafrica.store",
+];
 
-  // Add the request origin if it matches allowed patterns
-  if (request) {
-    const origin = request.headers.get("origin");
-    if (origin) {
-      const isNgrok = /\.ngrok-free\.dev$/.test(origin) || /\.ngrok\.io$/.test(origin);
-      const isVercel = /\.vercel\.app$/.test(origin);
-      const isVendly = /\.vendlyafrica\.store$/.test(origin);
-      if (isNgrok || isVercel || isVendly) {
-        origins.push(origin);
-      }
-    }
-  }
-
-  return origins;
-};
-
-/**
- * Initialize Better Auth
- */
 export const auth = betterAuth({
   baseURL,
   secret,
 
-  // Database adapter
   database: drizzleAdapter(db, {
     provider: "pg",
     schema: {
@@ -73,13 +45,11 @@ export const auth = betterAuth({
     },
   }),
 
-  // Email & Password authentication
   emailAndPassword: {
     enabled: true,
     requireEmailVerification: true,
   },
 
-  // Email verification
   emailVerification: {
     sendOnSignUp: true,
     autoSignInAfterVerification: true,
@@ -96,12 +66,10 @@ export const auth = betterAuth({
     },
   },
 
-  // Database hooks
   databaseHooks: {
     user: {
       create: {
         before: async (user) => {
-          // Auto-generate name from email if not provided
           if (!user.name || user.name === user.email) {
             const name = extractNameFromEmail(user.email);
             return {
@@ -116,10 +84,8 @@ export const auth = betterAuth({
     },
   },
 
-  // CORS configuration
   trustedOrigins,
 
-  // Social providers
   socialProviders: {
     google: {
       clientId: process.env.GOOGLE_CLIENT_ID as string,
@@ -127,7 +93,6 @@ export const auth = betterAuth({
     },
   },
 
-  // Plugins
   plugins: [
     genericOAuth({
       config: [
@@ -150,10 +115,8 @@ export const auth = betterAuth({
       ],
     }),
 
-    // Google One Tap
     oneTap(),
 
-    // Magic Link authentication
     magicLink({
       async sendMagicLink({ email, url }) {
         await sendMagicLinkEmail({
@@ -164,20 +127,17 @@ export const auth = betterAuth({
     }),
   ],
 
-  // Session configuration
   session: {
-    expiresIn: 60 * 60 * 24 * 7, // 7 days
-    updateAge: 60 * 60 * 24, // Refresh every 1 day
+    expiresIn: 60 * 60 * 24 * 7,
+    updateAge: 60 * 60 * 24,
     cookieCache: {
       enabled: true,
-      maxAge: 60 * 5, // 5 minutes
+      maxAge: 60 * 5,
     },
   },
 
-  // Advanced configuration
   advanced: {
     cookiePrefix: "vendly",
-    // Specifically configure the OAuth state cookie to work with cross-origin requests
     cookies: {
       state: {
         attributes: {

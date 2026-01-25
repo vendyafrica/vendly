@@ -15,6 +15,15 @@
       "@vendly/ui/*": [
         "../../packages/ui/src/*"
       ],
+      "@vendly/db": [
+        "../../packages/db/src/index.ts"
+      ],
+      "@vendly/auth": [
+        "../../packages/auth/src/index.ts"
+      ],
+      "@vendly/transactional": [
+        "../../packages/transactional/index.ts"
+      ],
       "@/*": [
         "./src/*"
       ]
@@ -23,6 +32,9 @@
   "include": [
     "src",
     "../../packages/ui/src",
+    "../../packages/db/src",
+    "../../packages/auth/src",
+    "../../packages/transactional",
     "next.config.ts",
     "next-env.d.ts",
     ".next/types/**/*.ts"
