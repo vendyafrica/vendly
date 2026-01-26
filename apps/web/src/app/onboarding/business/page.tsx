@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@vendly/ui/components/button";
 import {
     Field,
@@ -8,24 +8,39 @@ import {
 } from "@vendly/ui/components/field";
 import CategoriesSelector from "../components/categories";
 import { useOnboarding } from "../context/onboarding-context";
+import { getCategoriesAction } from "@/actions/categories";
+import { type Category } from "../components/tag-selector";
 
 export default function BusinessInfo() {
     const { data, saveBusiness, completeOnboarding, goBack, isLoading, error } = useOnboarding();
 
     const [categories, setCategories] = useState<string[]>(data.business?.categories ?? []);
+    const [availableCategories, setAvailableCategories] = useState<Category[]>([]);
+
+    useEffect(() => {
+        const fetchCategories = async () => {
+            const res = await getCategoriesAction();
+            if (res.success && res.data) {
+                const mapped = res.data.map((c) => ({
+                    id: c.slug,
+                    label: c.name,
+                }));
+                setAvailableCategories(mapped);
+            }
+        };
+        fetchCategories();
+    }, []);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
         if (categories.length === 0) {
-            return; // Will show validation error via selector
+            return; 
         }
 
-        // Save business info first
         const saved = await saveBusiness({ categories });
 
         if (saved) {
-            // Then complete onboarding
             await completeOnboarding();
         }
     };
@@ -44,6 +59,7 @@ export default function BusinessInfo() {
                         <CategoriesSelector
                             selectedCategories={categories}
                             onChange={setCategories}
+                            availableCategories={availableCategories}
                         />
                     </Field>
                 </FieldGroup>

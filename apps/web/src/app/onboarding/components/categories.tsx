@@ -22,9 +22,13 @@ interface CategoriesSelectorProps {
 
 export default function CategoriesSelector({
     selectedCategories,
-    onChange
-}: CategoriesSelectorProps) {
-    const selected = CATEGORIES.filter(c => selectedCategories.includes(c.id));
+    onChange,
+    availableCategories = []
+}: CategoriesSelectorProps & { availableCategories?: Category[] }) {
+    // If no dynamic categories provided, use empty or passed ones
+    // ideally the parent should provide them
+
+    const selected = availableCategories.filter(c => selectedCategories.includes(c.id));
 
     const handleChange = (categories: Category[]) => {
         onChange(categories.map(c => c.id));
@@ -42,7 +46,7 @@ export default function CategoriesSelector({
             </div>
 
             <CategorySelector
-                categories={CATEGORIES}
+                categories={availableCategories}
                 selectedCategories={selected}
                 onChange={handleChange}
                 maxSelections={5}
