@@ -285,6 +285,15 @@ class OrderRepository {
             where: and(eq(stores.slug, slug), isNull(stores.deletedAt)),
         });
     }
+
+    /**
+     * Find store by ID
+     */
+    async findStoreById(storeId: string) {
+        return db.query.stores.findFirst({
+            where: and(eq(stores.id, storeId), isNull(stores.deletedAt)),
+        });
+    }
 }
 
 export const orderRepository = new OrderRepository();

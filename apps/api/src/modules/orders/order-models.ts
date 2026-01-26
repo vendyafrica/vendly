@@ -36,7 +36,7 @@ export type CreateOrderInput = z.infer<typeof createOrderSchema>;
  * Update order status (from admin)
  */
 export const updateOrderStatusSchema = z.object({
-    status: z.enum(["pending", "processing", "completed", "cancelled", "refunded"]).optional(),
+    status: z.enum(["pending", "processing", "PREPARING", "READY_FOR_PICKUP", "OUT_FOR_DELIVERY", "DELIVERED", "completed", "cancelled", "refunded"]).optional(),
     paymentStatus: z.enum(["pending", "paid", "failed", "refunded"]).optional(),
 });
 
@@ -46,7 +46,7 @@ export type UpdateOrderStatusInput = z.infer<typeof updateOrderStatusSchema>;
  * Order query filters
  */
 export const orderQuerySchema = z.object({
-    status: z.enum(["pending", "processing", "completed", "cancelled", "refunded"]).optional(),
+    status: z.enum(["pending", "processing", "PREPARING", "READY_FOR_PICKUP", "OUT_FOR_DELIVERY", "DELIVERED", "completed", "cancelled", "refunded"]).optional(),
     paymentStatus: z.enum(["pending", "paid", "failed", "refunded"]).optional(),
     page: z.coerce.number().int().min(1).default(1),
     limit: z.coerce.number().int().min(1).max(100).default(20),

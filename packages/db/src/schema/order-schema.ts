@@ -141,6 +141,6 @@ export type NewOrder = typeof orders.$inferInsert;
 export type OrderItem = typeof orderItems.$inferSelect;
 export type NewOrderItem = typeof orderItems.$inferInsert;
 
-export type OrderStatus = "pending" | "processing" | "completed" | "cancelled" | "refunded";
+export type OrderStatus = "pending" | "processing" | "PREPARING" | "READY_FOR_PICKUP" | "OUT_FOR_DELIVERY" | "DELIVERED" | "completed" | "cancelled" | "refunded";
 export type PaymentMethod = "card" | "mpesa" | "paypal" | "cash_on_delivery";
 export type PaymentStatus = "pending" | "paid" | "failed" | "refunded";

@@ -8,6 +8,7 @@ import { productRoutes } from "./modules/products/product-routes";
 import { orderRoutes } from "./modules/orders/order-routes";
 import { cartRoutes } from "./modules/cart/cart-routes";
 import { adminRoutes } from "./modules/admin/admin-route";
+import { whatsappRoutes } from "./modules/whatsapp/whatsapp-routes";
 
 export function createApp(): Express {
   const app = express();
@@ -58,6 +59,9 @@ export function createApp(): Express {
 
   // Admin routes
   app.use("/api/admin", adminRoutes);
+
+  // WhatsApp routes
+  app.use("/api", whatsappRoutes);
 
   app.get("/", (_req, res) => {
     res.send("API is running");
