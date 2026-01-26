@@ -1,7 +1,5 @@
 import express, { Express, Request, Response } from "express";
 import cors from "cors";
-import { toNodeHandler } from "better-auth/node";
-import { auth } from "@vendly/auth";
 import onboardingRoutes from "./modules/onboarding/onboarding-routes";
 import storefrontRoutes from "./modules/storefront/storefront-routes";
 import { productRoutes } from "./modules/products/product-routes";
@@ -35,8 +33,6 @@ export function createApp(): Express {
       allowedHeaders: ["Content-Type", "Authorization", "X-Request-With", "x-tenant-id", "x-tenant-slug"],
     })
   );
-
-  app.all("/api/auth/*splat", toNodeHandler(auth));
 
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
