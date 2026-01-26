@@ -10,7 +10,7 @@ import {
     FieldSeparator,
 } from "@vendly/ui/components/field"
 import { Input } from "@vendly/ui/components/input"
-import { signInWithGoogle, signInWithMagicLink } from "@/lib/auth"
+import { signInWithGoogle, signInWithMagicLink } from "@vendly/auth"
 import { HugeiconsIcon } from "@hugeicons/react"
 import { MailReceive02Icon } from "@hugeicons/core-free-icons"
 import { GoogleIcon } from "@vendly/ui/components/svgs/google"

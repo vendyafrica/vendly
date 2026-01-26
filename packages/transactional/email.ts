@@ -1,7 +1,7 @@
-import { resend } from './resend.js';
+import { resend } from './resend';
 import { render } from '@react-email/components';
-import { VerificationEmail } from './emails/verification.js';
-import { MagicLinkEmail } from './emails/magic-link.js';
+import { VerificationEmail } from './emails/verification';
+import { MagicLinkEmail } from './emails/magic-link';
 import * as React from 'react';
 
 interface SendVerificationProps {
@@ -60,9 +60,7 @@ interface SendWelcomeEmailProps {
 }
 
 export const sendWelcomeEmail = async ({ to, name, dashboardUrl }: SendWelcomeEmailProps) => {
-  // Dynamically import to avoid circular dependency issues if any, or just import at top if fine.
-  // For now assuming we add import at top.
-  const { WelcomeEmail } = await import('./emails/welcome.js');
+  const { WelcomeEmail } = await import('./emails/welcome');
   const emailHtml = await render(React.createElement(WelcomeEmail, { name, dashboardUrl }));
 
   const data = await resend.emails.send({
@@ -74,7 +72,6 @@ export const sendWelcomeEmail = async ({ to, name, dashboardUrl }: SendWelcomeEm
 
   if (data.error) {
     console.error("Welcome email failed", data.error);
-    // We don't throw here to avoid blocking the onboarding flow if email fails
   }
 
   return data;

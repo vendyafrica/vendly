@@ -13,7 +13,7 @@ import {
   UserSquareIcon,
   UserCircleIcon,
 } from "@hugeicons/core-free-icons";
-import { SignOut, useSession } from "@/lib/auth";
+import { signOut, useSession } from "@vendly/auth";
 import { Avatar, AvatarFallback, AvatarImage } from "@vendly/ui/components/avatar";
 import {
   DropdownMenu,
@@ -108,7 +108,7 @@ export default function Header() {
                     <DropdownMenuItem onClick={() => router.push("/sell")}>
                       Sell now
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => SignOut()}>
+                    <DropdownMenuItem onClick={() => signOut()}>
                       Sign out
                     </DropdownMenuItem>
                   </DropdownMenuContent>
