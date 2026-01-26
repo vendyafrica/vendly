@@ -25,7 +25,6 @@ const trustedOrigins = [
   "http://localhost:3000",
   "http://localhost:4000",
   "http://localhost:8000",
-  "https://harmonically-carpetless-janna.ngrok-free.dev",
   "https://vendly-web.vercel.app",
   "https://www.vendlyafrica.store",
   "https://vendlyafrica.store",

@@ -343,6 +343,9 @@ importers:
       better-auth:
         specifier: ^1.4.10
         version: 1.4.10(drizzle-orm@0.45.1)(next@16.1.1)(react-dom@19.2.3)(react@19.2.3)
+      dotenv:
+        specifier: ^17.2.3
+        version: 17.2.3
       tsup:
         specifier: ^8.5.0
         version: 8.5.0(tsx@4.21.0)(typescript@5.9.3)
