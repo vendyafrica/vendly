@@ -14,7 +14,7 @@ import {
   Payment01FreeIcons,
   Analytics01FreeIcons,
 } from "@hugeicons/core-free-icons";
-import { signInWithGoogle, signInWithMagicLink } from "@vendly/auth";
+import { signInWithGoogle, signInWithMagicLink } from "@vendly/auth/react";
 import { useState } from "react";
 import { GoogleIcon } from "@vendly/ui/components/svgs/google";
 
@@ -195,7 +195,7 @@ export default function Welcome() {
                   className="h-11"
                   onClick={handleGoogleSignIn}
                 >
-                 <GoogleIcon />
+                  <GoogleIcon />
                   Continue with Google
                 </Button>
               </Field>

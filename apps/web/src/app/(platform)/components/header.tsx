@@ -13,7 +13,7 @@ import {
   UserSquareIcon,
   UserCircleIcon,
 } from "@hugeicons/core-free-icons";
-import { signOut, useSession } from "@vendly/auth";
+import { signOut, useSession } from "@vendly/auth/react";
 import { Avatar, AvatarFallback, AvatarImage } from "@vendly/ui/components/avatar";
 import {
   DropdownMenu,
