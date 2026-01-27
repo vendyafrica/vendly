@@ -41,6 +41,7 @@ interface OnboardingContextValue extends OnboardingState {
     completeOnboarding: () => Promise<boolean>;
     goBack: () => Promise<void>;
     refreshStatus: () => Promise<void>;
+    navigateToStep: (step: OnboardingStep) => void;
 }
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
@@ -75,11 +76,11 @@ export function useOnboarding() {
 }
 
 const STEP_ROUTES: Record<OnboardingStep, string> = {
-    signup: "/onboarding",
-    personal: "/onboarding/personal",
-    store: "/onboarding/store",
-    business: "/onboarding/business",
-    complete: "/onboarding/complete",
+    signup: "/c",
+    personal: "/c/personal",
+    store: "/c/store",
+    business: "/c/business",
+    complete: "/c/complete",
 };
 
 interface ProviderProps {
@@ -254,6 +255,7 @@ export function OnboardingProvider({ children }: ProviderProps) {
         completeOnboarding,
         goBack,
         refreshStatus,
+        navigateToStep,
     };
 
     return (

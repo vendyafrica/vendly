@@ -45,6 +45,7 @@ export default function Header() {
       setIsTenant(false);
     }
   }, [isSignedIn]);
+  
 
   useEffect(() => {
     const handleScroll = () => {
@@ -56,13 +57,11 @@ export default function Header() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, [lastScrollY]);
 
-  const handleSellNow = () => router.push("/onboarding");
+  const handleSellNow = () => router.push("/c");
   const showSellButton = !isSignedIn || !isTenant;
 
-  // Reusable Action Items
  const Actions = ({ isMobile }: { isMobile?: boolean }) => (
   <div className={`flex items-center gap-4 ${isMobile ? "flex-wrap" : ""}`}>
-    {/* User / Login */}
     {hasMounted && !isSignedIn && (
       <Link
         href="#"
@@ -89,12 +88,9 @@ export default function Header() {
       </DropdownMenu>
     )}
 
-    {/* Cart */}
     <Link href="/cart">
       <HugeiconsIcon icon={ShoppingBag02Icon} size={isMobile ? 24 : 24} />
     </Link>
-
-    {/* Sell Now */}
     {hasMounted && showSellButton && (
       <Button onClick={handleSellNow} className={isMobile ? "w-full" : "hidden md:block"}>
         Sell now
@@ -110,7 +106,6 @@ export default function Header() {
           isVisible ? "translate-y-0" : "-translate-y-full"
         }`}
       >
-        {/* Desktop */}
         <div className="hidden md:block">
           <div className="mx-auto flex h-16 max-w-7xl items-center gap-6 px-6">
             <div className="flex items-center gap-2 shrink-0">
@@ -123,7 +118,6 @@ export default function Header() {
           </div>
         </div>
 
-        {/* Mobile */}
         <div className="md:hidden">
           <div className="flex items-center justify-between px-4 py-4">
             <div className="flex items-center gap-3">

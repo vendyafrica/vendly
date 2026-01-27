@@ -14,13 +14,22 @@ import {
   Payment01FreeIcons,
   Analytics01FreeIcons,
 } from "@hugeicons/core-free-icons";
-import { signInWithGoogle, signInWithMagicLink } from "@vendly/auth/react";
-import { useState } from "react";
+import { signInWithGoogle, signInWithMagicLink, useSession } from "@vendly/auth/react";
+import { useEffect, useState } from "react";
+import { useOnboarding } from "./context/onboarding-context";
 import { GoogleIcon } from "@vendly/ui/components/svgs/google";
 
 type FormState = "idle" | "loading" | "sent";
 
 export default function Welcome() {
+  const session = useSession();
+  const { navigateToStep } = useOnboarding();
+
+  useEffect(() => {
+    if (session.data) {
+      navigateToStep("personal");
+    }
+  }, [session, navigateToStep]);
   const handleGoogleSignIn = async () => {
     try {
       await signInWithGoogle();
