@@ -1,7 +1,6 @@
 import express, { Express, Request, Response } from "express";
 import cors from "cors";
-import onboardingRoutes from "./modules/onboarding/onboarding-routes";
-import storefrontRoutes from "./modules/storefront/storefront-routes";
+import storefrontRoutes from "./modules/storefront/storefront-routes";  
 import { productRoutes } from "./modules/products/product-routes";
 import { orderRoutes } from "./modules/orders/order-routes";
 import { cartRoutes } from "./modules/cart/cart-routes";
@@ -36,9 +35,6 @@ export function createApp(): Express {
 
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
-
-  // Onboarding routes
-  app.use("/api/onboarding", onboardingRoutes);
 
   // Storefront routes (public - no auth required)
   app.use("/api/storefront", storefrontRoutes);

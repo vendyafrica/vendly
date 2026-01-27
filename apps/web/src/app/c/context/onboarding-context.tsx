@@ -97,130 +97,89 @@ export function OnboardingProvider({ children }: ProviderProps) {
         error: null,
     });
 
-    const refreshStatus = useCallback(async () => {
+    // Load state from localStorage on mount
+    useEffect(() => {
         try {
-            setState(prev => ({ ...prev, isLoading: true, error: null }));
+            const savedData = localStorage.getItem("vendly_onboarding_data");
+            const savedStep = localStorage.getItem("vendly_onboarding_step") as OnboardingStep;
 
-            const status = await apiCall<{
-                currentStep: OnboardingStep;
-                data: OnboardingData;
-                isComplete: boolean;
-            }>("/status");
-
-            setState({
-                currentStep: status.currentStep,
-                data: status.data,
-                isComplete: status.isComplete,
-                isLoading: false,
-                error: null,
-            });
-        } catch (err) {
-            // If not authenticated, stay on signup
-            setState(prev => ({
-                ...prev,
-                isLoading: false,
-                error: null, // Don't show error for unauthenticated users
-            }));
+            if (savedData) {
+                const parsedData = JSON.parse(savedData);
+                setState(prev => ({
+                    ...prev,
+                    data: parsedData,
+                    currentStep: savedStep || "signup",
+                    isLoading: false,
+                }));
+            } else {
+                setState(prev => ({ ...prev, isLoading: false }));
+            }
+        } catch (e) {
+            console.error("Failed to load onboarding state", e);
+            setState(prev => ({ ...prev, isLoading: false }));
         }
     }, []);
 
+    // Persist to localStorage whenever data or step changes
     useEffect(() => {
-        refreshStatus();
-    }, [refreshStatus]);
+        if (!state.isLoading) {
+            localStorage.setItem("vendly_onboarding_data", JSON.stringify(state.data));
+            localStorage.setItem("vendly_onboarding_step", state.currentStep);
+        }
+    }, [state.data, state.currentStep, state.isLoading]);
 
     const navigateToStep = useCallback((step: OnboardingStep) => {
         const route = STEP_ROUTES[step];
         router.push(route);
     }, [router]);
 
+    const refreshStatus = useCallback(async () => {
+        // Local storage source of truth. No API check needed.
+        setState(prev => ({ ...prev, isLoading: false }));
+    }, []);
+
     const savePersonal = useCallback(async (data: PersonalInfo): Promise<boolean> => {
-        try {
-            setState(prev => ({ ...prev, isLoading: true, error: null }));
+        const updatedData = { ...state.data, personal: data };
+        const nextStep: OnboardingStep = "store";
 
-            const result = await apiCall<{ success: boolean; nextStep: OnboardingStep }>("/personal", {
-                method: "POST",
-                body: JSON.stringify(data),
-            });
+        setState(prev => ({
+            ...prev,
+            data: updatedData,
+            currentStep: nextStep,
+        }));
 
-            if (result.success) {
-                setState(prev => ({
-                    ...prev,
-                    currentStep: result.nextStep,
-                    data: { ...prev.data, personal: data },
-                    isLoading: false,
-                }));
-                navigateToStep(result.nextStep);
-                return true;
-            }
-            return false;
-        } catch (err) {
-            setState(prev => ({
-                ...prev,
-                isLoading: false,
-                error: err instanceof Error ? err.message : "Failed to save",
-            }));
-            return false;
-        }
-    }, [navigateToStep]);
+        navigateToStep(nextStep);
+        return true;
+    }, [state.data, navigateToStep]);
 
     const saveStore = useCallback(async (data: StoreInfo): Promise<boolean> => {
-        try {
-            setState(prev => ({ ...prev, isLoading: true, error: null }));
+        const updatedData = { ...state.data, store: data };
+        const nextStep: OnboardingStep = "business";
 
-            const result = await apiCall<{ success: boolean; nextStep: OnboardingStep }>("/store", {
-                method: "POST",
-                body: JSON.stringify(data),
-            });
+        setState(prev => ({
+            ...prev,
+            data: updatedData,
+            currentStep: nextStep,
+        }));
 
-            if (result.success) {
-                setState(prev => ({
-                    ...prev,
-                    currentStep: result.nextStep,
-                    data: { ...prev.data, store: data },
-                    isLoading: false,
-                }));
-                navigateToStep(result.nextStep);
-                return true;
-            }
-            return false;
-        } catch (err) {
-            setState(prev => ({
-                ...prev,
-                isLoading: false,
-                error: err instanceof Error ? err.message : "Failed to save",
-            }));
-            return false;
-        }
-    }, [navigateToStep]);
+        navigateToStep(nextStep);
+        return true;
+    }, [state.data, navigateToStep]);
 
     const saveBusiness = useCallback(async (data: BusinessInfo): Promise<boolean> => {
-        try {
-            setState(prev => ({ ...prev, isLoading: true, error: null }));
+        const updatedData = { ...state.data, business: data };
+        // Determine next step
+        const nextStep: OnboardingStep = "complete";
 
-            const result = await apiCall<{ success: boolean; nextStep: OnboardingStep }>("/business", {
-                method: "POST",
-                body: JSON.stringify(data),
-            });
+        setState(prev => ({
+            ...prev,
+            data: updatedData,
+            currentStep: nextStep
+        }));
 
-            if (result.success) {
-                setState(prev => ({
-                    ...prev,
-                    currentStep: result.nextStep,
-                    data: { ...prev.data, business: data },
-                    isLoading: false,
-                }));
-                return true;
-            }
-            return false;
-        } catch (err) {
-            setState(prev => ({
-                ...prev,
-                isLoading: false,
-                error: err instanceof Error ? err.message : "Failed to save",
-            }));
-            return false;
-        }
-    }, []);
+        navigateToStep(nextStep);
+        return true;
+    }, [state.data, navigateToStep]);
 
     const completeOnboarding = useCallback(async (): Promise<boolean> => {
         try {
@@ -231,13 +190,20 @@ export function OnboardingProvider({ children }: ProviderProps) {
                 tenantId: string;
                 storeId: string;
                 storeSlug: string;
-            }>("/complete", { method: "POST" });
+            }>("/", {
+                method: "POST",
+                body: JSON.stringify({ data: state.data }),
+            });
 
             if (result.success) {
                 // Store tenant and store IDs in localStorage for admin app
                 if (typeof window !== "undefined") {
                     localStorage.setItem("vendly_tenant_id", result.tenantId);
                     localStorage.setItem("vendly_store_id", result.storeId);
+
+                    // Clear onboarding temp data
+                    localStorage.removeItem("vendly_onboarding_data");
+                    localStorage.removeItem("vendly_onboarding_step");
                 }
 
                 setState(prev => ({
@@ -245,7 +211,9 @@ export function OnboardingProvider({ children }: ProviderProps) {
                     currentStep: "complete",
                     isComplete: true,
                     isLoading: false,
+                    data: {}, // clear data in memory too
                 }));
+
                 navigateToStep("complete");
                 return true;
             }
@@ -258,32 +226,25 @@ export function OnboardingProvider({ children }: ProviderProps) {
             }));
             return false;
         }
-    }, [navigateToStep]);
+    }, [state.data, navigateToStep]);
 
     const goBack = useCallback(async () => {
-        try {
-            setState(prev => ({ ...prev, isLoading: true, error: null }));
+        // Determine previous step based on current step
+        const current = state.currentStep;
+        let prev: OnboardingStep = "signup";
+        if (current === "personal") prev = "signup";
+        else if (current === "store") prev = "personal";
+        else if (current === "business") prev = "store";
+        else if (current === "complete") prev = "business";
 
-            const result = await apiCall<{ success: boolean; nextStep: OnboardingStep }>("/back", {
-                method: "POST",
-            });
-
-            if (result.success) {
-                setState(prev => ({
-                    ...prev,
-                    currentStep: result.nextStep,
-                    isLoading: false,
-                }));
-                navigateToStep(result.nextStep);
-            }
-        } catch (err) {
-            setState(prev => ({
-                ...prev,
-                isLoading: false,
-                error: err instanceof Error ? err.message : "Failed to go back",
-            }));
+        if (prev === "signup" && current === "signup") {
+            // do nothing or router.back()
+            return;
         }
-    }, [navigateToStep]);
+
+        setState(prevStep => ({ ...prevStep, currentStep: prev }));
+        navigateToStep(prev);
+    }, [state.currentStep, navigateToStep]);
 
     const value: OnboardingContextValue = {
         ...state,

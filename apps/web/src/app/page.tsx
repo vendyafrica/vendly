@@ -3,10 +3,10 @@
 import { useEffect } from "react";
 import React from "react";
 import Link from "next/link";
-import CategoryCards from "@/app/(platform)/components/CategoryCards";
-import FeaturedCategory from "@/app/(platform)/components/FeaturedCategory";
-import Header from "@/app/(platform)/components/header";
-import Footer from "@/app/(platform)/components/footer";
+import CategoryCards from "@/app/(m)/components/CategoryCards";
+import FeaturedCategory from "@/app/(m)/components/FeaturedCategory";
+import Header from "@/app/(m)/components/header";
+import Footer from "@/app/(m)/components/footer";
 import { Button } from "@Vendly/ui/components/button";
 import { signInWithOneTap } from "@vendly/auth/react";
 import { getCategoriesAction } from "@/actions/categories";

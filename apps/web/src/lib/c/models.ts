@@ -1,12 +1,6 @@
-// =====================================
-// Onboarding Step Types
-// =====================================
+import { stores, tenantMemberships, tenants } from "@vendly/db";
 
 export type OnboardingStep = "signup" | "personal" | "store" | "business" | "complete";
-
-// =====================================
-// Step-specific DTOs
-// =====================================
 
 export interface PersonalInfoDto {
     fullName: string;
@@ -23,19 +17,11 @@ export interface BusinessInfoDto {
     categories: string[];
 }
 
-// =====================================
-// Combined Onboarding Data
-// =====================================
-
 export interface OnboardingData {
     personal?: PersonalInfoDto;
     store?: StoreInfoDto;
     business?: BusinessInfoDto;
 }
-
-// =====================================
-// API Response Types
-// =====================================
 
 export interface OnboardingStatusResponse {
     currentStep: OnboardingStep;
@@ -57,9 +43,22 @@ export interface OnboardingCompleteResponse {
     message: string;
 }
 
-// =====================================
-// Validation Helpers
-// =====================================
+export interface TenantWithOnboarding {
+    id: string;
+    fullName: string;
+    slug: string;
+    phoneNumber: string | null;
+    onboardingStep: OnboardingStep;
+    onboardingData: OnboardingData;
+}
+
+export interface CreateTenantResult {
+    tenant: typeof tenants.$inferSelect;
+    store: typeof stores.$inferSelect;
+    membership: typeof tenantMemberships.$inferSelect;
+}
+
+
 
 export function isValidPersonalInfo(data: unknown): data is PersonalInfoDto {
     if (!data || typeof data !== "object") return false;
