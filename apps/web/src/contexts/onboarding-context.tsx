@@ -1,7 +1,7 @@
 'use client';
 
 import { createContext, useContext, ReactNode } from 'react';
-import { useOnboardingForm } from '../hooks/use-onboarding-form';
+import { useOnboardingForm } from '../lib/use-onboarding-form';
 import { OnboardingFormData } from '../types/onboarding';
 
 interface OnboardingContextValue {
