@@ -1,6 +1,6 @@
 import { OnboardingFormData, OnboardingResponse } from "../types/onboarding";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? '';
 
 export const submitOnboarding = async (
     data: OnboardingFormData

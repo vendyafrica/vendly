@@ -42,7 +42,7 @@ interface Product {
     };
 }
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || "";
 
 export function ProductDetails({ slug }: ProductDetailsProps) {
     const params = useParams();

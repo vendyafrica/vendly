@@ -3,7 +3,8 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { useSession } from "@vendly/auth/react";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+// Use relative paths for same-origin API calls (Next.js serverless routes)
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || "";
 
 export interface CartItem {
     id: string; // Product ID
@@ -99,7 +100,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
             const newQuantity = (currentItem?.quantity || 0) + quantity;
 
             try {
-                await fetch(`${API_BASE}/api/cart/items`, {
+                await fetch(`${API_BASE}/api/cart`, {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
@@ -149,7 +150,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
         if (session?.user) {
             try {
-                await fetch(`${API_BASE}/api/cart/items`, {
+                await fetch(`${API_BASE}/api/cart`, {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",

@@ -10,7 +10,7 @@ interface Category {
     image: string | null;
 }
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || "";
 
 export function Categories() {
     const params = useParams();
@@ -66,8 +66,8 @@ export function Categories() {
                         onClick={() => setActiveCategory("all")}
                         className={`
                             shrink-0 py-4 text-sm font-medium transition-colors relative
-                            ${activeCategory === "all" 
-                                ? "text-neutral-900" 
+                            ${activeCategory === "all"
+                                ? "text-neutral-900"
                                 : "text-neutral-500 hover:text-neutral-700"
                             }
                         `}
@@ -86,8 +86,8 @@ export function Categories() {
                             onClick={() => setActiveCategory(category.slug)}
                             className={`
                                 shrink-0 py-4 text-sm font-medium transition-colors relative whitespace-nowrap
-                                ${activeCategory === category.slug 
-                                    ? "text-neutral-900" 
+                                ${activeCategory === category.slug
+                                    ? "text-neutral-900"
                                     : "text-neutral-500 hover:text-neutral-700"
                                 }
                             `}

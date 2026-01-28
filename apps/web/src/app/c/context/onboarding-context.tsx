@@ -44,7 +44,7 @@ interface OnboardingContextValue extends OnboardingState {
     navigateToStep: (step: OnboardingStep) => void;
 }
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || "";
 
 async function apiCall<T>(endpoint: string, options?: RequestInit): Promise<T> {
     const res = await fetch(`${API_BASE}/api/onboarding${endpoint}`, {
