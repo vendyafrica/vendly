@@ -17,42 +17,28 @@ import { Avatar, AvatarImage, AvatarFallback } from "@vendly/ui/components/avata
 import { useCart } from "../../../contexts/cart-context";
 
 interface ProductDetailsProps {
-    slug: string;
-}
-
-interface MediaItem {
-    url: string;
-    type: "image" | "video";
-}
-
-interface Product {
-    id: string;
-    slug: string;
-    name: string;
-    description?: string | null;
-    price: number;
-    currency: string;
-    images: string[];
-    videos?: string[];
-    rating: number;
-    store: {
+    product: {
         id: string;
-        name: string;
         slug: string;
+        name: string;
+        description?: string | null;
+        price: number;
+        currency: string;
+        images: string[];
+        videos?: string[];
+        rating: number;
+        store: {
+            id: string;
+            name: string;
+            slug: string;
+        };
     };
 }
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "";
-
-export function ProductDetails({ slug }: ProductDetailsProps) {
-    const params = useParams();
+export function ProductDetails({ product }: ProductDetailsProps) {
     const router = useRouter();
-    const storeSlug = params?.storefront as string;
     const { addItem } = useCart();
 
-    const [product, setProduct] = useState<Product | null>(null);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
     const [quantity, setQuantity] = useState(1);
     const [selectedMediaIndex, setSelectedMediaIndex] = useState(0);
     const [isAdded, setIsAdded] = useState(false);
@@ -60,39 +46,7 @@ export function ProductDetails({ slug }: ProductDetailsProps) {
     const [selectedSize, setSelectedSize] = useState<string>("");
     const sizes = ["XS", "S", "M", "L", "XL", "1X", "2X", "3X"];
 
-    useEffect(() => {
-        const fetchProduct = async () => {
-            if (!storeSlug || !slug) {
-                setLoading(false);
-                setError("Invalid product or store");
-                return;
-            }
-
-            try {
-                const res = await fetch(`${API_BASE}/api/storefront/${storeSlug}/products/${slug}`);
-                if (!res.ok) {
-                    if (res.status === 404) {
-                        setError("Product not found");
-                    } else {
-                        setError("Failed to load product");
-                    }
-                    setProduct(null);
-                } else {
-                    const data = await res.json();
-                    setProduct(data);
-                    setError(null);
-                }
-            } catch (err) {
-                console.error("Failed to fetch product:", err);
-                setError("Failed to load product");
-                setProduct(null);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchProduct();
-    }, [storeSlug, slug]);
+    // Removed fetching logic as data is passed via props
 
     const handleQuantityChange = (delta: number) => {
         setQuantity(prev => Math.max(1, prev + delta));
@@ -128,21 +82,8 @@ export function ProductDetails({ slug }: ProductDetailsProps) {
         router.push(`/checkout?storeId=${product.store.id}`);
     };
 
-    if (loading) {
-        return (
-            <div className="flex items-center justify-center min-h-screen">
-                <HugeiconsIcon icon={Loading03Icon} size={32} className="animate-spin text-neutral-400" />
-            </div>
-        );
-    }
-
-    if (error || !product) {
-        return (
-            <div className="text-center py-12">
-                <h2 className="text-2xl font-medium">{error || "Product not found"}</h2>
-            </div>
-        );
-    }
+    // Data is ensured by parent component
+    if (!product) return null;
 
     const validImages = product.images && product.images.length > 0
         ? product.images

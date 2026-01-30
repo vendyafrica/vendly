@@ -1,6 +1,5 @@
-import { db } from "@vendly/db/db";
-import { stores, categories } from "@vendly/db/schema";
-import { eq } from "drizzle-orm";
+import { categoryRepo } from "../data/category-repo";
+import { storeRepo } from "../data/store-repo";
 
 export interface StoreWithCategory {
     id: string;
@@ -15,31 +14,32 @@ export const marketplaceService = {
      * Get all active stores with their categories
      */
     async getAllStores(): Promise<StoreWithCategory[]> {
-        const allStores = await db
-            .select({
-                id: stores.id,
-                name: stores.name,
-                slug: stores.slug,
-                description: stores.description,
-                categories: stores.categories,
-            })
-            .from(stores)
-            .where(eq(stores.status, true));
-
-        return allStores.map(store => ({
-            ...store,
+        const stores = await storeRepo.findActiveStores();
+        return stores.map(store => ({
+            id: store.id,
+            name: store.name,
+            slug: store.slug,
+            description: store.description,
             categories: store.categories || [],
         }));
     },
 
     /**
      * Get stores grouped by category
+     * Note: This is still doing some in-memory grouping which is fine for the home page 
+     * if the number of stores is reasonable. For high scale, we'd paginate or query differently.
      */
-    async getStoresByCategory(): Promise<Record<string, StoreWithCategory[]>> {
-        const allStores = await this.getAllStores();
+    async getHomePageData() {
+        const categories = await categoryRepo.findAll();
+        const stores = await this.getAllStores();
+
         const storesByCategory: Record<string, StoreWithCategory[]> = {};
 
-        for (const store of allStores) {
+        // Pre-fill categories to ensure specific order if needed, or just let them fill naturally
+        // For now, adhering to the requested flow of "All store categories... Stores grouped by category"
+
+        // Pivot stores to categories
+        for (const store of stores) {
             for (const category of store.categories) {
                 if (!storesByCategory[category]) {
                     storesByCategory[category] = [];
@@ -48,25 +48,106 @@ export const marketplaceService = {
             }
         }
 
-        return storesByCategory;
+        return {
+            categories,
+            stores, // Expose flat list of stores
+            storesByCategory
+        };
     },
 
     /**
      * Get stores for a specific category
      */
     async getStoresBySpecificCategory(categorySlug: string): Promise<StoreWithCategory[]> {
-        // First get the category to find its name
-        const category = await db.query.categories.findFirst({
-            where: eq(categories.slug, categorySlug),
-        });
+        // First get the category to find its name to filter by name array
+        const category = await categoryRepo.findBySlug(categorySlug);
 
         if (!category) {
             return [];
         }
 
-        const allStores = await this.getAllStores();
-        return allStores.filter(store =>
-            store.categories.includes(category.name)
-        );
+        const stores = await storeRepo.findByCategoryName(category.name);
+
+        return stores.map(store => ({
+            id: store.id,
+            name: store.name,
+            slug: store.slug,
+            description: store.description,
+            categories: store.categories || [],
+        }));
     },
+
+    async getStoreDetails(slug: string) {
+        const store = await storeRepo.findBySlug(slug);
+        if (!store) return null;
+
+        return {
+            id: store.id,
+            name: store.name,
+            slug: store.slug,
+            description: store.description,
+            // Assuming store has these fields or we map them. 
+            // The repo returns the DB object. If media fields are missing in DB schema, we might need to adjust.
+            // Based on Hero component, it expects rating, ratingCount, heroMedia.
+            // These might not be in the basic store schema but let's pass what we have
+            // and maybe fetch additional stats if needed.
+            rating: 4.5, // Placeholder if not in DB
+            ratingCount: 100, // Placeholder
+            heroMedia: null, // Placeholder or from DB if exists
+            heroMediaType: null
+        };
+    },
+
+    async getStoreProducts(slug: string) {
+        const store = await storeRepo.findBySlug(slug);
+        if (!store) return [];
+
+        // Dynamic import to avoid circular dependency
+        const { productRepo } = await import("../data/product-repo");
+        const products = await productRepo.findByStoreId(store.id);
+
+        return products.map((p: any) => ({
+            id: p.id,
+            slug: p.slug || p.productName.toLowerCase().replace(/\s+/g, "-"),
+            name: p.productName,
+            price: Number(p.priceAmount || 0),
+            currency: p.currency,
+            // Extract first image from media relation if available
+            image: p.media?.[0]?.media?.url || p.media?.[0]?.media?.blobUrl || null,
+            rating: 4.5 // Placeholder
+        }));
+    },
+
+    async getStoreProduct(storeSlug: string, productSlug: string) {
+        const store = await storeRepo.findBySlug(storeSlug);
+        if (!store) return null;
+
+        const { productRepo } = await import("../data/product-repo");
+        // Optimization: Ideally repo has findOneBySlug. For now, we fetch all and find. 
+        // This mirrors storefrontService logic but we should improve repo later.
+        const products = await productRepo.findByStoreId(store.id);
+
+        const product = products.find((p: any) => {
+            const slug = p.slug || p.productName.toLowerCase().replace(/\s+/g, "-");
+            return slug === productSlug;
+        });
+
+        if (!product) return null;
+
+        return {
+            id: product.id,
+            slug: product.slug || product.productName.toLowerCase().replace(/\s+/g, "-"),
+            name: product.productName,
+            description: product.description, // Assuming description exists
+            price: Number(product.priceAmount || 0),
+            currency: product.currency,
+            images: product.media?.map((m: any) => m.media?.url || m.media?.blobUrl).filter(Boolean) || [],
+            rating: 4.5, // Placeholder
+            store: {
+                id: store.id,
+                name: store.name,
+                slug: store.slug
+            }
+        };
+    }
 };

@@ -1,9 +1,4 @@
-"use client";
-
-import { useState, useEffect } from "react";
-import { useParams } from "next/navigation";
 import { ProductCard } from './product-card';
-import { ProductGridSkeleton } from "./skeletons";
 
 interface Product {
     id: string;
@@ -15,37 +10,11 @@ interface Product {
     rating: number;
 }
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "";
+interface ProductGridProps {
+    products: Product[];
+}
 
-export function ProductGrid() {
-    const params = useParams();
-    const [products, setProducts] = useState<Product[]>([]);
-    const [loading, setLoading] = useState(true);
-
-    useEffect(() => {
-        const fetchProducts = async () => {
-            const slug = params?.storefront as string;
-            if (!slug) {
-                setLoading(false);
-                return;
-            }
-
-            try {
-                const res = await fetch(`${API_BASE}/api/storefront/${slug}/products`);
-                if (res.ok) {
-                    setProducts(await res.json());
-                }
-            } catch (error) {
-                console.error("Failed to fetch products:", error);
-            } finally {
-                setLoading(false);
-            }
-        };
-        fetchProducts();
-    }, [params?.storefront]);
-
-    if (loading) return <ProductGridSkeleton />;
-
+export function ProductGrid({ products }: ProductGridProps) {
     if (products.length === 0) {
         return (
             <div className="text-center py-12">

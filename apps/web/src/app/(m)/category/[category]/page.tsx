@@ -1,59 +1,32 @@
-"use client";
-
-import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
 import Header from "@/app/(m)/components/header";
 import Footer from "@/app/(m)/components/footer";
 import { MarketplaceGrid } from "@/app/(m)/components/MarketplaceGrid";
 import type { MarketplaceStore } from "@/types/marketplace";
 import { Button } from "@vendly/ui/components/button";
 import Link from "next/link";
+import { marketplaceService } from "@/lib/services/marketplace-service";
 
-export default function CategoryPage() {
-    const params = useParams();
-    const categorySlug = params.slug as string;
-    const [stores, setStores] = useState<MarketplaceStore[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
-    const [categoryName, setCategoryName] = useState("");
+interface CategoryPageProps {
+    params: {
+        category: string;
+    }
+}
 
-    useEffect(() => {
-        const fetchStores = async () => {
-            try {
-                const response = await fetch(`/api/marketplace/categories/${categorySlug}/stores`);
-                if (response.ok) {
-                    const data = await response.json();
+export default async function CategoryPage({ params }: CategoryPageProps) {
+    const categorySlug = params.category;
+    const stores = await marketplaceService.getStoresBySpecificCategory(categorySlug);
 
-                    // Transform API data to match MarketplaceStore interface
-                    const transformedStores: MarketplaceStore[] = (data.stores || []).map((store: any) => ({
-                        id: store.id,
-                        name: store.name,
-                        slug: store.slug,
-                        description: store.description,
-                        categories: store.categories || [],
-                        rating: 4.5,
-                        logoUrl: null,
-                        images: [],
-                    }));
-
-                    setStores(transformedStores);
-
-                    // Extract category name from first store or format from slug
-                    if (transformedStores.length > 0) {
-                        const category = transformedStores[0].categories[0];
-                        setCategoryName(category || formatCategoryName(categorySlug));
-                    } else {
-                        setCategoryName(formatCategoryName(categorySlug));
-                    }
-                }
-            } catch (error) {
-                console.error("Error fetching category stores:", error);
-            } finally {
-                setIsLoading(false);
-            }
-        };
-
-        fetchStores();
-    }, [categorySlug]);
+    // Transform to UI Model
+    const uiStores: MarketplaceStore[] = stores.map(store => ({
+        id: store.id,
+        name: store.name,
+        slug: store.slug,
+        description: store.description,
+        categories: store.categories || [],
+        rating: 4.5,
+        logoUrl: null,
+        images: [],
+    }));
 
     const formatCategoryName = (slug: string) => {
         return slug
@@ -61,6 +34,8 @@ export default function CategoryPage() {
             .map(word => word.charAt(0).toUpperCase() + word.slice(1))
             .join(' ');
     };
+
+    const categoryName = formatCategoryName(categorySlug);
 
     return (
         <main className="min-h-screen bg-[#F9F9F7]">
@@ -71,7 +46,7 @@ export default function CategoryPage() {
                     <div>
                         <h1 className="text-4xl font-bold mb-2">{categoryName}</h1>
                         <p className="text-muted-foreground">
-                            {stores.length} {stores.length === 1 ? 'store' : 'stores'} in this category
+                            {uiStores.length} {uiStores.length === 1 ? 'store' : 'stores'} in this category
                         </p>
                     </div>
                     <Link href="/">
@@ -81,7 +56,7 @@ export default function CategoryPage() {
                     </Link>
                 </div>
 
-                <MarketplaceGrid stores={stores} loading={isLoading} />
+                <MarketplaceGrid stores={uiStores} loading={false} />
             </div>
 
             <Footer />

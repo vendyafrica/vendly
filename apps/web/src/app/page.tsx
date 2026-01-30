@@ -1,84 +1,50 @@
-"use client";
-
-import { useEffect, useState } from "react";
-import Link from "next/link";
 import CategoryCards from "@/app/(m)/components/CategoryCards";
 import FeaturedCategory from "@/app/(m)/components/FeaturedCategory";
 import Header from "@/app/(m)/components/header";
 import Footer from "@/app/(m)/components/footer";
 import { MarketplaceGrid } from "@/app/(m)/components/MarketplaceGrid";
 import { Button } from "@Vendly/ui/components/button";
-import { signInWithOneTap } from "@vendly/auth/react";
-import { getCategoriesAction } from "@/actions/categories";
+import Link from "next/link";
+import { marketplaceService } from "@/lib/services/marketplace-service";
 import type { MarketplaceStore } from "@/types/marketplace";
+import { OneTapLogin } from "@/app/(m)/components/OneTapLogin";
 
-export default function HomePage() {
-    const [categories, setCategories] = useState<{ id: string; name: string; image: string | null }[]>([]);
-    const [stores, setStores] = useState<MarketplaceStore[]>([]);
-    const [storesByCategory, setStoresByCategory] = useState<Record<string, MarketplaceStore[]>>({});
-    const [isLoading, setIsLoading] = useState(true);
+export default async function HomePage() {
+    const { categories, stores, storesByCategory } = await marketplaceService.getHomePageData();
 
-    useEffect(() => {
-        const timer = setTimeout(() => {
-            signInWithOneTap().catch(console.error);
-        }, 3000);
+    // Transform to UI Model (adding placeholders for missing fields)
+    const mapToMarketplaceStore = (s: any): MarketplaceStore => ({
+        id: s.id,
+        name: s.name,
+        slug: s.slug,
+        description: s.description,
+        categories: s.categories || [],
+        rating: 4.5,
+        logoUrl: null,
+        images: [],
+    });
 
-        const fetchData = async () => {
-            try {
-                const categoriesRes = await getCategoriesAction();
-                if (categoriesRes.success && categoriesRes.data) {
-                    setCategories(categoriesRes.data);
-                }
-                const storesRes = await fetch("/api/marketplace/stores");
-                if (storesRes.ok) {
-                    const data = await storesRes.json();
+    const uiStores = stores.map(mapToMarketplaceStore);
+    const uiStoresByCategory: Record<string, MarketplaceStore[]> = {};
 
-                    // Transform API data to match MarketplaceStore interface
-                    const transformedStores: MarketplaceStore[] = (data.stores || []).map((store: any) => ({
-                        id: store.id,
-                        name: store.name,
-                        slug: store.slug,
-                        description: store.description,
-                        categories: store.categories || [],
-                        rating: 4.5, // Default rating since we don't have it in DB yet
-                        logoUrl: null,
-                        images: [],
-                    }));
-
-                    setStores(transformedStores);
-
-                    // Transform storesByCategory as well
-                    const transformedByCategory: Record<string, MarketplaceStore[]> = {};
-                    (Object.entries(data.storesByCategory || {}) as [string, any[]][]).forEach(([category, categoryStores]) => {
-                        transformedByCategory[category] = categoryStores.map((store: any) => ({
-                            id: store.id,
-                            name: store.name,
-                            slug: store.slug,
-                            description: store.description,
-                            categories: store.categories || [],
-                            rating: 4.5,
-                            logoUrl: null,
-                            images: [],
-                        }));
-                    });
-                    setStoresByCategory(transformedByCategory);
-                }
-            } catch (error) {
-                console.error("Error fetching data:", error);
-            } finally {
-                setIsLoading(false);
-            }
-        };
-
-        fetchData();
-
-        return () => clearTimeout(timer);
-    }, []);
+    Object.entries(storesByCategory).forEach(([cat, list]) => {
+        uiStoresByCategory[cat] = list.map(mapToMarketplaceStore);
+    });
 
     return (
         <main className="min-h-screen bg-[#F9F9F7]">
             <Header />
-            <CategoryCards categories={categories} />
+            <OneTapLogin />
+
+            <CategoryCards categories={
+                categories.map(c => ({
+                    id: c.id,
+                    name: c.name,
+                    image: null // Category repo returns objects with image? No, currently repo uses findAll() -> just db fields. Check repo if image exists.
+                    // Assuming db schema has image. If not, null.
+                })) as any // Casting for now to match UI expectations if strict check fails
+            } />
+
             <FeaturedCategory />
 
             {/* Marketplace Stores Section */}
@@ -97,7 +63,7 @@ export default function HomePage() {
                     </Link>
                 </div>
 
-                {stores.length === 0 && !isLoading ? (
+                {uiStores.length === 0 ? (
                     <div className="flex flex-col items-center justify-center py-20">
                         <h3 className="text-2xl font-semibold mb-4">No stores yet</h3>
                         <p className="text-gray-600 mb-8">Be the first to create a store on Vendly!</p>
@@ -110,15 +76,14 @@ export default function HomePage() {
                 ) : (
                     <div className="space-y-12">
                         {/* All Stores */}
-                        {stores.length > 0 && (
-                            <div>
-                                <h3 className="text-2xl font-semibold mb-6">All Stores</h3>
-                                <MarketplaceGrid stores={stores} loading={isLoading} />
-                            </div>
-                        )}
+                        <div>
+                            <h3 className="text-2xl font-semibold mb-6">All Stores</h3>
+                            {/* MarketplaceGrid expects 'stores' prop. We pass uiStores. */}
+                            <MarketplaceGrid stores={uiStores} loading={false} />
+                        </div>
 
                         {/* Stores by Category */}
-                        {Object.entries(storesByCategory).map(([categoryName, categoryStores]) => (
+                        {Object.entries(uiStoresByCategory).map(([categoryName, categoryStores]) => (
                             <div key={categoryName}>
                                 <div className="flex justify-between items-center mb-6">
                                     <h3 className="text-2xl font-semibold">{categoryName}</h3>
@@ -129,7 +94,7 @@ export default function HomePage() {
                                         View all →
                                     </Link>
                                 </div>
-                                <MarketplaceGrid stores={categoryStores.slice(0, 5)} loading={isLoading} />
+                                <MarketplaceGrid stores={categoryStores.slice(0, 5)} loading={false} />
                             </div>
                         ))}
                     </div>

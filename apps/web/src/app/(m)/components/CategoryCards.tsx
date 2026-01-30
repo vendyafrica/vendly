@@ -68,7 +68,7 @@ export default function InteractiveImageBentoGalleryDemo({ categories = [] }: Ca
       id: cat.id,
       title: cat.name,
       desc: "",
-      url: cat.image || "", // Handle null image
+      url: cat.image || FALLBACK_ITEMS[index % FALLBACK_ITEMS.length].url,
       span: SPAN_CONFIG[index] || "col-span-1 row-span-1",
     }));
   }

@@ -112,6 +112,7 @@ export default function Header({ hideSearch = false }: { hideSearch?: boolean })
                 />
                 <Input
                   type="search"
+                  id="search-mobile"
                   placeholder="Search products, stores, creators…"
                   className="h-12 pl-10 rounded-md"
                 />

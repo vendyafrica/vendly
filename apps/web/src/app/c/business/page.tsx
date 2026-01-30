@@ -35,13 +35,13 @@ export default function BusinessInfo() {
         e.preventDefault();
 
         if (categories.length === 0) {
-            return; 
+            return;
         }
 
         const saved = await saveBusiness({ categories });
 
         if (saved) {
-            await completeOnboarding();
+            await completeOnboarding({ business: { categories } });
         }
     };
 

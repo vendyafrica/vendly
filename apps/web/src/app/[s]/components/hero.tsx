@@ -1,54 +1,19 @@
-"use client";
-
-import { useState, useEffect } from "react";
-import { useParams } from "next/navigation";
 import Image from "next/image";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { StarIcon } from "@hugeicons/core-free-icons";
-import { HeroSkeleton } from "./skeletons";
 
-interface StoreData {
-    name: string;
-    slug: string;
-    description: string | null;
-    rating: number;
-    ratingCount: number;
-    heroMedia?: string | null;
-    heroMediaType?: "image" | "video" | null;
+interface HeroProps {
+    store: {
+        name: string;
+        description: string | null;
+        rating: number;
+        ratingCount: number;
+        heroMedia?: string | null;
+        heroMediaType?: "image" | "video" | null | string;
+    };
 }
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "";
-
-export function Hero() {
-    const params = useParams();
-    const [store, setStore] = useState<StoreData | null>(null);
-    const [loading, setLoading] = useState(true);
-
-    useEffect(() => {
-        const fetchStore = async () => {
-            const slug = params?.storefront as string;
-            if (!slug) {
-                setLoading(false);
-                return;
-            }
-
-            try {
-                const res = await fetch(`${API_BASE}/api/storefront/${slug}`);
-                if (res.ok) {
-                    setStore(await res.json());
-                }
-            } catch (error) {
-                console.error("Failed to fetch store data:", error);
-            } finally {
-                setLoading(false);
-            }
-        };
-        fetchStore();
-    }, [params?.storefront]);
-
-    if (loading) return <HeroSkeleton />;
-    if (!store) return null;
-
+export function Hero({ store }: HeroProps) {
     const formatRatingCount = (count: number) => {
         if (count >= 1000) {
             return `${(count / 1000).toFixed(1)}K`;
@@ -57,6 +22,7 @@ export function Hero() {
     };
 
     const mediaUrl = store.heroMedia || "/images/linen-shirt.png";
+    // Basic check for video type or extension
     const isVideo = store.heroMediaType === "video" || mediaUrl.match(/\.(mp4|webm|ogg)$/i);
 
     return (

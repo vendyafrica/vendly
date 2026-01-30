@@ -38,7 +38,7 @@ interface OnboardingContextValue extends OnboardingState {
     savePersonal: (data: PersonalInfo) => Promise<boolean>;
     saveStore: (data: StoreInfo) => Promise<boolean>;
     saveBusiness: (data: BusinessInfo) => Promise<boolean>;
-    completeOnboarding: () => Promise<boolean>;
+    completeOnboarding: (dataOverride?: Partial<OnboardingData>) => Promise<boolean>;
     goBack: () => Promise<void>;
     refreshStatus: () => Promise<void>;
     navigateToStep: (step: OnboardingStep) => void;
@@ -182,9 +182,11 @@ export function OnboardingProvider({ children }: ProviderProps) {
         return true;
     }, [state.data, navigateToStep]);
 
-    const completeOnboarding = useCallback(async (): Promise<boolean> => {
+    const completeOnboarding = useCallback(async (dataOverride?: Partial<OnboardingData>): Promise<boolean> => {
         try {
             setState(prev => ({ ...prev, isLoading: true, error: null }));
+
+            const payloadData = { ...state.data, ...dataOverride };
 
             const result = await apiCall<{
                 success: boolean;
@@ -193,7 +195,7 @@ export function OnboardingProvider({ children }: ProviderProps) {
                 storeSlug: string;
             }>("/", {
                 method: "POST",
-                body: JSON.stringify({ data: state.data }),
+                body: JSON.stringify({ data: payloadData }),
             });
 
             if (result.success) {
