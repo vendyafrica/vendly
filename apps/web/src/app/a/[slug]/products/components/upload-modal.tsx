@@ -19,7 +19,7 @@ interface UploadModalProps {
     onOpenChange: (open: boolean) => void;
     storeId: string;
     tenantId: string;
-    tenantSlug: string;
+    storeSlug: string;
     onUploadComplete?: () => void;
 }
 
@@ -35,7 +35,7 @@ export function UploadModal({
     onOpenChange,
     storeId,
     tenantId,
-    tenantSlug,
+    storeSlug,
     onUploadComplete,
 }: UploadModalProps) {
     const [files, setFiles] = React.useState<FilePreview[]>([]);
@@ -100,7 +100,7 @@ export function UploadModal({
                 method: "POST",
                 headers: {
                     "x-tenant-id": tenantId,
-                    "x-tenant-slug": tenantSlug,
+                    "x-store-slug": storeSlug,
                 },
                 body: formData,
             });

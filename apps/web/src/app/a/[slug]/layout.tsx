@@ -10,10 +10,10 @@ export default async function TenantDashboardLayout({
   params,
 }: {
   children: React.ReactNode
-  params: Promise<{ tenant: string }>
+  params: Promise<{ slug: string }>
 }) {
-  const { tenant } = await params
-  const basePath = `/dashboard/${tenant}`
+  const { slug } = await params
+  const basePath = `/a/${slug}`
 
   return (
     <SidebarProvider
@@ -29,7 +29,7 @@ export default async function TenantDashboardLayout({
           <SidebarTrigger className="-ml-1" />
           <div className="flex items-center gap-2">
             <h1 className="font-semibold text-muted-foreground">Welcome back</h1>
-            <span className="text-sm text-muted-foreground">{tenant}</span>
+            <span className="text-sm text-muted-foreground">{slug}</span>
           </div>
         </header>
         <div className="flex flex-1 flex-col gap-4 p-4 pt-0">{children}</div>

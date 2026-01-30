@@ -21,9 +21,9 @@ export function Hero({ store }: HeroProps) {
         return count.toString();
     };
 
-    const mediaUrl = store.heroMedia || "/images/linen-shirt.png";
+    const mediaUrl = store.heroMedia || "/images/hero-fallback.png";
     // Basic check for video type or extension
-    const isVideo = store.heroMediaType === "video" || mediaUrl.match(/\.(mp4|webm|ogg)$/i);
+    const isVideo = store.heroMediaType === "video" || (typeof mediaUrl === "string" && !!mediaUrl.match(/\.(mp4|webm|ogg)$/i));
 
     return (
         <section className="relative h-[60vh] sm:h-[70vh] md:h-[75vh] lg:h-[80vh] w-full overflow-hidden mb-8 sm:mb-12">

@@ -145,8 +145,8 @@ function joinPaths(a: string, b: string) {
   return normalizePath(`${left}${right}`);
 }
 
-function getTenantFromParams(params: ReturnType<typeof useParams>) {
-  const raw = params?.tenant as string | string[] | undefined;
+function getSlugFromParams(params: ReturnType<typeof useParams>) {
+  const raw = params?.slug as string | string[] | undefined;
   return Array.isArray(raw) ? raw[0] : raw;
 }
 
@@ -157,22 +157,22 @@ export function AppSidebar({
   const pathname = usePathname();
   const params = useParams();
 
-  // Try to get tenant from params first, then fallback to parsing basePath
-  let tenant = getTenantFromParams(params);
+  // Try to get slug from params first, then fallback to parsing basePath
+  let slug = getSlugFromParams(params);
 
-  if (!tenant && basePathProp) {
-    // basePath is usually formatted as "/tenant-slug", so we strip the leading slash
-    const match = basePathProp.match(/^\/([^/]+)/);
+  if (!slug && basePathProp) {
+    // basePath is usually formatted as "/a/store-slug", so we strip the leading segments
+    const match = basePathProp.match(/^\/a\/([^/]+)/) || basePathProp.match(/^\/([^/]+)/);
     if (match) {
-      tenant = match[1];
+      slug = match[1];
     }
   }
 
   // Ensure basePath is available for other uses
-  const basePath = normalizePath(basePathProp ?? (tenant ? `/${tenant}` : ""));
+  const basePath = normalizePath(basePathProp ?? (slug ? `/a/${slug}` : ""));
 
-  // Select items based on whether we are in a tenant context
-  const items = tenant || basePathProp ? tenantAdminItems : superAdminItems;
+  // Select items based on whether we are in a store context
+  const items = slug || basePathProp ? tenantAdminItems : superAdminItems;
 
   return (
     <Sidebar variant="inset" collapsible="icon" {...props} className="cursor-pointer">

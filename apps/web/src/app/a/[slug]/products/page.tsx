@@ -27,7 +27,7 @@ interface ProductAPIResponse {
 
 export default function ProductsPage() {
     const params = useParams();
-    const tenantSlug = params?.tenant as string;
+    const storeSlug = params?.slug as string;
 
     // In a real app, these would come from auth context
     // For now, we'll pass them via headers
@@ -57,7 +57,7 @@ export default function ProductsPage() {
             const response = await fetch(`${API_BASE}/api/products`, {
                 headers: {
                     "x-tenant-id": tenantId,
-                    "x-tenant-slug": tenantSlug,
+                    "x-store-slug": storeSlug,
                 },
             });
 
@@ -93,7 +93,7 @@ export default function ProductsPage() {
         } finally {
             setIsLoading(false);
         }
-    }, [tenantId, tenantSlug]);
+    }, [tenantId, storeSlug]);
 
     // Initial fetch - get tenant info from URL or mock for now
     React.useEffect(() => {
@@ -132,7 +132,7 @@ export default function ProductsPage() {
                 method: "DELETE",
                 headers: {
                     "x-tenant-id": tenantId,
-                    "x-tenant-slug": tenantSlug,
+                    "x-store-slug": storeSlug,
                 },
             });
 
@@ -214,7 +214,7 @@ export default function ProductsPage() {
                 onOpenChange={setUploadModalOpen}
                 storeId={storeId}
                 tenantId={tenantId}
-                tenantSlug={tenantSlug}
+                storeSlug={storeSlug}
                 onUploadComplete={fetchProducts}
             />
 

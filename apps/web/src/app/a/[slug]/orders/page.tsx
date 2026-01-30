@@ -33,7 +33,7 @@ interface OrderStatsResponse {
 
 export default function OrdersPage() {
     const params = useParams();
-    const tenantSlug = params?.tenant as string;
+    const storeSlug = params?.slug as string;
 
     const [tenantId, setTenantId] = React.useState<string>("");
     const [orders, setOrders] = React.useState<OrderTableRow[]>([]);
@@ -55,7 +55,7 @@ export default function OrdersPage() {
             const ordersResponse = await fetch(`${API_BASE}/api/orders`, {
                 headers: {
                     "x-tenant-id": tenantId,
-                    "x-tenant-slug": tenantSlug,
+                    "x-store-slug": storeSlug,
                 },
             });
 
@@ -86,7 +86,7 @@ export default function OrdersPage() {
             const statsResponse = await fetch(`${API_BASE}/api/orders/stats`, {
                 headers: {
                     "x-tenant-id": tenantId,
-                    "x-tenant-slug": tenantSlug,
+                    "x-store-slug": storeSlug,
                 },
             });
 
@@ -99,7 +99,7 @@ export default function OrdersPage() {
         } finally {
             setIsLoading(false);
         }
-    }, [tenantId, tenantSlug, orders.length]);
+    }, [tenantId, storeSlug, orders.length]);
 
     // Initial fetch - get tenant info from localStorage
     React.useEffect(() => {
@@ -127,7 +127,7 @@ export default function OrdersPage() {
                 headers: {
                     "Content-Type": "application/json",
                     "x-tenant-id": tenantId,
-                    "x-tenant-slug": tenantSlug,
+                    "x-store-slug": storeSlug,
                 },
                 body: JSON.stringify({ status }),
             });

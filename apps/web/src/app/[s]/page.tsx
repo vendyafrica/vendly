@@ -2,6 +2,7 @@ import { ProductGrid } from "./components/product-grid";
 import { StorefrontFooter } from "./components/footer";
 import { Categories } from "./components/categories";
 import { Hero } from "./components/hero";
+// Re-saving to trigger rebuild and resolve hydration sync
 import { marketplaceService } from "@/lib/services/marketplace-service";
 import { notFound } from "next/navigation";
 
@@ -33,7 +34,7 @@ export default async function StorefrontHomePage({ params }: StorefrontPageProps
         </div>
         <div className="my-20" />
       </div>
-      <StorefrontFooter />
+      <StorefrontFooter store={store} />
     </div>
   );
 }

@@ -8,6 +8,8 @@ import Link from "next/link";
 import { marketplaceService } from "@/lib/services/marketplace-service";
 import type { MarketplaceStore } from "@/types/marketplace";
 import { OneTapLogin } from "@/app/(m)/components/OneTapLogin";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { ArrowRightIcon } from "@hugeicons/core-free-icons";
 
 export default async function HomePage() {
     const { categories, stores, storesByCategory } = await marketplaceService.getHomePageData();
@@ -40,27 +42,15 @@ export default async function HomePage() {
                 categories.map(c => ({
                     id: c.id,
                     name: c.name,
-                    image: null // Category repo returns objects with image? No, currently repo uses findAll() -> just db fields. Check repo if image exists.
-                    // Assuming db schema has image. If not, null.
-                })) as any // Casting for now to match UI expectations if strict check fails
+                    image: null
+                })) as any
             } />
 
-            <FeaturedCategory />
-
-            {/* Marketplace Stores Section */}
-            <div className="container mx-auto px-4 py-12">
-                <div className="flex justify-between items-center mb-8">
+            <div className="container mx-auto px-4 py-9">
+                <div className="flex items-start mb-8">
                     <div>
-                        <h2 className="text-3xl font-bold mb-2">Discover Stores</h2>
-                        <p className="text-muted-foreground">
-                            Browse through our curated collection of stores
-                        </p>
+                        <h2 className="text-xl  pl-10 font-semibold mb-1">Discover your next favorite stores all in one place</h2>
                     </div>
-                    <Link href="/c">
-                        <Button size="lg">
-                            Start Selling
-                        </Button>
-                    </Link>
                 </div>
 
                 {uiStores.length === 0 ? (
@@ -74,25 +64,24 @@ export default async function HomePage() {
                         </Link>
                     </div>
                 ) : (
-                    <div className="space-y-12">
-                        {/* All Stores */}
+                    <div className="space-y-9">
                         <div>
-                            <h3 className="text-2xl font-semibold mb-6">All Stores</h3>
-                            {/* MarketplaceGrid expects 'stores' prop. We pass uiStores. */}
+                            <h3 className="text-2xl font-semibold mb-3 pl-10">Featured</h3>
                             <MarketplaceGrid stores={uiStores} loading={false} />
                         </div>
 
-                        {/* Stores by Category */}
                         {Object.entries(uiStoresByCategory).map(([categoryName, categoryStores]) => (
                             <div key={categoryName}>
-                                <div className="flex justify-between items-center mb-6">
-                                    <h3 className="text-2xl font-semibold">{categoryName}</h3>
-                                    <Link
-                                        href={`/category/${categoryName.toLowerCase().replace(/\s+/g, '-')}`}
-                                        className="text-primary hover:underline"
-                                    >
-                                        View all →
-                                    </Link>
+                                <div className="flex justify-between items-center mb-3">
+                                    <h3 className="text-2xl pl-10 font-semibold">{categoryName}</h3>
+                                    <span className="pr-10">
+                                        <Link
+                                            href={`/category/${categoryName.toLowerCase().replace(/\s+/g, '-')}`}
+                                            className="text-primary hover:underline"
+                                        >
+                                            <HugeiconsIcon icon={ArrowRightIcon} />
+                                        </Link>
+                                    </span>
                                 </div>
                                 <MarketplaceGrid stores={categoryStores.slice(0, 5)} loading={false} />
                             </div>
@@ -100,7 +89,6 @@ export default async function HomePage() {
                     </div>
                 )}
             </div>
-
             <Footer />
         </main>
     );

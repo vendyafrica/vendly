@@ -14,7 +14,7 @@ export function StoreCard({ store }: StoreCardProps) {
   return (
     <div className="group">
       <Link
-        href={`/store/${store.slug}`}
+        href={`/${store.slug}`}
         className="block bg-white rounded-3xl overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-300 active:scale-[0.98]"
       >
         <div className="aspect-square relative">
@@ -40,7 +40,7 @@ export function StoreCard({ store }: StoreCardProps) {
             )}
           </div>
           <Link
-            href={`/store/${store.slug}`}
+            href={`/${store.slug}`}
             className="font-bold text-sm text-gray-900 leading-tight hover:text-black transition-colors"
             onClick={(e) => e.stopPropagation()}
           >

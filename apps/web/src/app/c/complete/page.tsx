@@ -76,11 +76,13 @@ export default function Complete() {
               const tenantSlug = localStorage.getItem("vendly_tenant_slug");
               const storeSlug = localStorage.getItem("vendly_store_slug");
 
-              if (tenantSlug) {
-                window.location.href = `/dashboard/${tenantSlug}`;
+              if (storeSlug) {
+                window.location.href = `/a/${storeSlug}`;
+              } else if (tenantSlug) {
+                window.location.href = `/a/${tenantSlug}`;
               } else {
                 // Fallback or error handling
-                console.error("No tenant slug found for redirection");
+                console.error("No redirect path found");
               }
             }}
           >

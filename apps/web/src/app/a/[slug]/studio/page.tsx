@@ -19,15 +19,15 @@ const MOBILE_DIMENSIONS = {
 
 export default function StudioPage() {
     const params = useParams();
-    const tenantSlug = params?.tenant as string;
+    const storeSlug = params?.slug as string;
 
     const [device, setDevice] = useState<DeviceType>("desktop");
     const [isLoading, setIsLoading] = useState(true);
 
     const storefrontUrl =
         process.env.NODE_ENV === "production"
-            ? `https://${tenantSlug}.vendlyafrica.store`
-            : `http://localhost:3000/${tenantSlug}`;
+            ? `https://${storeSlug}.vendlyafrica.store`
+            : `http://localhost:3000/${storeSlug}`;
 
     return (
         <div className="relative h-screen w-full bg-transparent">
@@ -41,7 +41,7 @@ export default function StudioPage() {
                         className="absolute inset-0 h-full w-full border-0 bg-white"
                     />
                 )}
-            
+
                 {/* Loading Overlay */}
                 {isLoading && (
                     <div className="absolute inset-0 z-40 flex items-center justify-center bg-neutral-950">
