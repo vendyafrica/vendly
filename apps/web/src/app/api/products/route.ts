@@ -4,8 +4,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { productService } from "@/lib/services/product-service";
 import { productQuerySchema, createProductSchema } from "@/lib/services/product-models";
 import { db } from "@vendly/db/db";
-import { tenants } from "@vendly/db/schema";
-import { eq } from "drizzle-orm";
+import { tenants, tenantMemberships } from "@vendly/db/schema";
+import { eq } from "@vendly/db";
 
 /**
  * GET /api/products
@@ -21,11 +21,11 @@ export async function GET(request: NextRequest) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
 
-        const tenant = await db.query.tenants.findFirst({
-            where: eq(tenants.userId, session.user.id),
+        const membership = await db.query.tenantMemberships.findFirst({
+            where: eq(tenantMemberships.userId, session.user.id),
         });
 
-        if (!tenant) {
+        if (!membership) {
             return NextResponse.json({ error: "No tenant found" }, { status: 404 });
         }
 
@@ -39,7 +39,7 @@ export async function GET(request: NextRequest) {
             search: searchParams.get("search") || undefined,
         });
 
-        const result = await productService.listProducts(tenant.id, filters);
+        const result = await productService.listProducts(membership.tenantId, filters);
         return NextResponse.json(result);
     } catch (error) {
         console.error("Error listing products:", error);
@@ -61,11 +61,12 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
 
-        const tenant = await db.query.tenants.findFirst({
-            where: eq(tenants.userId, session.user.id),
+        const membership = await db.query.tenantMemberships.findFirst({
+            where: eq(tenantMemberships.userId, session.user.id),
+            with: { tenant: true }
         });
 
-        if (!tenant) {
+        if (!membership || !membership.tenant) {
             return NextResponse.json({ error: "No tenant found" }, { status: 404 });
         }
 
@@ -105,8 +106,8 @@ export async function POST(request: NextRequest) {
         }
 
         const product = await productService.createProduct(
-            tenant.id,
-            tenant.slug,
+            membership.tenantId,
+            membership.tenant.slug,
             input,
             files
         );

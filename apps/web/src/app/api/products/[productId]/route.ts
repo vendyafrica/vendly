@@ -4,8 +4,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { productService } from "@/lib/services/product-service";
 import { updateProductSchema } from "@/lib/services/product-models";
 import { db } from "@vendly/db/db";
-import { tenants } from "@vendly/db/schema";
-import { eq } from "drizzle-orm";
+import { tenants, tenantMemberships } from "@vendly/db/schema";
+import { eq } from "@vendly/db";
 
 type RouteParams = {
     params: Promise<{ productId: string }>;
@@ -25,16 +25,16 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
 
-        const tenant = await db.query.tenants.findFirst({
-            where: eq(tenants.userId, session.user.id),
+        const membership = await db.query.tenantMemberships.findFirst({
+            where: eq(tenantMemberships.userId, session.user.id),
         });
 
-        if (!tenant) {
+        if (!membership) {
             return NextResponse.json({ error: "No tenant found" }, { status: 404 });
         }
 
         const { productId } = await params;
-        const product = await productService.getProductWithMedia(productId, tenant.id);
+        const product = await productService.getProductWithMedia(productId, membership.tenantId);
 
         return NextResponse.json(product);
     } catch (error) {
@@ -62,11 +62,11 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
 
-        const tenant = await db.query.tenants.findFirst({
-            where: eq(tenants.userId, session.user.id),
+        const membership = await db.query.tenantMemberships.findFirst({
+            where: eq(tenantMemberships.userId, session.user.id),
         });
 
-        if (!tenant) {
+        if (!membership) {
             return NextResponse.json({ error: "No tenant found" }, { status: 404 });
         }
 
@@ -74,7 +74,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
         const body = await request.json();
         const input = updateProductSchema.parse(body);
 
-        const updated = await productService.updateProduct(productId, tenant.id, input);
+        const updated = await productService.updateProduct(productId, membership.tenantId, input);
         return NextResponse.json(updated);
     } catch (error) {
         console.error("Error updating product:", error);
@@ -101,16 +101,17 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
 
-        const tenant = await db.query.tenants.findFirst({
-            where: eq(tenants.userId, session.user.id),
+        const membership = await db.query.tenantMemberships.findFirst({
+            where: eq(tenantMemberships.userId, session.user.id),
+            with: { tenant: true }
         });
 
-        if (!tenant) {
+        if (!membership || !membership.tenant) {
             return NextResponse.json({ error: "No tenant found" }, { status: 404 });
         }
 
         const { productId } = await params;
-        await productService.deleteProduct(productId, tenant.id, tenant.slug);
+        await productService.deleteProduct(productId, membership.tenantId, membership.tenant.slug);
 
         return NextResponse.json({ success: true });
     } catch (error) {

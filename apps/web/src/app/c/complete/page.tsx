@@ -73,12 +73,15 @@ export default function Complete() {
             className="w-full cursor-pointer"
             onClick={() => {
               // Navigate to the admin dashboard
-              const storeSlug = data.store?.storeName
-                ?.toLowerCase()
-                .replace(/[^a-z0-9]+/g, "-")
-                .replace(/^-|-$/g, "");
-              const adminUrl = process.env.NEXT_PUBLIC_ADMIN_URL || "http://localhost:4000";
-              window.location.href = `${adminUrl}/${storeSlug || "store"}`;
+              const tenantSlug = localStorage.getItem("vendly_tenant_slug");
+              const storeSlug = localStorage.getItem("vendly_store_slug");
+
+              if (tenantSlug) {
+                window.location.href = `/dashboard/${tenantSlug}`;
+              } else {
+                // Fallback or error handling
+                console.error("No tenant slug found for redirection");
+              }
             }}
           >
             Go to Dashboard

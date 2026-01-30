@@ -3,8 +3,8 @@ import { headers } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 import { storeService } from "@/lib/services/store-service";
 import { db } from "@vendly/db/db";
-import { tenants } from "@vendly/db/schema";
-import { eq } from "drizzle-orm";
+import { tenants, tenantMemberships } from "@vendly/db/schema";
+import { eq } from "@vendly/db";
 import { z } from "zod";
 
 const createStoreSchema = z.object({
@@ -32,15 +32,15 @@ export async function GET() {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
 
-        const tenant = await db.query.tenants.findFirst({
-            where: eq(tenants.userId, session.user.id),
+        const membership = await db.query.tenantMemberships.findFirst({
+            where: eq(tenantMemberships.userId, session.user.id),
         });
 
-        if (!tenant) {
+        if (!membership) {
             return NextResponse.json({ error: "No tenant found" }, { status: 404 });
         }
 
-        const storeList = await storeService.findByTenantId(tenant.id);
+        const storeList = await storeService.findByTenantId(membership.tenantId);
         return NextResponse.json(storeList);
     } catch (error) {
         console.error("Error listing stores:", error);
@@ -62,11 +62,11 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
 
-        const tenant = await db.query.tenants.findFirst({
-            where: eq(tenants.userId, session.user.id),
+        const membership = await db.query.tenantMemberships.findFirst({
+            where: eq(tenantMemberships.userId, session.user.id),
         });
 
-        if (!tenant) {
+        if (!membership) {
             return NextResponse.json({ error: "No tenant found" }, { status: 404 });
         }
 
@@ -80,7 +80,7 @@ export async function POST(request: NextRequest) {
         }
 
         const store = await storeService.create({
-            tenantId: tenant.id,
+            tenantId: membership.tenantId,
             ...input,
         });
 

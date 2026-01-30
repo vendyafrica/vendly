@@ -40,6 +40,7 @@ export interface OnboardingCompleteResponse {
     tenantId: string;
     storeId: string;
     storeSlug: string;
+    tenantSlug: string;
     message: string;
 }
 

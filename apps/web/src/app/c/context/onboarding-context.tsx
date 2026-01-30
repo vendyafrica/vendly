@@ -191,6 +191,7 @@ export function OnboardingProvider({ children }: ProviderProps) {
             const result = await apiCall<{
                 success: boolean;
                 tenantId: string;
+                tenantSlug: string;
                 storeId: string;
                 storeSlug: string;
             }>("/", {
@@ -202,7 +203,9 @@ export function OnboardingProvider({ children }: ProviderProps) {
                 // Store tenant and store IDs in localStorage for admin app
                 if (typeof window !== "undefined") {
                     localStorage.setItem("vendly_tenant_id", result.tenantId);
+                    localStorage.setItem("vendly_tenant_slug", result.tenantSlug);
                     localStorage.setItem("vendly_store_id", result.storeId);
+                    localStorage.setItem("vendly_store_slug", result.storeSlug);
 
                     // Clear onboarding temp data
                     localStorage.removeItem("vendly_onboarding_data");

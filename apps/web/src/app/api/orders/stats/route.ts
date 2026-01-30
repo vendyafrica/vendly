@@ -3,8 +3,8 @@ import { headers } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 import { orderService } from "@/lib/services/order-service";
 import { db } from "@vendly/db/db";
-import { tenants } from "@vendly/db/schema";
-import { eq } from "drizzle-orm";
+import { tenants, tenantMemberships } from "@vendly/db/schema";
+import { eq } from "@vendly/db";
 
 /**
  * GET /api/orders/stats
@@ -20,15 +20,15 @@ export async function GET() {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
 
-        const tenant = await db.query.tenants.findFirst({
-            where: eq(tenants.userId, session.user.id),
+        const membership = await db.query.tenantMemberships.findFirst({
+            where: eq(tenantMemberships.userId, session.user.id),
         });
 
-        if (!tenant) {
+        if (!membership) {
             return NextResponse.json({ error: "No tenant found" }, { status: 404 });
         }
 
-        const stats = await orderService.getOrderStats(tenant.id);
+        const stats = await orderService.getOrderStats(membership.tenantId);
         return NextResponse.json(stats);
     } catch (error) {
         console.error("Error fetching order stats:", error);

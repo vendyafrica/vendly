@@ -7,8 +7,7 @@ import { marketplaceService } from "@/lib/services/marketplace-service";
  */
 export async function GET() {
     try {
-        const stores = await marketplaceService.getAllStores();
-        const storesByCategory = await marketplaceService.getStoresByCategory();
+        const { stores, storesByCategory } = await marketplaceService.getHomePageData();
 
         return NextResponse.json({
             stores,

@@ -3,7 +3,21 @@
 import { useEffect, useState } from "react";
 import { ProductGrid } from "./product-grid";
 
-export function ProductGridReveal() {
+interface Product {
+    id: string;
+    slug: string;
+    name: string;
+    price: number;
+    currency: string;
+    image: string | null;
+    rating: number;
+}
+
+interface ProductGridRevealProps {
+    products: Product[];
+}
+
+export function ProductGridReveal({ products }: ProductGridRevealProps) {
     const [visible, setVisible] = useState(false);
 
     useEffect(() => {
@@ -22,7 +36,7 @@ export function ProductGridReveal() {
                 <div className="flex items-center justify-between mb-4">
                     <h2 className="text-xl sm:text-2xl font-semibold text-neutral-900">More looks</h2>
                 </div>
-                <ProductGrid />
+                <ProductGrid products={products} />
             </div>
         </section>
     );

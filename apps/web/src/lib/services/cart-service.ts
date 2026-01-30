@@ -1,6 +1,6 @@
 import { db } from "@vendly/db/db";
 import { carts, cartItems, products, stores, productMedia, mediaObjects } from "@vendly/db/schema";
-import { eq, and } from "drizzle-orm";
+import { eq, and } from "@vendly/db";
 
 /**
  * Cart Service for serverless environment

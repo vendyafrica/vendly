@@ -1,6 +1,6 @@
-import { db } from "@vendly/db/db";
+import { db, dbWs } from "@vendly/db/db";
 import { products, productMedia, mediaObjects } from "@vendly/db/schema";
-import { eq, and, isNull, desc, sql, like } from "drizzle-orm";
+import { eq, and, isNull, desc, sql, like } from "@vendly/db";
 import { mediaService, type UploadFile } from "./media-service";
 import type { CreateProductInput, ProductFilters, ProductWithMedia, UpdateProductInput } from "./product-models";
 
@@ -17,26 +17,58 @@ export const productService = {
         data: CreateProductInput,
         files: UploadFile[] = []
     ): Promise<ProductWithMedia> {
-        // Create product
-        const [product] = await db.insert(products).values({
-            tenantId,
-            storeId: data.storeId,
-            productName: data.title,
-            description: data.description,
-            priceAmount: data.priceAmount,
-            currency: data.currency,
-            source: data.source,
-            sourceId: data.sourceId,
-            sourceUrl: data.sourceUrl,
-            isFeatured: data.isFeatured,
-        }).returning();
+        const slug = data.title.toLowerCase()
+            .replace(/[^a-z0-9]+/g, "-")
+            .replace(/^-|-$/g, "");
 
-        // Upload and attach media if files provided
-        if (files.length > 0) {
-            await this.uploadAndAttachMedia(tenantId, tenantSlug, product.id, files);
-        }
+        return await dbWs.transaction(async (tx) => {
+            // Create product
+            const [product] = await tx.insert(products).values({
+                tenantId,
+                storeId: data.storeId,
+                productName: data.title,
+                slug,
+                description: data.description,
+                priceAmount: data.priceAmount,
+                currency: data.currency,
+                source: data.source,
+                sourceId: data.sourceId,
+                sourceUrl: data.sourceUrl,
+                isFeatured: data.isFeatured,
+            }).returning();
 
-        return this.getProductWithMedia(product.id, tenantId);
+            // Upload and attach media if files provided
+            if (files.length > 0) {
+                const uploadResult = await mediaService.uploadProductMedia(files, tenantSlug, product.id);
+
+                const mediaObjectsData = await Promise.all(
+                    uploadResult.images.map(async (img) => {
+                        const [m] = await tx.insert(mediaObjects).values({
+                            tenantId,
+                            blobUrl: img.url,
+                            blobPathname: img.pathname,
+                            contentType: "image/jpeg",
+                            source: "upload",
+                        }).returning();
+                        return m;
+                    })
+                );
+
+                await Promise.all(
+                    mediaObjectsData.map((m, index) =>
+                        tx.insert(productMedia).values({
+                            tenantId,
+                            productId: product.id,
+                            mediaId: m.id,
+                            sortOrder: index,
+                            isFeatured: index === 0,
+                        })
+                    )
+                );
+            }
+
+            return this.getProductWithMedia(product.id, tenantId);
+        });
     },
 
     /**

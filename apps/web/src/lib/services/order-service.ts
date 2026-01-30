@@ -1,6 +1,6 @@
-import { db } from "@vendly/db/db";
+import { db, dbWs } from "@vendly/db/db";
 import { orders, orderItems, products, stores } from "@vendly/db/schema";
-import { eq, and, isNull, desc, sql, like, or, inArray } from "drizzle-orm";
+import { eq, and, isNull, desc, sql, like, or, inArray } from "@vendly/db";
 import type { CreateOrderInput, UpdateOrderStatusInput, OrderFilters, OrderWithItems, OrderStats } from "./order-models";
 
 /**
@@ -81,7 +81,7 @@ export const orderService = {
         const totalAmount = subtotal + shippingCost;
 
         // Create order with transaction
-        const order = await db.transaction(async (tx) => {
+        const order = await dbWs.transaction(async (tx) => {
             const [newOrder] = await tx
                 .insert(orders)
                 .values({

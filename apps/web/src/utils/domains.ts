@@ -1,7 +1,6 @@
 'use server';
 
-import { db, tenants } from '@vendly/db';
-import { eq } from 'drizzle-orm';
+import { db, tenants, eq } from '@vendly/db';
 import { redirect } from 'next/navigation';
 
 const RESERVED = [

@@ -4,8 +4,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { orderService } from "@/lib/services/order-service";
 import { updateOrderStatusSchema } from "@/lib/services/order-models";
 import { db } from "@vendly/db/db";
-import { tenants } from "@vendly/db/schema";
-import { eq } from "drizzle-orm";
+import { tenants, tenantMemberships } from "@vendly/db/schema";
+import { eq } from "@vendly/db";
 
 type RouteParams = {
     params: Promise<{ orderId: string }>;
@@ -25,16 +25,16 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
 
-        const tenant = await db.query.tenants.findFirst({
-            where: eq(tenants.userId, session.user.id),
+        const membership = await db.query.tenantMemberships.findFirst({
+            where: eq(tenantMemberships.userId, session.user.id),
         });
 
-        if (!tenant) {
+        if (!membership) {
             return NextResponse.json({ error: "No tenant found" }, { status: 404 });
         }
 
         const { orderId } = await params;
-        const order = await orderService.getOrder(orderId, tenant.id);
+        const order = await orderService.getOrder(orderId, membership.tenantId);
 
         if (!order) {
             return NextResponse.json({ error: "Order not found" }, { status: 404 });
@@ -61,11 +61,11 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
 
-        const tenant = await db.query.tenants.findFirst({
-            where: eq(tenants.userId, session.user.id),
+        const membership = await db.query.tenantMemberships.findFirst({
+            where: eq(tenantMemberships.userId, session.user.id),
         });
 
-        if (!tenant) {
+        if (!membership) {
             return NextResponse.json({ error: "No tenant found" }, { status: 404 });
         }
 
@@ -73,7 +73,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
         const body = await request.json();
         const input = updateOrderStatusSchema.parse(body);
 
-        const updated = await orderService.updateOrderStatus(orderId, tenant.id, input);
+        const updated = await orderService.updateOrderStatus(orderId, membership.tenantId, input);
         return NextResponse.json(updated);
     } catch (error) {
         console.error("Error updating order:", error);

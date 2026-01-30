@@ -1,8 +1,6 @@
 "use server";
 
-import { db } from "@vendly/db";
-import { categories } from "@vendly/db/schema";
-import { eq } from "drizzle-orm";
+import { db, eq, categories } from "@vendly/db";
 
 export async function getCategoriesAction() {
     try {

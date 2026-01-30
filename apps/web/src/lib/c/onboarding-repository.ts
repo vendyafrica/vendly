@@ -1,4 +1,4 @@
-import { db } from "@vendly/db/db";
+import { db, dbWs } from "@vendly/db/db";
 import { tenants, tenantMemberships, stores } from "@vendly/db/schema";
 import { eq } from "@vendly/db";
 import type { OnboardingData, CreateTenantResult } from "./models";
@@ -13,7 +13,7 @@ class OnboardingRepository {
         const tenantSlug = this.generateSlug(email);
         const storeSlug = await this.ensureUniqueStoreSlug(data.store.storeName);
 
-        return await db.transaction(async (tx) => {
+        return await dbWs.transaction(async (tx) => {
             const [tenant] = await tx.insert(tenants).values({
                 fullName: data.personal.fullName,
                 slug: tenantSlug,

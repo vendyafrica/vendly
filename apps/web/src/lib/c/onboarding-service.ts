@@ -39,6 +39,7 @@ class OnboardingService {
             tenantId: result.tenant.id,
             storeId: result.store.id,
             storeSlug: result.store.slug,
+            tenantSlug: result.tenant.slug,
             message: "Onboarding complete! Your store is ready.",
         };
     }

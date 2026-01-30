@@ -4,8 +4,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { orderService } from "@/lib/services/order-service";
 import { orderQuerySchema } from "@/lib/services/order-models";
 import { db } from "@vendly/db/db";
-import { tenants } from "@vendly/db/schema";
-import { eq } from "drizzle-orm";
+import { tenants, tenantMemberships } from "@vendly/db/schema";
+import { eq } from "@vendly/db";
 
 /**
  * GET /api/orders
@@ -22,11 +22,11 @@ export async function GET(request: NextRequest) {
         }
 
         // Get user's tenant
-        const tenant = await db.query.tenants.findFirst({
-            where: eq(tenants.userId, session.user.id),
+        const membership = await db.query.tenantMemberships.findFirst({
+            where: eq(tenantMemberships.userId, session.user.id),
         });
 
-        if (!tenant) {
+        if (!membership) {
             return NextResponse.json({ error: "No tenant found" }, { status: 404 });
         }
 
@@ -39,7 +39,7 @@ export async function GET(request: NextRequest) {
             search: searchParams.get("search") || undefined,
         });
 
-        const result = await orderService.listOrders(tenant.id, filters);
+        const result = await orderService.listOrders(membership.tenantId, filters);
         return NextResponse.json(result);
     } catch (error) {
         console.error("Error listing orders:", error);
