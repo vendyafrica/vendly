@@ -49,7 +49,7 @@ export default function HomePage() {
 
                     // Transform storesByCategory as well
                     const transformedByCategory: Record<string, MarketplaceStore[]> = {};
-                    Object.entries(data.storesByCategory || {}).forEach(([category, categoryStores]: [string, any[]]) => {
+                    (Object.entries(data.storesByCategory || {}) as [string, any[]][]).forEach(([category, categoryStores]) => {
                         transformedByCategory[category] = categoryStores.map((store: any) => ({
                             id: store.id,
                             name: store.name,

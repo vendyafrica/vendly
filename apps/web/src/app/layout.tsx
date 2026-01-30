@@ -33,7 +33,7 @@ export default function RootLayout({
   return (
     <html lang="en" className={nunitoSans.variable}>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} bg-[#F9F9F7] antialiased`}
       >
         <SpeedInsights />
         <CartProvider>

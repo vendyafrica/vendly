@@ -1,7 +1,7 @@
-import { MarketplaceGridSkeleton } from "@/app/(platform)/components/MarketplaceGridSkeleton";
-import { CategoryTitleSkeleton } from "@/app/(platform)/components/CategoryTitleSkeleton";
-import Header from "@/app/(platform)/components/header";
-import Footer from "@/app/(platform)/components/footer";
+import { MarketplaceGridSkeleton } from "@/app/(m)/components/MarketplaceGridSkeleton";
+import { CategoryTitleSkeleton } from "@/app/(m)/components/CategoryTitleSkeleton";
+import Header from "@/app/(m)/components/header";
+import Footer from "@/app/(m)/components/footer";
 
 export default function Loading() {
   return (

@@ -57,7 +57,7 @@ export function StoreCarousel({ images, className }: StoreCarouselProps) {
         <CarouselContent className="ml-0">
           {images.map((image, index) => (
             <CarouselItem key={index} className="pl-0">
-              <div className="relative aspect-2/3 overflow-hidden">
+              <div className="relative aspect-square overflow-hidden">
                 <Image
                   src={image}
                   alt={`Product ${index + 1}`}

@@ -13,7 +13,6 @@ interface StoreCardProps {
 export function StoreCard({ store }: StoreCardProps) {
   return (
     <div className="group">
-      {/* Image Card - Full rounded */}
       <Link
         href={`/store/${store.slug}`}
         className="block bg-white rounded-3xl overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-300 active:scale-[0.98]"
@@ -23,9 +22,7 @@ export function StoreCard({ store }: StoreCardProps) {
         </div>
       </Link>
 
-      {/* Store Info - Below the card */}
-      <div className="flex items-center justify-between mt-3 px-1">
-        {/* Profile Picture and Store Name */}
+      <div className="flex items-center justify-between mt-4 px-1">
         <div className="flex items-center gap-2">
           <div className="relative w-6 h-6 rounded-full overflow-hidden bg-gray-100">
             {store.logoUrl ? (
@@ -44,7 +41,7 @@ export function StoreCard({ store }: StoreCardProps) {
           </div>
           <Link
             href={`/store/${store.slug}`}
-            className="font-semibold text-sm text-gray-900 leading-tight hover:text-black transition-colors"
+            className="font-bold text-sm text-gray-900 leading-tight hover:text-black transition-colors"
             onClick={(e) => e.stopPropagation()}
           >
             {store.name}
@@ -53,8 +50,8 @@ export function StoreCard({ store }: StoreCardProps) {
 
         {/* Rating */}
         <div className="flex items-center gap-1">
-          <span className="text-sm font-medium text-gray-700">{store.rating}</span>
-          <Star className="w-3.5 h-3.5 fill-gray-400 text-gray-400" />
+          <span className="text-sm font-bold text-black">{store.rating}</span>
+          <Star className="w-3.5 h-3.5 fill-black text-black" />
         </div>
       </div>
     </div>

@@ -7,146 +7,187 @@ import { Delete02Icon, MinusSignIcon, PlusSignIcon, ArrowLeft01Icon } from "@hug
 import { Button } from "@vendly/ui/components/button";
 import { useCart } from "../../../contexts/cart-context";
 import { Avatar, AvatarFallback, AvatarImage } from "@vendly/ui/components/avatar";
+import Header from "../components/header";
+import Footer from "../components/footer";
+import RecentlyViewed from "../components/RecentlyViewed";
 
 export default function CartPage() {
-    const { items, itemsByStore, updateQuantity, removeItem, cartTotal, itemCount, addItem } = useCart();
+    const { items, itemsByStore, updateQuantity, removeItem, itemCount } = useCart();
 
     if (itemCount === 0) {
         return (
-            <div className="flex flex-col items-center justify-center py-20 bg-white rounded-lg border border-neutral-100 min-h-[50vh]">
-                <div className="bg-neutral-100 p-6 rounded-full mb-6">
-                    <HugeiconsIcon icon={Delete02Icon} className="h-10 w-10 text-neutral-400" />
+            <main className="min-h-screen bg-[#F9F9F7]">
+                <Header hideSearch />
+
+                <div className="max-w-3xl mx-auto px-4 py-8">
+                    <div className="flex items-center gap-2 mb-6">
+                        <Link href="/" className="p-2 -ml-2 hover:bg-neutral-100 rounded-full transition-colors">
+                            <HugeiconsIcon icon={ArrowLeft01Icon} className="h-5 w-5" />
+                        </Link>
+                        <h1 className="text-xl font-semibold">Shopping Bag</h1>
+                    </div>
+
+                    <div className="bg-white rounded-3xl border border-neutral-200 p-12 flex flex-col items-center justify-center text-center shadow-sm">
+                        <div className="bg-neutral-50 p-6 rounded-full mb-6">
+                            <HugeiconsIcon icon={Delete02Icon} className="h-10 w-10 text-neutral-300" />
+                        </div>
+                        <h2 className="text-xl font-semibold mb-2">Your cart is empty</h2>
+                        <p className="text-neutral-500 mb-8">
+                            Looks like you haven't added anything to your cart yet.
+                        </p>
+                        <Link href="/">
+                            <Button size="lg" className="rounded-full px-8 h-12">
+                                Start Shopping
+                            </Button>
+                        </Link>
+                    </div>
+
+                    <div className="mt-12">
+                        <RecentlyViewed />
+                    </div>
                 </div>
-                <h2 className="text-2xl font-semibold mb-2">Your cart is empty</h2>
-                <p className="text-neutral-500 mb-8 max-w-sm text-center">
-                    Looks like you haven&apos;t added anything to your cart yet.
-                </p>
-                <div className="flex flex-col gap-4">
-                    <Link href="/">
-                        <Button size="lg" className="rounded-full px-8">
-                            Continue Shopping
-                        </Button>
-                    </Link>
-                </div>
-            </div>
+
+                <Footer />
+            </main>
         );
     }
 
     return (
-        <div className="max-w-3xl mx-auto space-y-3">
-            <div className="flex items-center gap-1 mb-4">
-                <Link href="/" className="p-1 hover:bg-neutral-100 rounded-full transition-colors">
-                    <HugeiconsIcon icon={ArrowLeft01Icon} className="h-5 w-5" />
-                </Link>
-                <h1 className="text-xl font-semibold">Shopping Bag</h1>
+        <main className="min-h-screen bg-[#F9F9F7]">
+            <Header hideSearch />
+
+            <div className="max-w-3xl mx-auto px-4 py-8 space-y-6">
+                <div className="flex items-center gap-2 mb-2">
+                    <Link href="/" className="p-2 -ml-2 hover:bg-neutral-100 rounded-full transition-colors">
+                        <HugeiconsIcon icon={ArrowLeft01Icon} className="h-5 w-5" />
+                    </Link>
+                    <h1 className="text-xl font-semibold">Shopping Bag</h1>
+                </div>
+
+                <div className="space-y-6">
+                    {Object.entries(itemsByStore).map(([storeId, storeItems]) => {
+                        const store = storeItems[0].store;
+                        const storeSubtotal = storeItems.reduce((acc, item) => acc + (item.product.price * item.quantity), 0);
+                        const currency = storeItems[0]?.product.currency || "KES";
+
+                        return (
+                            <div key={storeId} className="bg-white rounded-3xl border border-neutral-200 overflow-hidden shadow-sm">
+                                <div className="p-6 pb-4 flex items-center justify-between border-b border-neutral-50">
+                                    <div className="flex items-center gap-3">
+                                        <Avatar className="h-10 w-10 border border-neutral-100">
+                                            <AvatarImage
+                                                src={`https://ui-avatars.com/api/?name=${store.name}&background=random`}
+                                                alt={store.name}
+                                            />
+                                            <AvatarFallback>{store.name.charAt(0)}</AvatarFallback>
+                                        </Avatar>
+                                        <div>
+                                            <Link href={`/${store.slug}`}>
+                                                <h2 className="font-semibold text-base hover:text-primary transition-colors">{store.name}</h2>
+                                            </Link>
+                                            <p className="text-xs text-neutral-500">{storeItems.length} items</p>
+                                        </div>
+                                    </div>
+
+                                    {/* Optional: Store actions dropdown could go here */}
+                                </div>
+
+                                <div className="divide-y divide-neutral-100">
+                                    {storeItems.map((item) => (
+                                        <div key={item.id} className="p-6 flex gap-5">
+                                            <div className="relative h-24 w-24 bg-neutral-50 rounded-xl overflow-hidden shrink-0 border border-neutral-100">
+                                                {item.product.image ? (
+                                                    <Image
+                                                        src={item.product.image}
+                                                        alt={item.product.name}
+                                                        fill
+                                                        className="object-cover"
+                                                    />
+                                                ) : (
+                                                    <div className="h-full w-full flex items-center justify-center text-neutral-400 text-xs">
+                                                        No Image
+                                                    </div>
+                                                )}
+                                            </div>
+
+                                            <div className="flex-1 flex flex-col justify-between py-0.5">
+                                                <div className="flex justify-between items-start gap-4">
+                                                    <div>
+                                                        <h3 className="font-medium text-base mb-1">
+                                                            <Link href={`/${store.slug}/products/${item.product.slug}`} className="hover:underline">
+                                                                {item.product.name}
+                                                            </Link>
+                                                        </h3>
+                                                        <p className="text-sm text-neutral-500">
+                                                            {/* Variant placeholder if needed */}
+                                                            Standard
+                                                        </p>
+                                                    </div>
+                                                    <div className="font-semibold text-base">
+                                                        {item.product.currency} {item.product.price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                    </div>
+                                                </div>
+
+                                                <div className="flex items-center justify-between mt-4">
+                                                    <div className="flex items-center border border-neutral-200 rounded-full bg-white h-9 shadow-sm/50">
+                                                        <button
+                                                            onClick={() => {
+                                                                if (item.quantity <= 1) {
+                                                                    removeItem(item.id);
+                                                                } else {
+                                                                    updateQuantity(item.id, item.quantity - 1);
+                                                                }
+                                                            }}
+                                                            className="w-9 h-full flex items-center justify-center hover:bg-neutral-50 rounded-l-full text-neutral-600 transition-colors"
+                                                        >
+                                                            {item.quantity <= 1 ? <HugeiconsIcon icon={Delete02Icon} size={14} /> : <HugeiconsIcon icon={MinusSignIcon} size={14} />}
+                                                        </button>
+                                                        <span className="w-6 text-center text-sm font-medium tabular-nums">{item.quantity}</span>
+                                                        <button
+                                                            onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                                                            className="w-9 h-full flex items-center justify-center hover:bg-neutral-50 rounded-r-full text-neutral-600 transition-colors"
+                                                        >
+                                                            <HugeiconsIcon icon={PlusSignIcon} size={14} />
+                                                        </button>
+                                                    </div>
+
+                                                    <button
+                                                        onClick={() => removeItem(item.id)}
+                                                        className="text-neutral-400 hover:text-red-500 transition-colors p-2"
+                                                        aria-label="Remove item"
+                                                    >
+                                                        <HugeiconsIcon icon={Delete02Icon} size={18} />
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+
+                                <div className="p-6 bg-neutral-50/50 border-t border-neutral-100">
+                                    <div className="flex items-center justify-between mb-4">
+                                        <span className="text-neutral-600">Subtotal</span>
+                                        <span className="text-lg font-bold">
+                                            {currency} {storeSubtotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                        </span>
+                                    </div>
+                                    <Link href={`/checkout?storeId=${store.id}`}>
+                                        <Button className="w-full h-12 text-base font-semibold rounded-full shadow-lg shadow-indigo-500/20 hover:shadow-indigo-500/30 transition-all">
+                                            Continue to checkout
+                                        </Button>
+                                    </Link>
+                                </div>
+                            </div>
+                        );
+                    })}
+                </div>
+
+                <div className="mt-12 pt-6 border-t border-neutral-200">
+                    <RecentlyViewed />
+                </div>
             </div>
 
-            {Object.entries(itemsByStore).map(([storeId, storeItems]) => {
-                const store = storeItems[0].store;
-                const storeSubtotal = storeItems.reduce((acc, item) => acc + (item.product.price * item.quantity), 0);
-                const currency = storeItems[0]?.product.currency || "KES";
-
-                return (
-                    <div key={storeId} className="bg-white rounded-3xl border border-neutral-200 overflow-hidden shadow-sm">
-                        <div className="p-6 pb-3 flex items-center gap-4">
-                            <Avatar>
-                                <AvatarImage
-                                    src="https://github.com/shadcn.png"
-                                    alt="@shadcn"
-                                    className="grayscale"
-                                />
-                                <AvatarFallback>CN</AvatarFallback>
-                            </Avatar>
-                            <div>
-                                <Link href={`/${store.slug}`}>
-                                    <h2 className="font-semibold text-md hover:text-primary/80 transition-colors hover:underline">{store.name}</h2>
-                                </Link>
-                            </div>
-                        </div>
-
-                        <div className="divide-y divide-neutral-100">
-                            {storeItems.map((item) => (
-                                <div key={item.id} className="p-6 flex gap-6">
-                                    <div className="relative h-20 w-20 bg-neutral-100 rounded-lg overflow-hidden shrink-0 border border-neutral-100">
-                                        {item.product.image ? (
-                                            <Image
-                                                src={item.product.image}
-                                                alt={item.product.name}
-                                                fill
-                                                className="object-cover"
-                                            />
-                                        ) : (
-                                            <div className="h-full w-full flex items-center justify-center text-neutral-400 text-xs">
-                                                No Image
-                                            </div>
-                                        )}
-                                    </div>
-
-                                    <div className="flex-1 flex flex-col justify-between py-1">
-                                        <div className="flex justify-between items-start">
-                                            <div>
-                                                <h3 className="font-semibold text-base uppercase tracking-tight mb-1">
-                                                    <Link href={`/${store.slug}/products/${item.product.slug}`}>
-                                                        {item.product.name}
-                                                    </Link>
-                                                </h3>
-                                            </div>
-                                            <div className="font-medium text-md">
-                                                {item.product.currency} {item.product.price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                            </div>
-                                        </div>
-
-                                        <div className="flex items-center justify-between mt-6">
-                                            <div className="flex items-center border border-neutral-200 rounded-full bg-white h-10 shadow-sm">
-                                                <button
-                                                    onClick={() => {
-                                                        if (item.quantity <= 1) {
-                                                            removeItem(item.id);
-                                                        } else {
-                                                            updateQuantity(item.id, item.quantity - 1);
-                                                        }
-                                                    }}
-                                                    className="w-10 h-full flex items-center justify-center hover:bg-neutral-50 rounded-l-full text-neutral-600"
-                                                >
-                                                    {item.quantity <= 1 ? <HugeiconsIcon icon={Delete02Icon} size={16} /> : <HugeiconsIcon icon={MinusSignIcon} size={16} />}
-                                                </button>
-                                                <span className="w-8 text-center text-sm font-semibold">{item.quantity}</span>
-                                                <button
-                                                    onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                                                    className="w-10 h-full flex items-center justify-center hover:bg-neutral-50 rounded-r-full text-neutral-600"
-                                                >
-                                                    <HugeiconsIcon icon={PlusSignIcon} size={16} />
-                                                </button>
-                                            </div>
-
-                                            <button
-                                                onClick={() => removeItem(item.id)}
-                                                className="w-10 h-10 rounded-full border border-neutral-200 flex items-center justify-center hover:bg-neutral-50 text-neutral-400 hover:text-red-500 transition-colors"
-                                            >
-                                                <HugeiconsIcon icon={Delete02Icon} className="h-4 w-4 cursor-pointer" />
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-
-                        {/* Store Footer */}
-                        <div className="p-6 bg-white border-t border-neutral-100 flex items-center justify-between">
-                            <div className="text-lg font-medium">Subtotal</div>
-                            <div className="text-lg font-semibold">{currency} {storeSubtotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
-                        </div>
-
-                        <div className="p-4">
-                            <Link href={`/checkout?storeId=${store.id}`}>
-                                <Button className="w-full h-12 text-base font-semibold rounded-4xl shadow-md shadow-indigo-600/20">
-                                    Continue to checkout
-                                </Button>
-                            </Link>
-                        </div>
-                    </div>
-                );
-            })}
-        </div>
+            <Footer />
+        </main>
     );
 }
