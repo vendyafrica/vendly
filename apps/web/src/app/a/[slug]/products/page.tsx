@@ -10,7 +10,7 @@ import { EditProductModal } from "./components/edit-product-modal";
 import { AddProduct } from "./components/add-product";
 import { Button } from "@vendly/ui/components/button";
 import { HugeiconsIcon } from "@hugeicons/react";
-import { Download04Icon, FilterIcon } from "@hugeicons/core-free-icons";
+import { Download04Icon, FilterIcon, CheckmarkCircle02Icon } from "@hugeicons/core-free-icons";
 
 const API_BASE = "";
 
@@ -37,6 +37,10 @@ export default function ProductsPage() {
     const [products, setProducts] = React.useState<ProductTableRow[]>([]);
     const [isLoading, setIsLoading] = React.useState(true);
     const [error, setError] = React.useState<string | null>(null);
+
+    // Selection
+    const [selectedIds, setSelectedIds] = React.useState<string[]>([]);
+    const [isBulkPublishing, setIsBulkPublishing] = React.useState(false);
 
     // Modal states
     const [uploadModalOpen, setUploadModalOpen] = React.useState(false);
@@ -93,7 +97,7 @@ export default function ProductsPage() {
         } finally {
             setIsLoading(false);
         }
-    }, [tenantId, storeSlug]);
+    }, [tenantId, storeSlug, products.length]);
 
     // Initial fetch - get tenant info from URL or mock for now
     React.useEffect(() => {
@@ -141,8 +145,39 @@ export default function ProductsPage() {
             }
 
             fetchProducts();
+            // Remove from selection if selected
+            setSelectedIds(prev => prev.filter(sId => sId !== id));
         } catch (err) {
             console.error("Delete failed:", err);
+        }
+    };
+
+    const handleBulkPublish = async () => {
+        if (!confirm(`Are you sure you want to publish ${selectedIds.length} products?`)) return;
+
+        setIsBulkPublishing(true);
+        try {
+            const response = await fetch(`${API_BASE}/api/products/bulk`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "x-tenant-id": tenantId,
+                },
+                body: JSON.stringify({
+                    ids: selectedIds,
+                    action: "publish",
+                }),
+            });
+
+            if (!response.ok) throw new Error("Bulk publish failed");
+
+            await fetchProducts();
+            setSelectedIds([]); // Clear selection
+        } catch (error) {
+            console.error("Bulk publish failed:", error);
+            alert("Failed to publish products");
+        } finally {
+            setIsBulkPublishing(false);
         }
     };
 
@@ -167,6 +202,16 @@ export default function ProductsPage() {
                     </p>
                 </div>
                 <div className="flex flex-wrap items-center gap-2">
+                    {selectedIds.length > 0 && (
+                        <Button
+                            onClick={handleBulkPublish}
+                            disabled={isBulkPublishing}
+                            className="gap-2 bg-emerald-600 hover:bg-emerald-700 text-white"
+                        >
+                            <HugeiconsIcon icon={CheckmarkCircle02Icon} className="size-4" />
+                            {isBulkPublishing ? "Publishing..." : `Publish Selected (${selectedIds.length})`}
+                        </Button>
+                    )}
                     <AddProductButton
                         onUploadClick={() => setUploadModalOpen(true)}
                         onInstagramClick={() => {
@@ -201,6 +246,8 @@ export default function ProductsPage() {
             <div className="rounded-md border bg-card p-2 sm:p-4">
                 <ProductTable
                     products={products}
+                    selectedIds={selectedIds}
+                    onSelectionChange={setSelectedIds}
                     onEdit={handleEdit}
                     onDelete={handleDelete}
                     onGenerateVariants={handleGenerateVariants}

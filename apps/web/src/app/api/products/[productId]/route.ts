@@ -74,7 +74,14 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
         const body = await request.json();
         const input = updateProductSchema.parse(body);
 
-        const updated = await productService.updateProduct(productId, membership.tenantId, input);
+        // Check for media updates (not part of updateProductSchema currently)
+        const mediaInput = body.media ? body.media : undefined;
+
+        // Update product method should be enhanced to handle media syncing
+        // For now, we manually handle it here or update the service.
+        // Let's update the service to handle optional "media" in updateProduct.
+        // But first let's pass it.
+        const updated = await productService.updateProduct(productId, membership.tenantId, { ...input, media: mediaInput });
         return NextResponse.json(updated);
     } catch (error) {
         console.error("Error updating product:", error);

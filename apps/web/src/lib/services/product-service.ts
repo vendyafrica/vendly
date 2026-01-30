@@ -21,7 +21,7 @@ export const productService = {
             .replace(/[^a-z0-9]+/g, "-")
             .replace(/^-|-$/g, "");
 
-        return await dbWs.transaction(async (tx) => {
+        const createdProduct = await dbWs.transaction(async (tx) => {
             // Create product
             const [product] = await tx.insert(products).values({
                 tenantId,
@@ -67,8 +67,11 @@ export const productService = {
                 );
             }
 
-            return this.getProductWithMedia(product.id, tenantId);
+            return product;
         });
+
+        // Fetch user-facing product *after* transaction commits so 'db' (reader) can see it.
+        return this.getProductWithMedia(createdProduct.id, tenantId);
     },
 
     /**
@@ -103,6 +106,44 @@ export const productService = {
                     tenantId,
                     productId,
                     mediaId: media.id,
+                    sortOrder: index,
+                    isFeatured: index === 0,
+                })
+            )
+        );
+
+        return mediaObjectsData;
+    },
+
+    /**
+     * Attach existing media URLs (e.g. from client-side upload)
+     */
+    async attachMediaUrls(
+        tenantId: string,
+        productId: string,
+        media: Array<{ url: string; pathname: string; contentType?: string }>
+    ) {
+        if (media.length === 0) return [];
+
+        const mediaObjectsData = await Promise.all(
+            media.map(async (m) => {
+                const [mediaObj] = await db.insert(mediaObjects).values({
+                    tenantId,
+                    blobUrl: m.url,
+                    blobPathname: m.pathname,
+                    contentType: m.contentType || "image/jpeg",
+                    source: "upload",
+                }).returning();
+                return mediaObj;
+            })
+        );
+
+        await Promise.all(
+            mediaObjectsData.map((mediaObj, index) =>
+                db.insert(productMedia).values({
+                    tenantId,
+                    productId,
+                    mediaId: mediaObj.id,
                     sortOrder: index,
                     isFeatured: index === 0,
                 })
@@ -209,9 +250,11 @@ export const productService = {
      * Update a product
      */
     async updateProduct(id: string, tenantId: string, data: UpdateProductInput): Promise<ProductWithMedia> {
+        const { media, ...productData } = data;
+
         const [updated] = await db.update(products)
             .set({
-                ...data,
+                ...productData,
                 updatedAt: new Date(),
             })
             .where(and(
@@ -223,6 +266,54 @@ export const productService = {
 
         if (!updated) {
             throw new Error("Product not found");
+        }
+
+        if (media) {
+            // Sync media
+            // 1. Delete existing product media links for this product
+            // (We could be more smart and diff them, but full replace is easier and safer for ordering)
+            // Note: We don't delete the actual MediaObjects here unless we are sure they are orphaned and we want to clean up.
+            // For now, just unlink.
+            await db.delete(productMedia).where(and(
+                eq(productMedia.productId, id),
+                eq(productMedia.tenantId, tenantId)
+            ));
+
+            // 2. Re-attach or create media objects
+            await Promise.all(media.map(async (m, index) => {
+                // Check if mediaObject already exists by blobUrl or pathname
+                let mediaId: string;
+
+                const existing = await db.query.mediaObjects.findFirst({
+                    where: and(
+                        eq(mediaObjects.tenantId, tenantId),
+                        eq(mediaObjects.blobUrl, m.url)
+                    )
+                });
+
+                if (existing) {
+                    mediaId = existing.id;
+                } else {
+                    // Create new media object
+                    const [newMedia] = await db.insert(mediaObjects).values({
+                        tenantId,
+                        blobUrl: m.url,
+                        blobPathname: m.pathname,
+                        contentType: m.contentType || "image/jpeg",
+                        source: "upload",
+                    }).returning();
+                    mediaId = newMedia.id;
+                }
+
+                // Link to product
+                await db.insert(productMedia).values({
+                    tenantId,
+                    productId: id,
+                    mediaId,
+                    sortOrder: index,
+                    isFeatured: index === 0
+                });
+            }));
         }
 
         return this.getProductWithMedia(id, tenantId);

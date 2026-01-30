@@ -112,6 +112,18 @@ export async function POST(request: NextRequest) {
             files
         );
 
+        // If specific media URLs were passed (client-side upload)
+        if (input.media && input.media.length > 0) {
+            await productService.attachMediaUrls(
+                membership.tenantId,
+                product.id,
+                input.media
+            );
+            // Refresh product with media
+            const productWithMedia = await productService.getProductWithMedia(product.id, membership.tenantId);
+            return NextResponse.json(productWithMedia, { status: 201 });
+        }
+
         return NextResponse.json(product, { status: 201 });
     } catch (error) {
         console.error("Error creating product:", error);

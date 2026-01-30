@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@vendly/ui/components/
 interface StatCardProps {
     label: string;
     value: string;
-    change: string;
+    change?: string;
     changeType?: "positive" | "negative" | "neutral";
     isLoading?: boolean;
 }
@@ -26,7 +26,7 @@ function StatCard({ label, value, change, changeType = "neutral", isLoading = fa
                 </CardHeader>
                 <CardContent className="space-y-2">
                     <div className="h-8 w-16 bg-muted rounded animate-pulse" />
-                    <div className="h-3 w-32 bg-muted rounded animate-pulse" />
+                    {change && <div className="h-3 w-32 bg-muted rounded animate-pulse" />}
                 </CardContent>
             </Card>
         );
@@ -36,7 +36,7 @@ function StatCard({ label, value, change, changeType = "neutral", isLoading = fa
         <Card className="border border-border/70 shadow-none bg-card/70">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium text-muted-foreground">{label}</CardTitle>
-                <span className={`text-xs font-medium ${changeColorClass}`}>{change}</span>
+                {change && <span className={`text-xs font-medium ${changeColorClass}`}>{change}</span>}
             </CardHeader>
             <CardContent>
                 <div className="text-2xl font-semibold text-foreground">{value}</div>
@@ -67,29 +67,23 @@ export function ProductStats({
             <StatCard
                 label="Total Products"
                 value={totalProducts.toLocaleString()}
-                change="+12.5% from last month"
-                changeType="positive"
                 isLoading={isLoading}
             />
             <StatCard
                 label="Active Now"
                 value={activeNow.toLocaleString()}
-                change="+5 since last hour"
-                changeType="positive"
                 isLoading={isLoading}
             />
             <StatCard
-                label="New This Month"
-                value={`+${newProducts}`}
-                change="+5% from last month"
-                changeType="positive"
+                label="Drafts"
+                value={`${newProducts}`}
                 isLoading={isLoading}
             />
             <StatCard
                 label="Low Stock"
                 value={lowStock.toLocaleString()}
-                change={lowStock > 0 ? "Needs attention" : "All stocked"}
-                changeType={lowStock > 0 ? "negative" : "positive"}
+                change={lowStock > 0 ? "Needs attention" : undefined}
+                changeType={lowStock > 0 ? "negative" : "neutral"}
                 isLoading={isLoading}
             />
         </div>

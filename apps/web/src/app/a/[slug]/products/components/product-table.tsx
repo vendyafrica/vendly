@@ -41,6 +41,8 @@ export interface ProductTableRow {
 
 interface ProductTableProps {
     products: ProductTableRow[];
+    selectedIds?: string[];
+    onSelectionChange?: (ids: string[]) => void;
     onEdit?: (id: string) => void;
     onDelete?: (id: string) => void;
     onGenerateVariants?: (id: string) => void;
@@ -151,6 +153,8 @@ function TableSkeleton() {
 
 export function ProductTable({
     products,
+    selectedIds = [],
+    onSelectionChange,
     onEdit,
     onDelete,
     onGenerateVariants,
@@ -171,10 +175,40 @@ export function ProductTable({
         );
     }
 
+    const allSelected = products.length > 0 && selectedIds.length === products.length;
+    const isIndeterminate = selectedIds.length > 0 && selectedIds.length < products.length;
+
+    const handleSelectAll = () => {
+        if (allSelected) {
+            onSelectionChange?.([]);
+        } else {
+            onSelectionChange?.(products.map(p => p.id));
+        }
+    };
+
+    const handleSelectOne = (id: string) => {
+        if (selectedIds.includes(id)) {
+            onSelectionChange?.(selectedIds.filter(s => s !== id));
+        } else {
+            onSelectionChange?.([...selectedIds, id]);
+        }
+    };
+
     return (
         <Table className="w-full text-sm">
             <TableHeader>
                 <TableRow>
+                    <TableHead className="w-12 shrink-0">
+                        <input
+                            type="checkbox"
+                            className="size-4 rounded border-gray-300 text-primary focus:ring-primary"
+                            checked={allSelected}
+                            ref={input => {
+                                if (input) input.indeterminate = isIndeterminate;
+                            }}
+                            onChange={handleSelectAll}
+                        />
+                    </TableHead>
                     <TableHead className="w-16 shrink-0">Image</TableHead>
                     <TableHead className="w-[32%]">Name</TableHead>
                     <TableHead className="w-[18%] min-w-[120px] shrink-0">Price</TableHead>
@@ -186,60 +220,71 @@ export function ProductTable({
             </TableHeader>
 
             <TableBody>
-                {products.map((product) => (
-                    <TableRow key={product.id} className="hover:bg-muted/40">
-                        <TableCell className="shrink-0">
-                            <div className="relative size-10 overflow-hidden rounded-md bg-muted">
-                                {product.thumbnailUrl ? (
-                                    <Image
-                                        src={product.thumbnailUrl}
-                                        alt={product.productName}
-                                        fill
-                                        className="object-cover"
-                                    />
-                                ) : (
-                                    <div className="flex size-full items-center justify-center text-muted-foreground text-xs">
-                                        N/A
-                                    </div>
-                                )}
-                            </div>
-                        </TableCell>
+                {products.map((product) => {
+                    const isSelected = selectedIds.includes(product.id);
+                    return (
+                        <TableRow key={product.id} className="hover:bg-muted/40">
+                            <TableCell className="shrink-0">
+                                <input
+                                    type="checkbox"
+                                    className="size-4 rounded border-gray-300 text-primary focus:ring-primary"
+                                    checked={isSelected}
+                                    onChange={() => handleSelectOne(product.id)}
+                                />
+                            </TableCell>
+                            <TableCell className="shrink-0">
+                                <div className="relative size-10 overflow-hidden rounded-md bg-muted">
+                                    {product.thumbnailUrl ? (
+                                        <Image
+                                            src={product.thumbnailUrl}
+                                            alt={product.productName}
+                                            fill
+                                            className="object-cover"
+                                        />
+                                    ) : (
+                                        <div className="flex size-full items-center justify-center text-muted-foreground text-xs">
+                                            N/A
+                                        </div>
+                                    )}
+                                </div>
+                            </TableCell>
 
-                        <TableCell className="font-medium max-w-[320px]">
-                            <div
-                                className="truncate"
-                                title={product.productName}
-                            >
-                                {product.productName}
-                            </div>
-                        </TableCell>
+                            <TableCell className="font-medium max-w-[320px]">
+                                <div
+                                    className="truncate"
+                                    title={product.productName}
+                                >
+                                    {product.productName}
+                                </div>
+                            </TableCell>
 
-                        <TableCell className="shrink-0 whitespace-nowrap">
-                            {formatPrice(product.priceAmount, product.currency)}
-                        </TableCell>
+                            <TableCell className="shrink-0 whitespace-nowrap">
+                                {formatPrice(product.priceAmount, product.currency)}
+                            </TableCell>
 
-                        <TableCell className="shrink-0 whitespace-nowrap">
-                            {product.quantity}
-                        </TableCell>
+                            <TableCell className="shrink-0 whitespace-nowrap">
+                                {product.quantity}
+                            </TableCell>
 
-                        <TableCell className="shrink-0 whitespace-nowrap">
-                            {formatPrice(product.salesAmount || 0, product.currency)}
-                        </TableCell>
+                            <TableCell className="shrink-0 whitespace-nowrap">
+                                {formatPrice(product.salesAmount || 0, product.currency)}
+                            </TableCell>
 
-                        <TableCell className="shrink-0">
-                            <StatusBadge status={product.status} />
-                        </TableCell>
+                            <TableCell className="shrink-0">
+                                <StatusBadge status={product.status} />
+                            </TableCell>
 
-                        <TableCell className="shrink-0">
-                            <ProductActions
-                                productId={product.id}
-                                onEdit={onEdit}
-                                onDelete={onDelete}
-                                onGenerateVariants={onGenerateVariants}
-                            />
-                        </TableCell>
-                    </TableRow>
-                ))}
+                            <TableCell className="shrink-0">
+                                <ProductActions
+                                    productId={product.id}
+                                    onEdit={onEdit}
+                                    onDelete={onDelete}
+                                    onGenerateVariants={onGenerateVariants}
+                                />
+                            </TableCell>
+                        </TableRow>
+                    );
+                })}
             </TableBody>
         </Table>
     );

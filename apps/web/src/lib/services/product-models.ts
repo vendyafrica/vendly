@@ -14,6 +14,11 @@ export const createProductSchema = z.object({
     sourceId: z.string().optional(),
     sourceUrl: z.string().url().optional(),
     isFeatured: z.boolean().default(false),
+    media: z.array(z.object({
+        url: z.string().url(),
+        pathname: z.string(),
+        contentType: z.string().optional().default("image/jpeg"),
+    })).optional(),
 });
 
 export type CreateProductInput = z.infer<typeof createProductSchema>;
@@ -64,6 +69,11 @@ export const updateProductSchema = z.object({
     quantity: z.number().int().min(0).optional(),
     status: z.enum(["draft", "ready", "active", "sold-out"]).optional(),
     isFeatured: z.boolean().optional(),
+    media: z.array(z.object({
+        url: z.string().url(),
+        pathname: z.string(),
+        contentType: z.string().optional().default("image/jpeg"),
+    })).optional(),
 });
 
 export type UpdateProductInput = z.infer<typeof updateProductSchema>;

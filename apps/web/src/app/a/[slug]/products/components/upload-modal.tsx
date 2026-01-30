@@ -82,34 +82,67 @@ export function UploadModal({
         setError(null);
 
         try {
-            const formData = new FormData();
-            formData.append("storeId", storeId);
-            formData.append("generateTitles", "true");
-            formData.append("defaultPrice", "0");
-            formData.append("defaultCurrency", "KES");
-            formData.append("status", "active");
+            // 1. Upload files to Vercel Blob
+            const uploadedItems: Array<{ url: string; pathname: string; contentType: string; filename: string }> = [];
+            const totalFiles = files.length;
 
-            files.forEach((f) => formData.append("files", f.file));
+            const { upload } = await import("@vercel/blob/client");
 
-            // Simulate progress (actual XHR would give real progress)
-            const progressInterval = setInterval(() => {
-                setUploadProgress((prev) => Math.min(prev + 10, 90));
-            }, 200);
+            // Process uploads
+            for (let i = 0; i < totalFiles; i++) {
+                const filePreview = files[i];
+                const file = filePreview.file;
 
-            const response = await fetch(`${API_BASE}/api/products/bulk-upload`, {
+                try {
+                    // Construct path: tenants/{tenantId}/products/{filename}
+                    const timestamp = Date.now();
+                    const cleanName = file.name.replace(/[^a-zA-Z0-9.-]/g, "_");
+                    const path = `tenants/${tenantId}/products/${cleanName}-${timestamp}`;
+
+                    const blob = await upload(path, file, {
+                        access: "public",
+                        handleUploadUrl: "/api/upload",
+                    });
+
+                    uploadedItems.push({
+                        url: blob.url,
+                        pathname: blob.pathname,
+                        contentType: file.type,
+                        filename: file.name
+                    });
+
+                    // Update progress based on completed files
+                    setUploadProgress(Math.round(((i + 1) / totalFiles) * 80));
+                } catch (err) {
+                    console.error(`Failed to upload ${file.name}:`, err);
+                    // Continue with other files? Or fail?
+                    // Let's continue and try to save what we have.
+                }
+            }
+
+            if (uploadedItems.length === 0) {
+                throw new Error("All file uploads failed. Please try again.");
+            }
+
+            // 2. Create products with uploaded media
+            setUploadProgress(90); // Saving state
+
+            const response = await fetch(`${API_BASE}/api/products/bulk-create`, {
                 method: "POST",
                 headers: {
+                    "Content-Type": "application/json",
                     "x-tenant-id": tenantId,
                     "x-store-slug": storeSlug,
                 },
-                body: formData,
+                body: JSON.stringify({
+                    storeId,
+                    items: uploadedItems,
+                }),
             });
-
-            clearInterval(progressInterval);
 
             if (!response.ok) {
                 const errorData = await response.json();
-                throw new Error(errorData.error || "Upload failed");
+                throw new Error(errorData.error || "Failed to create products");
             }
 
             setUploadProgress(100);
@@ -124,6 +157,7 @@ export function UploadModal({
             onUploadComplete?.();
         } catch (err) {
             setError(err instanceof Error ? err.message : "Upload failed");
+            setUploadProgress(0);
         } finally {
             setIsUploading(false);
         }
