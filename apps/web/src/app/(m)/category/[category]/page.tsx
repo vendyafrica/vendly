@@ -1,78 +1,90 @@
-import { Suspense } from "react";
+"use client";
+
+import { useEffect, useState } from "react";
+import { useParams } from "next/navigation";
+import Header from "@/app/(m)/components/header";
+import Footer from "@/app/(m)/components/footer";
+import { MarketplaceGrid } from "@/app/(m)/components/MarketplaceGrid";
+import type { MarketplaceStore } from "@/types/marketplace";
+import { Button } from "@vendly/ui/components/button";
 import Link from "next/link";
-import { MarketplaceGridSkeleton } from "@/app/(platform)/components/MarketplaceGridSkeleton";
-import type { Category } from "@/constants/stores";
-import { categories } from "@/constants/stores";
-import { HugeiconsIcon } from "@hugeicons/react";
-import { ArrowLeft02Icon, Store01Icon } from "@hugeicons/core-free-icons";
-import Header from "@/app/(platform)/components/header";
-import Footer from "@/app/(platform)/components/footer";
-import { CategoryContent } from "./category-content";
 
-interface CategoryPageProps {
-  params: Promise<{
-    category: string;
-  }>;
-}
+export default function CategoryPage() {
+    const params = useParams();
+    const categorySlug = params.slug as string;
+    const [stores, setStores] = useState<MarketplaceStore[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [categoryName, setCategoryName] = useState("");
 
-export default async function CategoryPage({ params }: CategoryPageProps) {
-  // Await params in Next.js 15+
-  const resolvedParams = await params;
+    useEffect(() => {
+        const fetchStores = async () => {
+            try {
+                const response = await fetch(`/api/marketplace/categories/${categorySlug}/stores`);
+                if (response.ok) {
+                    const data = await response.json();
 
-  // Capitalize the first letter to match the Category type
-  const categoryParam = resolvedParams.category;
-  const category = (categoryParam.charAt(0).toUpperCase() + categoryParam.slice(1)) as Category;
+                    // Transform API data to match MarketplaceStore interface
+                    const transformedStores: MarketplaceStore[] = (data.stores || []).map((store: any) => ({
+                        id: store.id,
+                        name: store.name,
+                        slug: store.slug,
+                        description: store.description,
+                        categories: store.categories || [],
+                        rating: 4.5,
+                        logoUrl: null,
+                        images: [],
+                    }));
 
-  // Check if it's a valid category
-  if (!categories.includes(category)) {
+                    setStores(transformedStores);
+
+                    // Extract category name from first store or format from slug
+                    if (transformedStores.length > 0) {
+                        const category = transformedStores[0].categories[0];
+                        setCategoryName(category || formatCategoryName(categorySlug));
+                    } else {
+                        setCategoryName(formatCategoryName(categorySlug));
+                    }
+                }
+            } catch (error) {
+                console.error("Error fetching category stores:", error);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        fetchStores();
+    }, [categorySlug]);
+
+    const formatCategoryName = (slug: string) => {
+        return slug
+            .split('-')
+            .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+            .join(' ');
+    };
+
     return (
-      <main className="min-h-screen bg-white">
-        <Header />
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-center py-20">
-            <div className="text-center">
-              <div className="text-gray-400 mb-4">
-                <HugeiconsIcon icon={Store01Icon} size={48} className="mx-auto" />
-              </div>
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">
-                Category Not Found
-              </h1>
-              <p className="text-gray-600 mb-6">
-                The category &quot;{categoryParam}&quot; doesn&apos;t exist.
-              </p>
-              <Link
-                href="/"
-                className="inline-flex items-center gap-2 px-6 py-3 bg-gray-900 text-white rounded-xl hover:bg-gray-800 transition-colors font-medium"
-              >
-                <HugeiconsIcon icon={ArrowLeft02Icon} size={20} />
-                Back to Marketplace
-              </Link>
-            </div>
-          </div>
-        </div>
-        <Footer />
-      </main>
-    );
-  }
+        <main className="min-h-screen bg-[#F9F9F7]">
+            <Header />
 
-  return (
-    <main className="min-h-screen bg-white">
-      <Header />
-      <Suspense fallback={
-        <div className="max-w-7xl mx-auto">
-          <div className="border-b border-gray-200 bg-white">
-            <div className="px-4 sm:px-6 lg:px-8 py-8">
-              <div className="w-32 h-6 bg-gray-200 rounded animate-pulse mb-6" />
-              <div className="w-48 h-10 bg-gray-200 rounded animate-pulse mb-2" />
-              <div className="w-64 h-6 bg-gray-200 rounded animate-pulse" />
+            <div className="container mx-auto px-4 py-12">
+                <div className="flex justify-between items-center mb-8">
+                    <div>
+                        <h1 className="text-4xl font-bold mb-2">{categoryName}</h1>
+                        <p className="text-muted-foreground">
+                            {stores.length} {stores.length === 1 ? 'store' : 'stores'} in this category
+                        </p>
+                    </div>
+                    <Link href="/">
+                        <Button variant="outline">
+                            Back to Home
+                        </Button>
+                    </Link>
+                </div>
+
+                <MarketplaceGrid stores={stores} loading={isLoading} />
             </div>
-          </div>
-          <MarketplaceGridSkeleton />
-        </div>
-      }>
-        <CategoryContent category={category} />
-      </Suspense>
-      <Footer />
-    </main>
-  );
+
+            <Footer />
+        </main>
+    );
 }

@@ -200,7 +200,7 @@ export function Checkout({ open, onOpenChange, storeSlug, product, quantity }: C
                             onValueChange={(value) => setPaymentMethod(value as PaymentMethod)}
                         >
                             <SelectTrigger>
-                                <SelectValue placeholder="Select payment method" />
+                                <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
                                 <SelectItem value="cash_on_delivery">Cash on Delivery</SelectItem>
