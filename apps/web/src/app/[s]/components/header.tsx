@@ -26,7 +26,7 @@ export function StorefrontHeader() {
 
     useEffect(() => {
         const fetchStore = async () => {
-            const slug = params?.storefront as string;
+            const slug = params?.s as string;
             if (!slug) {
                 setLoading(false);
                 return;
@@ -44,7 +44,7 @@ export function StorefrontHeader() {
             }
         };
         fetchStore();
-    }, [params?.storefront]);
+    }, [params?.s]);
 
     useEffect(() => {
         const handleScroll = () => {

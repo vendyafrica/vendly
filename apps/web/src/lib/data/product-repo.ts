@@ -36,7 +36,7 @@ export const productRepo = {
         return db.query.products.findMany({
             where: and(
                 eq(products.storeId, storeId),
-                eq(products.status, "published") // Check schema default is 'draft', likely 'published' or 'active' is wanted. Schema says default 'draft'.
+                eq(products.status, "active")
             ),
             with: {
                 media: {

@@ -14,7 +14,7 @@ import {
   Settings02Icon,
   Logout03Icon,
 } from "@hugeicons/core-free-icons";
-import { signOut, useSession } from "@vendly/auth/react";
+import { signOut } from "@vendly/auth/react";
 import { Avatar, AvatarFallback, AvatarImage } from "@vendly/ui/components/avatar";
 import {
   DropdownMenu,
@@ -25,9 +25,10 @@ import {
 import { useRouter } from "next/navigation";
 import { LoginOverlay } from "@/app/(auth)/login/page";
 import Search from "./search";
+import { useAppSession } from "@/contexts/app-session-context";
 
 export default function Header({ hideSearch = false }: { hideSearch?: boolean }) {
-  const { data: session } = useSession();
+  const { session } = useAppSession();
   const isSignedIn = !!session;
   const [isVisible, setIsVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);

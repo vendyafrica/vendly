@@ -2,11 +2,13 @@ import "@vendly/ui/globals.css";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Nunito_Sans } from "next/font/google";
 import type { ReactNode } from "react";
-import { SpeedInsights } from "@vercel/speed-insights/next"
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import { CartProvider } from "../contexts/cart-context";
+import { AppSessionProvider } from "../contexts/app-session-context";
+import { auth } from "@vendly/auth";
+import { headers } from "next/headers";
 
-const nunitoSans = Nunito_Sans({ variable: '--font-sans' });
-
+const nunitoSans = Nunito_Sans({ variable: "--font-sans" });
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -25,20 +27,24 @@ export const metadata: Metadata = {
   description: "Vendly - Find your next favorite product",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: ReactNode;
 }) {
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+
   return (
     <html lang="en" className={nunitoSans.variable}>
       <body
         className={`${geistSans.variable} ${geistMono.variable} bg-[#F9F9F7] antialiased`}
       >
         <SpeedInsights />
-        <CartProvider>
-          {children}
-        </CartProvider>
+        <AppSessionProvider session={session}>
+          <CartProvider>{children}</CartProvider>
+        </AppSessionProvider>
       </body>
     </html>
   );

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect } from "react";
-import { useSession } from "@vendly/auth/react";
+import { useAppSession } from "./app-session-context";
 
 // Use relative paths for same-origin API calls (Next.js serverless routes)
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "";
@@ -39,7 +39,7 @@ interface CartContextType {
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
-    const { data: session } = useSession();
+    const { session } = useAppSession();
     const [items, setItems] = useState<CartItem[]>([]);
     const [isLoaded, setIsLoaded] = useState(false);
 

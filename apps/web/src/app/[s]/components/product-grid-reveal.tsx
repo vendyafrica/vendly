@@ -14,10 +14,10 @@ interface Product {
 }
 
 interface ProductGridRevealProps {
-    products: Product[];
+    products?: Product[];
 }
 
-export function ProductGridReveal({ products }: ProductGridRevealProps) {
+export function ProductGridReveal({ products = [] }: ProductGridRevealProps) {
     const [visible, setVisible] = useState(false);
 
     useEffect(() => {

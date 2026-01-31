@@ -13,7 +13,7 @@ import {
 import { Button } from "@vendly/ui/components/button";
 import { Input } from "@vendly/ui/components/input";
 import { useCart } from "../../../contexts/cart-context";
-import { useSession } from "../../../lib/auth";
+import { useAppSession } from "@/contexts/app-session-context";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "";
 
@@ -23,8 +23,8 @@ function CheckoutContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const storeId = searchParams.get("storeId");
-    const { data: session } = useSession();
     const { itemsByStore, clearStoreFromCart, itemCount } = useCart();
+    const { session } = useAppSession();
 
     const storeItems = storeId ? itemsByStore[storeId] : [];
     const store = storeItems?.[0]?.store;

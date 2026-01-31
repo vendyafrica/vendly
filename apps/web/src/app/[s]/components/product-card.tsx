@@ -25,7 +25,7 @@ const aspectVariants = [
 
 export function ProductCard({ title, slug, price, image, index = 0 }: ProductCardProps) {
   const params = useParams();
-  const storeSlug = params?.storefront as string;
+  const storeSlug = params?.s as string;
   const aspectClass = aspectVariants[index % aspectVariants.length];
 
   return (

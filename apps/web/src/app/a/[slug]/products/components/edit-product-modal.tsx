@@ -69,6 +69,7 @@ export function EditProductModal({
     const [files, setFiles] = React.useState<UploadedFile[]>([]);
     const [isDragging, setIsDragging] = React.useState(false);
     const fileInputRef = React.useRef<HTMLInputElement>(null);
+    const initialMediaSignatureRef = React.useRef<string>("[]");
 
     // Populate form when product changes
     React.useEffect(() => {
@@ -100,6 +101,13 @@ export function EditProductModal({
             }
 
             setFiles(existingMedia);
+            initialMediaSignatureRef.current = JSON.stringify(
+                existingMedia.map((m) => ({
+                    url: m.url,
+                    pathname: m.pathname,
+                    contentType: m.contentType,
+                }))
+            );
             setError(null);
         }
     }, [product]);
@@ -218,20 +226,29 @@ export function EditProductModal({
             // We'll update the PATCH payload to include media URLs
             // Backend PATCH needs to be updated to sync media.
 
-            const payload = {
+            const payload: Record<string, any> = {
                 productName,
                 priceAmount: priceValue,
                 quantity: quantityValue,
                 status: "active",
-                // Sending new media URLs to be added. 
-                // Full sync might be complex without backend refactor.
-                // We'll send `media` array with ALL current media.
-                media: files.map(f => ({
+            };
+
+            const currentMediaSignature = JSON.stringify(
+                files.map((f) => ({
                     url: f.url,
                     pathname: f.pathname,
-                    contentType: f.contentType
+                    contentType: f.contentType,
                 }))
-            };
+            );
+
+            // Only send media if it actually changed; otherwise we avoid expensive media sync in the backend.
+            if (currentMediaSignature !== initialMediaSignatureRef.current) {
+                payload.media = files.map((f) => ({
+                    url: f.url,
+                    pathname: f.pathname,
+                    contentType: f.contentType,
+                }));
+            }
 
             const response = await fetch(`${API_BASE}/api/products/${product.id}`, {
                 method: "PATCH",

@@ -14,6 +14,8 @@ export const createProductSchema = z.object({
     sourceId: z.string().optional(),
     sourceUrl: z.string().url().optional(),
     isFeatured: z.boolean().default(false),
+    slug: z.string().optional(), // Allow explicit slug (e.g., for bulk-upload drafts)
+    status: z.enum(["draft", "ready", "active", "sold-out"]).optional(), // Allow explicit status (e.g., for bulk-upload drafts)
     media: z.array(z.object({
         url: z.string().url(),
         pathname: z.string(),

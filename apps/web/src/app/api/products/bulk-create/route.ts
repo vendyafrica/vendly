@@ -39,10 +39,17 @@ export async function POST(request: NextRequest) {
         const body = await request.json();
         const { storeId, items } = bulkCreateSchema.parse(body);
 
+        // Helper to generate a unique draft slug
+        const generateDraftSlug = () => {
+            const timestamp = Date.now().toString(36); // base36 timestamp
+            const shortId = Math.random().toString(36).substring(2, 8); // 6-char random
+            return `draft-${timestamp}-${shortId}`;
+        };
+
         // Process sequentially or in parallel? Parallel is fine for DB inserts usually.
         const createdProducts = await Promise.all(items.map(async (item) => {
-            // Generate a title from filename
-            const title = productService.generateTitleFromFilename(item.filename);
+            // Dummy title for bulk-upload drafts
+            const title = "Draft";
 
             return productService.createProduct(
                 membership.tenantId,
@@ -53,8 +60,10 @@ export async function POST(request: NextRequest) {
                     description: "", // Empty for now, user can edit later
                     priceAmount: 0,
                     currency: "KES",
-                    status: "draft", // Start as draft
+                    status: "draft",
                     isFeatured: false,
+                    source: "bulk-upload",
+                    slug: generateDraftSlug(), // Guaranteed-unique slug
                 },
                 [], // No "files" to upload, we pass media directly
             ).then(async (product) => {

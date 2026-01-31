@@ -50,12 +50,17 @@ export async function POST(request: Request): Promise<NextResponse> {
                     throw new Error("Unauthorized: You do not have access to this tenant.");
                 }
 
+                // Determine callbackUrl: Prefer env, fallback to request origin
+                const callbackUrl = process.env.VERCEL_BLOB_CALLBACK_URL
+                    ?? new URL(request.url).origin;
+
                 return {
                     allowedContentTypes: ["image/jpeg", "image/png", "image/gif", "image/webp"],
                     tokenPayload: JSON.stringify({
                         userId: session.user.id,
                         tenantId: requestedTenantId,
                     }),
+                    callbackUrl,
                 };
             },
             onUploadCompleted: async ({ blob, tokenPayload }) => {

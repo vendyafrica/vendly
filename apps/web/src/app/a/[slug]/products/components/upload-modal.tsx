@@ -88,10 +88,21 @@ export function UploadModal({
 
             const { upload } = await import("@vercel/blob/client");
 
-            // Process uploads
-            for (let i = 0; i < totalFiles; i++) {
-                const filePreview = files[i];
-                const file = filePreview.file;
+            // Upload with limited concurrency (faster than sequential, safer than unlimited)
+            const MAX_CONCURRENCY = 5;
+            const results: Array<
+                | { url: string; pathname: string; contentType: string; filename: string }
+                | null
+            > = new Array(totalFiles).fill(null);
+
+            let completed = 0;
+            const updateProgress = () => {
+                // Reserve first 80% of bar for uploads
+                setUploadProgress(Math.round((completed / totalFiles) * 80));
+            };
+
+            const uploadOne = async (index: number) => {
+                const file = files[index].file;
 
                 try {
                     // Construct path: tenants/{tenantId}/products/{filename}
@@ -104,21 +115,34 @@ export function UploadModal({
                         handleUploadUrl: "/api/upload",
                     });
 
-                    uploadedItems.push({
+                    results[index] = {
                         url: blob.url,
                         pathname: blob.pathname,
                         contentType: file.type,
                         filename: file.name
-                    });
-
-                    // Update progress based on completed files
-                    setUploadProgress(Math.round(((i + 1) / totalFiles) * 80));
+                    };
                 } catch (err) {
                     console.error(`Failed to upload ${file.name}:`, err);
-                    // Continue with other files? Or fail?
-                    // Let's continue and try to save what we have.
+                    results[index] = null;
+                } finally {
+                    completed += 1;
+                    updateProgress();
                 }
-            }
+            };
+
+            // Promise pool
+            let nextIndex = 0;
+            const workers = Array.from({ length: Math.min(MAX_CONCURRENCY, totalFiles) }, async () => {
+                while (nextIndex < totalFiles) {
+                    const current = nextIndex;
+                    nextIndex += 1;
+                    await uploadOne(current);
+                }
+            });
+
+            await Promise.all(workers);
+
+            uploadedItems.push(...results.filter((r): r is NonNullable<typeof r> => Boolean(r)));
 
             if (uploadedItems.length === 0) {
                 throw new Error("All file uploads failed. Please try again.");

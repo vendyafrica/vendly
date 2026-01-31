@@ -17,7 +17,7 @@ export const productService = {
         data: CreateProductInput,
         files: UploadFile[] = []
     ): Promise<ProductWithMedia> {
-        const slug = data.title.toLowerCase()
+        const slug = data.slug ?? data.title.toLowerCase()
             .replace(/[^a-z0-9]+/g, "-")
             .replace(/^-|-$/g, "");
 
@@ -35,6 +35,7 @@ export const productService = {
                 sourceId: data.sourceId,
                 sourceUrl: data.sourceUrl,
                 isFeatured: data.isFeatured,
+                status: data.status,
             }).returning();
 
             // Upload and attach media if files provided

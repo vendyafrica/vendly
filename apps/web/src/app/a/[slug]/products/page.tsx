@@ -51,6 +51,7 @@ export default function ProductsPage() {
     // Fetch products
     const fetchProducts = React.useCallback(async () => {
         if (!tenantId) return;
+        if (!storeId) return;
 
         if (products.length === 0) {
             setIsLoading(true);
@@ -58,7 +59,7 @@ export default function ProductsPage() {
         setError(null);
 
         try {
-            const response = await fetch(`${API_BASE}/api/products`, {
+            const response = await fetch(`${API_BASE}/api/products?storeId=${storeId}`, {
                 headers: {
                     "x-tenant-id": tenantId,
                     "x-store-slug": storeSlug,
@@ -76,7 +77,7 @@ export default function ProductsPage() {
 
             const data = await response.json();
             console.log("API Response Data:", data);
-            const productList: ProductAPIResponse[] = data.data?.products || [];
+            const productList: ProductAPIResponse[] = data.products || [];
 
             // Transform API response to table format
             const transformed: ProductTableRow[] = productList.map((p) => ({
@@ -97,7 +98,7 @@ export default function ProductsPage() {
         } finally {
             setIsLoading(false);
         }
-    }, [tenantId, storeSlug, products.length]);
+    }, [tenantId, storeId, storeSlug, products.length]);
 
     // Initial fetch - get tenant info from URL or mock for now
     React.useEffect(() => {
