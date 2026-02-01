@@ -1,10 +1,6 @@
 import express, { Express, Request, Response } from "express";
 import cors from "cors";
-import storefrontRoutes from "./modules/storefront/storefront-routes";  
-import { productRoutes } from "./modules/products/product-routes";
-import { orderRoutes } from "./modules/orders/order-routes";
-import { cartRoutes } from "./modules/cart/cart-routes";
-import { adminRoutes } from "./modules/admin/admin-route";
+
 
 export function createApp(): Express {
   const app = express();
@@ -35,21 +31,6 @@ export function createApp(): Express {
 
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
-
-  // Storefront routes (public - no auth required)
-  app.use("/api/storefront", storefrontRoutes);
-
-  // Product routes
-  app.use("/api/products", productRoutes);
-
-  // Order routes (admin)
-  app.use("/api/orders", orderRoutes);
-
-  // Cart routes
-  app.use("/api/cart", cartRoutes);
-
-  // Admin routes
-  app.use("/api/admin", adminRoutes);
 
   app.get("/", (_req, res) => {
     res.send("API is running");
