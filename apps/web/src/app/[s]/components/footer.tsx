@@ -118,6 +118,7 @@ export function StorefrontFooter({ store }: StorefrontFooterProps) {
                         ) : (
                             <form onSubmit={handleSubscribe} className="space-y-3">
                                 <input
+                                    suppressHydrationWarning
                                     value={phoneNumber}
                                     onChange={(e) => setPhoneNumber(e.target.value)}
                                     placeholder="Your phone number"
@@ -125,6 +126,7 @@ export function StorefrontFooter({ store }: StorefrontFooterProps) {
                                     className="w-full px-4 py-3 text-sm rounded border border-neutral-200 bg-white text-neutral-900 transition-all duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
                                 />
                                 <Button
+                                    suppressHydrationWarning
                                     type="submit"
                                     className="w-full h-11 text-sm font-medium bg-neutral-900 text-white hover:bg-primary rounded transition-colors duration-200"
                                 >

@@ -257,7 +257,7 @@ export function ProductDetails({ product }: ProductDetailsProps) {
                         <div className="grid gap-3 pt-4">
                             <Button
                                 onClick={handleAddToCart}
-                                className="w-full h-12 rounded-none bg-primary text-white hover:bg-primary/80 uppercase text-xs tracking-wider"
+                                className="w-full h-12 rounded-md bg-primary text-white hover:bg-primary/80 uppercase text-xs tracking-wider"
                                 disabled={isAdded}
                             >
                                 {isAdded ? (
@@ -272,10 +272,11 @@ export function ProductDetails({ product }: ProductDetailsProps) {
                             <Button
                                 onClick={handleBuyNow}
                                 variant="outline"
-                                className="w-full h-12 rounded-none border-neutral-200 text-neutral-900 hover:bg-neutral-50 uppercase text-xs tracking-wider"
+                                className="w-full h-12 rounded-md border border-neutral-200 text-neutral-900 hover:bg-neutral-50 hover:border-primary/50 focus-visible:border-primary/50 focus-visible:ring-[3px] focus-visible:ring-primary/10 uppercase text-xs tracking-wider"
                             >
                                 Buy Now
                             </Button>
+
                         </div>
                     </div>
                 </div>

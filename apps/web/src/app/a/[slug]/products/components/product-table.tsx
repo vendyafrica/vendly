@@ -99,7 +99,7 @@ function ProductActions({
 }) {
     return (
         <DropdownMenu>
-            <DropdownMenuTrigger >
+            <DropdownMenuTrigger>
                 <button
                     type="button"
                     className="inline-flex items-center justify-center size-8 rounded-md border border-border/60 bg-card hover:bg-muted/70 cursor-pointer shrink-0 transition-colors"

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useParams } from "next/navigation";
+import { useParams, usePathname } from "next/navigation";
 import Link from "next/link";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { ShoppingBag02Icon, UserIcon, StarIcon } from "@hugeicons/core-free-icons";
@@ -16,8 +16,68 @@ interface StoreData {
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "";
 
+interface HeaderIconButtonProps {
+    icon: any;
+    href?: string;
+    className?: string;
+    showBadge?: boolean;
+    badgeCount?: number;
+    isHomePage: boolean;
+}
+
+function HeaderIconButton({ icon, href, className, showBadge, badgeCount, isHomePage }: HeaderIconButtonProps) {
+    const iconClass = isHomePage
+        ? "text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.4)]"
+        : "text-neutral-900";
+
+    const buttonSurfaceClass = isHomePage
+        ? "bg-white/10 backdrop-blur-md border border-white/15 hover:bg-white/20 hover:border-white/25"
+        : "bg-neutral-100 border border-neutral-200 hover:bg-neutral-200 hover:border-neutral-300";
+
+    const content = (
+        <Button
+            variant="ghost"
+            size="icon"
+            className={`
+                relative rounded-full
+                min-h-[44px] min-w-[44px]
+                p-2 sm:p-2.5
+                cursor-pointer
+                transition-all
+                ${buttonSurfaceClass}
+                focus-visible:outline-none
+                focus-visible:ring-[3px]
+                focus-visible:ring-primary/20
+                ${className}
+            `}
+        >
+            <HugeiconsIcon icon={icon} size={22} className={iconClass} />
+            {showBadge && badgeCount !== undefined && badgeCount > 0 && (
+                <span className="
+                    pointer-events-none
+                    absolute -top-1 -right-1
+                    flex h-4 w-4 items-center justify-center
+                    rounded-full
+                    bg-black/85
+                    text-[10px] font-medium text-white
+                    ring-2 ring-white/60
+                ">
+                    {badgeCount}
+                </span>
+            )}
+        </Button>
+    );
+
+    if (href) {
+        return <Link href={href}>{content}</Link>;
+    }
+
+    return content;
+}
+
 export function StorefrontHeader() {
     const params = useParams();
+    const pathname = usePathname();
     const { itemCount } = useCart();
     const [store, setStore] = useState<StoreData | null>(null);
 
@@ -58,55 +118,46 @@ export function StorefrontHeader() {
     if (loading) return <HeaderSkeleton />;
     if (!store) return null;
 
-    const iconClass = "text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.35)]";
+    const isHomePage = pathname === `/${params?.s}`;
+    const textColorClass = isHomePage
+        ? "text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.35)] hover:text-white/90"
+        : "text-neutral-900 hover:text-neutral-600";
 
     return (
         <header
-            className={`fixed inset-x-0 top-0 z-50 transition-all duration-300 ${isVisible ? "translate-y-0 opacity-100" : "-translate-y-full opacity-0"}`}
+            className={`fixed inset-x-0 top-0 z-50 transition-all duration-300 ${isVisible ? "translate-y-0 opacity-100" : "-translate-y-full opacity-0"} ${!isHomePage ? "bg-white border-b border-neutral-100" : ""}`}
         >
-            <div className="pointer-events-none absolute inset-0 bg-linear-to-b from-black/35 via-black/15 to-transparent" />
+            {isHomePage && (
+                <div className="pointer-events-none absolute inset-0 bg-linear-to-b from-black/35 via-black/15 to-transparent" />
+            )}
 
             <div className="relative max-w-[1440px] mx-auto px-4 sm:px-6 md:px-10">
                 <div className="flex items-center justify-between h-16 sm:h-[70px] md:h-20 gap-6">
                     <div className="flex items-center gap-4">
                         <Link
                             href={`/${store.slug}`}
-                            className="text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.35)] font-serif text-xl sm:text-2xl tracking-tight hover:text-white/90 transition-colors"
+                            className={`${textColorClass} font-serif text-xl sm:text-2xl tracking-tight transition-colors`}
                         >
                             {store.name}
                         </Link>
                     </div>
                     <div className="flex items-center space-x-1.5 sm:space-x-2">
-                        <Link href="/cart">
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                className="relative rounded-full bg-white/5 hover:bg-white/10 min-h-[44px] min-w-[44px] p-2 sm:p-2.5 cursor-pointer"
-                            >
-                                <HugeiconsIcon icon={ShoppingBag02Icon} size={22} className={iconClass} />
-                                {itemCount > 0 && (
-                                    <span className="pointer-events-none absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-black text-[10px] font-medium text-white">
-                                        {itemCount}
-                                    </span>
-                                )}
-                            </Button>
-                        </Link>
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            className="rounded-full bg-white/5 hover:bg-white/10 min-h-[44px] min-w-[44px] p-2 sm:p-2.5 cursor-pointer"
-                        >
-                            <HugeiconsIcon icon={StarIcon} size={22} className={iconClass} />
-                        </Button>
-                        <Link href={`/login?store=${encodeURIComponent(store.name)}&slug=${encodeURIComponent(store.slug)}`}>
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                className="rounded-full bg-white/5 hover:bg-white/10 min-h-[44px] min-w-[44px] p-2 sm:p-2.5 cursor-pointer"
-                            >
-                                <HugeiconsIcon icon={UserIcon} size={22} className={iconClass} />
-                            </Button>
-                        </Link>
+                        <HeaderIconButton
+                            icon={ShoppingBag02Icon}
+                            href="/cart"
+                            showBadge
+                            badgeCount={itemCount}
+                            isHomePage={isHomePage}
+                        />
+                        <HeaderIconButton
+                            icon={StarIcon}
+                            isHomePage={isHomePage}
+                        />
+                        <HeaderIconButton
+                            icon={UserIcon}
+                            href={`/login?store=${encodeURIComponent(store.name)}&slug=${encodeURIComponent(store.slug)}`}
+                            isHomePage={isHomePage}
+                        />
                     </div>
                 </div>
             </div>
