@@ -50,7 +50,7 @@ export default async function HomePage() {
             <div className="container mx-auto px-4 py-9">
                 <div className="flex items-start mb-8">
                     <div>
-                        <h2 className="text-xl  pl-10 font-semibold mb-1">Discover your next favorite stores all in one place</h2>
+                        <h2 className="text-xl font-semibold mb-1">Discover your next favorite stores all in one place</h2>
                     </div>
                 </div>
 
@@ -67,15 +67,15 @@ export default async function HomePage() {
                 ) : (
                     <div className="space-y-9">
                         <div>
-                            <h3 className="text-2xl font-semibold mb-3 pl-10">Featured</h3>
+                            <h3 className="text-2xl font-semibold mb-3">Featured</h3>
                             <MarketplaceGrid stores={uiStores} loading={false} />
                         </div>
 
                         {Object.entries(uiStoresByCategory).map(([categoryName, categoryStores]) => (
                             <div key={categoryName}>
                                 <div className="flex justify-between items-center mb-3">
-                                    <h3 className="text-2xl pl-10 font-semibold">{categoryName}</h3>
-                                    <span className="pr-10">
+                                    <h3 className="text-2xl font-semibold">{categoryName}</h3>
+                                    <span>
                                         <Link
                                             href={`/category/${categoryName.toLowerCase().replace(/\s+/g, '-')}`}
                                             className="text-primary hover:underline"

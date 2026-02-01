@@ -266,7 +266,7 @@ function CarouselContent({
       const visibleCount = entries.filter(
         (entry) => entry.isIntersecting
       ).length;
-      setVisibleItemsCount(visibleCount);
+      setVisibleItemsCount(Math.max(1, visibleCount));
     }, options);
 
     const childNodes = containerRef.current.children;
@@ -282,6 +282,9 @@ function CarouselContent({
 
     setItemsCount(itemsLength);
   }, [itemsLength, setItemsCount]);
+
+  const translateDivisor = Math.max(1, visibleItemsCount || itemsLength || 1);
+  const translatePercent = index * (100 / translateDivisor);
 
   const onDragEnd = () => {
     const x = dragX.get();
@@ -309,7 +312,7 @@ function CarouselContent({
         x: disableDrag ? undefined : dragX,
       }}
       animate={{
-        translateX: `-${index * (100 / visibleItemsCount)}%`,
+        translateX: `-${translatePercent}%`,
       }}
       onDragEnd={disableDrag ? undefined : onDragEnd}
       transition={

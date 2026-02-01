@@ -30,7 +30,7 @@ export function MarketplaceGrid({ stores, loading }: MarketplaceGridProps) {
       <div className="hidden md:block">
         <div className="max-w-7xl mx-auto">
           {/* 5 columns grid */}
-          <div className="grid grid-cols-5 gap-x-8 gap-y-12">
+          <div className="grid md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-x-8 gap-y-12">
             {stores.map((store) => (
               <StoreCard key={store.id} store={store} />
             ))}

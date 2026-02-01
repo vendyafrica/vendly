@@ -25,6 +25,18 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: "https",
+        hostname: "**.blob.vercel-storage.com",
+        port: "",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
+        hostname: "blob.vercel-storage.com",
+        port: "",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
         hostname: "www.cosmos.so",
         port: "",
         pathname: "/**",
@@ -43,6 +55,6 @@ const nextConfig: NextConfig = {
   //     destination: process.env.NEXT_PUBLIC_API_URL + '/api/:path*'
   //   }];
   // }
-}
+};
 
 export default nextConfig;

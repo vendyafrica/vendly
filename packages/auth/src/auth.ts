@@ -6,7 +6,7 @@ import * as schema from "@vendly/db/schema";
 import { sendEmail, sendMagicLinkEmail } from "@vendly/transactional";
 import { getInstagramToken, getInstagramUserInfo } from "./instagram";
 
-const baseURL = process.env.BETTER_AUTH_URL;
+const baseURL = process.env.BETTER_AUTH_URL || process.env.NEXT_PUBLIC_APP_URL;
 const secret = process.env.BETTER_AUTH_SECRET as string;
 
 function extractNameFromEmail(email: string): string {

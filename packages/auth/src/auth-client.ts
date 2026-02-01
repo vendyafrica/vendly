@@ -1,8 +1,12 @@
 import { createAuthClient } from "better-auth/react";
 import { genericOAuthClient, oneTapClient, magicLinkClient } from "better-auth/client/plugins";
 
+const resolvedBaseURL =
+  process.env.NEXT_PUBLIC_APP_URL ||
+  (typeof window !== "undefined" ? window.location.origin : "");
+
 export const authClient = createAuthClient({
-  baseURL: process.env.NEXT_PUBLIC_APP_URL,
+  baseURL: resolvedBaseURL,
   basePath: "/api/auth",
   plugins: [
     genericOAuthClient(),

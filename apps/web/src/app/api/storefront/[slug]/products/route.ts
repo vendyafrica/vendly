@@ -27,7 +27,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
                 name: p.productName,
                 price: p.priceAmount,
                 currency: p.currency,
-                image: p.media?.[0]?.media?.blobUrl ?? null,
+                image: p.media?.[0]?.media?.url ?? p.media?.[0]?.media?.blobUrl ?? null,
                 rating: 0,
             }))
         );
