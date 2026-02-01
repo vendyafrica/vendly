@@ -2,7 +2,7 @@ import { createAuthClient } from "better-auth/react";
 import { genericOAuthClient, oneTapClient, magicLinkClient } from "better-auth/client/plugins";
 
 export const authClient = createAuthClient({
-  baseURL: process.env.NEXT_PUBLIC_API_URL,
+  baseURL: process.env.NEXT_PUBLIC_APP_URL,
   basePath: "/api/auth",
   plugins: [
     genericOAuthClient(),
@@ -20,3 +20,47 @@ export const authClient = createAuthClient({
     }),
   ],
 });
+
+export const signInWithGoogle = async (options?: { callbackURL?: string }) => {
+  const data = await authClient.signIn.social({
+    provider: "google",
+    callbackURL: options?.callbackURL,
+  });
+  return data;
+};
+
+export const signOut = async () => {
+  const data = await authClient.signOut();
+  return data;
+};
+
+export const signInWithOneTap = async () => {
+  await authClient.oneTap();
+};
+
+export const signInWithMagicLink = async (email: string, options?: { callbackURL?: string }) => {
+  const data = await authClient.signIn.magicLink({
+    email,
+    callbackURL: options?.callbackURL || "/",
+  });
+  return data;
+}
+
+export const signUp = async (email: string, password: string, name: string) => {
+  const data = await authClient.signUp.email({
+    email,
+    password,
+    name,
+  });
+  return data;
+}
+
+export const signInWithInstagram = async () => {
+  const response = await authClient.signIn.oauth2({
+    providerId: "instagram",
+    callbackURL: "/sell/business?connected=true",
+  });
+  return response;
+}
+
+export const useSession = authClient.useSession;

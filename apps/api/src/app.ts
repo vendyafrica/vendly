@@ -1,13 +1,6 @@
 import express, { Express, Request, Response } from "express";
 import cors from "cors";
-import { toNodeHandler } from "better-auth/node";
-import { auth } from "@vendly/auth";
-import onboardingRoutes from "./modules/onboarding/onboarding-routes";
-import storefrontRoutes from "./modules/storefront/storefront-routes";
-import { productRoutes } from "./modules/products/product-routes";
-import { orderRoutes } from "./modules/orders/order-routes";
-import { cartRoutes } from "./modules/cart/cart-routes";
-import { adminRoutes } from "./modules/admin/admin-route";
+
 
 export function createApp(): Express {
   const app = express();
@@ -36,28 +29,8 @@ export function createApp(): Express {
     })
   );
 
-  app.all("/api/auth/*splat", toNodeHandler(auth));
-
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
-
-  // Onboarding routes
-  app.use("/api/onboarding", onboardingRoutes);
-
-  // Storefront routes (public - no auth required)
-  app.use("/api/storefront", storefrontRoutes);
-
-  // Product routes
-  app.use("/api/products", productRoutes);
-
-  // Order routes (admin)
-  app.use("/api/orders", orderRoutes);
-
-  // Cart routes
-  app.use("/api/cart", cartRoutes);
-
-  // Admin routes
-  app.use("/api/admin", adminRoutes);
 
   app.get("/", (_req, res) => {
     res.send("API is running");

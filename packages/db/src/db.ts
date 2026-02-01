@@ -1,10 +1,22 @@
-import { neon } from "@neondatabase/serverless";
-import { drizzle } from "drizzle-orm/neon-http";
+import { neon, Pool, neonConfig } from "@neondatabase/serverless";
+import { drizzle as drizzleHttp } from "drizzle-orm/neon-http";
+import { drizzle as drizzleWs } from "drizzle-orm/neon-serverless";
 import * as schema from "./schema";
+import ws from "ws";
 
-if (!process.env.DATABASE_URL) {
-  throw new Error("DATABASE_URL is not defined");
+// Set up WebSocket constructor for non-edge environments (like development)
+if (typeof (globalThis as any).window === "undefined") {
+    neonConfig.webSocketConstructor = ws;
 }
 
-export const sql = neon(process.env.DATABASE_URL);
-export const db = drizzle({ client: sql, schema });
+const connectionString = process.env.DATABASE_URL!;
+
+// HTTP client for simple queries
+const clientHttp = neon(connectionString);
+export const db = drizzleHttp(clientHttp, { schema });
+
+// Pool/WebSocket client for transactions
+const clientWs = new Pool({ connectionString });
+export const dbWs = drizzleWs(clientWs, { schema });
+
+export const neonClient = clientHttp;

@@ -1,3 +1,4 @@
+import { relations } from "drizzle-orm";
 import { pgTable, uuid, text, timestamp, integer, unique, index } from "drizzle-orm/pg-core";
 import { users } from "./auth-schema";
 import { products } from "./product-schema";
@@ -36,3 +37,26 @@ export const cartItems = pgTable(
         unique("cart_item_unique").on(table.cartId, table.productId),
     ]
 );
+
+export const cartsRelations = relations(carts, ({ one, many }) => ({
+    user: one(users, {
+        fields: [carts.userId],
+        references: [users.id],
+    }),
+    items: many(cartItems),
+}));
+
+export const cartItemsRelations = relations(cartItems, ({ one }) => ({
+    cart: one(carts, {
+        fields: [cartItems.cartId],
+        references: [carts.id],
+    }),
+    product: one(products, {
+        fields: [cartItems.productId],
+        references: [products.id],
+    }),
+    store: one(stores, {
+        fields: [cartItems.storeId],
+        references: [stores.id],
+    }),
+}));

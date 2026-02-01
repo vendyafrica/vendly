@@ -1,173 +1,217 @@
 import { relations } from "drizzle-orm";
 import {
-    pgTable,
-    text,
-    jsonb,
-    timestamp,
-    uuid,
-    integer,
-    boolean,
-    index,
-    unique,
+  pgTable,
+  text,
+  jsonb,
+  timestamp,
+  uuid,
+  integer,
+  boolean,
+  index,
+  unique,
 } from "drizzle-orm/pg-core";
 
 import { tenants } from "./tenant-schema";
 import { stores } from "./storefront-schema";
 import { mediaObjects } from "./media-schema";
+import { categories } from "./category-schema";
 
 export const products = pgTable(
-    "products",
-    {
-        id: uuid("id").primaryKey().defaultRandom(),
-        tenantId: uuid("tenant_id")
-            .notNull()
-            .references(() => tenants.id, { onDelete: "cascade" }),
-        storeId: uuid("store_id")
-            .notNull()
-            .references(() => stores.id, { onDelete: "cascade" }),
+  "products",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    tenantId: uuid("tenant_id")
+      .notNull()
+      .references(() => tenants.id, { onDelete: "cascade" }),
+    storeId: uuid("store_id")
+      .notNull()
+      .references(() => stores.id, { onDelete: "cascade" }),
 
-        productName: text("product_name").notNull(),
-        priceAmount: integer("price_amount").notNull().default(0),
-        currency: text("currency").notNull().default("KES"),
-        quantity: integer("quantity").notNull().default(0),
+    productName: text("product_name").notNull(),
+    slug: text("slug").notNull(),
+    description: text("description"),
 
-        status: text("status").notNull().default("draft"),
-        rating: integer("rating").default(0),
-        ratingCount: integer("rating_count").default(0),
+    priceAmount: integer("price_amount").notNull().default(0),
+    currency: text("currency").notNull().default("KES"),
+    quantity: integer("quantity").notNull().default(0),
 
-        source: text("source").notNull().default("manual"),
-        sourceId: text("source_id"),
-        sourceUrl: text("source_url"),
+    status: text("status").notNull().default("draft"),
+    rating: integer("rating").default(0),
+    ratingCount: integer("rating_count").default(0),
 
-        isFeatured: boolean("is_featured").default(false),
-        hasContentVariants: boolean("has_content_variants").default(false),
+    source: text("source").notNull().default("manual"),
+    sourceId: text("source_id"),
+    sourceUrl: text("source_url"),
 
-        viewCount: integer("view_count").default(0).notNull(),
+    isFeatured: boolean("is_featured").default(false),
+    hasContentVariants: boolean("has_content_variants").default(false),
 
-        createdAt: timestamp("created_at").defaultNow().notNull(),
-        updatedAt: timestamp("updated_at").defaultNow().$onUpdate(() => new Date()).notNull(),
-        deletedAt: timestamp("deleted_at"),
-    },
-    (table) => [
-        index("products_tenant_store_idx").on(table.tenantId, table.storeId),
-        index("products_status_idx").on(table.status),
-    ]
+    viewCount: integer("view_count").default(0).notNull(),
+
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at")
+      .defaultNow()
+      .$onUpdate(() => new Date())
+      .notNull(),
+    deletedAt: timestamp("deleted_at"),
+  },
+  (table) => [
+    index("products_tenant_store_idx").on(table.tenantId, table.storeId),
+    index("products_status_idx").on(table.status),
+    unique("products_store_slug_unique").on(table.storeId, table.slug),
+  ],
 );
 
 export const productVariants = pgTable(
-    "product_variants",
-    {
-        id: uuid("id").primaryKey().defaultRandom(),
-        tenantId: uuid("tenant_id")
-            .notNull()
-            .references(() => tenants.id, { onDelete: "cascade" }),
-        productId: uuid("product_id")
-            .notNull()
-            .references(() => products.id, { onDelete: "cascade" }),
+  "product_variants",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    tenantId: uuid("tenant_id")
+      .notNull()
+      .references(() => tenants.id, { onDelete: "cascade" }),
+    productId: uuid("product_id")
+      .notNull()
+      .references(() => products.id, { onDelete: "cascade" }),
 
-        variantName: text("variant_name"),
-        priceAmount: integer("price_amount").notNull(),
-        currency: text("currency").default("KES"),
-        quantity: integer("quantity").notNull().default(0),
+    variantName: text("variant_name"),
+    priceAmount: integer("price_amount").notNull(),
+    currency: text("currency").default("KES"),
+    quantity: integer("quantity").notNull().default(0),
 
-        options: jsonb("options").$type<{ size?: string; color?: string }>(),
+    options: jsonb("options").$type<{ size?: string; color?: string }>(),
 
-        isActive: boolean("is_active").default(true),
-        sortOrder: integer("sort_order").default(0),
+    isActive: boolean("is_active").default(true),
+    sortOrder: integer("sort_order").default(0),
 
-        createdAt: timestamp("created_at").defaultNow().notNull(),
-        updatedAt: timestamp("updated_at")
-            .defaultNow()
-            .$onUpdate(() => new Date())
-            .notNull(),
-    },
-    (table) => [
-        index("product_variants_product_idx").on(table.productId),
-    ]
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at")
+      .defaultNow()
+      .$onUpdate(() => new Date())
+      .notNull(),
+  },
+  (table) => [index("product_variants_product_idx").on(table.productId)],
 );
 
 export const productMedia = pgTable(
-    "product_media",
-    {
-        id: uuid("id").primaryKey().defaultRandom(),
-        tenantId: uuid("tenant_id")
-            .notNull()
-            .references(() => tenants.id, { onDelete: "cascade" }),
-        productId: uuid("product_id")
-            .notNull()
-            .references(() => products.id, { onDelete: "cascade" }),
-        mediaId: uuid("media_id")
-            .notNull()
-            .references(() => mediaObjects.id, { onDelete: "cascade" }),
+  "product_media",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    tenantId: uuid("tenant_id")
+      .notNull()
+      .references(() => tenants.id, { onDelete: "cascade" }),
+    productId: uuid("product_id")
+      .notNull()
+      .references(() => products.id, { onDelete: "cascade" }),
+    mediaId: uuid("media_id")
+      .notNull()
+      .references(() => mediaObjects.id, { onDelete: "cascade" }),
 
-        variantId: uuid("variant_id")
-            .references(() => productVariants.id, { onDelete: "set null" }),
+    variantId: uuid("variant_id").references(() => productVariants.id, {
+      onDelete: "set null",
+    }),
 
-        sortOrder: integer("sort_order").default(0).notNull(),
-        isFeatured: boolean("is_featured").default(false).notNull(),
+    sortOrder: integer("sort_order").default(0).notNull(),
+    isFeatured: boolean("is_featured").default(false).notNull(),
 
-        createdAt: timestamp("created_at").defaultNow().notNull(),
-    },
-    (table) => [
-        index("product_media_product_idx").on(table.productId),
-        index("product_media_media_idx").on(table.mediaId),
-        index("product_media_sort_idx").on(table.productId, table.sortOrder),
-    ]
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  },
+  (table) => [
+    index("product_media_product_idx").on(table.productId),
+    index("product_media_media_idx").on(table.mediaId),
+    index("product_media_sort_idx").on(table.productId, table.sortOrder),
+  ],
 );
 
-export const mediaObjectsRelations = relations(mediaObjects, ({ one, many }) => ({
+export const productCategories = pgTable(
+  "product_categories",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    productId: uuid("product_id")
+      .notNull()
+      .references(() => products.id, { onDelete: "cascade" }),
+    categoryId: uuid("category_id")
+      .notNull()
+      .references(() => categories.id, { onDelete: "cascade" }),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  },
+  (table) => [
+    unique("product_categories_unique").on(table.productId, table.categoryId),
+    index("product_categories_product_idx").on(table.productId),
+    index("product_categories_category_idx").on(table.categoryId),
+  ],
+);
+
+export const productCategoriesRelations = relations(
+  productCategories,
+  ({ one }) => ({
+    product: one(products, {
+      fields: [productCategories.productId],
+      references: [products.id],
+    }),
+    category: one(categories, {
+      fields: [productCategories.categoryId],
+      references: [categories.id],
+    }),
+  }),
+);
+
+export const mediaObjectsRelations = relations(
+  mediaObjects,
+  ({ one, many }) => ({
     tenant: one(tenants, {
-        fields: [mediaObjects.tenantId],
-        references: [tenants.id],
+      fields: [mediaObjects.tenantId],
+      references: [tenants.id],
     }),
     productMedia: many(productMedia),
-}));
+  }),
+);
 
 export const productsRelations = relations(products, ({ one, many }) => ({
-    tenant: one(tenants, {
-        fields: [products.tenantId],
-        references: [tenants.id],
-    }),
-    store: one(stores, {
-        fields: [products.storeId],
-        references: [stores.id],
-    }),
-    variants: many(productVariants),
-    media: many(productMedia),
+  tenant: one(tenants, {
+    fields: [products.tenantId],
+    references: [tenants.id],
+  }),
+  store: one(stores, {
+    fields: [products.storeId],
+    references: [stores.id],
+  }),
+  variants: many(productVariants),
+  media: many(productMedia),
 }));
 
-export const productVariantsRelations = relations(productVariants, ({ one, many }) => ({
+export const productVariantsRelations = relations(
+  productVariants,
+  ({ one, many }) => ({
     tenant: one(tenants, {
-        fields: [productVariants.tenantId],
-        references: [tenants.id],
+      fields: [productVariants.tenantId],
+      references: [tenants.id],
     }),
     product: one(products, {
-        fields: [productVariants.productId],
-        references: [products.id],
+      fields: [productVariants.productId],
+      references: [products.id],
     }),
     media: many(productMedia),
-}));
+  }),
+);
 
 export const productMediaRelations = relations(productMedia, ({ one }) => ({
-    tenant: one(tenants, {
-        fields: [productMedia.tenantId],
-        references: [tenants.id],
-    }),
-    product: one(products, {
-        fields: [productMedia.productId],
-        references: [products.id],
-    }),
-    media: one(mediaObjects, {
-        fields: [productMedia.mediaId],
-        references: [mediaObjects.id],
-    }),
-    variant: one(productVariants, {
-        fields: [productMedia.variantId],
-        references: [productVariants.id],
-    }),
+  tenant: one(tenants, {
+    fields: [productMedia.tenantId],
+    references: [tenants.id],
+  }),
+  product: one(products, {
+    fields: [productMedia.productId],
+    references: [products.id],
+  }),
+  media: one(mediaObjects, {
+    fields: [productMedia.mediaId],
+    references: [mediaObjects.id],
+  }),
+  variant: one(productVariants, {
+    fields: [productMedia.variantId],
+    references: [productVariants.id],
+  }),
 }));
-
-
 
 export type MediaObject = typeof mediaObjects.$inferSelect;
 export type NewMediaObject = typeof mediaObjects.$inferInsert;
@@ -180,4 +224,3 @@ export type NewProductVariant = typeof productVariants.$inferInsert;
 
 export type ProductMedia = typeof productMedia.$inferSelect;
 export type NewProductMedia = typeof productMedia.$inferInsert;
-

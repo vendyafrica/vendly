@@ -1,35 +1,96 @@
-"use client";
-
-import { useEffect } from "react";
+import CategoryCards from "@/app/(m)/components/CategoryCards";
+import FeaturedCategory from "@/app/(m)/components/FeaturedCategory";
+import Header from "@/app/(m)/components/header";
+import Footer from "@/app/(m)/components/footer";
+import { MarketplaceGrid } from "@/app/(m)/components/MarketplaceGrid";
+import { Button } from "@Vendly/ui/components/button";
 import Link from "next/link";
-import CategoryCards from "@/app/(platform)/components/CategoryCards";
-import FeaturedCategory from "@/app/(platform)/components/FeaturedCategory";
-import Header from "@/app/(platform)/components/header";
-import Footer from "@/app/(platform)/components/footer";
-import { Button } from "@vendly/ui/components/button";
-import { signInWithOneTap } from "@/lib/auth";
+import { marketplaceService } from "@/lib/services/marketplace-service";
+import type { MarketplaceStore } from "@/types/marketplace";
+import { OneTapLogin } from "@/app/(m)/components/OneTapLogin";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { ArrowRightIcon } from "@hugeicons/core-free-icons";
 
-export default function HomePage() {
-    useEffect(() => {
-        const timer = setTimeout(() => {
-            signInWithOneTap().catch(console.error);
-        }, 3000);
-        return () => clearTimeout(timer);
-    }, []);
+export default async function HomePage() {
+    const { categories, stores, storesByCategory } = await marketplaceService.getHomePageData();
+
+    // Transform to UI Model (adding placeholders for missing fields)
+    const mapToMarketplaceStore = (s: any): MarketplaceStore => ({
+        id: s.id,
+        name: s.name,
+        slug: s.slug,
+        description: s.description,
+        categories: s.categories || [],
+        rating: 4.5,
+        logoUrl: null,
+        heroMedia: s.heroMedia ?? null,
+        heroMediaType: s.heroMediaType ?? null,
+        heroMediaItems: Array.isArray(s.heroMediaItems) ? s.heroMediaItems : [],
+        images: Array.isArray(s.images) ? s.images : [],
+    });
+
+    const uiStores = stores.map(mapToMarketplaceStore);
+    const uiStoresByCategory: Record<string, MarketplaceStore[]> = {};
+
+    Object.entries(storesByCategory).forEach(([cat, list]) => {
+        uiStoresByCategory[cat] = list.map(mapToMarketplaceStore);
+    });
 
     return (
         <main className="min-h-screen bg-[#F9F9F7]">
             <Header />
-            <CategoryCards />
-            <FeaturedCategory />
-            <div className="flex flex-col items-center justify-center py-20">
-                <h1 className="text-2xl font-semibold mb-4">Welcome to Vendly</h1>
-                <p className="text-gray-600 mb-8">The marketplace directory is currently under maintenance.</p>
-                <Link href="/onboarding">
-                    <Button>
-                        Start Selling
-                    </Button>
-                </Link>
+            <OneTapLogin />
+
+            <CategoryCards categories={
+                categories.map(c => ({
+                    id: c.id,
+                    name: c.name,
+                    image: null
+                })) as any
+            } />
+
+            <div className="container mx-auto px-4 py-9">
+                <div className="flex items-start mb-8">
+                    <div>
+                        <h2 className="text-xl  pl-10 font-semibold mb-1">Discover your next favorite stores all in one place</h2>
+                    </div>
+                </div>
+
+                {uiStores.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center py-20">
+                        <h3 className="text-2xl font-semibold mb-4">No stores yet</h3>
+                        <p className="text-gray-600 mb-8">Be the first to create a store on Vendly!</p>
+                        <Link href="/c">
+                            <Button size="lg">
+                                Create Your Store
+                            </Button>
+                        </Link>
+                    </div>
+                ) : (
+                    <div className="space-y-9">
+                        <div>
+                            <h3 className="text-2xl font-semibold mb-3 pl-10">Featured</h3>
+                            <MarketplaceGrid stores={uiStores} loading={false} />
+                        </div>
+
+                        {Object.entries(uiStoresByCategory).map(([categoryName, categoryStores]) => (
+                            <div key={categoryName}>
+                                <div className="flex justify-between items-center mb-3">
+                                    <h3 className="text-2xl pl-10 font-semibold">{categoryName}</h3>
+                                    <span className="pr-10">
+                                        <Link
+                                            href={`/category/${categoryName.toLowerCase().replace(/\s+/g, '-')}`}
+                                            className="text-primary hover:underline"
+                                        >
+                                            <HugeiconsIcon icon={ArrowRightIcon} />
+                                        </Link>
+                                    </span>
+                                </div>
+                                <MarketplaceGrid stores={categoryStores.slice(0, 5)} loading={false} />
+                            </div>
+                        ))}
+                    </div>
+                )}
             </div>
             <Footer />
         </main>

@@ -1,9 +1,10 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect } from "react";
-import { useSession } from "../lib/auth";
+import { useAppSession } from "./app-session-context";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+// Use relative paths for same-origin API calls (Next.js serverless routes)
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || "";
 
 export interface CartItem {
     id: string; // Product ID
@@ -38,7 +39,7 @@ interface CartContextType {
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
-    const { data: session } = useSession();
+    const { session } = useAppSession();
     const [items, setItems] = useState<CartItem[]>([]);
     const [isLoaded, setIsLoaded] = useState(false);
 
@@ -74,10 +75,10 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
     // Save changes
     useEffect(() => {
-        if (isLoaded && !session?.user) {
+        if (isLoaded) {
             localStorage.setItem("vendly_cart", JSON.stringify(items));
         }
-    }, [items, session, isLoaded]);
+    }, [items, isLoaded]);
 
     const addItem = async (newItem: Omit<CartItem, "quantity">, quantity = 1) => {
         // Optimistic update
@@ -99,7 +100,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
             const newQuantity = (currentItem?.quantity || 0) + quantity;
 
             try {
-                await fetch(`${API_BASE}/api/cart/items`, {
+                await fetch(`${API_BASE}/api/cart`, {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
@@ -149,7 +150,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
         if (session?.user) {
             try {
-                await fetch(`${API_BASE}/api/cart/items`, {
+                await fetch(`${API_BASE}/api/cart`, {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
