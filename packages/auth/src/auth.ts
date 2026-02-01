@@ -89,6 +89,9 @@ export const auth = betterAuth({
     google: {
       clientId: process.env.GOOGLE_CLIENT_ID as string,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
+      // Explicitly set response mode to ensure response_type/code is requested correctly across environments
+      responseMode: "query",
+      redirectURI: `${baseURL}/api/auth/callback/google`,
     },
   },
 
