@@ -3,7 +3,7 @@ import FeaturedCategory from "@/app/(m)/components/FeaturedCategory";
 import Header from "@/app/(m)/components/header";
 import Footer from "@/app/(m)/components/footer";
 import { MarketplaceGrid } from "@/app/(m)/components/MarketplaceGrid";
-import { Button } from "@Vendly/ui/components/button";
+import { Button } from "@vendly/ui/components/button";
 import Link from "next/link";
 import { marketplaceService } from "@/lib/services/marketplace-service";
 import type { MarketplaceStore } from "@/types/marketplace";

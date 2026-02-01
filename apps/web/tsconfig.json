@@ -24,6 +24,15 @@
       "@vendly/auth/auth-client": [
         "../../packages/auth/src/auth-client.ts"
       ],
+      "@vendly/db/db": [
+        "../../packages/db/src/db.ts"
+      ],
+      "@vendly/db/schema": [
+        "../../packages/db/src/schema/index.ts"
+      ],
+      "@vendly/auth/react": [
+        "../../packages/auth/src/auth-client.ts"
+      ],
       "@vendly/transactional": [
         "../../packages/transactional/index.ts"
       ],
