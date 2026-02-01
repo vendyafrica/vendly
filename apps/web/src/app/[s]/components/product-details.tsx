@@ -15,6 +15,7 @@ import {
 } from "@hugeicons/core-free-icons";
 import { Avatar, AvatarImage, AvatarFallback } from "@vendly/ui/components/avatar";
 import { useCart } from "../../../contexts/cart-context";
+import { useRecentlyViewed } from "@/hooks/use-recently-viewed";
 
 interface ProductDetailsProps {
     product: {
@@ -38,6 +39,24 @@ interface ProductDetailsProps {
 export function ProductDetails({ product }: ProductDetailsProps) {
     const router = useRouter();
     const { addItem } = useCart();
+    const { addToRecentlyViewed } = useRecentlyViewed();
+
+    useEffect(() => {
+        if (product) {
+            addToRecentlyViewed({
+                id: product.id,
+                name: product.name,
+                price: product.price,
+                currency: product.currency,
+                image: product.images[0] || "",
+                store: {
+                    name: product.store.name,
+                    slug: product.store.slug,
+                },
+                slug: product.slug,
+            });
+        }
+    }, [product, addToRecentlyViewed]);
 
     const [quantity, setQuantity] = useState(1);
     const [selectedMediaIndex, setSelectedMediaIndex] = useState(0);

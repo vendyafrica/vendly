@@ -26,14 +26,17 @@ import { useRouter } from "next/navigation";
 import { LoginOverlay } from "@/app/(auth)/login/page";
 import Search from "./search";
 import { AppSession, useAppSession } from "@/contexts/app-session-context";
+import { useCart } from "@/contexts/cart-context";
 
 export default function Header({ hideSearch = false }: { hideSearch?: boolean }) {
   const { session } = useAppSession();
+  const { itemCount } = useCart();
   const isSignedIn = !!session;
   const [isVisible, setIsVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
   const [showLogin, setShowLogin] = useState(false);
   const [tenantState, setTenantState] = useState(false);
+  const [isLoadingTenant, setIsLoadingTenant] = useState(isSignedIn); // Start loading if signed in
   const router = useRouter();
 
   useEffect(() => {
@@ -48,6 +51,8 @@ export default function Header({ hideSearch = false }: { hideSearch?: boolean })
         if (!cancelled) setTenantState(!!data.hasTenant);
       } catch {
         if (!cancelled) setTenantState(false);
+      } finally {
+        if (!cancelled) setIsLoadingTenant(false);
       }
     };
 
@@ -56,6 +61,11 @@ export default function Header({ hideSearch = false }: { hideSearch?: boolean })
     return () => {
       cancelled = true;
     };
+  }, [isSignedIn]);
+
+  // If session changes to null, stop loading
+  useEffect(() => {
+    if (!isSignedIn) setIsLoadingTenant(false);
   }, [isSignedIn]);
 
 
@@ -87,8 +97,10 @@ export default function Header({ hideSearch = false }: { hideSearch?: boolean })
         <div className="hidden md:block">
           <div className="mx-auto flex h-16 max-w-7xl items-center gap-6 px-6">
             <div className="flex items-center gap-2 shrink-0">
-              <Image src="/vendly.png" alt="Vendly" width={32} height={32} />
-              <span className="text-base font-semibold tracking-tight">vendly</span>
+              <Link href="/" className="flex items-center gap-2">
+                <Image src="/vendly.png" alt="Vendly" width={32} height={32} />
+                <span className="text-base font-semibold tracking-tight">vendly</span>
+              </Link>
             </div>
 
             {!hideSearch && <Search />}
@@ -99,6 +111,8 @@ export default function Header({ hideSearch = false }: { hideSearch?: boolean })
                 session={session}
                 setShowLogin={setShowLogin}
                 showSellButton={showSellButton}
+                isLoading={isLoadingTenant}
+                itemCount={itemCount}
                 handleSellNow={handleSellNow}
                 handleSignOut={handleSignOut}
               />
@@ -117,6 +131,8 @@ export default function Header({ hideSearch = false }: { hideSearch?: boolean })
               session={session}
               setShowLogin={setShowLogin}
               showSellButton={showSellButton}
+              isLoading={isLoadingTenant}
+              itemCount={itemCount}
               handleSellNow={handleSellNow}
               handleSignOut={handleSignOut}
             />
@@ -153,6 +169,8 @@ function Actions({
   session,
   setShowLogin,
   showSellButton,
+  isLoading,
+  itemCount,
   handleSellNow,
   handleSignOut,
 }: {
@@ -161,6 +179,8 @@ function Actions({
   session: AppSession | null;
   setShowLogin: (v: boolean) => void;
   showSellButton: boolean;
+  isLoading: boolean;
+  itemCount: number;
   handleSellNow: () => void;
   handleSignOut: () => Promise<void>;
 }) {
@@ -224,10 +244,15 @@ function Actions({
         </DropdownMenu>
       )}
 
-      <Link href="/cart">
+      <Link href="/cart" className="relative">
         <HugeiconsIcon icon={ShoppingBag02Icon} size={isMobile ? 24 : 24} />
+        {itemCount > 0 && (
+          <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-black text-[10px] font-medium text-white ring-2 ring-white">
+            {itemCount}
+          </span>
+        )}
       </Link>
-      {showSellButton && (
+      {!isLoading && showSellButton && (
         <Button onClick={handleSellNow} className={isMobile ? "w-full" : "hidden md:block"}>
           Sell now
         </Button>

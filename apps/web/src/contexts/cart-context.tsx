@@ -75,10 +75,10 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
     // Save changes
     useEffect(() => {
-        if (isLoaded && !session?.user) {
+        if (isLoaded) {
             localStorage.setItem("vendly_cart", JSON.stringify(items));
         }
-    }, [items, session, isLoaded]);
+    }, [items, isLoaded]);
 
     const addItem = async (newItem: Omit<CartItem, "quantity">, quantity = 1) => {
         // Optimistic update
