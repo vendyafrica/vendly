@@ -7,6 +7,10 @@ export interface StoreWithCategory {
     slug: string;
     description: string | null;
     categories: string[];
+    heroMedia?: string | null;
+    heroMediaType?: "image" | "video" | null;
+    heroMediaItems?: Array<{ url: string; type: "image" | "video" }>;
+    images?: string[];
 }
 
 export const marketplaceService = {
@@ -15,12 +19,40 @@ export const marketplaceService = {
      */
     async getAllStores(): Promise<StoreWithCategory[]> {
         const stores = await storeRepo.findActiveStores();
-        return stores.map(store => ({
+
+        const { productRepo } = await import("../data/product-repo");
+
+        return Promise.all(stores.map(async (store) => {
+            const heroMediaItems = Array.isArray((store as any).heroMediaItems) ? (store as any).heroMediaItems : [];
+            const heroImages = heroMediaItems
+                .filter((i: any) => i && i.type === "image" && typeof i.url === "string")
+                .map((i: any) => i.url);
+
+            let images: string[] = heroImages;
+
+            // Marketplace fallback: if no hero images, show up to 5 product images
+            if (images.length === 0) {
+                const products = await productRepo.findByStoreId(store.id);
+                images = products
+                    .flatMap((p: any) =>
+                        (p.media ?? [])
+                            .map((m: any) => m?.media?.blobUrl ?? m?.media?.url ?? null)
+                            .filter(Boolean)
+                    )
+                    .slice(0, 5);
+            }
+
+            return {
             id: store.id,
             name: store.name,
             slug: store.slug,
             description: store.description,
             categories: store.categories || [],
+            heroMedia: store.heroMedia,
+            heroMediaType: store.heroMediaType as "image" | "video" | null,
+            heroMediaItems,
+            images,
+            };
         }));
     },
 
@@ -68,18 +100,46 @@ export const marketplaceService = {
 
         const stores = await storeRepo.findByCategoryName(category.name);
 
-        return stores.map(store => ({
+        const { productRepo } = await import("../data/product-repo");
+
+        return Promise.all(stores.map(async (store) => {
+            const heroMediaItems = Array.isArray((store as any).heroMediaItems) ? (store as any).heroMediaItems : [];
+            const heroImages = heroMediaItems
+                .filter((i: any) => i && i.type === "image" && typeof i.url === "string")
+                .map((i: any) => i.url);
+
+            let images: string[] = heroImages;
+
+            if (images.length === 0) {
+                const products = await productRepo.findByStoreId(store.id);
+                images = products
+                    .flatMap((p: any) =>
+                        (p.media ?? [])
+                            .map((m: any) => m?.media?.blobUrl ?? m?.media?.url ?? null)
+                            .filter(Boolean)
+                    )
+                    .slice(0, 5);
+            }
+
+            return {
             id: store.id,
             name: store.name,
             slug: store.slug,
             description: store.description,
             categories: store.categories || [],
+            heroMedia: store.heroMedia,
+            heroMediaType: store.heroMediaType as "image" | "video" | null,
+            heroMediaItems,
+            images,
+            };
         }));
     },
 
     async getStoreDetails(slug: string) {
         const store = await storeRepo.findBySlug(slug);
         if (!store) return null;
+
+        const heroMediaItems = Array.isArray((store as any).heroMediaItems) ? (store as any).heroMediaItems : [];
 
         return {
             id: store.id,
@@ -94,7 +154,8 @@ export const marketplaceService = {
             rating: store.storeRating || 4.5, // Use actual rating from DB if available
             ratingCount: store.storeRatingCount || 100, // Use actual rating count from DB
             heroMedia: store.heroMedia, // Use actual hero media from DB
-            heroMediaType: store.heroMediaType as "image" | "video" | null
+            heroMediaType: store.heroMediaType as "image" | "video" | null,
+            heroMediaItems,
         };
     },
 

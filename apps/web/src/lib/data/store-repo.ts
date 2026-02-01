@@ -1,6 +1,4 @@
-import { db } from "@vendly/db/db";
-import { stores, categories } from "@vendly/db/schema";
-import { eq, and, exists, arrayContains, drizzleSql as sql } from "@vendly/db";
+import { db, stores, categories, eq, and, exists, arrayContains, drizzleSql as sql } from "@vendly/db";
 
 export const storeRepo = {
     async findById(id: string) {

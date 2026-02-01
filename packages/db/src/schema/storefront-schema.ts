@@ -2,6 +2,7 @@ import { relations } from "drizzle-orm";
 import {
     pgTable,
     text,
+    jsonb,
     timestamp,
     uuid,
     index,
@@ -42,6 +43,7 @@ export const stores = pgTable(
         
         heroMedia: text("hero_media"),
         heroMediaType: text("hero_media_type"),
+        heroMediaItems: jsonb("hero_media_items").$type<Array<{ url: string; type: "image" | "video" }>>().default([]),
 
         createdAt: timestamp("created_at").defaultNow().notNull(),
         updatedAt: timestamp("updated_at")

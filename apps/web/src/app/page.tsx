@@ -23,7 +23,10 @@ export default async function HomePage() {
         categories: s.categories || [],
         rating: 4.5,
         logoUrl: null,
-        images: [],
+        heroMedia: s.heroMedia ?? null,
+        heroMediaType: s.heroMediaType ?? null,
+        heroMediaItems: Array.isArray(s.heroMediaItems) ? s.heroMediaItems : [],
+        images: Array.isArray(s.images) ? s.images : [],
     });
 
     const uiStores = stores.map(mapToMarketplaceStore);

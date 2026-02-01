@@ -10,6 +10,7 @@ interface HeroProps {
         ratingCount: number;
         heroMedia?: string | null;
         heroMediaType?: "image" | "video" | null | string;
+        heroMediaItems?: Array<{ url: string; type: "image" | "video" }>;
     };
 }
 
@@ -21,9 +22,14 @@ export function Hero({ store }: HeroProps) {
         return count.toString();
     };
 
-    const mediaUrl = store.heroMedia || "/images/hero-fallback.png";
-    // Basic check for video type or extension
-    const isVideo = store.heroMediaType === "video" || (typeof mediaUrl === "string" && !!mediaUrl.match(/\.(mp4|webm|ogg)$/i));
+    const heroMediaItems = Array.isArray(store.heroMediaItems) ? store.heroMediaItems : [];
+    const firstItem = heroMediaItems[0];
+
+    const mediaUrl = firstItem?.url || store.heroMedia || "/images/hero-fallback.png";
+    const isVideo =
+        firstItem?.type === "video" ||
+        store.heroMediaType === "video" ||
+        (typeof mediaUrl === "string" && !!mediaUrl.match(/\.(mp4|webm|ogg)$/i));
 
     return (
         <section className="relative h-[60vh] sm:h-[70vh] md:h-[75vh] lg:h-[80vh] w-full overflow-hidden mb-8 sm:mb-12">

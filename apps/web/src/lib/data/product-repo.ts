@@ -1,6 +1,4 @@
-import { db } from "@vendly/db/db";
-import { products } from "@vendly/db/schema";
-import { eq, and } from "@vendly/db";
+import { db, products, eq, and } from "@vendly/db";
 
 export const productRepo = {
     async findByStoreSlug(storeSlug: string) {

@@ -21,8 +21,7 @@ export default function StudioPage() {
     const [isLoading, setIsLoading] = useState(true);
     const [isEditingHero, setIsEditingHero] = useState(false);
     const [tenantId, setTenantId] = useState<string | null>(null);
-    const [heroMedia, setHeroMedia] = useState<string | null>(null);
-    const [heroMediaType, setHeroMediaType] = useState<"image" | "video" | null>(null);
+    const [heroMediaItems, setHeroMediaItems] = useState<Array<{ url: string; type: "image" | "video" }>>([]);
 
     const storefrontUrl =
         process.env.NODE_ENV === "production"
@@ -37,8 +36,7 @@ export default function StudioPage() {
                 if (response.ok) {
                     const store = await response.json();
                     setTenantId(store.tenantId ?? null);
-                    setHeroMedia(store.heroMedia);
-                    setHeroMediaType(store.heroMediaType);
+                    setHeroMediaItems(Array.isArray(store.heroMediaItems) ? store.heroMediaItems : []);
                 }
             } catch (error) {
                 console.error("Failed to fetch store data:", error);
@@ -47,9 +45,8 @@ export default function StudioPage() {
         fetchStoreData();
     }, [storeSlug]);
 
-    const handleHeroUpdate = (newHeroMedia: string, newHeroMediaType: "image" | "video") => {
-        setHeroMedia(newHeroMedia);
-        setHeroMediaType(newHeroMediaType);
+    const handleHeroUpdate = (items: Array<{ url: string; type: "image" | "video" }>) => {
+        setHeroMediaItems(items);
         // Reload the iframe to reflect changes
         setIsLoading(true);
     };
@@ -62,8 +59,7 @@ export default function StudioPage() {
                     <HeroEditor
                         storeSlug={storeSlug}
                         tenantId={tenantId}
-                        currentHeroMedia={heroMedia}
-                        currentHeroMediaType={heroMediaType}
+                        heroMediaItems={heroMediaItems}
                         onUpdate={handleHeroUpdate}
                     />
                     <div className="absolute top-4 left-4">
