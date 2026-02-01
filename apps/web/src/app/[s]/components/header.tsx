@@ -58,32 +58,52 @@ export function StorefrontHeader() {
     if (loading) return <HeaderSkeleton />;
     if (!store) return null;
 
+    const iconClass = "text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.35)]";
+
     return (
         <header
-            className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${isVisible ? "translate-y-0 opacity-100" : "-translate-y-full opacity-0"} bg-white/70 backdrop-blur-xl border-b border-white/40`}>
-            <div className="max-w-[1440px] mx-auto px-4 sm:px-6 md:px-10">
-                <div className="flex items-center justify-between h-20 gap-6">
+            className={`fixed inset-x-0 top-0 z-50 transition-all duration-300 ${isVisible ? "translate-y-0 opacity-100" : "-translate-y-full opacity-0"}`}
+        >
+            <div className="pointer-events-none absolute inset-0 bg-linear-to-b from-black/35 via-black/15 to-transparent" />
+
+            <div className="relative max-w-[1440px] mx-auto px-4 sm:px-6 md:px-10">
+                <div className="flex items-center justify-between h-16 sm:h-[70px] md:h-20 gap-6">
                     <div className="flex items-center gap-4">
-                        <Link href={`/${store.slug}`} className="text-neutral-900 font-serif text-2xl tracking-tight hover:text-neutral-700 transition-colors">
+                        <Link
+                            href={`/${store.slug}`}
+                            className="text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.35)] font-serif text-xl sm:text-2xl tracking-tight hover:text-white/90 transition-colors"
+                        >
                             {store.name}
                         </Link>
                     </div>
-                    <div className="flex items-center space-x-2">
+                    <div className="flex items-center space-x-1.5 sm:space-x-2">
                         <Link href="/cart">
-                            <Button variant="ghost" size="icon" className="text-neutral-800 hover:bg-neutral-100 rounded-full relative">
-                                <HugeiconsIcon icon={ShoppingBag02Icon} size={20} />
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                className="relative rounded-full bg-white/5 hover:bg-white/10 min-h-[44px] min-w-[44px] p-2 sm:p-2.5 cursor-pointer"
+                            >
+                                <HugeiconsIcon icon={ShoppingBag02Icon} size={22} className={iconClass} />
                                 {itemCount > 0 && (
-                                    <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-black text-[10px] font-medium text-white">
+                                    <span className="pointer-events-none absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-black text-[10px] font-medium text-white">
                                         {itemCount}
                                     </span>
                                 )}
                             </Button>
                         </Link>
-                        <Button variant="ghost" size="icon" className="text-neutral-800 hover:bg-neutral-100 rounded-full">
-                            <HugeiconsIcon icon={StarIcon} size={20} />
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            className="rounded-full bg-white/5 hover:bg-white/10 min-h-[44px] min-w-[44px] p-2 sm:p-2.5 cursor-pointer"
+                        >
+                            <HugeiconsIcon icon={StarIcon} size={22} className={iconClass} />
                         </Button>
-                        <Button className="bg-primary text-white px-6 h-8">
-                            Admin
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            className="rounded-full bg-white/5 hover:bg-white/10 min-h-[44px] min-w-[44px] p-2 sm:p-2.5 cursor-pointer"
+                        >
+                            <HugeiconsIcon icon={UserIcon} size={22} className={iconClass} />
                         </Button>
                     </div>
                 </div>

@@ -8,7 +8,7 @@ import {
 } from "@vendly/ui/components/field";
 import CategoriesSelector from "../components/categories";
 import { useOnboarding } from "../context/onboarding-context";
-import { getCategoriesAction } from "@/actions/categories";
+import { getCategoriesAction } from "../lib/categories";
 import { type Category } from "../components/tag-selector";
 
 export default function BusinessInfo() {

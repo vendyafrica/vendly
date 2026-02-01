@@ -3,7 +3,7 @@ import { headers } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 import { productService } from "@/lib/services/product-service";
 import { db } from "@vendly/db/db";
-import { tenants, tenantMemberships } from "@vendly/db/schema";
+import { tenantMemberships } from "@vendly/db/schema";
 import { eq } from "@vendly/db";
 import { z } from "zod";
 
