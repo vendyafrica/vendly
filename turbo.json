@@ -1,6 +1,17 @@
 {
   "$schema": "https://turborepo.com/schema.json",
   "ui": "tui",
+  "globalEnv": [
+    "DATABASE_URL",
+    "BLOB_READ_WRITE_TOKEN",
+    "BETTER_AUTH_URL",
+    "BETTER_AUTH_SECRET",
+    "GOOGLE_CLIENT_ID",
+    "GOOGLE_CLIENT_SECRET",
+    "INSTAGRAM_CLIENT_ID",
+    "INSTAGRAM_CLIENT_SECRET",
+    "DOTENV_CONFIG_QUIET"
+  ],
   "tasks": {
     "build": {
       "inputs": [
@@ -15,6 +26,9 @@
       ]
     },
     "admin#build": {
+      "dependsOn": [
+        "^build"
+      ],
       "cache": false
     },
     "web#build": {

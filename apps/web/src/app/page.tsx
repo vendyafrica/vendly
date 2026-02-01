@@ -1,5 +1,4 @@
 import CategoryCards from "@/app/(m)/components/CategoryCards";
-import FeaturedCategory from "@/app/(m)/components/FeaturedCategory";
 import Header from "@/app/(m)/components/header";
 import Footer from "@/app/(m)/components/footer";
 import { MarketplaceGrid } from "@/app/(m)/components/MarketplaceGrid";
@@ -14,7 +13,6 @@ import { ArrowRightIcon } from "@hugeicons/core-free-icons";
 export default async function HomePage() {
     const { categories, stores, storesByCategory } = await marketplaceService.getHomePageData();
 
-    // Transform to UI Model (adding placeholders for missing fields)
     const mapToMarketplaceStore = (s: any): MarketplaceStore => ({
         id: s.id,
         name: s.name,
