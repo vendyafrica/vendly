@@ -121,25 +121,33 @@ export default function Header({ hideSearch = false }: { hideSearch?: boolean })
         </div>
 
         <div className="md:hidden">
-          <div className="flex items-center justify-between px-4 py-4">
-            <div className="flex items-center gap-3">
-              <Image src="/vendly.png" alt="Vendly" width={32} height={32} />
+          <div className="px-4 pb-4 space-y-3 border-b border-neutral-200">
+            <div className="flex items-center justify-between pt-4">
+              <Link href="/" className="flex items-center gap-2">
+                <Image src="/vendly.png" alt="Vendly" width={32} height={32} />
+                <span className="text-base font-semibold tracking-tight">vendly</span>
+              </Link>
+              <Actions
+                isMobile={true}
+                isSignedIn={isSignedIn}
+                session={session}
+                setShowLogin={setShowLogin}
+                showSellButton={showSellButton}
+                isLoading={isLoadingTenant}
+                itemCount={itemCount}
+                handleSellNow={handleSellNow}
+                handleSignOut={handleSignOut}
+                renderSellButton={false}
+              />
             </div>
-            <Actions
-              isMobile={true}
-              isSignedIn={isSignedIn}
-              session={session}
-              setShowLogin={setShowLogin}
-              showSellButton={showSellButton}
-              isLoading={isLoadingTenant}
-              itemCount={itemCount}
-              handleSellNow={handleSellNow}
-              handleSignOut={handleSignOut}
-            />
-          </div>
 
-          {!hideSearch && (
-            <div className="px-4 pb-4">
+            {!isLoadingTenant && showSellButton && (
+              <Button onClick={handleSellNow} className="w-full">
+                Sell now
+              </Button>
+            )}
+
+            {!hideSearch && (
               <div className="relative">
                 <HugeiconsIcon
                   icon={Search01Icon}
@@ -153,8 +161,8 @@ export default function Header({ hideSearch = false }: { hideSearch?: boolean })
                   className="h-12 pl-10 rounded-md"
                 />
               </div>
-            </div>
-          )}
+            )}
+          </div>
         </div>
       </header>
 
@@ -173,6 +181,7 @@ function Actions({
   itemCount,
   handleSellNow,
   handleSignOut,
+  renderSellButton = true,
 }: {
   isMobile?: boolean;
   isSignedIn: boolean;
@@ -183,6 +192,7 @@ function Actions({
   itemCount: number;
   handleSellNow: () => void;
   handleSignOut: () => Promise<void>;
+  renderSellButton?: boolean;
 }) {
   return (
     <div className={`flex items-center gap-4 ${isMobile ? "flex-wrap" : ""}`}>
@@ -252,7 +262,7 @@ function Actions({
           </span>
         )}
       </Link>
-      {!isLoading && showSellButton && (
+      {!isLoading && showSellButton && renderSellButton && (
         <Button onClick={handleSellNow} className={isMobile ? "w-full" : "hidden md:block"}>
           Sell now
         </Button>
