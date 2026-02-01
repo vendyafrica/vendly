@@ -1,6 +1,7 @@
 "use client"
 
-import { useEffect } from "react"
+import { useEffect, Suspense } from "react"
+import { useSearchParams } from "next/navigation"
 import { LoginForm } from "@/app/(auth)/components/login-form"
 import { cn } from "@vendly/ui/lib/utils"
 
@@ -43,8 +44,20 @@ export default function LoginPage() {
                 "sm:max-w-md sm:rounded-xl sm:p-8 sm:pb-8 sm:mb-0"
             )}>
                 <div className="mx-auto mb-4 h-1.5 w-12 rounded-full bg-muted sm:hidden" />
-                <LoginForm />
+                <Suspense fallback={<div>Loading...</div>}>
+                    <LoginFormWrapper />
+                </Suspense>
             </div>
         </div>
     )
+}
+
+function LoginFormWrapper() {
+    const searchParams = useSearchParams()
+    const storeName = searchParams.get("store")
+    const storeSlug = searchParams.get("slug")
+    const title = storeName ? `Welcome to ${storeName} Admin` : "Welcome to Vendly"
+    const redirectTo = storeSlug ? `/a/${storeSlug}` : undefined
+
+    return <LoginForm title={title} redirectTo={redirectTo} />
 }

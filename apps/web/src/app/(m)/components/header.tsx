@@ -25,7 +25,7 @@ import {
 import { useRouter } from "next/navigation";
 import { LoginOverlay } from "@/app/(auth)/login/page";
 import Search from "./search";
-import { useAppSession } from "@/contexts/app-session-context";
+import { AppSession, useAppSession } from "@/contexts/app-session-context";
 
 export default function Header({ hideSearch = false }: { hideSearch?: boolean }) {
   const { session } = useAppSession();
@@ -33,18 +33,29 @@ export default function Header({ hideSearch = false }: { hideSearch?: boolean })
   const [isVisible, setIsVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
   const [showLogin, setShowLogin] = useState(false);
-  const [isTenant, setIsTenant] = useState(false);
+  const [tenantState, setTenantState] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
-    if (isSignedIn) {
-      fetch("/api/user/status")
-        .then((res) => res.json())
-        .then((data) => setIsTenant(data.hasTenant))
-        .catch(() => setIsTenant(false));
-    } else {
-      setIsTenant(false);
-    }
+    if (!isSignedIn) return;
+
+    let cancelled = false;
+
+    const fetchStatus = async () => {
+      try {
+        const res = await fetch("/api/user/status");
+        const data = await res.json();
+        if (!cancelled) setTenantState(!!data.hasTenant);
+      } catch {
+        if (!cancelled) setTenantState(false);
+      }
+    };
+
+    fetchStatus();
+
+    return () => {
+      cancelled = true;
+    };
   }, [isSignedIn]);
 
 
@@ -59,6 +70,12 @@ export default function Header({ hideSearch = false }: { hideSearch?: boolean })
   }, [lastScrollY]);
 
   const handleSellNow = () => router.push("/c");
+  const handleSignOut = async () => {
+    await signOut();
+    router.refresh();
+  };
+
+  const isTenant = isSignedIn && tenantState;
   const showSellButton = !isSignedIn || !isTenant;
 
   return (
@@ -83,6 +100,7 @@ export default function Header({ hideSearch = false }: { hideSearch?: boolean })
                 setShowLogin={setShowLogin}
                 showSellButton={showSellButton}
                 handleSellNow={handleSellNow}
+                handleSignOut={handleSignOut}
               />
             </div>
           </div>
@@ -100,6 +118,7 @@ export default function Header({ hideSearch = false }: { hideSearch?: boolean })
               setShowLogin={setShowLogin}
               showSellButton={showSellButton}
               handleSellNow={handleSellNow}
+              handleSignOut={handleSignOut}
             />
           </div>
 
@@ -134,14 +153,16 @@ function Actions({
   session,
   setShowLogin,
   showSellButton,
-  handleSellNow
+  handleSellNow,
+  handleSignOut,
 }: {
   isMobile?: boolean;
   isSignedIn: boolean;
-  session: any;
+  session: AppSession | null;
   setShowLogin: (v: boolean) => void;
   showSellButton: boolean;
   handleSellNow: () => void;
+  handleSignOut: () => Promise<void>;
 }) {
   return (
     <div className={`flex items-center gap-4 ${isMobile ? "flex-wrap" : ""}`}>
@@ -195,7 +216,7 @@ function Actions({
               </Link>
             </DropdownMenuItem>
             <div className="h-px bg-neutral-100 my-1" />
-            <DropdownMenuItem onClick={() => signOut()} className="cursor-pointer text-red-600 focus:text-red-600 flex items-center gap-2">
+            <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer text-red-600 focus:text-red-600 flex items-center gap-2">
               <HugeiconsIcon icon={Logout03Icon} size={16} />
               <span>Sign out</span>
             </DropdownMenuItem>

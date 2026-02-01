@@ -2,7 +2,13 @@
 
 import * as React from "react";
 
-type AppSession = any;
+export type AppSession = {
+    user?: {
+        name?: string | null;
+        email?: string | null;
+        image?: string | null;
+    } | null;
+};
 
 const AppSessionContext = React.createContext<{ session: AppSession | null } | undefined>(undefined);
 

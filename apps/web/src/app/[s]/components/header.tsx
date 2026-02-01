@@ -98,13 +98,15 @@ export function StorefrontHeader() {
                         >
                             <HugeiconsIcon icon={StarIcon} size={22} className={iconClass} />
                         </Button>
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            className="rounded-full bg-white/5 hover:bg-white/10 min-h-[44px] min-w-[44px] p-2 sm:p-2.5 cursor-pointer"
-                        >
-                            <HugeiconsIcon icon={UserIcon} size={22} className={iconClass} />
-                        </Button>
+                        <Link href={`/login?store=${encodeURIComponent(store.name)}&slug=${encodeURIComponent(store.slug)}`}>
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                className="rounded-full bg-white/5 hover:bg-white/10 min-h-[44px] min-w-[44px] p-2 sm:p-2.5 cursor-pointer"
+                            >
+                                <HugeiconsIcon icon={UserIcon} size={22} className={iconClass} />
+                            </Button>
+                        </Link>
                     </div>
                 </div>
             </div>

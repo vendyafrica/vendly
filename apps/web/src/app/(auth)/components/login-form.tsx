@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import React, { useState } from "react"
 import { cn } from "@vendly/ui/lib/utils"
 import { Button } from "@vendly/ui/components/button"
 import {
@@ -19,8 +19,10 @@ type FormState = "idle" | "loading" | "sent"
 
 export function LoginForm({
     className,
+    title,
+    redirectTo,
     ...props
-}: React.ComponentProps<"div">) {
+}: React.ComponentProps<"div"> & { title?: string; redirectTo?: string }) {
     const [email, setEmail] = useState("")
     const [formState, setFormState] = useState<FormState>("idle")
     const [error, setError] = useState<string | null>(null)
@@ -37,10 +39,24 @@ export function LoginForm({
         setFormState("loading")
 
         try {
-            await signInWithMagicLink(email)
+            await signInWithMagicLink(email, {
+                callbackURL: redirectTo,
+            })
             setFormState("sent")
         } catch {
             setError("Failed to send magic link. Please try again.")
+            setFormState("idle")
+        }
+    }
+
+    const handleGoogleSignIn = async () => {
+        try {
+            setFormState("loading")
+            await signInWithGoogle({
+                callbackURL: redirectTo,
+            })
+        } catch {
+            setError("Failed to sign in with Google. Please try again.")
             setFormState("idle")
         }
     }
@@ -84,7 +100,7 @@ export function LoginForm({
                 <FieldGroup className="gap-6">
                     <div className="text-start">
                         <h1 className="text-xl font-semibold">
-                            Welcome to Vendly
+                            {title || "Welcome to Vendly"}
                         </h1>
                     </div>
 
@@ -119,12 +135,12 @@ export function LoginForm({
                     <Button
                         variant="outline"
                         type="button"
-                        onClick={() => signInWithGoogle()}
+                        onClick={handleGoogleSignIn}
                         className="h-11 sm:h-9"
                         disabled={formState === "loading"}
                     >
                         <GoogleIcon />
-                        Continue with Google
+                        {formState === "loading" ? "Connecting..." : "Continue with Google"}
                     </Button>
                 </FieldGroup>
             </form>

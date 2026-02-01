@@ -3,7 +3,7 @@ import { genericOAuthClient, oneTapClient, magicLinkClient } from "better-auth/c
 
 export const authClient = createAuthClient({
   baseURL: process.env.NEXT_PUBLIC_APP_URL,
-  basePath: "/api/auth", 
+  basePath: "/api/auth",
   plugins: [
     genericOAuthClient(),
     magicLinkClient(),
@@ -21,9 +21,10 @@ export const authClient = createAuthClient({
   ],
 });
 
-export const signInWithGoogle = async () => {
+export const signInWithGoogle = async (options?: { callbackURL?: string }) => {
   const data = await authClient.signIn.social({
     provider: "google",
+    callbackURL: options?.callbackURL,
   });
   return data;
 };
@@ -37,10 +38,10 @@ export const signInWithOneTap = async () => {
   await authClient.oneTap();
 };
 
-export const signInWithMagicLink = async (email: string) => {
+export const signInWithMagicLink = async (email: string, options?: { callbackURL?: string }) => {
   const data = await authClient.signIn.magicLink({
     email,
-    callbackURL: "/"
+    callbackURL: options?.callbackURL || "/",
   });
   return data;
 }
