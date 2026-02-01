@@ -1,5 +1,7 @@
 import express, { Express, Request, Response } from "express";
 import cors from "cors";
+ import { apiRouter } from "./routes";
+ import type { RawBodyRequest } from "./types/raw-body";
 
 
 export function createApp(): Express {
@@ -29,12 +31,20 @@ export function createApp(): Express {
     })
   );
 
-  app.use(express.json());
+  app.use(
+    express.json({
+      verify: (req, _res, buf) => {
+        (req as RawBodyRequest).rawBody = buf;
+      },
+    })
+  );
   app.use(express.urlencoded({ extended: true }));
 
   app.get("/", (_req, res) => {
     res.send("API is running");
   });
+
+  app.use("/api", apiRouter);
 
   app.use((_req, res) => {
     res.status(404).json({
