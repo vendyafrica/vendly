@@ -99,14 +99,15 @@ function ProductActions({
 }) {
     return (
         <DropdownMenu>
-            <DropdownMenuTrigger
-                render={
-                    <div className="inline-flex items-center justify-center size-8 rounded-md border border-border/60 bg-card hover:bg-muted/70 cursor-pointer shrink-0 transition-colors">
-                        <HugeiconsIcon icon={MoreHorizontalIcon} className="size-4" />
-                        <span className="sr-only">Actions</span>
-                    </div>
-                }
-            />
+            <DropdownMenuTrigger >
+                <button
+                    type="button"
+                    className="inline-flex items-center justify-center size-8 rounded-md border border-border/60 bg-card hover:bg-muted/70 cursor-pointer shrink-0 transition-colors"
+                >
+                    <HugeiconsIcon icon={MoreHorizontalIcon} className="size-4" />
+                    <span className="sr-only">Actions</span>
+                </button>
+            </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="min-w-44">
                 <DropdownMenuItem onClick={() => onEdit?.(productId)} className="p-2 cursor-pointer">
                     <HugeiconsIcon icon={Edit02Icon} className="size-4" />

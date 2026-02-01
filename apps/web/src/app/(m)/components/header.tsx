@@ -159,7 +159,10 @@ function Actions({
 
       {isSignedIn && (
         <DropdownMenu>
-          <DropdownMenuTrigger className="outline-none">
+          <DropdownMenuTrigger
+            className="outline-none"
+            id={isMobile ? "actions-menu-trigger-mobile" : "actions-menu-trigger-desktop"}
+          >
             <Avatar className={`${isMobile ? "h-8 w-8" : "h-6 w-6"}`}>
               <AvatarImage src={session?.user?.image || ""} />
               <AvatarFallback>{session?.user?.name?.charAt(0)}</AvatarFallback>

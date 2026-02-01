@@ -55,7 +55,7 @@ export async function POST(request: Request): Promise<NextResponse> {
                     ?? new URL(request.url).origin;
 
                 return {
-                    allowedContentTypes: ["image/jpeg", "image/png", "image/gif", "image/webp"],
+                    allowedContentTypes: ["image/jpeg", "image/png", "image/gif", "image/webp", "video/mp4", "video/webm"],
                     tokenPayload: JSON.stringify({
                         userId: session.user.id,
                         tenantId: requestedTenantId,

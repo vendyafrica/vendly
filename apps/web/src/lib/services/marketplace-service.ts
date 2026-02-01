@@ -91,10 +91,10 @@ export const marketplaceService = {
             // Based on Hero component, it expects rating, ratingCount, heroMedia.
             // These might not be in the basic store schema but let's pass what we have
             // and maybe fetch additional stats if needed.
-            rating: 4.5, // Placeholder if not in DB
-            ratingCount: 100, // Placeholder
-            heroMedia: null, // Placeholder or from DB if exists
-            heroMediaType: null
+            rating: store.storeRating || 4.5, // Use actual rating from DB if available
+            ratingCount: store.storeRatingCount || 100, // Use actual rating count from DB
+            heroMedia: store.heroMedia, // Use actual hero media from DB
+            heroMediaType: store.heroMediaType as "image" | "video" | null
         };
     },
 

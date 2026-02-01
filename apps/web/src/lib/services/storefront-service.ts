@@ -1,6 +1,4 @@
-import { db } from "@vendly/db/db";
-import { stores, products } from "@vendly/db/schema";
-import { eq, and, isNull } from "@vendly/db";
+import { db, stores, products, eq, and, isNull } from "@vendly/db";
 
 /**
  * Storefront Service for serverless environment

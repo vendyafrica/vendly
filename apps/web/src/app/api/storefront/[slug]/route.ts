@@ -20,11 +20,14 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 
         return NextResponse.json({
             id: store.id,
+            tenantId: store.tenantId,
             name: store.name,
             slug: store.slug,
             description: store.description,
-            rating: 0,
-            ratingCount: 0,
+            rating: store.storeRating || 0,
+            ratingCount: store.storeRatingCount || 0,
+            heroMedia: store.heroMedia,
+            heroMediaType: store.heroMediaType,
         });
     } catch (error) {
         console.error("Error fetching store data:", error);

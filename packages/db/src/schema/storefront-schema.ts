@@ -39,6 +39,9 @@ export const stores = pgTable(
         storeContactPhone: text("store_contact_phone"),
         storeContactEmail: text("store_contact_email"),
         storeAddress: text("store_address"),
+        
+        heroMedia: text("hero_media"),
+        heroMediaType: text("hero_media_type"),
 
         createdAt: timestamp("created_at").defaultNow().notNull(),
         updatedAt: timestamp("updated_at")
