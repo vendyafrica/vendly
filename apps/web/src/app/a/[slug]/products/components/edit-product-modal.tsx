@@ -411,7 +411,7 @@ export function EditProductModal({
                                 <Label>Style guide type</Label>
                                 <Select value={styleGuideType} onValueChange={(v) => setStyleGuideType(v as "clothes" | "shoes")}>
                                     <SelectTrigger>
-                                        <SelectValue placeholder="Select type" />
+                                        <SelectValue/>
                                     </SelectTrigger>
                                     <SelectContent>
                                         <SelectItem value="clothes">Clothes</SelectItem>

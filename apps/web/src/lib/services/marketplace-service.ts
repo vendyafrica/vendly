@@ -199,6 +199,8 @@ export const marketplaceService = {
 
         if (!product) return null;
 
+        const styleGuideType = (product as { styleGuideType?: string }).styleGuideType;
+
         return {
             id: product.id,
             slug: product.slug || product.productName.toLowerCase().replace(/\s+/g, "-"),
@@ -206,10 +208,10 @@ export const marketplaceService = {
             description: product.description, // Assuming description exists
             price: Number(product.priceAmount || 0),
             currency: product.currency,
-            images: product.media?.map((m: any) => m.media?.url || m.media?.blobUrl).filter(Boolean) || [],
+            images: (product.media?.map((m: any) => m.media?.url || m.media?.blobUrl).filter(Boolean) ?? []) as string[],
             rating: 4.5, // Placeholder
             styleGuideEnabled: Boolean((product as { styleGuideEnabled?: boolean }).styleGuideEnabled),
-            styleGuideType: (product as { styleGuideType?: string }).styleGuideType ?? "clothes",
+            styleGuideType: styleGuideType === "shoes" ? "shoes" : "clothes",
             store: {
                 id: store.id,
                 name: store.name,

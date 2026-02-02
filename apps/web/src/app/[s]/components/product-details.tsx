@@ -17,7 +17,6 @@ import { Avatar, AvatarImage, AvatarFallback } from "@vendly/ui/components/avata
 import { useCart } from "../../../contexts/cart-context";
 import { useRecentlyViewed } from "@/hooks/use-recently-viewed";
 import { useWishlist } from "@/hooks/use-wishlist";
-import { StyleGuide } from "./style-guide";
 
 interface ProductDetailsProps {
     product: {
@@ -30,8 +29,6 @@ interface ProductDetailsProps {
         images: string[];
         videos?: string[];
         rating: number;
-        styleGuideEnabled?: boolean;
-        styleGuideType?: "clothes" | "shoes";
         store: {
             id: string;
             name: string;
@@ -317,17 +314,6 @@ export function ProductDetails({ product }: ProductDetailsProps) {
                             </button>
                         </div>
                     </div>
-
-                    {/* Style Guide */}
-                    {product.styleGuideEnabled && (
-                        <div className="mt-8 border-t border-neutral-200 pt-6">
-                            <div className="flex items-center gap-2 mb-4">
-                                <span className="text-sm font-semibold text-neutral-900">Style Guide</span>
-                                <span className="text-xs text-neutral-500 uppercase tracking-wide">{product.styleGuideType === "shoes" ? "Shoes" : "Clothes"}</span>
-                            </div>
-                            <StyleGuide type={product.styleGuideType || "clothes"} />
-                        </div>
-                    )}
 
                     {/* Info Accordions */}
                     <div className="mt-10 space-y-3">
