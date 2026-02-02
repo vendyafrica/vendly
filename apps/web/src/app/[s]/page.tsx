@@ -9,13 +9,17 @@ import { notFound } from "next/navigation";
 interface StorefrontPageProps {
   params: {
     s: string; // The param is 's' based on folder name [s]
-  }
+  };
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
 }
 
-export default async function StorefrontHomePage({ params }: StorefrontPageProps) {
+export default async function StorefrontHomePage({ params, searchParams }: StorefrontPageProps) {
   const { s: storeSlug } = await params;
+  const search = (await searchParams)?.q;
+  const query = Array.isArray(search) ? search[0] : search;
+
   const store = await marketplaceService.getStoreDetails(storeSlug);
-  const products = await marketplaceService.getStoreProducts(storeSlug);
+  const products = await marketplaceService.getStoreProducts(storeSlug, query);
 
   if (!store) {
     notFound();

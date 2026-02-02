@@ -46,6 +46,9 @@ export const products = pgTable(
     isFeatured: boolean("is_featured").default(false),
     hasContentVariants: boolean("has_content_variants").default(false),
 
+    styleGuideEnabled: boolean("style_guide_enabled").default(false),
+    styleGuideType: text("style_guide_type"),
+
     viewCount: integer("view_count").default(0).notNull(),
 
     createdAt: timestamp("created_at").defaultNow().notNull(),

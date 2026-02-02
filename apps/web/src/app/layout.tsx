@@ -7,6 +7,7 @@ import { CartProvider } from "../contexts/cart-context";
 import { AppSessionProvider } from "../contexts/app-session-context";
 import { auth } from "@vendly/auth";
 import { headers } from "next/headers";
+import { Analytics } from "@vercel/analytics/next"
 
 const nunitoSans = Nunito_Sans({ variable: "--font-sans" });
 
@@ -42,6 +43,7 @@ export default async function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} bg-[#F9F9F7] antialiased`}
       >
         <SpeedInsights />
+        <Analytics />
         <AppSessionProvider session={session}>
           <CartProvider>{children}</CartProvider>
         </AppSessionProvider>

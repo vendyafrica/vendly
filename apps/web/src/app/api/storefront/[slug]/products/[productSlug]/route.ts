@@ -31,6 +31,8 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
             description: product.description,
             price: product.priceAmount,
             currency: product.currency,
+            styleGuideEnabled: Boolean((product as any)?.styleGuideEnabled),
+            styleGuideType: (product as any)?.styleGuideType ?? "clothes",
             images: product.media
                 .map((m: any) => m.media?.url ?? m.media?.blobUrl ?? null)
                 .filter(Boolean),

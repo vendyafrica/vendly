@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useParams, useRouter } from "next/navigation";
 import Image from "next/image";
 import { Button } from "@vendly/ui/components/button";
 import { HugeiconsIcon } from "@hugeicons/react";
@@ -9,13 +8,16 @@ import {
     StarIcon,
     MinusSignIcon,
     PlusSignIcon,
-    Loading03Icon,
     Tick02Icon,
     FlashIcon,
+    FavouriteIcon,
+    ArrowDown01Icon,
 } from "@hugeicons/core-free-icons";
 import { Avatar, AvatarImage, AvatarFallback } from "@vendly/ui/components/avatar";
 import { useCart } from "../../../contexts/cart-context";
 import { useRecentlyViewed } from "@/hooks/use-recently-viewed";
+import { useWishlist } from "@/hooks/use-wishlist";
+import { StyleGuide } from "./style-guide";
 
 interface ProductDetailsProps {
     product: {
@@ -28,6 +30,8 @@ interface ProductDetailsProps {
         images: string[];
         videos?: string[];
         rating: number;
+        styleGuideEnabled?: boolean;
+        styleGuideType?: "clothes" | "shoes";
         store: {
             id: string;
             name: string;
@@ -37,9 +41,10 @@ interface ProductDetailsProps {
 }
 
 export function ProductDetails({ product }: ProductDetailsProps) {
-    const router = useRouter();
+
     const { addItem } = useCart();
     const { addToRecentlyViewed } = useRecentlyViewed();
+    const { toggleWishlist, isInWishlist } = useWishlist();
 
     useEffect(() => {
         if (product) {
@@ -60,12 +65,11 @@ export function ProductDetails({ product }: ProductDetailsProps) {
 
     const [quantity, setQuantity] = useState(1);
     const [selectedMediaIndex, setSelectedMediaIndex] = useState(0);
+
     const [isAdded, setIsAdded] = useState(false);
 
     const [selectedSize, setSelectedSize] = useState<string>("");
     const sizes = ["XS", "S", "M", "L", "XL", "1X", "2X", "3X"];
-
-    // Removed fetching logic as data is passed via props
 
     const handleQuantityChange = (delta: number) => {
         setQuantity(prev => Math.max(1, prev + delta));
@@ -95,11 +99,7 @@ export function ProductDetails({ product }: ProductDetailsProps) {
         setTimeout(() => setIsAdded(false), 2000);
     };
 
-    const handleBuyNow = () => {
-        if (!product) return;
-        handleAddToCart();
-        router.push(`/checkout?storeId=${product.store.id}`);
-    };
+    const wishlisted = isInWishlist(product.id);
 
     // Data is ensured by parent component
     if (!product) return null;
@@ -119,67 +119,71 @@ export function ProductDetails({ product }: ProductDetailsProps) {
 
     const currentImage = displayImages[selectedMediaIndex];
 
-    const handleBack = () => {
-        router.back();
-    };
-
     return (
         <div className="min-h-screen bg-white pb-20">
-            {/* Top Navigation */}
-            <div className="max-w-7xl mx-auto px-4 lg:px-8 py-6 lg:py-8">
-                <button
-                    onClick={handleBack}
-                    className="flex items-center gap-2 text-sm font-medium text-neutral-600 hover:text-neutral-900 transition-colors"
-                >
-                    <HugeiconsIcon icon={MinusSignIcon} size={16} className="rotate-90" />
-                    Back
-                </button>
-            </div>
-
-            <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-[1.5fr_1fr] gap-12 lg:gap-20 px-4 lg:px-8">
+            <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-[1.5fr_1fr] gap-10 lg:gap-16 px-4 lg:px-8">
                 {/* Left: Gallery */}
-                <div className="flex flex-col-reverse lg:flex-row gap-4 lg:gap-6">
-                    {/* Thumbnails - Vertical on desktop, horizontal/grid on mobile */}
-                    <div className="flex lg:flex-col gap-3 overflow-x-auto lg:overflow-visible pb-2 lg:pb-0 w-full lg:w-20 shrink-0 scrollbar-hide">
+                <div className="flex flex-col gap-4">
+                    {/* Mobile carousel */}
+                    <div className="lg:hidden flex gap-3 overflow-x-auto snap-x snap-mandatory pb-2 scrollbar-hide">
                         {displayImages.map((img, index) => (
-                            <button
-                                key={index}
-                                onClick={() => setSelectedMediaIndex(index)}
-                                onMouseEnter={() => setSelectedMediaIndex(index)}
-                                className={`
-                                    relative w-16 h-20 lg:w-full lg:h-24 shrink-0 overflow-hidden border transition-all duration-300
-                                    ${selectedMediaIndex === index
-                                        ? "border-neutral-900 opacity-100"
-                                        : "border-transparent opacity-70 hover:opacity-100 hover:border-neutral-200"
-                                    }
-                                `}
-                            >
+                            <div key={index} className="relative min-w-[78%] aspect-3/4 snap-center rounded-xl overflow-hidden bg-neutral-50">
                                 <Image
                                     src={img}
-                                    alt={`View ${index + 1}`}
+                                    alt={`${product.name} ${index + 1}`}
+
                                     fill
-                                    sizes="100px"
+                                    sizes="90vw"
                                     className="object-cover"
+                                    priority={index === 0}
                                 />
-                            </button>
+                            </div>
                         ))}
                     </div>
 
-                    {/* Main Image */}
-                    <div className="flex-1 relative aspect-4/5 bg-neutral-50 overflow-hidden">
-                        <Image
-                            src={currentImage}
-                            alt={product.name}
-                            fill
-                            sizes="(max-width: 1024px) 100vw, 60vw"
-                            className="object-cover"
-                            priority
-                        />
+                    {/* Desktop thumbs + main */}
+                    <div className="hidden lg:flex flex-row gap-6">
+                        <div className="flex flex-col gap-3 w-20 shrink-0">
+                            {displayImages.map((img, index) => (
+                                <button
+                                    key={index}
+                                    onClick={() => setSelectedMediaIndex(index)}
+                                    onMouseEnter={() => setSelectedMediaIndex(index)}
+                                    className={`
+                                        relative w-full h-24 overflow-hidden border transition-all duration-300 rounded-md
+                                        ${selectedMediaIndex === index
+                                            ? "border-neutral-900 opacity-100"
+                                            : "border-transparent opacity-70 hover:opacity-100 hover:border-neutral-200"
+                                        }
+                                    `}
+                                >
+                                    <Image
+                                        src={img}
+                                        alt={`View ${index + 1}`}
+                                        fill
+                                        sizes="120px"
+                                        className="object-cover"
+                                    />
+                                </button>
+                            ))}
+                        </div>
+
+                        <div className="flex-1 relative aspect-4/5 bg-neutral-50 overflow-hidden rounded-xl">
+                            <Image
+                                src={currentImage}
+                                alt={product.name}
+                                fill
+                                sizes="(max-width: 1024px) 100vw, 60vw"
+                                className="object-cover"
+                                priority
+                            />
+                        </div>
                     </div>
                 </div>
 
                 {/* Right: Product Details */}
-                <div className="flex flex-col pt-2 lg:pl-10">
+                <div className="flex flex-col pt-2 lg:pl-6">
+
                     {/* Store Info */}
                     <div className="flex items-center gap-3 mb-8">
                         <Avatar className="h-8 w-8">
@@ -204,19 +208,19 @@ export function ProductDetails({ product }: ProductDetailsProps) {
                     </h1>
 
                     {/* Price */}
-                    <div className="text-md text-neutral-900 mb-8 font-medium">
+                    <div className="text-md text-neutral-900 mb-6 font-medium">
                         {product.currency} {product.price.toLocaleString()}
                     </div>
 
                     {/* Description */}
                     {product.description && (
-                        <div className="mb-10 text-sm leading-relaxed text-neutral-600 max-w-sm">
+                        <div className="mb-6 text-sm leading-relaxed text-neutral-600 max-w-sm">
                             <p>{product.description}</p>
                         </div>
                     )}
 
                     {/* Size Selector */}
-                    <div className="mb-8">
+                    <div className="mb-6">
                         <div className="flex items-center gap-2 mb-3">
                             <span className="text-sm font-medium text-neutral-900">Size</span>
                             <span className="text-sm text-neutral-300">|</span>
@@ -282,21 +286,79 @@ export function ProductDetails({ product }: ProductDetailsProps) {
                                 {isAdded ? (
                                     <span className="flex items-center gap-2">
                                         <HugeiconsIcon icon={Tick02Icon} size={16} />
-                                        Added to Cart
+                                        Added to Bag
                                     </span>
                                 ) : (
-                                    "Add to Cart"
+                                    "Add to Bag"
                                 )}
                             </Button>
-                            <Button
-                                onClick={handleBuyNow}
-                                variant="outline"
-                                className="w-full h-12 rounded-md border border-neutral-200 text-neutral-900 hover:bg-neutral-50 hover:border-primary/50 focus-visible:border-primary/50 focus-visible:ring-[3px] focus-visible:ring-primary/10 uppercase text-xs tracking-wider"
+                            <button
+                                onClick={() => toggleWishlist({
+                                    id: product.id,
+                                    name: product.name,
+                                    price: product.price,
+                                    currency: product.currency,
+                                    image: product.images?.[0],
+                                    slug: product.slug,
+                                    store: {
+                                        id: product.store.id,
+                                        name: product.store.name,
+                                        slug: product.store.slug,
+                                    },
+                                })}
+                                className={`h-12 rounded-md border text-sm font-medium transition-all flex items-center justify-center gap-2 ${wishlisted
+                                    ? "border-neutral-900 text-neutral-900 bg-neutral-50"
+                                    : "border-neutral-200 text-neutral-800 hover:border-neutral-900 hover:text-neutral-900"
+                                    }`}
+                                aria-pressed={wishlisted}
                             >
-                                Buy Now
-                            </Button>
-
+                                <HugeiconsIcon icon={FavouriteIcon} size={18} className={wishlisted ? "text-neutral-900" : "text-neutral-600"} />
+                                {wishlisted ? "Saved to Wishlist" : "Save to Wishlist"}
+                            </button>
                         </div>
+                    </div>
+
+                    {/* Style Guide */}
+                    {product.styleGuideEnabled && (
+                        <div className="mt-8 border-t border-neutral-200 pt-6">
+                            <div className="flex items-center gap-2 mb-4">
+                                <span className="text-sm font-semibold text-neutral-900">Style Guide</span>
+                                <span className="text-xs text-neutral-500 uppercase tracking-wide">{product.styleGuideType === "shoes" ? "Shoes" : "Clothes"}</span>
+                            </div>
+                            <StyleGuide type={product.styleGuideType || "clothes"} />
+                        </div>
+                    )}
+
+                    {/* Info Accordions */}
+                    <div className="mt-10 space-y-3">
+                        {[
+                            {
+                                title: "Product Details",
+                                content: product.description || "Premium quality fabric with a tailored fit.",
+                            },
+                            {
+                                title: "Shipping",
+                                content: "Ships in 3-7 business days. Free shipping on orders over $75.",
+                            },
+                            {
+                                title: "Returns",
+                                content: "30-day returns for store credit. Items must be unworn and in original packaging.",
+                            },
+                        ].map((section, idx) => (
+                            <details key={idx} className="group border border-neutral-200 rounded-lg px-4 py-3">
+                                <summary className="flex items-center justify-between cursor-pointer text-sm font-medium text-neutral-900">
+                                    {section.title}
+                                    <HugeiconsIcon
+                                        icon={ArrowDown01Icon}
+                                        size={16}
+                                        className="text-neutral-500 transition-transform group-open:rotate-180"
+                                    />
+                                </summary>
+                                <div className="mt-2 text-sm text-neutral-600 leading-relaxed">
+                                    {section.content}
+                                </div>
+                            </details>
+                        ))}
                     </div>
                 </div>
             </div>

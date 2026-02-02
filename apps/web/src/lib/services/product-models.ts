@@ -71,6 +71,8 @@ export const updateProductSchema = z.object({
     quantity: z.number().int().min(0).optional(),
     status: z.enum(["draft", "ready", "active", "sold-out"]).optional(),
     isFeatured: z.boolean().optional(),
+    styleGuideEnabled: z.boolean().optional(),
+    styleGuideType: z.enum(["clothes", "shoes"]).optional(),
     media: z.array(z.object({
         url: z.string().url(),
         pathname: z.string(),

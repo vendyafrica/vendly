@@ -15,6 +15,7 @@ import { Input } from "@vendly/ui/components/input";
 import { Label } from "@vendly/ui/components/label";
 import Image from "next/image";
 import { upload } from "@vercel/blob/client";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@vendly/ui/components/select";
 
 interface Product {
     id: string;
@@ -23,6 +24,8 @@ interface Product {
     currency: string;
     quantity: number;
     status: string;
+    styleGuideEnabled?: boolean;
+    styleGuideType?: "clothes" | "shoes";
     thumbnailUrl?: string;
     salesAmount?: number;
     media?: {
@@ -62,6 +65,8 @@ export function EditProductModal({
     const [productName, setProductName] = React.useState("");
     const [priceAmount, setPriceAmount] = React.useState<string>("");
     const [quantity, setQuantity] = React.useState<string>("");
+    const [styleGuideEnabled, setStyleGuideEnabled] = React.useState(false);
+    const [styleGuideType, setStyleGuideType] = React.useState<"clothes" | "shoes">("clothes");
     const [isSaving, setIsSaving] = React.useState(false);
     const [error, setError] = React.useState<string | null>(null);
 
@@ -77,6 +82,8 @@ export function EditProductModal({
             setProductName(product.productName);
             setPriceAmount(product.priceAmount ? String(product.priceAmount) : "");
             setQuantity(product.quantity ? String(product.quantity) : "");
+            setStyleGuideEnabled(!!product.styleGuideEnabled);
+            setStyleGuideType(product.styleGuideType === "shoes" ? "shoes" : "clothes");
 
             // Map existing media to display
             const existingMedia: UploadedFile[] = (product.media || []).map(m => ({
@@ -226,11 +233,13 @@ export function EditProductModal({
             // We'll update the PATCH payload to include media URLs
             // Backend PATCH needs to be updated to sync media.
 
-            const payload: Record<string, any> = {
+            const payload: Record<string, unknown> = {
                 productName,
                 priceAmount: priceValue,
                 quantity: quantityValue,
                 status: "active",
+                styleGuideEnabled,
+                styleGuideType,
             };
 
             const currentMediaSignature = JSON.stringify(
@@ -381,6 +390,36 @@ export function EditProductModal({
                                 placeholder="Enter quantity"
                             />
                         </div>
+                    </div>
+
+                    <div className="space-y-3">
+                        <div className="flex items-center justify-between rounded-lg border border-border/70 p-3">
+                            <div>
+                                <div className="text-sm font-medium">Style guide</div>
+                                <div className="text-xs text-muted-foreground">Show a size guide on the product page</div>
+                            </div>
+                            <input
+                                type="checkbox"
+                                checked={styleGuideEnabled}
+                                onChange={(e) => setStyleGuideEnabled(e.target.checked)}
+                                className="h-4 w-4"
+                            />
+                        </div>
+
+                        {styleGuideEnabled && (
+                            <div className="grid gap-2">
+                                <Label>Style guide type</Label>
+                                <Select value={styleGuideType} onValueChange={(v) => setStyleGuideType(v as "clothes" | "shoes")}>
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Select type" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="clothes">Clothes</SelectItem>
+                                        <SelectItem value="shoes">Shoes</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                        )}
                     </div>
 
                     <DialogFooter className="flex gap-2">

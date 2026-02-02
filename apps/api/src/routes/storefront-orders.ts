@@ -2,7 +2,7 @@ import { Router } from "express";
 import { createOrderSchema, orderService } from "../services/order-service";
 import { notifySellerNewOrder } from "../services/notifications";
 
-export const storefrontOrdersRouter = Router();
+export const storefrontOrdersRouter:Router = Router();
 
 // POST /api/storefront/:slug/orders
 storefrontOrdersRouter.post("/storefront/:slug/orders", async (req, res, next) => {

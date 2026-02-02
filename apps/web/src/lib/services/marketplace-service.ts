@@ -159,7 +159,7 @@ export const marketplaceService = {
         };
     },
 
-    async getStoreProducts(slug: string) {
+    async getStoreProducts(slug: string, query?: string) {
         const store = await storeRepo.findBySlug(slug);
         if (!store) return [];
 
@@ -167,7 +167,11 @@ export const marketplaceService = {
         const { productRepo } = await import("../data/product-repo");
         const products = await productRepo.findByStoreId(store.id);
 
-        return products.map((p: any) => ({
+        const filtered = query
+            ? products.filter((p: any) => p.productName?.toLowerCase().includes(query.toLowerCase()))
+            : products;
+
+        return filtered.map((p: any) => ({
             id: p.id,
             slug: p.slug || p.productName.toLowerCase().replace(/\s+/g, "-"),
             name: p.productName,
@@ -204,6 +208,8 @@ export const marketplaceService = {
             currency: product.currency,
             images: product.media?.map((m: any) => m.media?.url || m.media?.blobUrl).filter(Boolean) || [],
             rating: 4.5, // Placeholder
+            styleGuideEnabled: Boolean((product as { styleGuideEnabled?: boolean }).styleGuideEnabled),
+            styleGuideType: (product as { styleGuideType?: string }).styleGuideType ?? "clothes",
             store: {
                 id: store.id,
                 name: store.name,

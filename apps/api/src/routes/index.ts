@@ -5,7 +5,7 @@ import { orderSimulationsRouter } from "./order-simulations";
 import { whatsappRouter } from "./whatsapp";
 import { whatsappTemplatesRouter } from "./whatsapp-templates";
 
-export const apiRouter = Router();
+export const apiRouter:Router = Router();
 
 apiRouter.use(storefrontOrdersRouter);
 apiRouter.use(tenantOrdersRouter);
