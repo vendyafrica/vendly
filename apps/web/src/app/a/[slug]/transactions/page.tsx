@@ -1,10 +1,185 @@
-import { redirect } from "next/navigation";
+"use client";
 
-export default async function TransactionsPage({
-  params,
-}: {
-  params: Promise<{ slug: string }>;
-}) {
-  const { slug } = await params;
-  redirect(`/a/${slug}/orders`);
+import * as React from "react";
+import { useTenant } from "../tenant-context";
+import { type OrderTableRow, type OrderStatus, type PaymentStatus } from "./components/order-table";
+import { Button } from "@vendly/ui/components/button";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { Download04Icon, FilterIcon } from "@hugeicons/core-free-icons";
+import { SegmentedStatsCard } from "../components/SegmentedStatsCard";
+import { RecentTransactionsTable } from "../components/RecentTransactionsTable";
+
+const API_BASE = "";
+
+interface OrderAPIResponse {
+    id: string;
+    orderNumber: string;
+    customerName: string;
+    customerEmail: string;
+    status: string;
+    paymentStatus: string;
+    paymentMethod: string;
+    totalAmount: number;
+    currency: string;
+    createdAt: string;
+}
+
+interface OrdersListResponse {
+    orders: OrderAPIResponse[];
+    total: number;
+    page: number;
+    limit: number;
+}
+
+interface OrderStatsResponse {
+    totalRevenue: number;
+    orderCount: number;
+    pendingCount: number;
+    refundedAmount: number;
+    currency: string;
+}
+
+export default function TransactionsPage() {
+    const { bootstrap, error: bootstrapError } = useTenant();
+    const [orders, setOrders] = React.useState<OrderTableRow[]>([]);
+    const [stats, setStats] = React.useState<OrderStatsResponse | null>(null);
+    const [error, setError] = React.useState<string | null>(null);
+
+    // Fetch orders
+    const fetchOrders = React.useCallback(async () => {
+        if (!bootstrap) return;
+
+        setError(null);
+
+        try {
+            // Fetch orders list
+            const ordersResponse = await fetch(`${API_BASE}/api/orders`);
+
+            if (!ordersResponse.ok) {
+                throw new Error(`Failed to fetch orders: ${ordersResponse.status}`);
+            }
+
+            const ordersData = (await ordersResponse.json()) as OrdersListResponse;
+            const orderList: OrderAPIResponse[] = ordersData.orders || [];
+
+            // Transform API response to table format
+            const transformed: OrderTableRow[] = orderList.map((o) => ({
+                id: o.id,
+                orderNumber: o.orderNumber,
+                customerName: o.customerName,
+                customerEmail: o.customerEmail,
+                status: o.status as OrderStatus,
+                paymentStatus: o.paymentStatus as PaymentStatus,
+                paymentMethod: o.paymentMethod,
+                totalAmount: o.totalAmount,
+                currency: o.currency,
+                createdAt: o.createdAt,
+            }));
+
+            setOrders(transformed);
+
+            // Fetch stats
+            const statsResponse = await fetch(`${API_BASE}/api/orders/stats`);
+
+            if (statsResponse.ok) {
+                const statsData = (await statsResponse.json()) as OrderStatsResponse;
+                setStats(statsData);
+            }
+        } catch (err) {
+            setError(err instanceof Error ? err.message : "Failed to load orders");
+        }
+    }, [bootstrap]);
+
+    React.useEffect(() => {
+        if (bootstrap) {
+            fetchOrders();
+        }
+    }, [bootstrap, fetchOrders]);
+
+    const currency = stats?.currency || "USD";
+
+    const statSegments = [
+        {
+            label: "Total Volume",
+            value: stats ? new Intl.NumberFormat("en-US", { style: "currency", currency }).format(stats.totalRevenue) : "—",
+            changeLabel: "+12% vs last 30 days",
+            changeTone: "positive" as const,
+        },
+        {
+            label: "Transactions",
+            value: stats ? stats.orderCount.toLocaleString() : "—",
+            changeLabel: "+8% vs last 30 days",
+            changeTone: "positive" as const,
+        },
+        {
+            label: "Pending",
+            value: stats ? stats.pendingCount.toLocaleString() : "—",
+            changeLabel: "-3% vs last 30 days",
+            changeTone: "positive" as const,
+        },
+        {
+            label: "Refunded",
+            value: stats ? new Intl.NumberFormat("en-US", { style: "currency", currency }).format(stats.refundedAmount) : "—",
+            changeLabel: "+1.2% vs last 30 days",
+            changeTone: "neutral" as const,
+        },
+    ];
+
+    const transactionRows = orders.map((o) => ({
+        id: o.orderNumber,
+        customer: o.customerName,
+        product: o.paymentMethod.replace(/_/g, " "),
+        amount: new Intl.NumberFormat("en-US", { style: "currency", currency }).format(o.totalAmount),
+        status: (o.paymentStatus === "paid"
+            ? "Completed"
+            : o.paymentStatus === "failed"
+                ? "Failed"
+                : "Pending") as "Completed" | "Failed" | "Pending",
+        payment: o.paymentMethod,
+        date: new Date(o.createdAt).toLocaleString("en-US", { month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit" }),
+    })) as Parameters<typeof RecentTransactionsTable>[0]["rows"];
+
+    return (
+        <div className="space-y-6 p-6">
+            {bootstrapError && (
+                <div className="bg-destructive/10 text-destructive p-4 rounded-md">
+                    {bootstrapError}
+                </div>
+            )}
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                    <h1 className="text-2xl font-bold tracking-tight">Transactions</h1>
+                    <p className="text-sm text-muted-foreground">
+                        Monitor and manage your transactions in one place.
+                    </p>
+                </div>
+                <div className="flex items-center gap-2">
+                    <Button variant="outline" className="gap-2">
+                        <HugeiconsIcon icon={Download04Icon} className="h-4 w-4" /> Export
+                    </Button>
+                    <Button variant="outline" className="gap-2">
+                        <HugeiconsIcon icon={FilterIcon} className="h-4 w-4" /> Filter
+                    </Button>
+                </div>
+            </div>
+
+            {error && (
+                <div className="bg-destructive/10 text-destructive p-4 rounded-md">
+                    {error}
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        className="ml-4"
+                        onClick={fetchOrders}
+                    >
+                        Retry
+                    </Button>
+                </div>
+            )}
+
+            <SegmentedStatsCard segments={statSegments} />
+
+            <RecentTransactionsTable rows={transactionRows} />
+        </div>
+    );
 }

@@ -58,28 +58,35 @@ export function AdminMobileDock({ basePath }: { basePath: string }) {
 
   return (
     <div className="fixed inset-x-0 bottom-0 z-50 border-t bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/80 md:hidden">
-      <div className="grid grid-cols-6 items-center gap-1 px-2 pb-[max(env(safe-area-inset-bottom),0.5rem)] pt-2">
+      <nav className="flex items-center justify-around px-2 pt-2 pb-[max(env(safe-area-inset-bottom),0.5rem)]">
         {primary.map((item) => {
           const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
           return (
             <Link
               key={item.label}
               href={item.href}
+              aria-label={item.label}
               className={cn(
-                "flex flex-col items-center justify-center gap-1 rounded-md px-2 py-2 text-xs",
-                isActive ? "text-foreground" : "text-muted-foreground"
+                "relative flex h-11 w-14 items-center justify-center rounded-full transition-colors",
+                isActive ? "text-foreground bg-muted" : "text-muted-foreground"
               )}
             >
-              <HugeiconsIcon icon={item.icon} className="size-5" />
-              <span className="leading-none">{item.label}</span>
+              <HugeiconsIcon icon={item.icon} className={cn("size-6", isActive ? "opacity-100" : "opacity-90")} />
+              {isActive ? (
+                <span className="absolute -top-1 h-1 w-6 rounded-full bg-primary" />
+              ) : null}
             </Link>
           );
         })}
 
         <Sheet>
-          <SheetTrigger className={cn("flex flex-col items-center justify-center gap-1 rounded-md px-2 py-2 text-xs text-muted-foreground")}> 
-            <HugeiconsIcon icon={MenuSquareIcon} className="size-5" />
-            <span className="leading-none">More</span>
+          <SheetTrigger
+            aria-label="More"
+            className={cn(
+              "relative flex h-11 w-14 items-center justify-center rounded-full text-muted-foreground transition-colors"
+            )}
+          >
+            <HugeiconsIcon icon={MenuSquareIcon} className="size-6" />
           </SheetTrigger>
           <SheetContent side="bottom" className="rounded-t-2xl">
             <SheetHeader>
@@ -105,7 +112,7 @@ export function AdminMobileDock({ basePath }: { basePath: string }) {
             </div>
           </SheetContent>
         </Sheet>
-      </div>
+      </nav>
     </div>
   );
 }

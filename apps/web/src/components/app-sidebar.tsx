@@ -15,7 +15,6 @@ import {
   GroupLayersIcon,
   Payment02Icon,
   PackageOpenIcon,
-  UserShield02Icon
 } from "@hugeicons/core-free-icons";
 
 import {
@@ -32,10 +31,12 @@ import {
   SidebarMenuSub,
   SidebarMenuSubButton,
   SidebarMenuSubItem,
+  useSidebar,
 } from "@vendly/ui/components/sidebar";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useParams } from "next/navigation";
+import { ChevronsLeft, ChevronsRight } from "lucide-react";
 
 type SidebarNavSubItem = {
   title: string;
@@ -61,7 +62,7 @@ const tenantAdminItems: SidebarNavItem[] = [
     icon: ShoppingBag01Icon,
   },
   {
-    title: "Orders",
+    title: "Transactions",
     url: "/orders",
     icon: PackageOpenIcon,
   },
@@ -155,6 +156,7 @@ export function AppSidebar({
 }: React.ComponentProps<typeof Sidebar> & { basePath?: string }) {
   const pathname = usePathname();
   const params = useParams();
+  const { state, toggleSidebar } = useSidebar();
 
   // Try to get slug from params first, then fallback to parsing basePath
   let slug = getSlugFromParams(params);
@@ -178,17 +180,41 @@ export function AppSidebar({
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton
-              size="lg"
-              render={<Link href={basePath || "/"} />}
-            >
-              <div className="flex aspect-square size-6 items-center justify-center rounded-lg">
-                <Image src="/vendly.png" alt="Vendly" width={24} height={24} />
+            {state === "expanded" ? (
+              <div className="flex items-center gap-1">
+                <SidebarMenuButton
+                  size="lg"
+                  render={<Link href={basePath || "/"} />}
+                >
+                  <div className="flex aspect-square size-6 items-center justify-center rounded-lg">
+                    <Image src="/vendly.png" alt="Vendly" width={24} height={24} />
+                  </div>
+                  <div className="grid flex-1 text-left text-sm leading-tight">
+                    <span className="truncate font-semibold">Vendly</span>
+                  </div>
+                </SidebarMenuButton>
+
+                <button
+                  type="button"
+                  onClick={toggleSidebar}
+                  className="ml-auto inline-flex size-9 items-center justify-center rounded-md hover:bg-sidebar-accent text-sidebar-foreground/80"
+                  aria-label="Collapse sidebar"
+                >
+                  <ChevronsLeft className="size-4" />
+                </button>
               </div>
-              <div className="grid flex-1 text-left text-sm leading-tight">
-                <span className="truncate font-semibold">Vendly</span>
+            ) : (
+              <div className="flex items-center justify-center">
+                <button
+                  type="button"
+                  onClick={toggleSidebar}
+                  className="inline-flex size-9 items-center justify-center rounded-md hover:bg-sidebar-accent text-sidebar-foreground/80"
+                  aria-label="Expand sidebar"
+                >
+                  <ChevronsRight className="size-4" />
+                </button>
               </div>
-            </SidebarMenuButton>
+            )}
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarHeader>
@@ -261,17 +287,6 @@ export function AppSidebar({
                 </SidebarMenuButton>
               );
             })()}
-          </SidebarMenuItem>
-          <SidebarMenuItem>
-            <SidebarMenuButton size="lg" render={<a href="#" />}>
-              <div>
-                <HugeiconsIcon icon={UserShield02Icon} className="size-4" />
-              </div>
-              <div className="flex flex-col gap-0.5 leading-none">
-                <span className="font-medium">Admin User</span>
-                <span className="">admin@vendly.com</span>
-              </div>
-            </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarFooter>
