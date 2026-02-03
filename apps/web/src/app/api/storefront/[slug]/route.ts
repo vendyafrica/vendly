@@ -24,6 +24,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
             name: store.name,
             slug: store.slug,
             description: store.description,
+            logoUrl: store.logoUrl ?? null,
             rating: store.storeRating || 0,
             ratingCount: store.storeRatingCount || 0,
             heroMedia: store.heroMedia,

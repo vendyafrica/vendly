@@ -51,18 +51,32 @@ export async function getInstagramToken({
     const responseText = await response.text();
     console.log("[Instagram OAuth] Token exchange status:", response.status);
 
-    const data = JSON.parse(responseText);
+    let data: any;
+    try {
+        data = JSON.parse(responseText);
+    } catch (e) {
+        console.error("[Instagram OAuth] Token exchange non-JSON response:", responseText);
+        throw new Error("Instagram token exchange returned a non-JSON response");
+    }
 
-    if (data.error_type || data.error_message) {
+    const tokenPayload = Array.isArray(data?.data) ? data.data[0] : data;
+
+    if (!response.ok || tokenPayload?.error_type || tokenPayload?.error_message || data?.error_type || data?.error_message) {
         console.error("[Instagram OAuth] Token exchange error:", data);
-        throw new Error(data.error_message || "Failed to exchange code for token");
+        throw new Error(
+            tokenPayload?.error_message ||
+                tokenPayload?.error_description ||
+                data?.error_message ||
+                data?.error_description ||
+                "Failed to exchange code for token"
+        );
     }
 
     // Exchange for long-lived token
     console.log("[Instagram OAuth] Exchanging for long-lived token...");
 
     const longLivedResponse = await fetch(
-        `https://graph.instagram.com/access_token?grant_type=ig_exchange_token&client_secret=${process.env.INSTAGRAM_CLIENT_SECRET}&access_token=${data.access_token}`
+        `https://graph.instagram.com/access_token?grant_type=ig_exchange_token&client_secret=${process.env.INSTAGRAM_CLIENT_SECRET}&access_token=${tokenPayload.access_token}`
     );
 
     const longLivedText = await longLivedResponse.text();
@@ -72,20 +86,20 @@ export async function getInstagramToken({
         console.error("[Instagram OAuth] Long-lived token error:", longLivedData.error);
         // Fall back to short-lived token
         return {
-            accessToken: data.access_token,
+            accessToken: tokenPayload.access_token,
             refreshToken: undefined,
             accessTokenExpiresAt: undefined,
-            raw: data,
+            raw: tokenPayload,
         };
     }
 
     return {
-        accessToken: longLivedData.access_token || data.access_token,
+        accessToken: longLivedData.access_token || tokenPayload.access_token,
         refreshToken: undefined,
         accessTokenExpiresAt: longLivedData.expires_in
             ? new Date(Date.now() + longLivedData.expires_in * 1000)
             : undefined,
-        raw: { ...data, ...longLivedData },
+        raw: { ...tokenPayload, ...longLivedData },
     };
 }
 
@@ -103,31 +117,33 @@ export async function getInstagramUserInfo(tokens: any): Promise<UserProfile | n
 
     const userId = tokens.raw?.user_id as string | undefined;
 
-    // Fetch user profile from Instagram Business API
+    // Fetch user profile from Instagram API with Instagram Login
     const response = await fetch(
-        `https://graph.instagram.com/v18.0/me?fields=id,username,account_type,profile_picture_url&access_token=${accessToken}`
+        `https://graph.instagram.com/v24.0/me?fields=user_id,username,account_type,profile_picture_url&access_token=${accessToken}`
     );
 
     const responseText = await response.text();
     console.log("[Instagram OAuth] User info status:", response.status);
 
     const data = JSON.parse(responseText);
+    const userPayload = Array.isArray(data?.data) ? data.data[0] : data;
 
-    if (data.error) {
-        console.error("[Instagram OAuth] User info error:", data.error);
-        throw new Error(`Instagram API Error: ${data.error.message}`);
+    if (userPayload?.error || data?.error) {
+        const err = userPayload?.error || data?.error;
+        console.error("[Instagram OAuth] User info error:", err);
+        throw new Error(`Instagram API Error: ${err.message || "Unknown error"}`);
     }
 
-    const finalId = data.id || userId;
+    const finalId = userPayload.user_id || userPayload.id || userId;
     if (!finalId) {
         throw new Error("No Instagram user ID found");
     }
 
     return {
         id: finalId,
-        name: data.username || `instagram_user_${finalId}`,
+        name: userPayload.username || `instagram_user_${finalId}`,
         email: `instagram_${finalId}@vendly.local`,
-        image: data.profile_picture_url || undefined,
+        image: undefined,
         emailVerified: true,
     };
 }

@@ -1,4 +1,4 @@
-import { db, stores, products, eq, and, isNull } from "@vendly/db";
+import { db, stores, products, eq, and, isNull, instagramAccounts } from "@vendly/db";
 
 /**
  * Storefront Service for serverless environment
@@ -9,9 +9,21 @@ export const storefrontService = {
      * Find store by slug
      */
     async findStoreBySlug(slug: string) {
-        return db.query.stores.findFirst({
+        const store = await db.query.stores.findFirst({
             where: and(eq(stores.slug, slug), isNull(stores.deletedAt)),
         });
+
+        if (!store) return undefined;
+
+        const igAccount = await db.query.instagramAccounts.findFirst({
+            where: and(eq(instagramAccounts.tenantId, store.tenantId), eq(instagramAccounts.isActive, true))
+        });
+
+        if (igAccount?.profilePictureUrl) {
+            return { ...store, logoUrl: igAccount.profilePictureUrl };
+        }
+
+        return store;
     },
 
     /**

@@ -1,4 +1,5 @@
 "use client";
+import * as React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { HugeiconsIcon } from "@hugeicons/react";
@@ -40,7 +41,14 @@ function joinPaths(a: string, b: string) {
 }
 
 export function AdminMobileDock({ basePath }: { basePath: string }) {
+  const [mounted, setMounted] = React.useState(false);
   const pathname = usePathname();
+
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) return null;
 
   const primary: DockItem[] = [
     { label: "Home", href: joinPaths(basePath, "/"), icon: DashboardCircleIcon },

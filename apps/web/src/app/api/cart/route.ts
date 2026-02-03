@@ -35,6 +35,7 @@ export async function GET() {
                 id: item.product.store?.id,
                 name: item.product.store?.name,
                 slug: item.product.store?.slug,
+                logoUrl: item.product.store?.logoUrl ?? null,
             }
         }));
 

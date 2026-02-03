@@ -97,9 +97,9 @@ export function StoreCard({ store }: StoreCardProps) {
       <div className="flex items-center justify-between mt-4 px-1">
         <div className="flex items-center gap-2">
           <div className="relative w-6 h-6 rounded-full overflow-hidden bg-gray-100">
-            {store.logoUrl ? (
+            {store.instagramAvatarUrl || store.logoUrl ? (
               <Image
-                src={store.logoUrl}
+                src={(store.instagramAvatarUrl || store.logoUrl)!}
                 alt={`${store.name} logo`}
                 fill
                 sizes="24px"

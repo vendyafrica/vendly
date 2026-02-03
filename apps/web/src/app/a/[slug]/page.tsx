@@ -96,7 +96,7 @@ function formatCurrency(amount: number) {
 export default function DashboardPage() {
   const { isLoading: isBootstrapping, error: bootstrapError } = useTenant();
 
-  const isLoading = isBootstrapping; // Only wait for bootstrap, data is mocked
+  const isLoading = isBootstrapping;
 
   const error = bootstrapError;
 

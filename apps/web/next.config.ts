@@ -9,11 +9,18 @@ const nextConfig: NextConfig = {
   },
   transpilePackages: ["@vendly/ui", "@vendly/auth"],
   outputFileTracingRoot: repoRoot,
+  allowedDevOrigins: ["harmonically-carpetless-janna.ngrok-free.dev", "*.ngrok-free.dev"],
   images: {
     remotePatterns: [
       {
         protocol: "https",
         hostname: "images.unsplash.com",
+        port: "",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
+        hostname: "**.cdninstagram.com",
         port: "",
         pathname: "/**",
       },

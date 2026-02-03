@@ -15,6 +15,7 @@ import {
   GroupLayersIcon,
   Payment02Icon,
   PackageOpenIcon,
+  ConnectIcon,
 } from "@hugeicons/core-free-icons";
 
 import {
@@ -85,6 +86,11 @@ const tenantAdminItems: SidebarNavItem[] = [
     title: "Studio",
     url: "/studio",
     icon: Store01Icon,
+  },
+  {
+    title: "Integrations",
+    url: "/integrations",
+    icon: ConnectIcon,
   },
 ];
 

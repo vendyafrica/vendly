@@ -1,16 +1,19 @@
 "use client";
 
-import Image from "next/image";
 import { Avatar, AvatarFallback, AvatarImage } from "@vendly/ui/components/avatar";
 import { Button } from "@vendly/ui/components/button";
 import { useAppSession } from "@/contexts/app-session-context";
+import { useTenant } from "../tenant-context";
 import { Bell } from "lucide-react";
 
 export function DashboardHeader({ title = "Dashboard" }: { title?: string }) {
   const { session } = useAppSession();
+  const { bootstrap } = useTenant();
 
-  const username = session?.user?.name || "Admin";
+  const fullName = session?.user?.name || "Admin";
+  const firstName = fullName.split(" ")[0];
   const avatarUrl = session?.user?.image || "";
+  const tenantName = bootstrap?.storeName || "Store";
 
   return (
     <header className="flex h-16 shrink-0 items-center justify-between gap-3 border-b bg-background/80 px-4 backdrop-blur supports-backdrop-filter:bg-background/60">
@@ -19,8 +22,8 @@ export function DashboardHeader({ title = "Dashboard" }: { title?: string }) {
           <h1 className="truncate text-base font-semibold text-foreground">{title}:</h1>
         </div>
         <div className="hidden sm:flex items-center gap-2 text-sm text-muted-foreground">
-          <span className="font-semibold text-muted-foreground">Welcome back</span>
-          <span className="truncate">{username}</span>
+          <span className="font-semibold text-muted-foreground">Welcome back, {firstName}</span>
+          <span className="truncate text-xs text-muted-foreground/60">• {tenantName}</span>
         </div>
       </div>
 
@@ -31,9 +34,9 @@ export function DashboardHeader({ title = "Dashboard" }: { title?: string }) {
         </Button>
 
         <Avatar className="h-7 w-7">
-          <AvatarImage src={avatarUrl} />
+          <AvatarImage src={avatarUrl} alt={fullName} />
           <AvatarFallback className="text-xs font-semibold">
-            {username.charAt(0) || "A"}
+            {firstName.charAt(0) || "A"}
           </AvatarFallback>
         </Avatar>
       </div>

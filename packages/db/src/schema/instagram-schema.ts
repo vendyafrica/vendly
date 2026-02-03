@@ -29,6 +29,7 @@ export const instagramAccounts = pgTable(
         accountId: text("account_id").notNull(),
         username: text("username"),
         accountType: text("account_type"),
+        profilePictureUrl: text("profile_picture_url"),
 
         isActive: boolean("is_active").default(true).notNull(),
         lastSyncedAt: timestamp("last_synced_at"),

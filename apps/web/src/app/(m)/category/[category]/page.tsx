@@ -24,7 +24,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
         description: store.description,
         categories: store.categories || [],
         rating: 4.5,
-        logoUrl: null,
+        logoUrl: store.logoUrl ?? null,
         images: [],
     }));
 

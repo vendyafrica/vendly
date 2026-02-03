@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useParams, usePathname } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { ShoppingBag02Icon, UserIcon, FavouriteIcon, Search01Icon } from "@hugeicons/core-free-icons";
 import { HeaderSkeleton } from "./skeletons";
@@ -12,6 +13,7 @@ import { StorefrontSearch } from "./storefront-search";
 interface StoreData {
     name: string;
     slug: string;
+    logoUrl?: string;
 }
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "";
@@ -90,7 +92,18 @@ export function StorefrontHeader() {
                 <div className="max-w-[1440px] mx-auto px-4 sm:px-6 md:px-10">
                     <div className="flex items-center gap-4 sm:gap-6 md:gap-8 h-16 sm:h-[70px] md:h-20">
                         {/* Left: Store name */}
-                        <div className="min-w-[120px] sm:min-w-[160px] flex items-center">
+                        <div className="min-w-[120px] sm:min-w-[160px] flex items-center gap-3">
+                            {store.logoUrl && (
+                                <div className="relative w-8 h-8 rounded-full overflow-hidden border border-white/20 shadow-sm">
+                                    <Image
+                                        src={store.logoUrl}
+                                        alt={store.name}
+                                        fill
+                                        className="object-cover"
+                                        sizes="32px"
+                                    />
+                                </div>
+                            )}
                             <Link
                                 href={`/${store.slug}`}
                                 className={`${textColorClass} font-medium text-lg sm:text-xl tracking-tight transition-colors`}

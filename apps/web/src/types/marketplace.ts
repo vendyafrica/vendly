@@ -4,6 +4,7 @@ export interface MarketplaceStore {
     slug: string;
     description: string | null;
     logoUrl?: string | null;
+    instagramAvatarUrl?: string | null;
     images?: string[];
     heroMedia?: string | null;
     heroMediaType?: "image" | "video" | null;

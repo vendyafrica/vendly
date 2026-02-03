@@ -59,10 +59,18 @@ export const signUp = async (email: string, password: string, name: string) => {
   return data;
 }
 
-export const signInWithInstagram = async () => {
+export const signInWithInstagram = async (options?: { callbackURL?: string }) => {
   const response = await authClient.signIn.oauth2({
     providerId: "instagram",
-    callbackURL: "/sell/business?connected=true",
+    callbackURL: options?.callbackURL || "/a/acme/integrations?connected=true",
+  });
+  return response;
+}
+
+export const linkInstagram = async (options?: { callbackURL?: string }) => {
+  const response = await authClient.linkSocial({
+    provider: "instagram",
+    callbackURL: options?.callbackURL || "/a/acme/integrations?connected=true",
   });
   return response;
 }

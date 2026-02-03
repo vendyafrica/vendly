@@ -6,6 +6,7 @@ import { Button } from "@vendly/ui/components/button";
 import Link from "next/link";
 import { marketplaceService } from "@/lib/services/marketplace-service";
 import type { MarketplaceStore } from "@/types/marketplace";
+import type { StoreWithCategory } from "@/lib/services/marketplace-service";
 import { OneTapLogin } from "@/app/(m)/components/OneTapLogin";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { ArrowRightIcon } from "@hugeicons/core-free-icons";
@@ -13,14 +14,14 @@ import { ArrowRightIcon } from "@hugeicons/core-free-icons";
 export default async function HomePage() {
     const { categories, stores, storesByCategory } = await marketplaceService.getHomePageData();
 
-    const mapToMarketplaceStore = (s: any): MarketplaceStore => ({
+    const mapToMarketplaceStore = (s: StoreWithCategory): MarketplaceStore => ({
         id: s.id,
         name: s.name,
         slug: s.slug,
         description: s.description,
         categories: s.categories || [],
         rating: 4.5,
-        logoUrl: null,
+        logoUrl: s.logoUrl ?? null,
         heroMedia: s.heroMedia ?? null,
         heroMediaType: s.heroMediaType ?? null,
         heroMediaItems: Array.isArray(s.heroMediaItems) ? s.heroMediaItems : [],

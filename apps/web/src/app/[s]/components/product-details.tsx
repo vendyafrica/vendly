@@ -33,6 +33,7 @@ interface ProductDetailsProps {
             id: string;
             name: string;
             slug: string;
+            logoUrl?: string | null;
         };
     };
 }
@@ -54,6 +55,7 @@ export function ProductDetails({ product }: ProductDetailsProps) {
                 store: {
                     name: product.store.name,
                     slug: product.store.slug,
+                    logoUrl: product.store.logoUrl,
                 },
                 slug: product.slug,
             });
@@ -89,6 +91,7 @@ export function ProductDetails({ product }: ProductDetailsProps) {
                 id: product.store.id,
                 name: product.store.name,
                 slug: product.store.slug,
+                logoUrl: product.store.logoUrl,
             },
         }, quantity);
 
@@ -185,7 +188,7 @@ export function ProductDetails({ product }: ProductDetailsProps) {
                     <div className="flex items-center gap-3 mb-8">
                         <Avatar className="h-8 w-8">
                             <AvatarImage
-                                src="https://github.com/shadcn.png"
+                                src={product.store.logoUrl || "https://github.com/shadcn.png"}
                                 alt={product.store.name}
                             />
                             <AvatarFallback>{product.store.name[0]}</AvatarFallback>

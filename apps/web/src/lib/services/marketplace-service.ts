@@ -6,11 +6,26 @@ export interface StoreWithCategory {
     name: string;
     slug: string;
     description: string | null;
+    logoUrl?: string | null;
     categories: string[];
     heroMedia?: string | null;
     heroMediaType?: "image" | "video" | null;
     heroMediaItems?: Array<{ url: string; type: "image" | "video" }>;
     images?: string[];
+}
+
+function parseHeroMediaItems(input: unknown): Array<{ url: string; type: "image" | "video" }> {
+    if (!Array.isArray(input)) return [];
+    return input
+        .map((i) => {
+            if (!i || typeof i !== "object") return null;
+            const url = (i as { url?: unknown }).url;
+            const type = (i as { type?: unknown }).type;
+            if (typeof url !== "string") return null;
+            if (type !== "image" && type !== "video") return null;
+            return { url, type };
+        })
+        .filter((x): x is { url: string; type: "image" | "video" } => Boolean(x));
 }
 
 export const marketplaceService = {
@@ -20,13 +35,25 @@ export const marketplaceService = {
     async getAllStores(): Promise<StoreWithCategory[]> {
         const stores = await storeRepo.findActiveStores();
 
+        // Fetch Instagram accounts to get profile pictures
+        const { db, instagramAccounts, eq } = await import("@vendly/db");
+        const igAccounts = await db
+            .select({
+                tenantId: instagramAccounts.tenantId,
+                profilePictureUrl: instagramAccounts.profilePictureUrl
+            })
+            .from(instagramAccounts)
+            .where(eq(instagramAccounts.isActive, true));
+
+        const igMap = new Map(igAccounts.map(ig => [ig.tenantId, ig.profilePictureUrl]));
+
         const { productRepo } = await import("../data/product-repo");
 
         return Promise.all(stores.map(async (store) => {
-            const heroMediaItems = Array.isArray((store as any).heroMediaItems) ? (store as any).heroMediaItems : [];
+            const heroMediaItems = parseHeroMediaItems((store as { heroMediaItems?: unknown }).heroMediaItems);
             const heroImages = heroMediaItems
-                .filter((i: any) => i && i.type === "image" && typeof i.url === "string")
-                .map((i: any) => i.url);
+                .filter((i) => i.type === "image")
+                .map((i) => i.url);
 
             let images: string[] = heroImages;
 
@@ -43,15 +70,17 @@ export const marketplaceService = {
             }
 
             return {
-            id: store.id,
-            name: store.name,
-            slug: store.slug,
-            description: store.description,
-            categories: store.categories || [],
-            heroMedia: store.heroMedia,
-            heroMediaType: store.heroMediaType as "image" | "video" | null,
-            heroMediaItems,
-            images,
+                id: store.id,
+                name: store.name,
+                slug: store.slug,
+                description: store.description,
+                logoUrl: store.logoUrl ?? null,
+                instagramAvatarUrl: igMap.get(store.tenantId) ?? null,
+                categories: store.categories || [],
+                heroMedia: store.heroMedia,
+                heroMediaType: store.heroMediaType as "image" | "video" | null,
+                heroMediaItems,
+                images,
             };
         }));
     },
@@ -103,10 +132,10 @@ export const marketplaceService = {
         const { productRepo } = await import("../data/product-repo");
 
         return Promise.all(stores.map(async (store) => {
-            const heroMediaItems = Array.isArray((store as any).heroMediaItems) ? (store as any).heroMediaItems : [];
+            const heroMediaItems = parseHeroMediaItems((store as { heroMediaItems?: unknown }).heroMediaItems);
             const heroImages = heroMediaItems
-                .filter((i: any) => i && i.type === "image" && typeof i.url === "string")
-                .map((i: any) => i.url);
+                .filter((i) => i.type === "image")
+                .map((i) => i.url);
 
             let images: string[] = heroImages;
 
@@ -122,15 +151,16 @@ export const marketplaceService = {
             }
 
             return {
-            id: store.id,
-            name: store.name,
-            slug: store.slug,
-            description: store.description,
-            categories: store.categories || [],
-            heroMedia: store.heroMedia,
-            heroMediaType: store.heroMediaType as "image" | "video" | null,
-            heroMediaItems,
-            images,
+                id: store.id,
+                name: store.name,
+                slug: store.slug,
+                description: store.description,
+                logoUrl: store.logoUrl ?? null,
+                categories: store.categories || [],
+                heroMedia: store.heroMedia,
+                heroMediaType: store.heroMediaType as "image" | "video" | null,
+                heroMediaItems,
+                images,
             };
         }));
     },
@@ -139,13 +169,14 @@ export const marketplaceService = {
         const store = await storeRepo.findBySlug(slug);
         if (!store) return null;
 
-        const heroMediaItems = Array.isArray((store as any).heroMediaItems) ? (store as any).heroMediaItems : [];
+        const heroMediaItems = parseHeroMediaItems((store as { heroMediaItems?: unknown }).heroMediaItems);
 
         return {
             id: store.id,
             name: store.name,
             slug: store.slug,
             description: store.description,
+            logoUrl: store.logoUrl ?? null,
             // Assuming store has these fields or we map them. 
             // The repo returns the DB object. If media fields are missing in DB schema, we might need to adjust.
             // Based on Hero component, it expects rating, ratingCount, heroMedia.
@@ -215,7 +246,8 @@ export const marketplaceService = {
             store: {
                 id: store.id,
                 name: store.name,
-                slug: store.slug
+                slug: store.slug,
+                logoUrl: store.logoUrl ?? null
             }
         };
     }

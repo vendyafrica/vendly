@@ -25,6 +25,7 @@ interface UploadModalProps {
 interface FilePreview {
     file: File;
     previewUrl: string;
+    isUploading: boolean;
 }
 
 const API_BASE = "";
@@ -48,6 +49,7 @@ export function UploadModal({
         const newPreviews = selectedFiles.map((file) => ({
             file,
             previewUrl: URL.createObjectURL(file),
+            isUploading: false,
         }));
         setFiles((prev) => [...prev, ...newPreviews]);
         setError(null);
@@ -78,6 +80,8 @@ export function UploadModal({
         setIsUploading(true);
         setUploadProgress(0);
         setError(null);
+
+        setFiles((prev) => prev.map((f) => ({ ...f, isUploading: true })));
 
         try {
             // 1. Upload files to Vercel Blob
@@ -123,6 +127,11 @@ export function UploadModal({
                     console.error(`Failed to upload ${file.name}:`, err);
                     results[index] = null;
                 } finally {
+                    setFiles((prev) => {
+                        const updated = [...prev];
+                        if (updated[index]) updated[index] = { ...updated[index], isUploading: false };
+                        return updated;
+                    });
                     completed += 1;
                     updateProgress();
                 }
@@ -211,19 +220,53 @@ export function UploadModal({
 
                     {/* Drop zone */}
                     <div
-                        className="border-2 border-dashed border-border/70 rounded-lg p-8 text-center cursor-pointer hover:bg-muted/50 transition-colors"
+                        className="border-2 border-dashed border-border/70 rounded-lg p-6 cursor-pointer hover:bg-muted/50 transition-colors"
                         onClick={() => !isUploading && fileInputRef.current?.click()}
                     >
-                        <HugeiconsIcon
-                            icon={Upload04Icon}
-                            className="size-12 mx-auto text-muted-foreground"
-                        />
-                        <p className="text-sm text-muted-foreground mt-2">
-                            Click to select images or drag and drop
-                        </p>
-                        <p className="text-xs text-muted-foreground mt-1">
-                            PNG, JPG, WEBP up to 10MB each
-                        </p>
+                        <div className="text-center">
+                            <HugeiconsIcon
+                                icon={Upload04Icon}
+                                className="size-10 mx-auto text-muted-foreground"
+                            />
+                            <p className="text-sm text-muted-foreground mt-2">
+                                Click to select images or drag and drop
+                            </p>
+                            <p className="text-xs text-muted-foreground mt-1">
+                                PNG, JPG, WEBP up to 10MB each
+                            </p>
+                        </div>
+
+                        {files.length > 0 && (
+                            <div className="mt-4 grid grid-cols-5 gap-2 max-h-56 overflow-y-auto">
+                                {files.map((f, i) => (
+                                    <div key={i} className="relative aspect-square">
+                                        <Image
+                                            src={f.previewUrl}
+                                            alt="Preview"
+                                            fill
+                                            className={`object-cover rounded-md transition-opacity ${f.isUploading ? "opacity-60" : "opacity-100"}`}
+                                        />
+                                        {f.isUploading && (
+                                            <div className="absolute inset-0 flex items-center justify-center">
+                                                <div className="size-7 rounded-full border-2 border-white/60 border-t-white animate-spin" />
+                                            </div>
+                                        )}
+                                        {!isUploading && (
+                                            <button
+                                                type="button"
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    removeFile(i);
+                                                }}
+                                                className="absolute -top-1 -right-1 bg-destructive text-destructive-foreground rounded-full p-0.5 shadow-sm"
+                                            >
+                                                <HugeiconsIcon icon={Cancel01Icon} className="size-3" />
+                                            </button>
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
+                        )}
                     </div>
                     <input
                         ref={fileInputRef}
@@ -234,36 +277,6 @@ export function UploadModal({
                         onChange={handleFileChange}
                         disabled={isUploading}
                     />
-
-                    {/* Preview grid */}
-                    {files.length > 0 && (
-                        <div className="space-y-2">
-                            <p className="text-sm font-medium text-foreground">
-                                {files.length} image{files.length > 1 ? "s" : ""} selected
-                            </p>
-                            <div className="grid grid-cols-5 gap-2 max-h-48 overflow-y-auto">
-                                {files.map((f, i) => (
-                                    <div key={i} className="relative aspect-square">
-                                        <Image
-                                            src={f.previewUrl}
-                                            alt="Preview"
-                                            fill
-                                            className="object-cover rounded-md"
-                                        />
-                                        {!isUploading && (
-                                            <button
-                                                type="button"
-                                                onClick={() => removeFile(i)}
-                                                className="absolute -top-1 -right-1 bg-destructive text-destructive-foreground rounded-full p-0.5 shadow-sm"
-                                            >
-                                                <HugeiconsIcon icon={Cancel01Icon} className="size-3" />
-                                            </button>
-                                        )}
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    )}
 
                     {/* Progress bar */}
                     {isUploading && (
