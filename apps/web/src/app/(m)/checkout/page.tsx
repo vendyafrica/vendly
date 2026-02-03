@@ -104,7 +104,12 @@ function CheckoutContent() {
 
             setIsSuccess(true);
             clearStoreFromCart(store.id);
-        } catch (err) {
+
+            // Redirect to cart after successful checkout
+            setTimeout(() => {
+                window.location.href = "http://localhost:3000/cart";
+            }, 800);
+        } catch {
             setError("Something went wrong. Please try again.");
             setIsSubmitting(false);
         }

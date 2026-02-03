@@ -2,7 +2,6 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useRef } from "react";
 import { useRouter } from "next/navigation";
 import type { MarketplaceStore } from "@/types/marketplace";
 import { Star } from "lucide-react";
@@ -22,38 +21,13 @@ export function StoreCard({ store }: StoreCardProps) {
   const router = useRouter();
   const carouselImages = store.images ?? [];
 
-  const pointerStartRef = useRef<{ x: number; y: number } | null>(null);
-  const didDragRef = useRef(false);
-
   return (
     <div className="group">
       <div
         role="link"
         tabIndex={0}
         className="block bg-white rounded-3xl overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-300 active:scale-[0.98] cursor-pointer"
-        onPointerDown={(e) => {
-          pointerStartRef.current = { x: e.clientX, y: e.clientY };
-          didDragRef.current = false;
-        }}
-        onPointerMove={(e) => {
-          if (!pointerStartRef.current) return;
-          const dx = Math.abs(e.clientX - pointerStartRef.current.x);
-          const dy = Math.abs(e.clientY - pointerStartRef.current.y);
-          if (dx > 6 || dy > 6) {
-            didDragRef.current = true;
-          }
-        }}
-        onPointerUp={() => {
-          pointerStartRef.current = null;
-        }}
-        onClick={(e) => {
-          if (didDragRef.current) {
-            e.preventDefault();
-            e.stopPropagation();
-            didDragRef.current = false;
-            return;
-          }
-
+        onClick={() => {
           router.push(`/${store.slug}`);
         }}
         onKeyDown={(e) => {
@@ -65,7 +39,7 @@ export function StoreCard({ store }: StoreCardProps) {
       >
         <div className="aspect-square relative overflow-hidden">
           {carouselImages.length > 0 ? (
-            <Carousel className="h-full" disableDrag={false}>
+            <Carousel className="h-full" disableDrag={true}>
               <CarouselContent className="h-full">
                 {carouselImages.map((src, idx) => (
                   <CarouselItem key={`${src}-${idx}`} className="h-full">
@@ -83,7 +57,10 @@ export function StoreCard({ store }: StoreCardProps) {
                   </CarouselItem>
                 ))}
               </CarouselContent>
-              <CarouselNavigation alwaysShow />
+              <CarouselNavigation
+                className="opacity-0 transition-opacity duration-200 group-hover:opacity-100"
+                classNameButton="bg-white/90 hover:bg-white shadow-sm pointer-events-auto"
+              />
               <CarouselIndicator className="pb-4" />
             </Carousel>
           ) : (

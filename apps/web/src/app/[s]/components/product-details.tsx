@@ -55,7 +55,6 @@ export function ProductDetails({ product }: ProductDetailsProps) {
                 store: {
                     name: product.store.name,
                     slug: product.store.slug,
-                    logoUrl: product.store.logoUrl,
                 },
                 slug: product.slug,
             });
@@ -120,7 +119,7 @@ export function ProductDetails({ product }: ProductDetailsProps) {
     const currentImage = displayImages[selectedMediaIndex];
 
     return (
-        <div className="min-h-screen bg-white pb-20">
+        <div className="min-h-screen bg-white pb-20" suppressHydrationWarning>
             <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-[1.5fr_1fr] gap-10 lg:gap-16 px-4 lg:px-8">
                 {/* Left: Gallery */}
                 <div className="flex flex-col gap-4">

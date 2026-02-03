@@ -117,6 +117,8 @@ export const orderService = {
           customerEmail: input.customerEmail,
           customerPhone: input.customerPhone,
           paymentMethod: input.paymentMethod,
+          paymentStatus: "paid",
+          status: "processing",
           shippingAddress: input.shippingAddress,
           notes: input.notes,
           subtotal,

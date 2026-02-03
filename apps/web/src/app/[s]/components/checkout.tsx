@@ -49,6 +49,7 @@ export function Checkout({ open, onOpenChange, storeSlug, product, quantity }: C
     const [notes, setNotes] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isSuccess, setIsSuccess] = useState(false);
+    const [successStage, setSuccessStage] = useState<"paid" | "processing">("paid");
     const [error, setError] = useState<string | null>(null);
 
     const totalAmount = product.price * quantity;
@@ -85,6 +86,13 @@ export function Checkout({ open, onOpenChange, storeSlug, product, quantity }: C
             }
 
             setIsSuccess(true);
+            setSuccessStage("paid");
+            setTimeout(() => setSuccessStage("processing"), 1000);
+
+            // Hard redirect to cart shortly after success to avoid client routing issues
+            setTimeout(() => {
+                window.location.href = "http://localhost:3000/cart";
+            }, 1200);
         } catch (err) {
             setError(err instanceof Error ? err.message : "Failed to place order");
         } finally {
@@ -103,6 +111,7 @@ export function Checkout({ open, onOpenChange, storeSlug, product, quantity }: C
                 setPaymentMethod("cash_on_delivery");
                 setNotes("");
                 setIsSuccess(false);
+                setSuccessStage("paid");
                 setError(null);
             }, 200);
         }
@@ -116,9 +125,13 @@ export function Checkout({ open, onOpenChange, storeSlug, product, quantity }: C
                         <div className="mb-4 rounded-full bg-green-100 p-3">
                             <HugeiconsIcon icon={CheckmarkCircle02Icon} className="h-12 w-12 text-green-600" />
                         </div>
-                        <h2 className="text-2xl font-semibold mb-2">Order Placed!</h2>
+                        <h2 className="text-2xl font-semibold mb-2">
+                            {successStage === "paid" ? "Payment Successful" : "Processing Order"}
+                        </h2>
                         <p className="text-muted-foreground mb-6">
-                            Thank you for your order. We&apos;ll send you a confirmation email shortly.
+                            {successStage === "paid"
+                                ? "Payment received. We’re confirming your order."
+                                : "Your order is now being processed by the seller."}
                         </p>
                         <Button onClick={handleClose} className="w-full">
                             Continue Shopping

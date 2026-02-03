@@ -26,7 +26,9 @@ function getRequiredEnv(name: string): string {
 
 export const whatsappClient = {
   isConfigured(): boolean {
-    return Boolean(process.env.WHATSAPP_ACCESS_TOKEN && process.env.WHATSAPP_PHONE_NUMBER_ID);
+    const hasAccessToken = Boolean(process.env.WHATSAPP_ACCESS_TOKEN?.trim());
+    const hasPhoneNumberId = Boolean(process.env.WHATSAPP_PHONE_NUMBER_ID?.trim());
+    return hasAccessToken && hasPhoneNumberId;
   },
 
   async sendTextMessage(input: { to: string; body: string }) {

@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import { orderService } from "@/lib/services/order-service";
 import { createOrderSchema } from "@/lib/services/order-models";
 
 type RouteParams = {
@@ -15,25 +14,33 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
         const { slug } = await params;
         const body = await request.json();
 
-        // Validate input
+        // Validate input early (reuse shared schema)
         const input = createOrderSchema.parse(body);
 
-        // Create order
-        const order = await orderService.createOrder(slug, input);
-
-        return NextResponse.json(order, { status: 201 });
-    } catch (error) {
-        console.error("Error creating order:", error);
-
-        if (error instanceof Error) {
-            if (error.message === "Store not found") {
-                return NextResponse.json({ error: "Store not found" }, { status: 404 });
-            }
-            if (error.message.includes("not found")) {
-                return NextResponse.json({ error: error.message }, { status: 400 });
-            }
+        const apiBase = process.env.NEXT_PUBLIC_API_URL;
+        if (!apiBase) {
+            return NextResponse.json(
+                { error: "Missing NEXT_PUBLIC_API_URL; cannot reach Express API for notifications." },
+                { status: 500 }
+            );
         }
 
+        console.log("[Web->API Proxy] Forwarding order create to Express API", { apiBase, slug });
+
+        const res = await fetch(`${apiBase}/api/storefront/${slug}/orders`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(input),
+        });
+
+        const json = await res.json().catch(() => ({}));
+        if (!res.ok) {
+            return NextResponse.json(json || { error: "Failed to create order" }, { status: res.status });
+        }
+
+        return NextResponse.json(json, { status: 201 });
+    } catch (error) {
+        console.error("Error proxying order create to Express API:", error);
         return NextResponse.json({ error: "Failed to create order" }, { status: 500 });
     }
 }

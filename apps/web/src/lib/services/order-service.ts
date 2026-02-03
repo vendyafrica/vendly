@@ -3,6 +3,10 @@ import { orders, orderItems, products, stores } from "@vendly/db/schema";
 import { eq, and, isNull, desc, sql, like, or, inArray } from "@vendly/db";
 import type { CreateOrderInput, UpdateOrderStatusInput, OrderFilters, OrderWithItems, OrderStats } from "./order-models";
 
+type ProductWithMedia = (typeof products.$inferSelect) & {
+    media?: Array<{ media?: { blobUrl?: string | null } | null; sortOrder?: number | null } | null>;
+};
+
 /**
  * Order Service for serverless environment
  */
@@ -48,7 +52,7 @@ export const orderService = {
         const currency = productList[0]?.currency || "KES";
 
         const orderItemsData = input.items.map((item) => {
-            const product = productMap.get(item.productId);
+            const product = productMap.get(item.productId) as ProductWithMedia | undefined;
             if (!product) {
                 throw new Error(`Product ${item.productId} not found`);
             }
@@ -56,7 +60,7 @@ export const orderService = {
             const totalPrice = product.priceAmount * item.quantity;
             subtotal += totalPrice;
 
-            const productImage = (product as any).media?.[0]?.media?.blobUrl || undefined;
+            const productImage = product.media?.[0]?.media?.blobUrl || undefined;
 
             return {
                 productId: product.id,
@@ -92,6 +96,8 @@ export const orderService = {
                     customerEmail: input.customerEmail,
                     customerPhone: input.customerPhone,
                     paymentMethod: input.paymentMethod,
+                    paymentStatus: "paid",
+                    status: "processing",
                     shippingAddress: input.shippingAddress,
                     notes: input.notes,
                     subtotal,

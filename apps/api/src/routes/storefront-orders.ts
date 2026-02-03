@@ -15,6 +15,7 @@ storefrontOrdersRouter.post("/storefront/:slug/orders", async (req, res, next) =
     // Fire-and-forget notification (do not block order creation if WhatsApp fails)
     void (async () => {
       try {
+        console.log("[StorefrontOrders] Sending WhatsApp notification to seller", { slug, orderId: order.id });
         const sellerPhone = await orderService.getTenantPhoneByStoreSlug(slug);
         await notifySellerNewOrder({ sellerPhone, order });
       } catch (err) {

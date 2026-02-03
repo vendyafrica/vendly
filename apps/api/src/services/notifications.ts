@@ -41,6 +41,12 @@ export async function notifySellerOrderPaid(params: {
   const toWhatsApp = to.replace(/^\+/, "");
 
   if (!whatsappClient.isConfigured()) {
+    console.log("[NotifySeller] (stub) WhatsApp client not configured", {
+      hasAccessToken: Boolean(process.env.WHATSAPP_ACCESS_TOKEN),
+      hasPhoneNumberId: Boolean(process.env.WHATSAPP_PHONE_NUMBER_ID),
+      phoneNumberId: process.env.WHATSAPP_PHONE_NUMBER_ID || null,
+    });
+
     console.log("[NotifySeller] (stub) Would send WhatsApp 'new paid order' to seller", {
       to: toWhatsApp,
       orderId: order.id,

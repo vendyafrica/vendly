@@ -3,7 +3,7 @@ export type NormalizePhoneOptions = {
 };
 
 export function normalizePhoneToE164(input: string, opts: NormalizePhoneOptions = {}): string | null {
-  const defaultCode = opts.defaultCountryCallingCode || "254";
+  const defaultCode = opts.defaultCountryCallingCode || "256";
 
   let v = input.trim();
   if (!v) return null;

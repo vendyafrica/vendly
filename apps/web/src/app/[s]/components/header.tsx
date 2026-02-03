@@ -16,8 +16,6 @@ interface StoreData {
     logoUrl?: string;
 }
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "";
-
 export function StorefrontHeader() {
 
     const params = useParams();
@@ -39,7 +37,7 @@ export function StorefrontHeader() {
             }
 
             try {
-                const res = await fetch(`${API_BASE}/api/storefront/${slug}`);
+                const res = await fetch(`/api/storefront/${slug}`);
                 if (res.ok) {
                     setStore(await res.json());
                 }

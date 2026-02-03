@@ -63,7 +63,22 @@ function asObject(v: unknown): Record<string, unknown> | null {
 // POST /api/webhooks/whatsapp (incoming events)
 whatsappRouter.post("/webhooks/whatsapp", async (req, res) => {
   // Meta expects 200 quickly. We log now; later we can enqueue to DB/outbox.
-  const ok = verifySignature(req as RawBodyRequest);
+  const rawReq = req as RawBodyRequest;
+  const signatureHeader = req.header("x-hub-signature-256") || "";
+  const hasRawBody = Boolean(rawReq.rawBody);
+  const rawLen = rawReq.rawBody ? rawReq.rawBody.length : 0;
+  const hasAppSecret = Boolean(process.env.WHATSAPP_APP_SECRET);
+
+  const ok = verifySignature(rawReq);
+  console.log("[WhatsAppWebhook] Incoming", {
+    path: req.path,
+    hasSignatureHeader: Boolean(signatureHeader),
+    hasRawBody,
+    rawLen,
+    hasAppSecret,
+    signatureOk: ok,
+  });
+
   if (!ok) {
     return res.sendStatus(403);
   }
@@ -105,6 +120,8 @@ whatsappRouter.post("/webhooks/whatsapp", async (req, res) => {
     if (!raw) {
       return res.sendStatus(200);
     }
+
+    console.log("[WhatsAppWebhook] Message", { from, type, raw });
 
     const normalized = raw.toLowerCase();
 
