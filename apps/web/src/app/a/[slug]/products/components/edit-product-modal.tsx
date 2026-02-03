@@ -263,7 +263,6 @@ export function EditProductModal({
                 method: "PATCH",
                 headers: {
                     "Content-Type": "application/json",
-                    "x-tenant-id": tenantId,
                 },
                 body: JSON.stringify(payload),
             });

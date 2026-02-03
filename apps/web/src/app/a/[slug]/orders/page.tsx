@@ -1,8 +1,8 @@
 "use client";
 
 import * as React from "react";
-import { useParams } from "next/navigation";
-import { OrderTable, type OrderTableRow, type OrderStatus } from "./components/order-table";
+import { useTenant } from "../tenant-context";
+import { OrderTable, type OrderTableRow, type OrderStatus, type PaymentStatus } from "./components/order-table";
 import { OrderStats } from "./components/order-stats";
 import { Button } from "@vendly/ui/components/button";
 import { HugeiconsIcon } from "@hugeicons/react";
@@ -23,6 +23,13 @@ interface OrderAPIResponse {
     createdAt: string;
 }
 
+interface OrdersListResponse {
+    orders: OrderAPIResponse[];
+    total: number;
+    page: number;
+    limit: number;
+}
+
 interface OrderStatsResponse {
     totalRevenue: number;
     orderCount: number;
@@ -32,10 +39,7 @@ interface OrderStatsResponse {
 }
 
 export default function OrdersPage() {
-    const params = useParams();
-    const storeSlug = params?.slug as string;
-
-    const [tenantId, setTenantId] = React.useState<string>("");
+    const { bootstrap, isLoading: isBootstrapping, error: bootstrapError } = useTenant();
     const [orders, setOrders] = React.useState<OrderTableRow[]>([]);
     const [stats, setStats] = React.useState<OrderStatsResponse | null>(null);
     const [isLoading, setIsLoading] = React.useState(true);
@@ -43,7 +47,7 @@ export default function OrdersPage() {
 
     // Fetch orders
     const fetchOrders = React.useCallback(async () => {
-        if (!tenantId) return;
+        if (!bootstrap) return;
 
         if (orders.length === 0) {
             setIsLoading(true);
@@ -52,19 +56,14 @@ export default function OrdersPage() {
 
         try {
             // Fetch orders list
-            const ordersResponse = await fetch(`${API_BASE}/api/orders`, {
-                headers: {
-                    "x-tenant-id": tenantId,
-                    "x-store-slug": storeSlug,
-                },
-            });
+            const ordersResponse = await fetch(`${API_BASE}/api/orders`);
 
             if (!ordersResponse.ok) {
                 throw new Error(`Failed to fetch orders: ${ordersResponse.status}`);
             }
 
-            const ordersData = await ordersResponse.json();
-            const orderList: OrderAPIResponse[] = ordersData.data?.orders || [];
+            const ordersData = (await ordersResponse.json()) as OrdersListResponse;
+            const orderList: OrderAPIResponse[] = ordersData.orders || [];
 
             // Transform API response to table format
             const transformed: OrderTableRow[] = orderList.map((o) => ({
@@ -73,7 +72,7 @@ export default function OrdersPage() {
                 customerName: o.customerName,
                 customerEmail: o.customerEmail,
                 status: o.status as OrderStatus,
-                paymentStatus: o.paymentStatus as any,
+                paymentStatus: o.paymentStatus as PaymentStatus,
                 paymentMethod: o.paymentMethod,
                 totalAmount: o.totalAmount,
                 currency: o.currency,
@@ -83,37 +82,24 @@ export default function OrdersPage() {
             setOrders(transformed);
 
             // Fetch stats
-            const statsResponse = await fetch(`${API_BASE}/api/orders/stats`, {
-                headers: {
-                    "x-tenant-id": tenantId,
-                    "x-store-slug": storeSlug,
-                },
-            });
+            const statsResponse = await fetch(`${API_BASE}/api/orders/stats`);
 
             if (statsResponse.ok) {
-                const statsData = await statsResponse.json();
-                setStats(statsData.data);
+                const statsData = (await statsResponse.json()) as OrderStatsResponse;
+                setStats(statsData);
             }
         } catch (err) {
             setError(err instanceof Error ? err.message : "Failed to load orders");
         } finally {
             setIsLoading(false);
         }
-    }, [tenantId, storeSlug, orders.length]);
-
-    // Initial fetch - get tenant info from localStorage
-    React.useEffect(() => {
-        const storedTenantId = localStorage.getItem("vendly_tenant_id");
-        if (storedTenantId) {
-            setTenantId(storedTenantId);
-        }
-    }, []);
+    }, [bootstrap, orders.length]);
 
     React.useEffect(() => {
-        if (tenantId) {
+        if (bootstrap) {
             fetchOrders();
         }
-    }, [tenantId, fetchOrders]);
+    }, [bootstrap, fetchOrders]);
 
     const handleViewDetails = (id: string) => {
         // TODO: Open order details modal
@@ -122,12 +108,10 @@ export default function OrdersPage() {
 
     const handleUpdateStatus = async (id: string, status: OrderStatus) => {
         try {
-            const response = await fetch(`${API_BASE}/api/orders/${id}/status`, {
+            const response = await fetch(`${API_BASE}/api/orders/${id}`, {
                 method: "PATCH",
                 headers: {
                     "Content-Type": "application/json",
-                    "x-tenant-id": tenantId,
-                    "x-store-slug": storeSlug,
                 },
                 body: JSON.stringify({ status }),
             });
@@ -145,6 +129,11 @@ export default function OrdersPage() {
 
     return (
         <div className="space-y-6 p-6">
+            {bootstrapError && (
+                <div className="bg-destructive/10 text-destructive p-4 rounded-md">
+                    {bootstrapError}
+                </div>
+            )}
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                     <h1 className="text-2xl font-bold tracking-tight">Orders</h1>
@@ -182,7 +171,7 @@ export default function OrdersPage() {
                 pendingCount={stats?.pendingCount || 0}
                 refundedAmount={stats?.refundedAmount || 0}
                 currency={stats?.currency || "KES"}
-                isLoading={isLoading}
+                isLoading={isLoading || isBootstrapping}
             />
 
             <div className="rounded-md border bg-card">
@@ -190,7 +179,7 @@ export default function OrdersPage() {
                     orders={orders}
                     onViewDetails={handleViewDetails}
                     onUpdateStatus={handleUpdateStatus}
-                    isLoading={isLoading}
+                    isLoading={isLoading || isBootstrapping}
                 />
             </div>
         </div>

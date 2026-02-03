@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { useParams } from "next/navigation";
+import { useTenant } from "../tenant-context";
 import { ProductTable, type ProductTableRow, type ProductStatus } from "./components/product-table";
 import { ProductStats } from "./components/product-header";
 import { AddProductButton } from "./components/add-product-button";
@@ -25,14 +25,16 @@ interface ProductAPIResponse {
     media: Array<{ blobUrl: string }>;
 }
 
-export default function ProductsPage() {
-    const params = useParams();
-    const storeSlug = params?.slug as string;
+interface ProductsListResponse {
+    products: ProductAPIResponse[];
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+}
 
-    // In a real app, these would come from auth context
-    // For now, we'll pass them via headers
-    const [tenantId, setTenantId] = React.useState<string>("");
-    const [storeId, setStoreId] = React.useState<string>("");
+export default function ProductsPage() {
+    const { bootstrap, isLoading: isBootstrapping, error: bootstrapError } = useTenant();
 
     const [products, setProducts] = React.useState<ProductTableRow[]>([]);
     const [isLoading, setIsLoading] = React.useState(true);
@@ -50,8 +52,7 @@ export default function ProductsPage() {
 
     // Fetch products
     const fetchProducts = React.useCallback(async () => {
-        if (!tenantId) return;
-        if (!storeId) return;
+        if (!bootstrap) return;
 
         if (products.length === 0) {
             setIsLoading(true);
@@ -59,12 +60,7 @@ export default function ProductsPage() {
         setError(null);
 
         try {
-            const response = await fetch(`${API_BASE}/api/products?storeId=${storeId}`, {
-                headers: {
-                    "x-tenant-id": tenantId,
-                    "x-store-slug": storeSlug,
-                },
-            });
+            const response = await fetch(`${API_BASE}/api/products?storeId=${bootstrap.storeId}`);
 
             console.log("API Response Status:", response.status);
             console.log("API Response Headers:", Object.fromEntries(response.headers.entries()));
@@ -75,8 +71,7 @@ export default function ProductsPage() {
                 throw new Error(`Failed to fetch products: ${response.status}`);
             }
 
-            const data = await response.json();
-            console.log("API Response Data:", data);
+            const data = (await response.json()) as ProductsListResponse;
             const productList: ProductAPIResponse[] = data.products || [];
 
             // Transform API response to table format
@@ -98,28 +93,13 @@ export default function ProductsPage() {
         } finally {
             setIsLoading(false);
         }
-    }, [tenantId, storeId, storeSlug, products.length]);
-
-    // Initial fetch - get tenant info from URL or mock for now
-    React.useEffect(() => {
-        // In production, this would come from auth context
-        // For development, we'll use stored values or mock
-        const storedTenantId = localStorage.getItem("vendly_tenant_id");
-        const storedStoreId = localStorage.getItem("vendly_store_id");
-
-        if (storedTenantId) {
-            setTenantId(storedTenantId);
-        }
-        if (storedStoreId) {
-            setStoreId(storedStoreId);
-        }
-    }, []);
+    }, [bootstrap, products.length]);
 
     React.useEffect(() => {
-        if (tenantId) {
+        if (bootstrap) {
             fetchProducts();
         }
-    }, [tenantId, fetchProducts]);
+    }, [bootstrap, fetchProducts]);
 
     const handleEdit = (id: string) => {
         const product = products.find((p) => p.id === id);
@@ -135,10 +115,6 @@ export default function ProductsPage() {
         try {
             const response = await fetch(`${API_BASE}/api/products/${id}`, {
                 method: "DELETE",
-                headers: {
-                    "x-tenant-id": tenantId,
-                    "x-store-slug": storeSlug,
-                },
             });
 
             if (!response.ok) {
@@ -162,7 +138,6 @@ export default function ProductsPage() {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
-                    "x-tenant-id": tenantId,
                 },
                 body: JSON.stringify({
                     ids: selectedIds,
@@ -195,6 +170,11 @@ export default function ProductsPage() {
 
     return (
         <div className="space-y-6 p-6">
+            {bootstrapError && (
+                <div className="bg-destructive/10 text-destructive p-4 rounded-md">
+                    {bootstrapError}
+                </div>
+            )}
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                     <h1 className="text-3xl font-semibold tracking-tight">Products</h1>
@@ -222,26 +202,12 @@ export default function ProductsPage() {
                 </div>
             </div>
 
-            {error && (
-                <div className="bg-destructive/10 text-destructive p-4 rounded-md">
-                    {error}
-                    <Button
-                        variant="outline"
-                        size="sm"
-                        className="ml-4"
-                        onClick={fetchProducts}
-                    >
-                        Retry
-                    </Button>
-                </div>
-            )}
-
             <ProductStats
                 totalProducts={products.length}
                 activeNow={activeCount}
                 newProducts={draftCount}
                 lowStock={lowStockCount}
-                isLoading={isLoading}
+                isLoading={isLoading || isBootstrapping}
             />
 
             <div className="rounded-md border bg-card p-2 sm:p-4">
@@ -252,7 +218,7 @@ export default function ProductsPage() {
                     onEdit={handleEdit}
                     onDelete={handleDelete}
                     onGenerateVariants={handleGenerateVariants}
-                    isLoading={isLoading}
+                    isLoading={isLoading || isBootstrapping}
                 />
             </div>
 
@@ -260,16 +226,15 @@ export default function ProductsPage() {
             <UploadModal
                 open={uploadModalOpen}
                 onOpenChange={setUploadModalOpen}
-                storeId={storeId}
-                tenantId={tenantId}
-                storeSlug={storeSlug}
+                storeId={bootstrap?.storeId || ""}
+                tenantId={bootstrap?.tenantId || ""}
                 onUploadComplete={fetchProducts}
             />
 
             {/* Manual Add Modal */}
             {addManualOpen && (
                 <AddProduct
-                    storeId={storeId}
+                    storeId={bootstrap?.storeId || ""}
                     onProductCreated={() => {
                         setAddManualOpen(false);
                         fetchProducts();
@@ -282,7 +247,7 @@ export default function ProductsPage() {
                 product={editingProduct}
                 open={editModalOpen}
                 onOpenChange={setEditModalOpen}
-                tenantId={tenantId}
+                tenantId={bootstrap?.tenantId || ""}
                 onProductUpdated={fetchProducts}
             />
         </div>

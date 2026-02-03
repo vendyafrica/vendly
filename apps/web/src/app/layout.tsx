@@ -5,6 +5,7 @@ import type { ReactNode } from "react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { CartProvider } from "../contexts/cart-context";
 import { AppSessionProvider } from "../contexts/app-session-context";
+import { Providers } from "./providers";
 import { auth } from "@vendly/auth";
 import { headers } from "next/headers";
 import { Analytics } from "@vercel/analytics/next"
@@ -44,9 +45,11 @@ export default async function RootLayout({
       >
         <SpeedInsights />
         <Analytics />
-        <AppSessionProvider session={session}>
-          <CartProvider>{children}</CartProvider>
-        </AppSessionProvider>
+        <Providers>
+          <AppSessionProvider session={session}>
+            <CartProvider>{children}</CartProvider>
+          </AppSessionProvider>
+        </Providers>
       </body>
     </html>
   );
