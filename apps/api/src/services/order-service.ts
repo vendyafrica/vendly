@@ -229,6 +229,19 @@ export const orderService = {
     // Sometimes WhatsApp "from" arrives without '+'
     if (normalized?.startsWith("+")) variants.add(normalized.slice(1));
 
+    // Local format with leading 0 (e.g. 256780... -> 0780...)
+    if (normalized?.startsWith("+")) {
+      const withoutPlus = normalized.slice(1);
+      const defaultCode = process.env.DEFAULT_COUNTRY_CALLING_CODE || "254";
+      if (withoutPlus.startsWith(defaultCode)) {
+        const national = withoutPlus.slice(defaultCode.length);
+        if (national) {
+          const withZero = `0${national}`;
+          variants.add(withZero);
+        }
+      }
+    }
+
     const list = Array.from(variants);
     if (!list.length) return null;
 
