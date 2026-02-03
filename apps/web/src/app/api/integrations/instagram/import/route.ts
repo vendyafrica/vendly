@@ -1,7 +1,7 @@
 import { auth } from "@vendly/auth";
 import { headers } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@vendly/db/db";
+import { db, dbWs } from "@vendly/db/db";
 import { tenantMemberships, instagramAccounts, instagramSyncJobs, account } from "@vendly/db/schema";
 import { eq, and } from "@vendly/db";
 import { z } from "zod";
@@ -105,7 +105,7 @@ export async function POST(request: NextRequest) {
     // 5. Process Media (Inline for simplicity)
     let createdCount = 0;
 
-    await db.transaction(async (tx) => {
+    await dbWs.transaction(async (tx) => {
       // Import Media Objects, Products, ProductVariants, ProductMedia
       // Dynamic import to avoid circular dep issues if any, but regular import is fine here
       // We need to import tables to use in transaction. imported at top.
@@ -154,10 +154,11 @@ export async function POST(request: NextRequest) {
             // Create Media Object
             const [mediaObj] = await tx.insert(mediaObjects).values({
               tenantId: membership.tenantId,
-              url: child.media_url,
-              key: child.id, // Using IG ID as key proxy
-              mimeType: child.media_type === "VIDEO" ? "video/mp4" : "image/jpeg",
-              fileSize: 0,
+              blobUrl: child.media_url,
+              blobPathname: child.id, // Using IG ID as key proxy
+              contentType: child.media_type === "VIDEO" ? "video/mp4" : "image/jpeg",
+              source: "instagram",
+              sourceMediaId: child.id,
             }).returning();
 
             // Link Media to Variant and Product
@@ -185,10 +186,11 @@ export async function POST(request: NextRequest) {
           // Create Media Object
           const [mediaObj] = await tx.insert(mediaObjects).values({
             tenantId: membership.tenantId,
-            url: item.media_url,
-            key: item.id,
-            mimeType: item.media_type === "VIDEO" ? "video/mp4" : "image/jpeg",
-            fileSize: 0,
+            blobUrl: item.media_url,
+            blobPathname: item.id,
+            contentType: item.media_type === "VIDEO" ? "video/mp4" : "image/jpeg",
+            source: "instagram",
+            sourceMediaId: item.id,
           }).returning();
 
           // Link Media to Product (and Variant)
