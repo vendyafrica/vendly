@@ -5,6 +5,50 @@ import type { RawBodyRequest } from "../types/raw-body";
 import { orderService } from "../services/order-service";
 import { whatsappClient } from "../services/whatsapp/whatsapp-client";
 
+function formatSellerOrderDetails(order: { orderNumber: string; currency?: string | null; items?: Array<{ productName?: string | null; quantity?: number | null; unitPrice?: number | null; totalPrice?: number | null } | null>; customerPhone?: string | null; shippingAddress?: unknown; notes?: string | null }) {
+  const lines: string[] = [];
+  lines.push(`Order ${order.orderNumber} details:`);
+
+  const currency = order.currency || "";
+  const items = (order.items || []).filter(Boolean) as Array<{
+    productName?: string | null;
+    quantity?: number | null;
+    unitPrice?: number | null;
+    totalPrice?: number | null;
+  }>;
+
+  if (items.length) {
+    lines.push("Items:");
+    for (const item of items) {
+      const qty = item.quantity ?? 0;
+      const name = item.productName || "Item";
+      const unit = item.unitPrice != null ? `${currency} ${item.unitPrice}` : undefined;
+      const total = item.totalPrice != null ? `${currency} ${item.totalPrice}` : undefined;
+      const pricePart = unit && total ? ` @ ${unit} = ${total}` : unit ? ` @ ${unit}` : total ? ` (total ${total})` : "";
+      lines.push(`- ${qty}x ${name}${pricePart}`);
+    }
+  }
+
+  if (order.customerPhone) {
+    lines.push(`Customer phone: ${order.customerPhone}`);
+  }
+
+  const addr = asObject(order.shippingAddress);
+  const street = typeof addr?.street === "string" ? addr.street : undefined;
+  const city = typeof addr?.city === "string" ? addr.city : undefined;
+  const country = typeof addr?.country === "string" ? addr.country : undefined;
+  const addressParts = [street, city, country].filter(Boolean);
+  if (addressParts.length) {
+    lines.push(`Delivery address: ${addressParts.join(", ")}`);
+  }
+
+  if (order.notes) {
+    lines.push(`Notes: ${order.notes}`);
+  }
+
+  return lines.join("\n");
+}
+
 export const whatsappRouter: ExpressRouter = Router();
 
 // GET /api/webhooks/whatsapp (Meta verification)
@@ -158,6 +202,19 @@ whatsappRouter.post("/webhooks/whatsapp", async (req, res) => {
         to: from,
         body: `Accepted ${order.orderNumber}. Reply READY ${order.orderNumber} when it is ready for pickup.`,
       });
+
+      // Follow-up details message (no template changes required)
+      try {
+        const full = await orderService.getOrderById(order.id);
+        if (full) {
+          await whatsappClient.sendTextMessage({
+            to: from,
+            body: formatSellerOrderDetails(full),
+          });
+        }
+      } catch (err) {
+        console.error("[WhatsAppWebhook] Failed to send order details", err);
+      }
       return res.sendStatus(200);
     }
 
