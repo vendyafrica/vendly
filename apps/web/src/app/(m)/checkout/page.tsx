@@ -15,7 +15,7 @@ import { Input } from "@vendly/ui/components/input";
 import { useCart } from "../../../contexts/cart-context";
 import { useAppSession } from "@/contexts/app-session-context";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "";
+const API_BASE = ""; // Force relative for same-origin internal API
 
 type PaymentMethod = "mpesa";
 

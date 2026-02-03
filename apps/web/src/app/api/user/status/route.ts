@@ -1,7 +1,9 @@
 import { auth } from "@vendly/auth";
 import { headers } from "next/headers";
 import { NextResponse } from "next/server";
-import { onboardingRepository } from "@/lib/c/onboarding-repository";
+import { db } from "@vendly/db/db";
+import { and, eq, isNull } from "@vendly/db";
+import { platformRoles, stores, tenantMemberships } from "@vendly/db/schema";
 
 export const GET = async () => {
     const session = await auth.api.getSession({
@@ -12,6 +14,34 @@ export const GET = async () => {
         return NextResponse.json({ hasTenant: false });
     }
 
-    const hasTenant = await onboardingRepository.hasTenant(session.user.id);
-    return NextResponse.json({ hasTenant });
+    const membership = await db.query.tenantMemberships.findFirst({
+        where: eq(tenantMemberships.userId, session.user.id),
+        with: { tenant: true },
+    });
+
+    const hasTenant = !!membership;
+
+    if (!membership) {
+        return NextResponse.json({ hasTenant });
+    }
+
+    const [store] = await db
+        .select({ slug: stores.slug })
+        .from(stores)
+        .where(and(eq(stores.tenantId, membership.tenantId), isNull(stores.deletedAt)))
+        .limit(1);
+
+    const platformRole = await db.query.platformRoles.findFirst({
+        where: eq(platformRoles.userId, session.user.id),
+        columns: { role: true },
+    });
+
+    const isTenantAdmin = ["owner", "admin"].includes(membership.role) || platformRole?.role === "super_admin";
+
+    return NextResponse.json({
+        hasTenant,
+        isTenantAdmin,
+        adminStoreSlug: store?.slug ?? null,
+        tenantSlug: membership.tenant?.slug ?? null,
+    });
 };

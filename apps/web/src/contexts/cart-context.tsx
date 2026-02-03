@@ -4,7 +4,7 @@ import React, { createContext, useContext, useState, useEffect } from "react";
 import { useAppSession } from "./app-session-context";
 
 // Use relative paths for same-origin API calls (Next.js serverless routes)
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "";
+const API_BASE = "";
 
 export interface CartItem {
     id: string; // Product ID

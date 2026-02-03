@@ -21,7 +21,7 @@ import {
 import { HugeiconsIcon } from "@hugeicons/react";
 import { Loading03Icon, CheckmarkCircle02Icon } from "@hugeicons/core-free-icons";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "";
+const API_BASE = ""; // Force relative for same-origin internal API
 
 interface CheckoutProduct {
     id: string;

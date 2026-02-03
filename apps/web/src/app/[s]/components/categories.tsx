@@ -10,7 +10,7 @@ interface Category {
     image: string | null;
 }
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "";
+const API_BASE = ""; // Force relative for same-origin internal API
 
 export function Categories() {
     const params = useParams();
