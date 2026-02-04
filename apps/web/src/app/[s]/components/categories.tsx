@@ -42,11 +42,11 @@ export function Categories() {
 
     if (loading) {
         return (
-            <nav className="border-b border-neutral-200 bg-white">
+            <nav className="border-b border-border bg-background">
                 <div className="px-3 sm:px-4 lg:px-6 xl:px-8">
                     <div className="flex gap-8 overflow-x-auto scrollbar-hide py-4">
                         {[...Array(6)].map((_, i) => (
-                            <div key={i} className="h-5 w-20 bg-neutral-100 rounded animate-pulse shrink-0" />
+                            <div key={i} className="h-5 w-20 bg-muted rounded animate-pulse shrink-0" />
                         ))}
                     </div>
                 </div>
@@ -57,7 +57,7 @@ export function Categories() {
     if (categories.length === 0) return null;
 
     return (
-        <nav className="border-b border-neutral-200 bg-white sticky top-0 z-10">
+        <nav className="border-b border-border bg-background sticky top-0 z-10">
             <div className="px-3 sm:px-4 lg:px-6 xl:px-8">
                 <div className="flex gap-6 sm:gap-8 overflow-x-auto scrollbar-hide">
                     {/* All/Featured link */}
@@ -67,14 +67,14 @@ export function Categories() {
                         className={`
                             shrink-0 py-4 text-sm font-medium transition-colors relative
                             ${activeCategory === "all"
-                                ? "text-neutral-900"
-                                : "text-neutral-500 hover:text-neutral-700"
+                                ? "text-foreground"
+                                : "text-muted-foreground hover:text-foreground"
                             }
                         `}
                     >
                         Featured
                         {activeCategory === "all" && (
-                            <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-neutral-900" />
+                            <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-foreground" />
                         )}
                     </Link>
 
@@ -87,14 +87,14 @@ export function Categories() {
                             className={`
                                 shrink-0 py-4 text-sm font-medium transition-colors relative whitespace-nowrap
                                 ${activeCategory === category.slug
-                                    ? "text-neutral-900"
-                                    : "text-neutral-500 hover:text-neutral-700"
+                                    ? "text-foreground"
+                                    : "text-muted-foreground hover:text-foreground"
                                 }
                             `}
                         >
                             {category.name}
                             {activeCategory === category.slug && (
-                                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-neutral-900" />
+                                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-foreground" />
                             )}
                         </Link>
                     ))}

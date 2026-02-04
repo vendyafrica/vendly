@@ -33,7 +33,7 @@ export default async function StorefrontHomePage({ params, searchParams }: Store
       <div className="w-full">
         <Categories />
         <div className="px-8">
-          <h3 className="text-lg font-semibold my-8 text-neutral-900">
+          <h3 className="text-lg font-semibold my-8 text-foreground">
             All Products
           </h3>
           <ProductGrid products={products} />

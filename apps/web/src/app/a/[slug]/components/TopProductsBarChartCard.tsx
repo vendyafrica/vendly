@@ -7,6 +7,7 @@ import {
   type ChartConfig,
 } from "@vendly/ui/components/chart";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@vendly/ui/components/card";
+import { cn } from "@vendly/ui/lib/utils";
 import { Bar, BarChart, Cell, LabelList, XAxis, YAxis } from "recharts";
 
 export type TopProductPoint = {
@@ -37,11 +38,13 @@ export function TopProductsBarChartCard({
   description,
   totalLabel,
   data,
+  className,
 }: {
   title: string;
   description?: string;
   totalLabel: string;
   data: TopProductPoint[];
+  className?: string;
 }) {
   const topProductsConfig = {
     sales: {
@@ -54,7 +57,7 @@ export function TopProductsBarChartCard({
   } satisfies ChartConfig;
 
   return (
-    <Card className="col-span-3 lg:col-span-3">
+    <Card className={cn("col-span-3 lg:col-span-3 border-border/70 shadow-sm", className)}>
       <CardHeader className="pb-0">
         <div className="flex items-center justify-between">
           <div>
@@ -104,7 +107,7 @@ export function TopProductsBarChartCard({
                 offset={8}
                 className="fill-muted-foreground"
                 fontSize={12}
-                formatter={(val: number) => val.toLocaleString()}
+                formatter={(val) => (typeof val === "number" ? val.toLocaleString() : "")}
               />
             </Bar>
           </BarChart>

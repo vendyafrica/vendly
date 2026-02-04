@@ -18,7 +18,7 @@ export function ProductGrid({ products }: ProductGridProps) {
     if (products.length === 0) {
         return (
             <div className="text-center py-12">
-                <p className="text-neutral-500">No products available yet.</p>
+                <p className="text-muted-foreground">No products available yet.</p>
             </div>
         );
     }

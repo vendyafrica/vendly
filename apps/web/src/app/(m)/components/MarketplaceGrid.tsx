@@ -13,7 +13,7 @@ export function MarketplaceGrid({ stores, loading }: MarketplaceGridProps) {
   if (stores.length === 0) {
     return (
       <div className="flex items-center justify-center py-20">
-        <p className="text-gray-500">No stores found in this category.</p>
+        <p className="text-muted-foreground">No stores found in this category.</p>
       </div>
     );
   }

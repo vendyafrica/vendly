@@ -15,6 +15,7 @@ import Search from "../search";
 import { useAppSession } from "@/contexts/app-session-context";
 import { useCart } from "@/contexts/cart-context";
 import { Portal } from "@/components/portal";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { Logo, MobileLogo } from "./Logo";
 import { WishlistButton } from "./WishlistButton";
 import { CartButton } from "./CartButton";
@@ -101,7 +102,7 @@ export default function Header({
     return (
         <>
             <header
-                className={`sticky top-0 z-40 w-full border-b border-neutral-200/60 bg-white/95 backdrop-blur-md transition-transform duration-300 ${isVisible ? "translate-y-0" : "-translate-y-full"
+                className={`sticky top-0 z-40 w-full border-b border-border/60 bg-background/95 backdrop-blur-md transition-transform duration-300 ${isVisible ? "translate-y-0" : "-translate-y-full"
                     }`}
             >
                 {/* Desktop Header */}
@@ -127,6 +128,8 @@ export default function Header({
 
                             {/* Cart */}
                             <CartButton itemCount={itemCount} />
+
+                            <ThemeToggle />
 
                             {/* User Menu */}
                             <UserMenu
@@ -154,7 +157,7 @@ export default function Header({
                         {/* Menu Button */}
                         <button
                             aria-label="Toggle menu"
-                            className="p-2 -ml-2 rounded-lg hover:bg-neutral-100 active:bg-neutral-200 active:scale-95 transition-all"
+                            className="p-2 -ml-2 rounded-lg hover:bg-muted/70 active:bg-muted active:scale-95 transition-all"
                             onClick={() => {
                                 setIsMenuOpen((v) => !v);
                                 setIsSearchOpen(false);
@@ -173,7 +176,7 @@ export default function Header({
                         <div className="flex items-center gap-1">
                             <button
                                 aria-label="Search"
-                                className="p-2 rounded-lg hover:bg-neutral-100 active:bg-neutral-200 active:scale-95 transition-all"
+                                className="p-2 rounded-lg hover:bg-muted/70 active:bg-muted active:scale-95 transition-all"
                                 onClick={() => {
                                     setIsSearchOpen((v) => !v);
                                     setIsMenuOpen(false);
@@ -183,6 +186,7 @@ export default function Header({
                             </button>
 
                             <CartButton itemCount={itemCount} mobile />
+                            <ThemeToggle />
                         </div>
                     </div>
                 </div>

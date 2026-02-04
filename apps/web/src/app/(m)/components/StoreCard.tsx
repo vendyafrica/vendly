@@ -26,7 +26,7 @@ export function StoreCard({ store }: StoreCardProps) {
       <div
         role="link"
         tabIndex={0}
-        className="block bg-white rounded-3xl overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-300 active:scale-[0.98] cursor-pointer"
+        className="block rounded-3xl overflow-hidden bg-card text-card-foreground shadow-sm hover:shadow-2xl transition-all duration-300 active:scale-[0.98] cursor-pointer"
         onClick={() => {
           router.push(`/${store.slug}`);
         }}
@@ -59,12 +59,12 @@ export function StoreCard({ store }: StoreCardProps) {
               </CarouselContent>
               <CarouselNavigation
                 className="opacity-0 transition-opacity duration-200 group-hover:opacity-100"
-                classNameButton="bg-white/90 hover:bg-white shadow-sm pointer-events-auto"
+                classNameButton="bg-background/90 hover:bg-background shadow-sm pointer-events-auto"
               />
               <CarouselIndicator className="pb-4" />
             </Carousel>
           ) : (
-            <div className="flex h-full items-center justify-center bg-zinc-50 text-zinc-400">
+            <div className="flex h-full items-center justify-center bg-muted text-muted-foreground">
               No images yet
             </div>
           )}
@@ -73,7 +73,7 @@ export function StoreCard({ store }: StoreCardProps) {
 
       <div className="flex items-center justify-between mt-4 px-1">
         <div className="flex items-center gap-2">
-          <div className="relative w-6 h-6 rounded-full overflow-hidden bg-gray-100">
+          <div className="relative w-6 h-6 rounded-full overflow-hidden bg-muted">
             {store.instagramAvatarUrl || store.logoUrl ? (
               <Image
                 src={(store.instagramAvatarUrl || store.logoUrl)!}
@@ -83,14 +83,14 @@ export function StoreCard({ store }: StoreCardProps) {
                 className="object-cover"
               />
             ) : (
-              <div className="w-full h-full flex items-center justify-center text-[10px] font-semibold text-gray-500">
+              <div className="w-full h-full flex items-center justify-center text-[10px] font-semibold text-muted-foreground">
                 {store.name?.slice(0, 1) || "S"}
               </div>
             )}
           </div>
           <Link
             href={`/${store.slug}`}
-            className="font-bold text-sm text-gray-900 leading-tight hover:text-black transition-colors"
+            className="font-bold text-sm text-foreground leading-tight hover:text-foreground/80 transition-colors"
             onClick={(e) => e.stopPropagation()}
           >
             {store.name}
@@ -99,8 +99,8 @@ export function StoreCard({ store }: StoreCardProps) {
 
         {/* Rating */}
         <div className="flex items-center gap-1">
-          <span className="text-sm font-bold text-black">{store.rating}</span>
-          <Star className="w-3.5 h-3.5 fill-black text-black" />
+          <span className="text-sm font-bold text-foreground">{store.rating}</span>
+          <Star className="w-3.5 h-3.5 fill-foreground text-foreground" />
         </div>
       </div>
     </div>

@@ -28,28 +28,28 @@ export function StorefrontFooter({ store }: StorefrontFooterProps) {
     const storeDescription = store.description ?? "Curated collections.";
 
     return (
-        <footer className="pt-12 pb-7 border-t bg-[#F9F9F7] border-neutral-200">
+        <footer className="pt-12 pb-7 border-t border-border bg-background">
             <div className="max-w-7xl mx-auto px-6">
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-16">
 
                     <div>
-                        <h3 className="text-base font-medium mb-2 text-neutral-900">{storeName}</h3>
-                        <p className="text-sm leading-relaxed text-neutral-500">
+                        <h3 className="text-base font-medium mb-2 text-foreground">{storeName}</h3>
+                        <p className="text-sm leading-relaxed text-muted-foreground">
                             {storeDescription}
                         </p>
                     </div>
 
 
                     <div>
-                        <h4 className="text-sm font-medium uppercase tracking-wider mb-4 text-neutral-500">
+                        <h4 className="text-sm font-medium uppercase tracking-wider mb-4 text-muted-foreground">
                             Shop
                         </h4>
                         <ul className="space-y-3">
                             <li>
                                 <Link
                                     href="#products"
-                                    className="text-sm transition-colors duration-200 text-neutral-900 hover:text-neutral-500"
+                                    className="text-sm transition-colors duration-200 text-foreground hover:text-muted-foreground"
                                 >
                                     All Products
                                 </Link>
@@ -57,7 +57,7 @@ export function StorefrontFooter({ store }: StorefrontFooterProps) {
                             <li>
                                 <Link
                                     href="#"
-                                    className="text-sm transition-colors duration-200 text-neutral-900 hover:text-neutral-500"
+                                    className="text-sm transition-colors duration-200 text-foreground hover:text-muted-foreground"
                                 >
                                     New Arrivals
                                 </Link>
@@ -65,7 +65,7 @@ export function StorefrontFooter({ store }: StorefrontFooterProps) {
                             <li>
                                 <Link
                                     href="#"
-                                    className="text-sm transition-colors duration-200 text-neutral-900 hover:text-neutral-500"
+                                    className="text-sm transition-colors duration-200 text-foreground hover:text-muted-foreground"
                                 >
                                     Best Sellers
                                 </Link>
@@ -75,14 +75,14 @@ export function StorefrontFooter({ store }: StorefrontFooterProps) {
 
                     {/* Support */}
                     <div>
-                        <h4 className="text-sm font-medium uppercase tracking-wider mb-4 text-neutral-500">
+                        <h4 className="text-sm font-medium uppercase tracking-wider mb-4 text-muted-foreground">
                             Support
                         </h4>
                         <ul className="space-y-3">
                             <li>
                                 <Link
                                     href="#"
-                                    className="text-sm transition-colors duration-200 text-neutral-900 hover:text-neutral-500"
+                                    className="text-sm transition-colors duration-200 text-foreground hover:text-muted-foreground"
                                 >
                                     Contact Us
                                 </Link>
@@ -90,7 +90,7 @@ export function StorefrontFooter({ store }: StorefrontFooterProps) {
                             <li>
                                 <Link
                                     href="#"
-                                    className="text-sm transition-colors duration-200 text-neutral-900 hover:text-neutral-500"
+                                    className="text-sm transition-colors duration-200 text-foreground hover:text-muted-foreground"
                                 >
                                     Shipping
                                 </Link>
@@ -98,7 +98,7 @@ export function StorefrontFooter({ store }: StorefrontFooterProps) {
                             <li>
                                 <Link
                                     href="#"
-                                    className="text-sm transition-colors duration-200 text-neutral-900 hover:text-neutral-500"
+                                    className="text-sm transition-colors duration-200 text-foreground hover:text-muted-foreground"
                                 >
                                     Returns
                                 </Link>
@@ -108,11 +108,11 @@ export function StorefrontFooter({ store }: StorefrontFooterProps) {
 
                     {/* Newsletter */}
                     <div>
-                        <h4 className="text-sm font-medium uppercase tracking-wider mb-4 text-neutral-500">
+                        <h4 className="text-sm font-medium uppercase tracking-wider mb-4 text-muted-foreground">
                             Store Updates
                         </h4>
                         {subscribed ? (
-                            <p className="text-sm text-neutral-900">
+                            <p className="text-sm text-foreground">
                                 Thanks for subscribing!
                             </p>
                         ) : (
@@ -123,12 +123,12 @@ export function StorefrontFooter({ store }: StorefrontFooterProps) {
                                     onChange={(e) => setPhoneNumber(e.target.value)}
                                     placeholder="Your phone number"
                                     required
-                                    className="w-full px-4 py-3 text-sm rounded border border-neutral-200 bg-white text-neutral-900 transition-all duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+                                    className="w-full px-4 py-3 text-sm rounded border border-border bg-background text-foreground transition-all duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
                                 />
                                 <Button
                                     suppressHydrationWarning
                                     type="submit"
-                                    className="w-full h-11 text-sm font-medium bg-neutral-900 text-white hover:bg-primary rounded transition-colors duration-200"
+                                    className="w-full h-11 text-sm font-medium bg-primary text-primary-foreground hover:bg-primary/90 rounded transition-colors duration-200"
                                 >
                                     Subscribe
                                 </Button>
@@ -141,21 +141,21 @@ export function StorefrontFooter({ store }: StorefrontFooterProps) {
                 <div className="flex justify-center gap-6 mb-8">
                     <a
                         href="#"
-                        className="text-neutral-500 hover:text-primary transition-all duration-200 ease-in-out"
+                        className="text-muted-foreground hover:text-primary transition-all duration-200 ease-in-out"
                         aria-label="Instagram"
                     >
                         <HugeiconsIcon icon={InstagramIcon} size={20} />
                     </a>
                     <a
                         href="#"
-                        className="text-neutral-500 hover:text-primary transition-all duration-200 ease-in-out"
+                        className="text-muted-foreground hover:text-primary transition-all duration-200 ease-in-out"
                         aria-label="Twitter"
                     >
                         <HugeiconsIcon icon={NewTwitterIcon} size={20} />
                     </a>
                     <a
                         href="#"
-                        className="text-neutral-500 hover:text-primary transition-all duration-200 ease-in-out"
+                        className="text-muted-foreground hover:text-primary transition-all duration-200 ease-in-out"
                         aria-label="Facebook"
                     >
                         <HugeiconsIcon icon={Facebook01Icon} size={20} />
@@ -164,11 +164,11 @@ export function StorefrontFooter({ store }: StorefrontFooterProps) {
 
                 {/* Bottom bar */}
                 <div className="pt-8 text-center">
-                    <p className="text-xs text-neutral-500">
+                    <p className="text-xs text-muted-foreground">
                         Powered by{" "}
                         <Link
                             href="https://vendlyafrica.store"
-                            className="font-medium text-neutral-900 hover:text-primary transition-all duration-200 ease-in-out"
+                            className="font-medium text-foreground hover:text-primary transition-all duration-200 ease-in-out"
                             target="_blank"
                             rel="noopener noreferrer"
                         >

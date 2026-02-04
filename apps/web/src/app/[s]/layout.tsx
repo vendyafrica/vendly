@@ -7,7 +7,7 @@ export default function StorefrontLayout({
   children: ReactNode;
 }) {
   return (
-    <div className="relative min-h-screen bg-[#F9F9F7] antialiased">
+    <div className="relative min-h-screen bg-background text-foreground antialiased">
       
       <StorefrontHeader />
 

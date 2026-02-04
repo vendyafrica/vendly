@@ -45,7 +45,7 @@ const InteractiveImageBentoGallery: React.FC<
   return (
     <section
       ref={targetRef}
-      className="relative w-full overflow-hidden bg-[#F9F9F7] py-2 sm:py-4"
+      className="relative w-full overflow-hidden bg-background py-2 sm:py-4"
     >
       {/* Optional heading / intro */}
       <motion.div
@@ -84,7 +84,7 @@ const InteractiveImageBentoGallery: React.FC<
               <motion.div
                 key={item.id}
                 className={cn(
-                  "group relative flex h-full min-h-36 w-full min-w-0 cursor-pointer items-end overflow-hidden rounded-lg border border-muted bg-card p-2 shadow-sm transition-shadow duration-300 ease-in-out hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background md:min-w-44 md:p-2.5",
+                  "group relative flex h-full min-h-36 w-full min-w-0 cursor-pointer items-end overflow-hidden rounded-lg border border-border/60 bg-card p-2 shadow-sm transition-shadow duration-300 ease-in-out hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background md:min-w-44 md:p-2.5",
                   item.span,
                 )}
                 whileHover={{ scale: 1.02 }}
@@ -106,7 +106,7 @@ const InteractiveImageBentoGallery: React.FC<
 
                 {/* Text */}
                 <div className="relative z-10">
-                  <h3 className="text-md font-semibold text-white md:text-md">
+                  <h3 className="text-sm font-semibold leading-tight tracking-tight text-white md:text-base">
                     {item.title}
                   </h3>
                 </div>

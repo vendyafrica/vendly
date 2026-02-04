@@ -7,6 +7,7 @@ import {
   type ChartConfig,
 } from "@vendly/ui/components/chart";
 import { Card, CardContent, CardHeader, CardTitle } from "@vendly/ui/components/card";
+import { cn } from "@vendly/ui/lib/utils";
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from "recharts";
 
 export type RevenuePoint = {
@@ -18,10 +19,12 @@ export function RevenueAreaChartCard({
   title,
   totalLabel,
   data,
+  className,
 }: {
   title: string;
   totalLabel: string;
   data: RevenuePoint[];
+  className?: string;
 }) {
   const chartConfig = {
     total: {
@@ -31,13 +34,13 @@ export function RevenueAreaChartCard({
   } satisfies ChartConfig;
 
   return (
-    <Card className="w-full">
-      <CardHeader className="space-y-1">
+    <Card className={cn("w-full border-border/70 shadow-sm", className)}>
+      <CardHeader className="space-y-1 pb-2">
         <CardTitle className="text-base">{title}</CardTitle>
         <div className="text-3xl font-bold text-foreground">{totalLabel}</div>
       </CardHeader>
-      <CardContent className="px-3 pb-3">
-        <ChartContainer config={chartConfig} className="aspect-auto h-[260px] w-full md:h-[340px]">
+      <CardContent className="px-3 pb-4 md:px-5">
+        <ChartContainer config={chartConfig} className="aspect-auto h-[260px] w-full md:h-[320px]">
           <AreaChart
             accessibilityLayer
             data={data}

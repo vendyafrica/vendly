@@ -193,108 +193,111 @@ export function AddProduct({ storeId, onProductCreated }: AddProductProps) {
                 Add Product
             </DialogTrigger>
 
-            <DialogContent className="sm:max-w-md">
-                <DialogHeader>
+            <DialogContent className="max-h-[90vh] overflow-hidden p-0 sm:max-w-md">
+                <DialogHeader className="px-4 pt-4 sm:px-6">
                     <DialogTitle>Add New Product</DialogTitle>
                 </DialogHeader>
-                <form onSubmit={handleSubmit} className="space-y-4">
-                    <input type="hidden" name="storeId" value={storeId} />
+                <form onSubmit={handleSubmit} className="flex h-full flex-col">
+                    <div className="flex-1 space-y-4 overflow-y-auto px-4 pb-16 pt-2 sm:px-6">
+                        <input type="hidden" name="storeId" value={storeId} />
 
-                    <div className="space-y-2">
-                        <Label htmlFor="title">Product Name</Label>
-                        <Input
-                            id="title"
-                            name="title"
-                            placeholder="Enter product name"
-                            required
-                        />
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
-                            <Label htmlFor="price">Price (KES)</Label>
+                            <Label htmlFor="title">Product Name</Label>
                             <Input
-                                id="price"
-                                name="priceAmount"
-                                type="number"
-                                min="0"
-                                placeholder="Enter price"
+                                id="title"
+                                name="title"
+                                placeholder="Enter product name"
                                 required
                             />
                         </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="quantity">Quantity</Label>
-                            <Input
-                                id="quantity"
-                                name="quantity"
-                                type="number"
-                                min="0"
-                                placeholder="Enter quantity"
-                            />
-                        </div>
-                    </div>
 
-                    <div className="space-y-2">
-                        <Label>Product Images</Label>
-                        <div
-                            className={`border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors ${isDragging
-                                ? "border-primary bg-primary/5"
-                                : "border-border/70 hover:bg-muted/50"
-                                }`}
-                            onClick={() => fileInputRef.current?.click()}
-                            onDragOver={handleDragOver}
-                            onDragLeave={handleDragLeave}
-                            onDrop={handleDrop}
-                        >
-                            <HugeiconsIcon icon={Upload04Icon} className="size-8 mx-auto text-muted-foreground" />
-                            <p className="text-sm text-muted-foreground mt-2 font-medium">
-                                {isDragging ? "Drop images here" : "Click to upload or drag & drop"}
-                            </p>
-                            <p className="text-xs text-muted-foreground/60 mt-1">
-                                SVG, PNG, JPG or GIF (max 5MB)
-                            </p>
-                        </div>
-                        <input
-                            ref={fileInputRef}
-                            type="file"
-                            accept="image/*"
-                            multiple
-                            className="hidden"
-                            onChange={handleFileChange}
-                        />
-
-                        {files.length > 0 && (
-                            <div className="grid grid-cols-4 gap-3 mt-3">
-                                {files.map((f, i) => (
-                                    <div key={i} className="relative aspect-square group">
-                                        <Image
-                                            src={f.previewUrl}
-                                            alt="Preview"
-                                            fill
-                                            className={`object-cover rounded-md transition-opacity ${f.isUploading ? 'opacity-50' : 'opacity-100'}`}
-                                        />
-                                        {f.isUploading && (
-                                            <div className="absolute inset-0 flex items-center justify-center">
-                                                <HugeiconsIcon icon={Loading03Icon} className="size-5 animate-spin text-white" />
-                                            </div>
-                                        )}
-                                        <button
-                                            type="button"
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                removeFile(i);
-                                            }}
-                                            className="absolute -top-1.5 -right-1.5 bg-destructive text-destructive-foreground rounded-full p-1 shadow-sm opacity-0 group-hover:opacity-100 transition-opacity"
-                                        >
-                                            <HugeiconsIcon icon={Cancel01Icon} className="size-3" />
-                                        </button>
-                                    </div>
-                                ))}
+                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                            <div className="space-y-2">
+                                <Label htmlFor="price">Price (KES)</Label>
+                                <Input
+                                    id="price"
+                                    name="priceAmount"
+                                    type="number"
+                                    min="0"
+                                    placeholder="Enter price"
+                                    required
+                                />
                             </div>
-                        )}
+                            <div className="space-y-2">
+                                <Label htmlFor="quantity">Quantity</Label>
+                                <Input
+                                    id="quantity"
+                                    name="quantity"
+                                    type="number"
+                                    min="0"
+                                    placeholder="Enter quantity"
+                                />
+                            </div>
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label>Product Images</Label>
+                            <div
+                                className={`border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors ${isDragging
+                                    ? "border-primary bg-primary/5"
+                                    : "border-border/70 hover:bg-muted/50"
+                                    }`}
+                                onClick={() => fileInputRef.current?.click()}
+                                onDragOver={handleDragOver}
+                                onDragLeave={handleDragLeave}
+                                onDrop={handleDrop}
+                            >
+                                <HugeiconsIcon icon={Upload04Icon} className="size-8 mx-auto text-muted-foreground" />
+                                <p className="text-sm text-muted-foreground mt-2 font-medium">
+                                    {isDragging ? "Drop images here" : "Click to upload or drag & drop"}
+                                </p>
+                                <p className="text-xs text-muted-foreground/60 mt-1">
+                                    SVG, PNG, JPG or GIF (max 5MB)
+                                </p>
+                            </div>
+                            <input
+                                ref={fileInputRef}
+                                type="file"
+                                accept="image/*"
+                                multiple
+                                className="hidden"
+                                onChange={handleFileChange}
+                            />
+
+                            {files.length > 0 && (
+                                <div className="grid grid-cols-2 gap-3 mt-3 sm:grid-cols-4">
+                                    {files.map((f, i) => (
+                                        <div key={i} className="relative aspect-square group">
+                                            <Image
+                                                src={f.previewUrl}
+                                                alt="Preview"
+                                                fill
+                                                className={`object-cover rounded-md transition-opacity ${f.isUploading ? 'opacity-50' : 'opacity-100'}`}
+                                            />
+                                            {f.isUploading && (
+                                                <div className="absolute inset-0 flex items-center justify-center">
+                                                    <HugeiconsIcon icon={Loading03Icon} className="size-5 animate-spin text-white" />
+                                                </div>
+                                            )}
+                                            <button
+                                                type="button"
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    removeFile(i);
+                                                }}
+                                                className="absolute -top-1.5 -right-1.5 bg-destructive text-destructive-foreground rounded-full p-1 shadow-sm opacity-0 group-hover:opacity-100 transition-opacity"
+                                            >
+                                                <HugeiconsIcon icon={Cancel01Icon} className="size-3" />
+                                            </button>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+
                     </div>
 
-                    <DialogFooter className="flex gap-2">
+                    <DialogFooter className="sticky bottom-0 flex gap-2 border-t border-border/60 bg-background px-4 py-3 sm:px-6">
                         <Button type="button" variant="outline" onClick={() => setOpen(false)}>
                             Cancel
                         </Button>

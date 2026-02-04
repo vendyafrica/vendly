@@ -9,6 +9,7 @@ import { ShoppingBag02Icon, UserIcon, FavouriteIcon, Search01Icon } from "@hugei
 import { HeaderSkeleton } from "./skeletons";
 import { useCart } from "../../../contexts/cart-context";
 import { StorefrontSearch } from "./storefront-search";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 interface StoreData {
     name: string;
@@ -74,13 +75,13 @@ export function StorefrontHeader() {
     if (!store) return null;
 
     const isHomePage = pathname === `/${params?.s}`;
-    const textColorClass = isHomePage ? "text-white hover:text-white/90" : "text-neutral-900 hover:text-neutral-700";
+    const textColorClass = isHomePage ? "text-white hover:text-white/90" : "text-foreground hover:text-foreground/80";
 
     const barClass = isHomePage
         ? "bg-transparent"
-        : "bg-white border-b border-neutral-200";
+        : "bg-background border-b border-border";
 
-    const iconColor = isHomePage ? "text-white" : "text-neutral-900";
+    const iconColor = isHomePage ? "text-white" : "text-foreground";
 
     return (
         <header
@@ -129,7 +130,7 @@ export function StorefrontHeader() {
                         <div className="flex items-center gap-1 sm:gap-1">
                             <button
                                 onClick={() => setIsSearchOpen((v) => !v)}
-                                className={`inline-flex h-10 w-10 items-center cursor-pointer justify-center transition-colors ${isHomePage ? "hover:opacity-80" : "hover:bg-neutral-100 rounded-full"}`}
+                                className={`inline-flex h-10 w-10 items-center cursor-pointer justify-center transition-colors ${isHomePage ? "hover:opacity-80" : "hover:bg-muted/70 rounded-full"}`}
                                 aria-label="Search"
                             >
                                 <HugeiconsIcon icon={Search01Icon} size={18} className={iconColor} />
@@ -137,7 +138,7 @@ export function StorefrontHeader() {
 
                             <Link
                                 href="/cart"
-                                className={`relative inline-flex h-10 w-10 items-center cursor-pointer justify-center transition-colors ${isHomePage ? "hover:opacity-80" : "hover:bg-neutral-100 rounded-full"}`}
+                                className={`relative inline-flex h-10 w-10 items-center cursor-pointer justify-center transition-colors ${isHomePage ? "hover:opacity-80" : "hover:bg-muted/70 rounded-full"}`}
                                 aria-label="Cart"
                             >
                                 <HugeiconsIcon icon={ShoppingBag02Icon} size={18} className={iconColor} />
@@ -150,7 +151,7 @@ export function StorefrontHeader() {
 
                             <Link
                                 href={`/${store.slug}/wishlist`}
-                                className={`relative inline-flex h-10 w-10 items-center justify-center transition-colors ${isHomePage ? "hover:opacity-80" : "hover:bg-neutral-100 rounded-full"}`}
+                                className={`relative inline-flex h-10 w-10 items-center justify-center transition-colors ${isHomePage ? "hover:opacity-80" : "hover:bg-muted/70 rounded-full"}`}
                                 aria-label="Wishlist"
                             >
                                 <HugeiconsIcon icon={FavouriteIcon} size={18} className={iconColor} />
@@ -158,18 +159,20 @@ export function StorefrontHeader() {
 
                             <Link
                                 href={`/login?store=${encodeURIComponent(store.name)}&slug=${encodeURIComponent(store.slug)}`}
-                                className={`relative inline-flex h-10 w-10 items-center justify-center transition-colors ${isHomePage ? "hover:opacity-80" : "hover:bg-neutral-100 rounded-full"}`}
+                                className={`relative inline-flex h-10 w-10 items-center justify-center transition-colors ${isHomePage ? "hover:opacity-80" : "hover:bg-muted/70 rounded-full"}`}
                                 aria-label="Account"
                             >
                                 <HugeiconsIcon icon={UserIcon} size={18} className={iconColor} />
                             </Link>
+
+                            <ThemeToggle />
                         </div>
                     </div>
                 </div>
             </div>
 
             {isSearchOpen && (
-                <div className={`sm:hidden px-4 pb-3 ${isHomePage ? "bg-transparent" : "bg-white border-b border-neutral-200"}`}>
+                <div className={`sm:hidden px-4 pb-3 ${isHomePage ? "bg-transparent" : "bg-background border-b border-border"}`}>
                     <StorefrontSearch
                         storeSlug={store.slug}
                         isHomePage={isHomePage}

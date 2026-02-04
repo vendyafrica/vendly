@@ -76,7 +76,7 @@ export default function ProductCard({ product }: { product: ProductType }) {
             onMouseLeave={() => setIsHovered(false)}
         >
             <Link href={`/products/${product.handle}`}>
-                <div className="relative aspect-square overflow-hidden bg-gray-100 mb-3">
+                <div className="relative aspect-square overflow-hidden bg-muted mb-3">
                     <img
                         src={product.image}
                         alt={product.title}
@@ -88,7 +88,7 @@ export default function ProductCard({ product }: { product: ProductType }) {
                             }`}
                     >
                         <button
-                            className="w-full bg-white text-black py-2 px-4 text-sm font-semibold hover:bg-gray-100 transition-colors shadow-lg"
+                            className="w-full bg-background text-foreground py-2 px-4 text-sm font-semibold hover:bg-muted transition-colors shadow-lg"
                             onClick={(e) => {
                                 e.preventDefault()
                                 // Add to cart logic here
@@ -104,17 +104,17 @@ export default function ProductCard({ product }: { product: ProductType }) {
             <div className="flex items-start justify-between gap-2">
                 <div className="flex-1 min-w-0">
                     <Link href={`/products/${product.handle}`}>
-                        <h3 className="text-sm font-medium text-gray-900 mb-1 truncate group-hover:text-gray-600 transition-colors">
+                        <h3 className="text-sm font-medium text-foreground mb-1 truncate group-hover:text-muted-foreground transition-colors">
                             {product.title}
                         </h3>
                     </Link>
-                    <p className="text-sm font-semibold text-gray-900">{product.price}</p>
+                    <p className="text-sm font-semibold text-foreground">{product.price}</p>
                 </div>
 
                 {/* Rating */}
                 <div className="flex items-center gap-1 shrink-0">
                     <HugeiconsIcon icon={StarIcon} size={14} className="text-yellow-500 fill-yellow-500" />
-                    <span className="text-xs text-gray-500">{product.rating}</span>
+                    <span className="text-xs text-muted-foreground">{product.rating}</span>
                 </div>
             </div>
         </div>

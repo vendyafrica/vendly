@@ -2,8 +2,10 @@ import Link from "next/link";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { ArrowRight01Icon } from "@hugeicons/core-free-icons";
 
+type HugeIconType = typeof ArrowRight01Icon;
+
 interface MenuItemProps {
-    icon?: any;
+    icon?: HugeIconType;
     label: string;
     href?: string;
     onClick?: () => void;
@@ -25,7 +27,7 @@ export function MenuItem({
             ? "text-red-600 hover:bg-red-50"
             : highlight
                 ? "bg-primary text-primary-foreground hover:bg-primary/90"
-                : "hover:bg-neutral-50"
+                : "hover:bg-muted/40"
         }`;
 
     const content = (
@@ -39,7 +41,7 @@ export function MenuItem({
                             ? ""
                             : highlight
                                 ? ""
-                                : "text-neutral-600 group-hover:text-black transition-colors"
+                                : "text-muted-foreground group-hover:text-foreground transition-colors"
                     }
                 />
             )}
@@ -48,7 +50,7 @@ export function MenuItem({
                 <HugeiconsIcon
                     icon={ArrowRight01Icon}
                     size={16}
-                    className="text-neutral-400 group-hover:text-black transition-colors"
+                    className="text-muted-foreground/70 group-hover:text-foreground transition-colors"
                 />
             )}
         </>

@@ -36,7 +36,7 @@ export default async function HomePage() {
     });
 
     return (
-        <main className="min-h-screen bg-[#F9F9F7]">
+        <main className="min-h-screen bg-background text-foreground">
             <Header />
             <OneTapLogin />
 
@@ -45,7 +45,7 @@ export default async function HomePage() {
                     id: c.id,
                     name: c.name,
                     image: null
-                })) as any
+                })) as { id: string; name: string; image: null }[]
             } />
 
             <div className="container mx-auto px-4 py-9">
@@ -58,7 +58,7 @@ export default async function HomePage() {
                 {uiStores.length === 0 ? (
                     <div className="flex flex-col items-center justify-center py-20">
                         <h3 className="text-2xl font-semibold mb-4">No stores yet</h3>
-                        <p className="text-gray-600 mb-8">Be the first to create a store on Vendly!</p>
+                        <p className="text-muted-foreground mb-8">Be the first to create a store on Vendly!</p>
                         <Link href="/c">
                             <Button size="lg">
                                 Create Your Store

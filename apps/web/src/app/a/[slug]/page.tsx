@@ -140,9 +140,20 @@ export default function DashboardPage() {
       />
 
       {/* Charts Section */}
-      <div className="grid gap-4 md:grid-cols-7 lg:grid-cols-7">
-        <RevenueAreaChartCard title="Total Revenue" totalLabel="$72,592" data={mockRevenueData} />
-        <TopProductsBarChartCard title="Top Products" description="By sales volume" totalLabel="38,512" data={topProductsData} />
+      <div className="grid gap-5 md:grid-cols-7 lg:grid-cols-7">
+        <RevenueAreaChartCard
+          className="md:col-span-4"
+          title="Total Revenue"
+          totalLabel="$72,592"
+          data={mockRevenueData}
+        />
+        <TopProductsBarChartCard
+          className="md:col-span-3"
+          title="Top Products"
+          description="By sales volume"
+          totalLabel="38,512"
+          data={topProductsData}
+        />
       </div>
 
       {/* Recent Transactions Table */}

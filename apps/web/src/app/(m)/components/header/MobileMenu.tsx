@@ -23,7 +23,13 @@ import { MenuItem } from "./MenuItem";
 interface MobileMenuProps {
     isOpen: boolean;
     onClose: () => void;
-    session: any;
+    session: {
+        user?: {
+            name?: string | null;
+            email?: string | null;
+            image?: string | null;
+        };
+    } | null;
     showSellButton: boolean;
     onSellNow: () => void;
     onShowLogin: () => void;
@@ -46,9 +52,9 @@ export function MobileMenu({
     return (
         <Portal>
             <div className="fixed inset-0 z-50 bg-black/20 backdrop-blur-sm animate-in fade-in duration-200">
-                <div className="fixed inset-y-0 left-0 w-full max-w-sm bg-white shadow-2xl animate-in slide-in-from-left duration-300">
+                <div className="fixed inset-y-0 left-0 w-full max-w-sm bg-background text-foreground shadow-2xl animate-in slide-in-from-left duration-300">
                     {/* Menu Header */}
-                    <div className="flex items-center justify-between px-6 py-5 border-b border-neutral-200">
+                    <div className="flex items-center justify-between px-6 py-5 border-b border-border">
                         <div className="flex items-center gap-2.5">
                             <Image
                                 src="/vendly.png"
@@ -62,7 +68,7 @@ export function MobileMenu({
                         </div>
                         <button
                             onClick={onClose}
-                            className="p-2 rounded-lg hover:bg-neutral-100 active:scale-95 transition-all"
+                            className="p-2 rounded-lg hover:bg-muted/70 active:scale-95 transition-all"
                             aria-label="Close menu"
                         >
                             <HugeiconsIcon icon={Cancel01Icon} size={24} />
@@ -73,11 +79,11 @@ export function MobileMenu({
                     <div className="p-4 space-y-1">
                         {/* User Section */}
                         {isSignedIn && session?.user && (
-                            <div className="mb-6 px-3 py-4 rounded-xl bg-neutral-50 border border-neutral-200">
+                            <div className="mb-6 px-3 py-4 rounded-xl bg-muted/40 border border-border">
                                 <div className="flex items-center gap-3 mb-3">
                                     <Avatar className="h-12 w-12">
                                         <AvatarImage src={session.user.image || ""} />
-                                        <AvatarFallback className="bg-neutral-900 text-white font-medium">
+                                        <AvatarFallback className="bg-foreground text-background font-medium">
                                             {session.user.name?.charAt(0) || "U"}
                                         </AvatarFallback>
                                     </Avatar>
@@ -88,7 +94,7 @@ export function MobileMenu({
                                             </p>
                                         )}
                                         {session?.user?.email && (
-                                            <p className="text-xs text-neutral-500 leading-tight truncate mt-1">
+                                            <p className="text-xs text-muted-foreground leading-tight truncate mt-1">
                                                 {session.user.email}
                                             </p>
                                         )}
@@ -97,7 +103,7 @@ export function MobileMenu({
                                 <div className="flex gap-2">
                                     <Link
                                         href="/account/orders"
-                                        className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-medium bg-white rounded-lg border border-neutral-200 hover:bg-neutral-50 active:scale-95 transition-all"
+                                        className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-medium bg-background rounded-lg border border-border hover:bg-muted/40 active:scale-95 transition-all"
                                         onClick={onClose}
                                     >
                                         <HugeiconsIcon icon={PackageIcon} size={14} />
@@ -105,7 +111,7 @@ export function MobileMenu({
                                     </Link>
                                     <Link
                                         href="/account/settings"
-                                        className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-medium bg-white rounded-lg border border-neutral-200 hover:bg-neutral-50 active:scale-95 transition-all"
+                                        className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-medium bg-background rounded-lg border border-border hover:bg-muted/40 active:scale-95 transition-all"
                                         onClick={onClose}
                                     >
                                         <HugeiconsIcon icon={Settings02Icon} size={14} />
@@ -158,7 +164,7 @@ export function MobileMenu({
 
                         {isSignedIn && (
                             <>
-                                <div className="h-px bg-neutral-200 my-4" />
+                                <div className="h-px bg-border my-4" />
                                 <MenuItem
                                     icon={Logout03Icon}
                                     label="Sign out"

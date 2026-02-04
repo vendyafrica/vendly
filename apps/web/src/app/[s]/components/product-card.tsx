@@ -35,7 +35,7 @@ export function ProductCard({ title, slug, price, image, index = 0, storeSlug }:
       className="group block break-inside-avoid mb-3 sm:mb-4 lg:mb-5"
     >
       {/* Image Container */}
-      <div className={`relative overflow-hidden rounded-lg ${aspectClass} bg-neutral-100`}>
+      <div className={`relative overflow-hidden rounded-lg ${aspectClass} bg-muted`}>
         {image ? (
           <Image
             src={image}
@@ -45,7 +45,7 @@ export function ProductCard({ title, slug, price, image, index = 0, storeSlug }:
             className="object-cover transition-all duration-700 ease-out group-hover:scale-[1.03]"
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center text-neutral-300">
+          <div className="w-full h-full flex items-center justify-center text-muted-foreground">
             <svg
               className="w-8 h-8 sm:w-10 sm:h-10"
               fill="none"
@@ -68,10 +68,10 @@ export function ProductCard({ title, slug, price, image, index = 0, storeSlug }:
 
       {/* Product Info - Clean and minimal */}
       <div className="mt-2 px-0.5">
-        <h3 className="text-[13px] sm:text-sm font-normal text-neutral-900 leading-tight line-clamp-2 mb-1">
+        <h3 className="text-[13px] sm:text-sm font-normal text-foreground leading-tight line-clamp-2 mb-1">
           {title}
         </h3>
-        <p className="text-xs sm:text-[13px] font-medium text-neutral-600">
+        <p className="text-xs sm:text-[13px] font-medium text-muted-foreground">
           {price}
         </p>
       </div>

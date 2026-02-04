@@ -4,12 +4,44 @@ import { MarketplaceGrid } from "@/app/(m)/components/MarketplaceGrid";
 import type { MarketplaceStore } from "@/types/marketplace";
 import { Button } from "@vendly/ui/components/button";
 import Link from "next/link";
+import type { Metadata } from "next";
 import { marketplaceService } from "@/lib/services/marketplace-service";
 
 interface CategoryPageProps {
     params: {
         category: string;
     }
+}
+
+const formatCategoryName = (slug: string) =>
+    slug
+        .split('-')
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(' ');
+
+export async function generateMetadata({ params }: CategoryPageProps): Promise<Metadata> {
+    const categorySlug = params.category;
+    const categoryName = formatCategoryName(categorySlug);
+
+    const title = `${categoryName} | Shop ${categoryName} on Vendly`;
+    const description = `Discover ${categoryName} stores and products. Browse curated selections and shop ${categoryName.toLowerCase()} on Vendly.`;
+
+    return {
+        title,
+        description,
+        alternates: {
+            canonical: `/category/${categorySlug}`,
+        },
+        openGraph: {
+            title,
+            description,
+            url: `/category/${categorySlug}`,
+        },
+        twitter: {
+            title,
+            description,
+        },
+    };
 }
 
 export default async function CategoryPage({ params }: CategoryPageProps) {
@@ -28,17 +60,10 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
         images: [],
     }));
 
-    const formatCategoryName = (slug: string) => {
-        return slug
-            .split('-')
-            .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-            .join(' ');
-    };
-
     const categoryName = formatCategoryName(categorySlug);
 
     return (
-        <main className="min-h-screen bg-[#F9F9F7]">
+        <main className="min-h-screen bg-background text-foreground">
             <Header />
 
             <div className="container mx-auto px-4 py-12">
