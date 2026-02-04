@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { useAppSession } from "./app-session-context";
+import { trackStorefrontEvents } from "@/lib/storefront-tracking";
 
 // Use relative paths for same-origin API calls (Next.js serverless routes)
 const API_BASE = "";
@@ -82,6 +83,17 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     }, [items, isLoaded]);
 
     const addItem = async (newItem: Omit<CartItem, "quantity">, quantity = 1) => {
+        if (newItem?.store?.slug && newItem?.product?.id) {
+            void trackStorefrontEvents(newItem.store.slug, [
+                {
+                    eventType: "add_to_cart",
+                    productId: newItem.product.id,
+                    quantity,
+                    meta: { productSlug: newItem.product.slug },
+                },
+            ]);
+        }
+
         // Optimistic update
         setItems((prev) => {
             const existing = prev.find((item) => item.id === newItem.id);

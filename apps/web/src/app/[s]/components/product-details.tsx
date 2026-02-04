@@ -17,6 +17,7 @@ import { Avatar, AvatarImage, AvatarFallback } from "@vendly/ui/components/avata
 import { useCart } from "../../../contexts/cart-context";
 import { useRecentlyViewed } from "@/hooks/use-recently-viewed";
 import { useWishlist } from "@/hooks/use-wishlist";
+import { trackStorefrontEvents } from "@/lib/storefront-tracking";
 
 interface ProductDetailsProps {
     product: {
@@ -43,6 +44,17 @@ export function ProductDetails({ product }: ProductDetailsProps) {
     const { addItem } = useCart();
     const { addToRecentlyViewed } = useRecentlyViewed();
     const { toggleWishlist, isInWishlist } = useWishlist();
+
+    useEffect(() => {
+        if (!product?.store?.slug || !product?.id) return;
+        void trackStorefrontEvents(product.store.slug, [
+            {
+                eventType: "product_view",
+                productId: product.id,
+                meta: { productSlug: product.slug },
+            },
+        ]);
+    }, [product]);
 
     useEffect(() => {
         if (product) {

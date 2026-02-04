@@ -9,23 +9,23 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@vendly/ui/components/card";
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from "recharts";
 
-export type RevenuePoint = {
+export type VisitsPoint = {
   date: string;
-  total: number;
+  visits: number;
 };
 
-export function RevenueAreaChartCard({
+export function VisitsAreaChartCard({
   title,
   totalLabel,
   data,
 }: {
   title: string;
   totalLabel: string;
-  data: RevenuePoint[];
+  data: VisitsPoint[];
 }) {
   const chartConfig = {
-    total: {
-      label: "Revenue",
+    visits: {
+      label: "Visits",
       color: "hsl(var(--primary))",
     },
   } satisfies ChartConfig;
@@ -49,32 +49,21 @@ export function RevenueAreaChartCard({
             }}
           >
             <CartesianGrid vertical={false} />
-            <XAxis
-              dataKey="date"
-              tickLine={false}
-              axisLine={false}
-              tickMargin={8}
-            />
-            <YAxis
-              tickLine={false}
-              axisLine={false}
-              width={42}
-              tickMargin={10}
-              padding={{ top: 8, bottom: 8 }}
-            />
+            <XAxis dataKey="date" tickLine={false} axisLine={false} tickMargin={8} />
+            <YAxis tickLine={false} axisLine={false} width={42} tickMargin={10} padding={{ top: 8, bottom: 8 }} />
             <ChartTooltip cursor={false} content={<ChartTooltipContent hideLabel />} />
             <defs>
-              <linearGradient id="fillRevenue" x1="0" y1="0" x2="0" y2="1">
+              <linearGradient id="fillVisits" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.25} />
                 <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0.02} />
               </linearGradient>
             </defs>
             <Area
               type="monotone"
-              dataKey="total"
+              dataKey="visits"
               stroke="var(--foreground)"
               strokeWidth={2}
-              fill="url(#fillRevenue)"
+              fill="url(#fillVisits)"
               dot={false}
             />
           </AreaChart>
