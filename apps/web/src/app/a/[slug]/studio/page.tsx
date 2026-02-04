@@ -6,7 +6,6 @@ import { HugeiconsIcon } from "@hugeicons/react";
 import {
     ComputerIcon,
     SmartPhone02Icon,
-    LinkSquare02Icon,
 } from "@hugeicons/core-free-icons";
 import { Button } from "@vendly/ui/components/button";
 import { HeroEditor } from "./components/hero-editor";
@@ -22,6 +21,7 @@ export default function StudioPage() {
     const [isEditingHero, setIsEditingHero] = useState(false);
     const [tenantId, setTenantId] = useState<string | null>(null);
     const [heroMediaItems, setHeroMediaItems] = useState<Array<{ url: string; type: "image" | "video" }>>([]);
+    const [iframeKey, setIframeKey] = useState(0);
 
     const storefrontUrl =
         process.env.NODE_ENV === "production"
@@ -49,6 +49,7 @@ export default function StudioPage() {
         setHeroMediaItems(items);
         // Reload the iframe to reflect changes
         setIsLoading(true);
+        setIframeKey((prev) => prev + 1);
     };
 
     return (
@@ -77,6 +78,7 @@ export default function StudioPage() {
                 {/* Desktop Preview */}
                 {device === "desktop" && (
                     <iframe
+                        key={iframeKey}
                         src={storefrontUrl}
                         title="Desktop Storefront Preview"
                         onLoad={() => setIsLoading(false)}
@@ -126,13 +128,6 @@ export default function StudioPage() {
                         <HugeiconsIcon icon={SmartPhone02Icon} size={18} />
                     </Button>
                 </div>
-            </div>
-
-            <div className="fixed top-4 right-4 z-50">
-                <Button onClick={() => setIsEditingHero(true)} size="sm">
-                    <HugeiconsIcon icon={LinkSquare02Icon} size={18} />
-                    Edit Hero
-                </Button>
             </div>
         </div>
     );

@@ -21,6 +21,7 @@ export type ProductApiRow = {
     quantity: number;
     status: "draft" | "ready" | "active" | "sold-out";
     media: ProductMediaItem[];
+    salesAmount?: number;
 };
 
 export type ProductTableRow = {
@@ -33,6 +34,7 @@ export type ProductTableRow = {
     quantity: number;
     status: "draft" | "ready" | "active" | "sold-out";
     thumbnailUrl?: string;
+    salesAmount?: number;
 };
 
 // API functions
@@ -54,6 +56,7 @@ async function fetchProducts(storeId: string): Promise<ProductTableRow[]> {
         quantity: p.quantity,
         status: p.status,
         thumbnailUrl: p.media?.[0]?.blobUrl,
+        salesAmount: p.salesAmount ?? 0,
     }));
 }
 

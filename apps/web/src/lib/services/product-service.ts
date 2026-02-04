@@ -1,5 +1,5 @@
 import { db, dbWs } from "@vendly/db/db";
-import { products, productMedia, mediaObjects } from "@vendly/db/schema";
+import { products, productMedia, mediaObjects, orderItems, orders } from "@vendly/db/schema";
 import { eq, and, isNull, desc, sql, like } from "@vendly/db";
 import { mediaService, type UploadFile } from "./media-service";
 import type { CreateProductInput, ProductFilters, ProductWithMedia, UpdateProductInput } from "./product-models";
@@ -229,13 +229,39 @@ export const productService = {
             .from(products)
             .where(whereClause);
 
-        const productsWithMedia = productList.map((p: any) => ({
+        // Aggregate sales (revenue) per product for paid orders
+        const salesRows = await db
+            .select({
+                productId: orderItems.productId,
+                salesAmount: sql<number>`COALESCE(SUM(${orderItems.totalPrice}), 0)::int`,
+            })
+            .from(orderItems)
+            .innerJoin(orders, eq(orders.id, orderItems.orderId))
+            .where(
+                and(
+                    eq(orderItems.tenantId, tenantId),
+                    eq(orders.paymentStatus, "paid"),
+                    isNull(orders.deletedAt)
+                )
+            )
+            .groupBy(orderItems.productId);
+
+        const salesMap = new Map<string, number>();
+        salesRows.forEach((row) => {
+            if (row.productId) salesMap.set(row.productId, row.salesAmount || 0);
+        });
+
+        type ProductListItem = (typeof productList)[number];
+        type ProductMediaItem = ProductListItem["media"][number];
+
+        const productsWithMedia = productList.map((p: ProductListItem) => ({
             ...p,
-            media: p.media.map((pm: any) => ({
+            media: p.media.map((pm: ProductMediaItem) => ({
                 ...pm.media,
                 sortOrder: pm.sortOrder,
                 isFeatured: pm.isFeatured,
             })),
+            salesAmount: salesMap.get(p.id) ?? 0,
         }));
 
         return {

@@ -9,15 +9,19 @@ import { useTenant } from "../tenant-context";
 import Image from "next/image";
 import { Button } from "@vendly/ui/components/button";
 import { HugeiconsIcon } from "@hugeicons/react";
-import { Delete02Icon, Edit02Icon, ViewIcon } from "@hugeicons/core-free-icons";
+import { Delete02Icon, Edit02Icon, MoreHorizontalIcon } from "@hugeicons/core-free-icons";
 import { UploadModal } from "./components/upload-modal";
 import { EditProductModal } from "./components/edit-product-modal";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@vendly/ui/components/dialog";
-import { useRouter } from "next/navigation";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@vendly/ui/components/dropdown-menu";
 import {
   useProducts,
   useDeleteProduct,
-  useProductDetail,
   useInvalidateProducts,
   type ProductTableRow,
   type ProductApiRow,
@@ -32,7 +36,6 @@ function formatMoney(amount: number, currency: string) {
 }
 
 export default function ProductsPage() {
-  const router = useRouter();
   const { bootstrap, error: bootstrapError } = useTenant();
 
   // Use React Query for products with optimistic updates
@@ -59,9 +62,6 @@ export default function ProductsPage() {
     thumbnailUrl?: string;
     media?: { id?: string; blobUrl: string; contentType?: string; blobPathname?: string }[];
   } | null>(null);
-
-  const [previewOpen, setPreviewOpen] = React.useState(false);
-  const [previewProduct, setPreviewProduct] = React.useState<ProductTableRow | null>(null);
 
   // Optimistic delete - removes instantly from UI
   const handleDelete = async (id: string) => {
@@ -101,12 +101,6 @@ export default function ProductsPage() {
     }
   };
 
-  const handleView = (row: ProductTableRow) => {
-    setPreviewProduct(row);
-    setPreviewOpen(true);
-  };
-
-
   const handleUploadComplete = () => {
     // Invalidate and refetch products after upload
     if (bootstrap?.storeId) {
@@ -139,21 +133,36 @@ export default function ProductsPage() {
               <div className="flex size-full items-center justify-center text-xs text-muted-foreground">N/A</div>
             )}
           </div>
-          <div className="min-w-0">
+          <div className="min-w-0 max-w-[220px]">
             <div className="truncate font-medium" title={row.original.name}>
               {row.original.name}
-            </div>
-            <div className="text-xs text-muted-foreground">
-              {formatMoney(row.original.priceAmount, row.original.currency)}
             </div>
           </div>
         </div>
       ),
     },
     {
+      id: "price",
+      header: "Price",
+      cell: ({ row }) => (
+        <span className="text-sm whitespace-nowrap">
+          {formatMoney(row.original.priceAmount, row.original.currency)}
+        </span>
+      ),
+    },
+    {
       accessorKey: "quantity",
       header: "Inventory",
       cell: ({ row }) => <span className="text-sm">{row.original.quantity}</span>,
+    },
+    {
+      id: "sales",
+      header: "Sales",
+      cell: ({ row }) => (
+        <span className="text-sm whitespace-nowrap">
+          {formatMoney(row.original.salesAmount ?? 0, row.original.currency)}
+        </span>
+      ),
     },
     {
       accessorKey: "status",
@@ -169,35 +178,40 @@ export default function ProductsPage() {
       id: "actions",
       header: "",
       cell: ({ row }) => (
-        <div className="flex justify-end gap-1">
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon"
-            onClick={() => handleView(row.original)}
-            className="h-9 w-9"
-          >
-            <HugeiconsIcon icon={ViewIcon} className="size-4" />
-          </Button>
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon"
-            onClick={() => handleEdit(row.original.id)}
-            className="h-9 w-9"
-          >
-            <HugeiconsIcon icon={Edit02Icon} className="size-4" />
-          </Button>
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon"
-            onClick={() => handleDelete(row.original.id)}
-            disabled={deleteProduct.isPending}
-            className="h-9 w-9 text-destructive hover:text-destructive"
-          >
-            <HugeiconsIcon icon={Delete02Icon} className="size-4" />
-          </Button>
+        <div className="flex justify-end">
+          <DropdownMenu>
+            <DropdownMenuTrigger
+              nativeButton={true}
+              render={(props) => (
+                <Button
+                  {...props}
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="h-9 w-9"
+                />
+              )}
+            >
+              <HugeiconsIcon icon={MoreHorizontalIcon} className="size-4" />
+              <span className="sr-only">Actions</span>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="min-w-44">
+              <DropdownMenuItem onClick={() => handleEdit(row.original.id)} className="p-2 cursor-pointer">
+                <HugeiconsIcon icon={Edit02Icon} className="size-4" />
+                Edit
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                variant="destructive"
+                onClick={() => handleDelete(row.original.id)}
+                disabled={deleteProduct.isPending}
+                className="p-2 cursor-pointer"
+              >
+                <HugeiconsIcon icon={Delete02Icon} className="size-4" />
+                Delete
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       ),
     },
@@ -254,10 +268,6 @@ export default function ProductsPage() {
           onUploadClick={() => {
             setUploadModalOpen(true);
           }}
-          onInstagramClick={() => {
-            if (!bootstrap?.storeSlug) return;
-            router.push(`/a/${bootstrap.storeSlug}/integrations`);
-          }}
         />
       </div>
 
@@ -299,25 +309,6 @@ export default function ProductsPage() {
         tenantId={bootstrap?.tenantId || ""}
         onProductUpdated={handleProductUpdated}
       />
-
-      <Dialog open={previewOpen} onOpenChange={setPreviewOpen}>
-        <DialogContent className="sm:max-w-3xl">
-          <DialogHeader>
-            <DialogTitle>{previewProduct?.name || "Preview"}</DialogTitle>
-          </DialogHeader>
-          {previewProduct && bootstrap?.storeSlug ? (
-            <div className="overflow-hidden rounded-md border bg-background">
-              <iframe
-                title="Product preview"
-                src={`/${bootstrap.storeSlug}/products/${previewProduct.slug}`}
-                className="h-[70vh] w-full"
-              />
-            </div>
-          ) : (
-            <div className="text-sm text-muted-foreground">Preview unavailable.</div>
-          )}
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }

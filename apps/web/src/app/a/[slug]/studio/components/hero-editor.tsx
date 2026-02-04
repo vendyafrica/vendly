@@ -4,14 +4,11 @@ import { useState } from "react";
 import Image from "next/image";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { 
-    Upload02Icon, 
     PlayIcon, 
-    Image02Icon,
-    Delete02Icon,
-    Edit03Icon 
+    Image02Icon 
 } from "@hugeicons/core-free-icons";
-import { Button } from "@vendly/ui/components/button";
 import { useUpload } from "@/hooks/use-upload";
+import { CoverUpload } from "./cover-upload";
 
 interface HeroEditorProps {
     storeSlug: string;
@@ -26,31 +23,26 @@ export function HeroEditor({
     heroMediaItems,
     onUpdate 
 }: HeroEditorProps) {
-    const [isEditing, setIsEditing] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
     const { uploadFile, isUploading } = useUpload();
 
-    const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
-        const files = Array.from(event.target.files ?? []);
-        if (files.length === 0) return;
+    const handleCoverSelected = async (file: File | null) => {
+        if (!file) return;
 
         try {
             setIsSaving(true);
-            
-            // Upload the file
+
             if (!tenantId) {
                 alert("Store is still loading. Please try again in a moment.");
                 return;
             }
 
-            const uploadedItems: Array<{ url: string; type: "image" | "video" }> = [];
-            for (const file of files) {
-                const blob = await uploadFile(file, `tenants/${tenantId}/hero`);
-                const mediaType = file.type.startsWith("video/") ? "video" : "image";
-                uploadedItems.push({ url: blob.url, type: mediaType });
-            }
+            const blob = await uploadFile(file, `tenants/${tenantId}/hero`);
+            const mediaType = file.type.startsWith("video/") ? "video" : "image";
+            const coverItem = { url: blob.url, type: mediaType } as const;
 
-            const nextItems = [...heroMediaItems, ...uploadedItems];
+            const rest = heroMediaItems.filter((_, idx) => idx !== 0);
+            const nextItems = [coverItem, ...rest];
 
             const response = await fetch(`/api/storefront/${storeSlug}/hero`, {
                 method: "PUT",
@@ -71,7 +63,6 @@ export function HeroEditor({
             console.error("Failed to upload hero media:", error);
             alert("Failed to upload hero media. Please try again.");
         } finally {
-            event.target.value = "";
             setIsSaving(false);
         }
     };
@@ -149,85 +140,46 @@ export function HeroEditor({
                         </div>
                     </div>
                 )}
+            </div>
 
-                {/* Overlay when editing */}
-                {isEditing && (
-                    <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                        <div className="bg-white rounded-xl p-6 max-w-sm w-full mx-4">
-                            <h3 className="text-lg font-semibold mb-4">Update Hero Media</h3>
-                            
-                            <div className="space-y-3">
-                                <label className="block">
-                                    <input
-                                        type="file"
-                                        accept="image/*,video/*"
-                                        multiple
-                                        onChange={handleFileSelect}
-                                        disabled={!tenantId || isUploading || isSaving}
-                                        className="hidden"
-                                        id="hero-file-input"
-                                    />
-                                    <Button
-                                        variant="outline"
-                                        className="w-full"
-                                        disabled={!tenantId || isUploading || isSaving}
-                                    >
-                                        <label htmlFor="hero-file-input" className="cursor-pointer flex items-center justify-center gap-2">
-                                            <HugeiconsIcon icon={Upload02Icon} size={20} />
-                                            {!tenantId
-                                                ? "Loading store..."
-                                                : isUploading
-                                                    ? "Uploading..."
-                                                    : "Choose New Media"}
-                                        </label>
-                                    </Button>
-                                </label>
+            {/* Inline editor content */}
+            <div className="absolute inset-0 bg-linear-to-b from-black/5 via-transparent to-black/40 pointer-events-none" />
 
-                                {heroMediaItems.length > 0 && (
-                                    <div className="grid grid-cols-3 gap-2">
-                                        {heroMediaItems.slice(0, 6).map((item, idx) => (
-                                            <button
-                                                key={`${item.url}-${idx}`}
-                                                type="button"
-                                                onClick={() => handleRemove(idx)}
-                                                disabled={isSaving}
-                                                className="relative aspect-square overflow-hidden rounded-md border border-border/60"
-                                            >
-                                                {item.type === "video" ? (
-                                                    <div className="w-full h-full bg-neutral-100 flex items-center justify-center">
-                                                        <HugeiconsIcon icon={PlayIcon} size={18} className="text-neutral-500" />
-                                                    </div>
-                                                ) : (
-                                                    <Image src={item.url} alt="Hero item" fill className="object-cover" />
-                                                )}
-                                            </button>
-                                        ))}
-                                    </div>
-                                )}
+            <div className="bg-white rounded-xl p-6 shadow-lg mt-4">
+                <h3 className="text-lg font-semibold mb-4">Update Hero Media</h3>
 
-                                <Button
-                                    variant="ghost"
-                                    onClick={() => setIsEditing(false)}
+                <div className="space-y-4">
+                    <CoverUpload
+                        accept="image/*,video/*"
+                        maxSize={10 * 1024 * 1024}
+                        disabled={!tenantId || isUploading || isSaving}
+                        title={!tenantId ? "Loading store..." : isUploading ? "Uploading..." : "Upload cover image or video"}
+                        description="Drag & drop, or click to browse"
+                        onFileSelected={handleCoverSelected}
+                    />
+
+                    {heroMediaItems.length > 0 && (
+                        <div className="grid grid-cols-3 gap-2">
+                            {heroMediaItems.slice(0, 6).map((item, idx) => (
+                                <button
+                                    key={`${item.url}-${idx}`}
+                                    type="button"
+                                    onClick={() => handleRemove(idx)}
                                     disabled={isSaving}
-                                    className="w-full"
+                                    className="relative aspect-square overflow-hidden rounded-md border border-border/60"
                                 >
-                                    Cancel
-                                </Button>
-                            </div>
+                                    {item.type === "video" ? (
+                                        <div className="w-full h-full bg-neutral-100 flex items-center justify-center">
+                                            <HugeiconsIcon icon={PlayIcon} size={18} className="text-neutral-500" />
+                                        </div>
+                                    ) : (
+                                        <Image src={item.url} alt="Hero item" fill className="object-cover" />
+                                    )}
+                                </button>
+                            ))}
                         </div>
-                    </div>
-                )}
-
-                {/* Edit Button */}
-                <Button
-                    onClick={() => setIsEditing(true)}
-                    className="absolute top-4 right-4 z-20 shadow-lg"
-                    size="sm"
-                    variant="default"
-                >
-                    <HugeiconsIcon icon={Edit03Icon} size={16} className="mr-2" />
-                    Edit Hero
-                </Button>
+                    )}
+                </div>
             </div>
         </div>
     );
