@@ -9,7 +9,7 @@ export const createProductSchema = z.object({
     title: z.string().min(1).max(255),
     description: z.string().optional(),
     priceAmount: z.number().int().min(0).default(0),
-    currency: z.string().length(3).default("KES"),
+    currency: z.string().length(3).default("UGX"),
     source: z.enum(["manual", "instagram", "bulk-upload"]).default("manual"),
     sourceId: z.string().optional(),
     sourceUrl: z.string().url().optional(),
@@ -30,7 +30,7 @@ export type CreateProductInput = z.infer<typeof createProductSchema>;
  */
 export const bulkUploadSchema = z.object({
     storeId: z.string().uuid(),
-    defaultCurrency: z.string().length(3).default("KES"),
+    defaultCurrency: z.string().length(3).default("UGX"),
     defaultPrice: z.number().int().min(0).default(0),
     generateTitles: z.boolean().default(true),
     markAsFeatured: z.boolean().default(false),

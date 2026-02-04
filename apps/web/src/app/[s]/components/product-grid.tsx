@@ -25,10 +25,12 @@ export function ProductGrid({ products }: ProductGridProps) {
 
     // Format price for display
     const formatPrice = (amount: number, currency: string) => {
-        if (currency === "KES") {
-            return `KES ${amount.toLocaleString()}`;
+        // Current price storage is treated as a whole-unit integer for UGX/KES
+        // (no cents). For other currencies we fall back to a cents-like display.
+        if (currency === "KES" || currency === "UGX") {
+            return `${currency} ${amount.toLocaleString()}`;
         }
-        return `$${(amount / 100).toFixed(2)}`;
+        return `${currency} ${(amount / 100).toFixed(2)}`;
     };
 
     return (
@@ -46,4 +48,4 @@ export function ProductGrid({ products }: ProductGridProps) {
             ))}
         </div>
     );
-}   
+}
