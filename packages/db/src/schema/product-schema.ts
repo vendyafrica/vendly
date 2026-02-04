@@ -32,7 +32,7 @@ export const products = pgTable(
     description: text("description"),
 
     priceAmount: integer("price_amount").notNull().default(0),
-    currency: text("currency").notNull().default("KES"),
+    currency: text("currency").notNull().default("UGX"),
     quantity: integer("quantity").notNull().default(0),
 
     status: text("status").notNull().default("draft"),
@@ -85,7 +85,7 @@ export const productVariants = pgTable(
 
     variantName: text("variant_name"),
     priceAmount: integer("price_amount").notNull(),
-    currency: text("currency").default("KES"),
+    currency: text("currency").default("UGX"),
     quantity: integer("quantity").notNull().default(0),
 
     options: jsonb("options").$type<{ size?: string; color?: string }>(),

@@ -45,7 +45,7 @@ export const orders = pgTable(
         subtotal: integer("subtotal").notNull().default(0),
         shippingCost: integer("shipping_cost").notNull().default(0),
         totalAmount: integer("total_amount").notNull().default(0),
-        currency: text("currency").notNull().default("KES"),
+        currency: text("currency").notNull().default("UGX"),
 
         // Shipping address
         shippingAddress: jsonb("shipping_address").$type<{
@@ -101,7 +101,7 @@ export const orderItems = pgTable(
         quantity: integer("quantity").notNull().default(1),
         unitPrice: integer("unit_price").notNull(),
         totalPrice: integer("total_price").notNull(),
-        currency: text("currency").notNull().default("KES"),
+        currency: text("currency").notNull().default("UGX"),
 
         createdAt: timestamp("created_at").defaultNow().notNull(),
     },
@@ -147,5 +147,5 @@ export type OrderItem = typeof orderItems.$inferSelect;
 export type NewOrderItem = typeof orderItems.$inferInsert;
 
 export type OrderStatus = "pending" | "processing" | "completed" | "cancelled" | "refunded";
-export type PaymentMethod = "card" | "mpesa" | "paypal" | "cash_on_delivery";
+export type PaymentMethod = "card" | "mpesa" | "mtn_momo" | "cash_on_delivery";
 export type PaymentStatus = "pending" | "paid" | "failed" | "refunded";

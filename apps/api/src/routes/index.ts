@@ -4,6 +4,7 @@ import { tenantOrdersRouter } from "./tenant-orders";
 import { orderSimulationsRouter } from "./order-simulations";
 import { whatsappRouter } from "./whatsapp";
 import { whatsappTemplatesRouter } from "./whatsapp-templates";
+import { mtnMomoRouter } from "./mtn-momo";
 
 export const apiRouter:Router = Router();
 
@@ -12,3 +13,4 @@ apiRouter.use(tenantOrdersRouter);
 apiRouter.use(orderSimulationsRouter);
 apiRouter.use(whatsappRouter);
 apiRouter.use(whatsappTemplatesRouter);
+apiRouter.use(mtnMomoRouter);

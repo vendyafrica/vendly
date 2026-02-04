@@ -39,7 +39,16 @@ interface CheckoutProps {
     quantity: number;
 }
 
-type PaymentMethod = "cash_on_delivery" | "mpesa" | "card";
+type PaymentMethod = "cash_on_delivery" | "mpesa" | "mtn_momo" | "card";
+
+type OrderCreateResponse =
+    | { order: { id: string; paymentStatus?: string; orderNumber?: string }; momo: { referenceId: string } | null }
+    | { id: string; paymentStatus?: string; orderNumber?: string };
+
+type MtnStatusResponse = {
+    status?: string;
+    normalizedPaymentStatus?: "pending" | "paid" | "failed";
+};
 
 export function Checkout({ open, onOpenChange, storeSlug, product, quantity }: CheckoutProps) {
     const [customerName, setCustomerName] = useState("");
@@ -52,7 +61,76 @@ export function Checkout({ open, onOpenChange, storeSlug, product, quantity }: C
     const [successStage, setSuccessStage] = useState<"paid" | "processing">("paid");
     const [error, setError] = useState<string | null>(null);
 
+    const [isPolling, setIsPolling] = useState(false);
+    const [momoReferenceId, setMomoReferenceId] = useState<string | null>(null);
+    const [momoStatus, setMomoStatus] = useState<"pending" | "paid" | "failed">("pending");
+
     const totalAmount = product.price * quantity;
+
+    const resetState = () => {
+        setCustomerName("");
+        setCustomerEmail("");
+        setCustomerPhone("");
+        setPaymentMethod("cash_on_delivery");
+        setNotes("");
+        setIsSuccess(false);
+        setSuccessStage("paid");
+        setError(null);
+        setIsPolling(false);
+        setMomoReferenceId(null);
+        setMomoStatus("pending");
+    };
+
+    const startMomoPolling = async (referenceId: string) => {
+        setIsPolling(true);
+        setMomoReferenceId(referenceId);
+        setMomoStatus("pending");
+
+        const maxAttempts = 30;
+        const delayMs = 3000;
+
+        for (let attempt = 0; attempt < maxAttempts; attempt++) {
+            try {
+                const res = await fetch(
+                    `${API_BASE}/api/storefront/${storeSlug}/payments/mtn-momo/request-to-pay/${referenceId}`,
+                    { method: "GET" }
+                );
+                const json = (await res.json().catch(() => ({}))) as MtnStatusResponse;
+
+                if (!res.ok) {
+                    throw new Error((json as { error?: string }).error || "Failed to check MoMo status");
+                }
+
+                const normalized = json.normalizedPaymentStatus || "pending";
+                setMomoStatus(normalized);
+
+                if (normalized === "paid") {
+                    setIsSuccess(true);
+                    setSuccessStage("paid");
+                    setTimeout(() => setSuccessStage("processing"), 1000);
+                    setTimeout(() => {
+                        window.location.href = "http://localhost:3000/cart";
+                    }, 1200);
+                    return;
+                }
+
+                if (normalized === "failed") {
+                    setError("Payment failed. Please try again.");
+                    setIsPolling(false);
+                    return;
+                }
+            } catch (err) {
+                setError(err instanceof Error ? err.message : "Failed to check MoMo status");
+                setIsPolling(false);
+                return;
+            }
+
+            await new Promise((r) => setTimeout(r, delayMs));
+        }
+
+        setError("Payment is taking longer than expected. Please check your phone and try again.");
+        setIsPolling(false);
+    };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -60,6 +138,10 @@ export function Checkout({ open, onOpenChange, storeSlug, product, quantity }: C
         setError(null);
 
         try {
+            if (paymentMethod === "mtn_momo" && !customerPhone) {
+                throw new Error("Phone Number is required for MTN MoMo");
+            }
+
             const response = await fetch(`${API_BASE}/api/storefront/${storeSlug}/orders`, {
                 method: "POST",
                 headers: {
@@ -85,11 +167,20 @@ export function Checkout({ open, onOpenChange, storeSlug, product, quantity }: C
                 throw new Error(data.error || "Failed to place order");
             }
 
+            const data = (await response.json()) as OrderCreateResponse;
+            const momo = "momo" in data ? data.momo : null;
+
+            if (paymentMethod === "mtn_momo") {
+                if (!momo?.referenceId) {
+                    throw new Error("Failed to initiate MTN MoMo payment");
+                }
+                await startMomoPolling(momo.referenceId);
+                return;
+            }
+
             setIsSuccess(true);
             setSuccessStage("paid");
             setTimeout(() => setSuccessStage("processing"), 1000);
-
-            // Hard redirect to cart shortly after success to avoid client routing issues
             setTimeout(() => {
                 window.location.href = "http://localhost:3000/cart";
             }, 1200);
@@ -101,21 +192,53 @@ export function Checkout({ open, onOpenChange, storeSlug, product, quantity }: C
     };
 
     const handleClose = () => {
-        if (!isSubmitting) {
+        if (!isSubmitting && !isPolling) {
             onOpenChange(false);
-            // Reset form after closing
             setTimeout(() => {
-                setCustomerName("");
-                setCustomerEmail("");
-                setCustomerPhone("");
-                setPaymentMethod("cash_on_delivery");
-                setNotes("");
-                setIsSuccess(false);
-                setSuccessStage("paid");
-                setError(null);
+                resetState();
             }, 200);
         }
     };
+
+    if (paymentMethod === "mtn_momo" && isPolling) {
+        return (
+            <Dialog open={open} onOpenChange={handleClose}>
+                <DialogContent className="sm:max-w-md">
+                    <div className="flex flex-col items-center justify-center py-8 text-center">
+                        <div className="mb-4 rounded-xl bg-[#004F71] px-4 py-2 text-white font-semibold">
+                            MoMo from MTN
+                        </div>
+                        <h2 className="text-2xl font-semibold mb-2">Confirm payment on your phone</h2>
+                        <p className="text-muted-foreground mb-4">
+                            We sent a payment request. Please approve it on your MTN MoMo prompt.
+                        </p>
+                        <div className="rounded-md bg-muted/40 p-3 text-sm w-full text-left mb-4">
+                            <div className="flex justify-between">
+                                <span>Status</span>
+                                <span className="font-medium">{momoStatus}</span>
+                            </div>
+                            {momoReferenceId && (
+                                <div className="flex justify-between mt-2">
+                                    <span>Reference</span>
+                                    <span className="font-mono text-xs">{momoReferenceId}</span>
+                                </div>
+                            )}
+                        </div>
+
+                        {error && (
+                            <div className="rounded-md bg-destructive/10 text-destructive p-3 text-sm w-full mb-4">
+                                {error}
+                            </div>
+                        )}
+
+                        <Button onClick={handleClose} className="w-full" disabled={isSubmitting || isPolling}>
+                            Close
+                        </Button>
+                    </div>
+                </DialogContent>
+            </Dialog>
+        );
+    }
 
     if (isSuccess) {
         return (
@@ -218,6 +341,7 @@ export function Checkout({ open, onOpenChange, storeSlug, product, quantity }: C
                             <SelectContent>
                                 <SelectItem value="cash_on_delivery">Cash on Delivery</SelectItem>
                                 <SelectItem value="mpesa">M-Pesa</SelectItem>
+                                <SelectItem value="mtn_momo">MTN MoMo</SelectItem>
                                 <SelectItem value="card">Card Payment</SelectItem>
                             </SelectContent>
                         </Select>
@@ -251,7 +375,9 @@ export function Checkout({ open, onOpenChange, storeSlug, product, quantity }: C
                                 Placing Order...
                             </>
                         ) : (
-                            `Pay ${product.currency} ${totalAmount.toLocaleString()}`
+                            paymentMethod === "mtn_momo"
+                                ? `Pay with MoMo (MTN) - ${product.currency} ${totalAmount.toLocaleString()}`
+                                : `Pay ${product.currency} ${totalAmount.toLocaleString()}`
                         )}
                     </Button>
                 </form>

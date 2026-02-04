@@ -54,6 +54,12 @@ const nextConfig: NextConfig = {
         port: "",
         pathname: "/**",
       },
+      {
+        protocol: "https",
+        hostname: "momodeveloper.mtn.com",
+        port: "",
+        pathname: "/**",
+      },
     ],
   },
 };

@@ -18,7 +18,7 @@ export const createOrderSchema = z.object({
   customerName: z.string().min(1).max(255),
   customerEmail: z.string().email(),
   customerPhone: z.string().optional(),
-  paymentMethod: z.enum(["card", "mpesa", "paypal", "cash_on_delivery"]).default("cash_on_delivery"),
+  paymentMethod: z.enum(["card", "mpesa", "mtn_momo", "paypal", "cash_on_delivery"]).default("cash_on_delivery"),
   shippingAddress: z
     .object({
       street: z.string().optional(),
@@ -72,7 +72,7 @@ export const orderService = {
     const productMap = new Map(productList.map((p) => [p.id, p as unknown as ProductWithMedia]));
 
     let subtotal = 0;
-    const currency = productList[0]?.currency || "KES";
+    const currency = productList[0]?.currency || "UGX";
 
     const orderItemsData = input.items.map((item) => {
       const product = productMap.get(item.productId);
@@ -117,7 +117,7 @@ export const orderService = {
           customerEmail: input.customerEmail,
           customerPhone: input.customerPhone,
           paymentMethod: input.paymentMethod,
-          paymentStatus: "paid",
+          paymentStatus: "pending",
           status: "pending",
           shippingAddress: input.shippingAddress,
           notes: input.notes,

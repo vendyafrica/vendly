@@ -49,7 +49,7 @@ export const orderService = {
 
         // Calculate order totals and build items
         let subtotal = 0;
-        const currency = productList[0]?.currency || "KES";
+        const currency = productList[0]?.currency || "UGX";
 
         const orderItemsData = input.items.map((item) => {
             const product = productMap.get(item.productId) as ProductWithMedia | undefined;
@@ -96,7 +96,7 @@ export const orderService = {
                     customerEmail: input.customerEmail,
                     customerPhone: input.customerPhone,
                     paymentMethod: input.paymentMethod,
-                    paymentStatus: "paid",
+                    paymentStatus: "pending",
                     status: "pending",
                     shippingAddress: input.shippingAddress,
                     notes: input.notes,

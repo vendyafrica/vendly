@@ -17,7 +17,16 @@ import { useAppSession } from "@/contexts/app-session-context";
 
 const API_BASE = ""; // Force relative for same-origin internal API
 
-type PaymentMethod = "mpesa";
+type PaymentMethod = "mtn_momo";
+
+type OrderCreateResponse =
+    | { order: { id: string; orderNumber?: string; paymentStatus?: string }; momo: { referenceId: string } | null }
+    | { id: string; orderNumber?: string; paymentStatus?: string };
+
+type MtnStatusResponse = {
+    status?: string;
+    normalizedPaymentStatus?: "pending" | "paid" | "failed";
+};
 
 function CheckoutContent() {
     const router = useRouter();
@@ -33,11 +42,14 @@ function CheckoutContent() {
     const [fullName, setFullName] = useState("");
     const [address, setAddress] = useState("");
     const [phone, setPhone] = useState("");
-    const [paymentMethod] = useState<PaymentMethod>("mpesa");
+    const [paymentMethod] = useState<PaymentMethod>("mtn_momo");
 
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [isSuccess, setIsSuccess] = useState(false);
+    const [isPolling, setIsPolling] = useState(false);
+    const [momoReferenceId, setMomoReferenceId] = useState<string | null>(null);
+    const [momoStatus, setMomoStatus] = useState<"pending" | "paid" | "failed">("pending");
 
     useEffect(() => {
         if (session?.user) {
@@ -68,7 +80,57 @@ function CheckoutContent() {
         0
     );
     const storeTotal = storeSubtotal;
-    const currency = storeItems[0]?.product.currency || "KES";
+    const currency = storeItems[0]?.product.currency || "UGX";
+
+    const startMomoPolling = async (referenceId: string) => {
+        setIsPolling(true);
+        setMomoReferenceId(referenceId);
+        setMomoStatus("pending");
+
+        const maxAttempts = 30;
+        const delayMs = 3000;
+
+        for (let attempt = 0; attempt < maxAttempts; attempt++) {
+            try {
+                const res = await fetch(
+                    `${API_BASE}/api/storefront/${store.slug}/payments/mtn-momo/request-to-pay/${referenceId}`,
+                    { method: "GET" }
+                );
+                const json = (await res.json().catch(() => ({}))) as MtnStatusResponse;
+
+                if (!res.ok) {
+                    throw new Error((json as { error?: string }).error || "Failed to check MoMo status");
+                }
+
+                const normalized = json.normalizedPaymentStatus || "pending";
+                setMomoStatus(normalized);
+
+                if (normalized === "paid") {
+                    setIsSuccess(true);
+                    clearStoreFromCart(store.id);
+                    setTimeout(() => {
+                        window.location.href = "http://localhost:3000/cart";
+                    }, 800);
+                    return;
+                }
+
+                if (normalized === "failed") {
+                    setError("Payment failed. Please try again.");
+                    setIsPolling(false);
+                    return;
+                }
+            } catch {
+                setError("Something went wrong. Please try again.");
+                setIsPolling(false);
+                return;
+            }
+
+            await new Promise((r) => setTimeout(r, delayMs));
+        }
+
+        setError("Payment is taking longer than expected. Please check your phone and try again.");
+        setIsPolling(false);
+    };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -76,6 +138,8 @@ function CheckoutContent() {
         setError(null);
 
         try {
+            if (!phone) throw new Error("Phone number is required for MTN MoMo");
+
             const payload = {
                 customerName: fullName,
                 customerEmail: email,
@@ -83,7 +147,7 @@ function CheckoutContent() {
                 paymentMethod,
                 shippingAddress: {
                     street: address,
-                    country: "Kenya",
+                    country: "Uganda",
                 },
                 items: storeItems.map((item) => ({
                     productId: item.product.id,
@@ -102,18 +166,48 @@ function CheckoutContent() {
 
             if (!res.ok) throw new Error("Checkout failed");
 
-            setIsSuccess(true);
-            clearStoreFromCart(store.id);
-
-            // Redirect to cart after successful checkout
-            setTimeout(() => {
-                window.location.href = "http://localhost:3000/cart";
-            }, 800);
+            const data = (await res.json()) as OrderCreateResponse;
+            const momo = "momo" in data ? data.momo : null;
+            if (!momo?.referenceId) throw new Error("Failed to initiate MTN MoMo payment");
+            await startMomoPolling(momo.referenceId);
         } catch {
             setError("Something went wrong. Please try again.");
             setIsSubmitting(false);
         }
     };
+
+    if (isPolling) {
+        return (
+            <div className="min-h-screen flex items-center justify-center text-center px-4">
+                <div className="max-w-md w-full">
+                    <div className="mb-4 rounded-xl bg-[#004F71] px-4 py-2 text-white font-semibold inline-block">
+                        MoMo from MTN
+                    </div>
+                    <h1 className="text-2xl font-bold mb-2">Confirm payment on your phone</h1>
+                    <p className="text-neutral-500 mb-6">
+                        A payment request was sent. Approve it on your phone to complete checkout.
+                    </p>
+                    <div className="rounded-lg border bg-neutral-50 p-4 text-sm text-neutral-700 mb-4 text-left">
+                        <div className="flex justify-between">
+                            <span>Status</span>
+                            <span className="font-medium">{momoStatus}</span>
+                        </div>
+                        {momoReferenceId && (
+                            <div className="flex justify-between mt-2">
+                                <span>Reference</span>
+                                <span className="font-mono text-xs">{momoReferenceId}</span>
+                            </div>
+                        )}
+                    </div>
+                    {error && <p className="text-sm text-red-600 mb-4">{error}</p>}
+                    <Button size="lg" className="rounded-full px-8" onClick={() => router.push("/cart")}
+                        disabled={isSubmitting || isPolling}>
+                        Back to cart
+                    </Button>
+                </div>
+            </div>
+        );
+    }
 
     if (isSuccess) {
         return (
@@ -195,7 +289,7 @@ function CheckoutContent() {
 
                         <Button
                             type="submit"
-                            className="w-full h-12 rounded-xl text-lg"
+                            className="w-full h-12 rounded-xl text-lg bg-[#004F71] hover:bg-[#f7cf2d] text-white hover:text-[#004F71] transition-colors flex items-center justify-center gap-2"
                             disabled={isSubmitting}
                         >
                             {isSubmitting ? (
@@ -207,7 +301,16 @@ function CheckoutContent() {
                                     Processing…
                                 </>
                             ) : (
-                                "Pay now"
+                                <>
+                                    <Image
+                                        src="https://momodeveloper.mtn.com/content/momo_mtna.png"
+                                        alt="MoMo from MTN"
+                                        width={100}
+                                        height={100}
+                                        className="h-6 w-auto"
+                                    />
+                                    <span>Pay with MoMo (MTN)</span>
+                                </>
                             )}
                         </Button>
                     </form>

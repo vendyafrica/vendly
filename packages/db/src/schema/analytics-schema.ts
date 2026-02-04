@@ -122,7 +122,7 @@ export const payments = pgTable(
     status: text("status").notNull().default("pending"),
 
     amount: integer("amount").notNull().default(0),
-    currency: text("currency").notNull().default("KES"),
+    currency: text("currency").notNull().default("UGX"),
 
     fees: integer("fees"),
     netAmount: integer("net_amount"),
