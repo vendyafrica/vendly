@@ -41,6 +41,14 @@ Replace hardcoded data with real stores grouped by categories.
 
 ---
 
+### Hydration and UI Fixes
+
+#### [MODIFY] [UserMenu.tsx](file:///c:/Users/Jeremiah%20Sentomero/Desktop/vendly-monorepo/apps/web/src/app/(m)/components/header/UserMenu.tsx)
+Fix hydration mismatch in DropdownMenu:
+- Use `useId` to provide a stable ID to the dropdown or its trigger.
+- Add a `mounted` state to defer rendering of the dropdown trigger until after hydration, or use `suppressHydrationWarning` on the specific element if necessary.
+- Ensure structure is consistent between server and client.
+
 ## Phase 3: Category Pages
 
 ### Goal
@@ -160,16 +168,12 @@ Already checks if logged in and redirects to `/c/personal` ✅
 
 ## Implementation Order
 
-| Priority | Phase | Effort |
-|----------|-------|--------|
-| 1 | Phase 1: Fix TypeScript Errors | 🟢 Easy |
-| 2 | Phase 8: Onboarding Redirect | 🟢 Easy |
-| 3 | Phase 9: Admin Button | 🟢 Easy |
-| 4 | Phase 2: Marketplace Homepage | 🟡 Medium |
-| 5 | Phase 3: Category Pages | 🟢 Easy |
-| 6 | Phase 5: Product Details | 🟢 Easy |
-| 7 | Phase 6: Multi-Store Cart | 🟡 Medium |
-| 8 | Phase 7: Checkout | 🟡 Medium |
+1. **Phase 1**: Set up Upstash Redis (dependency for other phases)
+2. **Phase 2**: Database indexes and query optimization
+3. **Phase 4**: Skeleton loading components
+4. **Hydration fix**: Fix the Header component hydration error
+5. **Phase 3**: React Query setup and optimistic mutations
+6. **Phase 5**: Apply caching to services
 
 ---
 

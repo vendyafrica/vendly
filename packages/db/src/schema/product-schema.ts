@@ -61,8 +61,15 @@ export const products = pgTable(
   (table) => [
     index("products_tenant_store_idx").on(table.tenantId, table.storeId),
     index("products_status_idx").on(table.status),
+    // Composite index for filtering products by store and status (common query)
+    index("products_store_status_idx").on(table.storeId, table.status),
+    // Index for featured products queries
+    index("products_store_featured_idx").on(table.storeId, table.isFeatured),
+    // Index for recently updated products
+    index("products_store_updated_idx").on(table.storeId, table.updatedAt),
     unique("products_store_slug_unique").on(table.storeId, table.slug),
   ],
+
 );
 
 export const productVariants = pgTable(

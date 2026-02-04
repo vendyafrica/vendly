@@ -64,7 +64,7 @@ const tenantAdminItems: SidebarNavItem[] = [
   },
   {
     title: "Transactions",
-    url: "/orders",
+    url: "/transactions",
     icon: PackageOpenIcon,
   },
   {

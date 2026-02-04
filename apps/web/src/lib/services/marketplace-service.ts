@@ -1,5 +1,6 @@
 import { categoryRepo } from "../data/category-repo";
 import { storeRepo } from "../data/store-repo";
+import { withCache, cacheKeys, TTL, invalidateCache } from "@vendly/db";
 
 export interface StoreWithCategory {
     id: string;
@@ -28,62 +29,112 @@ function parseHeroMediaItems(input: unknown): Array<{ url: string; type: "image"
         .filter((x): x is { url: string; type: "image" | "video" } => Boolean(x));
 }
 
+/**
+ * Batch fetch product images for multiple stores to avoid N+1 queries
+ */
+async function batchFetchStoreProductImages(storeIds: string[]): Promise<Map<string, string[]>> {
+    if (storeIds.length === 0) return new Map();
+
+    const { db, products, productMedia, mediaObjects, eq, inArray } = await import("@vendly/db");
+
+    // Fetch all products with media for the given stores in one query
+    const productsWithMedia = await db.query.products.findMany({
+        where: inArray(products.storeId, storeIds),
+        columns: { id: true, storeId: true },
+        with: {
+            media: {
+                limit: 5,
+                with: {
+                    media: {
+                        columns: { blobUrl: true }
+                    }
+                }
+            }
+        }
+    });
+
+    // Group images by store
+    const storeImages = new Map<string, string[]>();
+    for (const product of productsWithMedia) {
+        const existingImages = storeImages.get(product.storeId) || [];
+        const productImages = (product.media ?? [])
+            .map((m: any) => m?.media?.blobUrl)
+            .filter(Boolean);
+
+        // Limit to 5 images per store
+        const combined = [...existingImages, ...productImages].slice(0, 5);
+        storeImages.set(product.storeId, combined);
+    }
+
+    return storeImages;
+}
+
 export const marketplaceService = {
     /**
      * Get all active stores with their categories
+     * Uses caching with 5-minute TTL
      */
     async getAllStores(): Promise<StoreWithCategory[]> {
-        const stores = await storeRepo.findActiveStores();
+        return withCache(
+            cacheKeys.marketplace.homepage(),
+            async () => {
+                const stores = await storeRepo.findActiveStores();
 
-        // Fetch Instagram accounts to get profile pictures
-        const { db, instagramAccounts, eq } = await import("@vendly/db");
-        const igAccounts = await db
-            .select({
-                tenantId: instagramAccounts.tenantId,
-                profilePictureUrl: instagramAccounts.profilePictureUrl
-            })
-            .from(instagramAccounts)
-            .where(eq(instagramAccounts.isActive, true));
+                // Fetch Instagram accounts to get profile pictures
+                const { db, instagramAccounts, eq } = await import("@vendly/db");
+                const igAccounts = await db
+                    .select({
+                        tenantId: instagramAccounts.tenantId,
+                        profilePictureUrl: instagramAccounts.profilePictureUrl
+                    })
+                    .from(instagramAccounts)
+                    .where(eq(instagramAccounts.isActive, true));
 
-        const igMap = new Map(igAccounts.map(ig => [ig.tenantId, ig.profilePictureUrl]));
+                const igMap = new Map(igAccounts.map(ig => [ig.tenantId, ig.profilePictureUrl]));
 
-        const { productRepo } = await import("../data/product-repo");
+                // Collect stores that need product images (no hero images)
+                const storesNeedingImages: string[] = [];
+                const storeHeroImages = new Map<string, string[]>();
 
-        return Promise.all(stores.map(async (store) => {
-            const heroMediaItems = parseHeroMediaItems((store as { heroMediaItems?: unknown }).heroMediaItems);
-            const heroImages = heroMediaItems
-                .filter((i) => i.type === "image")
-                .map((i) => i.url);
+                for (const store of stores) {
+                    const heroMediaItems = parseHeroMediaItems((store as { heroMediaItems?: unknown }).heroMediaItems);
+                    const heroImages = heroMediaItems
+                        .filter((i) => i.type === "image")
+                        .map((i) => i.url);
 
-            let images: string[] = heroImages;
+                    if (heroImages.length > 0) {
+                        storeHeroImages.set(store.id, heroImages);
+                    } else {
+                        storesNeedingImages.push(store.id);
+                    }
+                }
 
-            // Marketplace fallback: if no hero images, show up to 5 product images
-            if (images.length === 0) {
-                const products = await productRepo.findByStoreId(store.id);
-                images = products
-                    .flatMap((p: any) =>
-                        (p.media ?? [])
-                            .map((m: any) => m?.media?.blobUrl ?? m?.media?.url ?? null)
-                            .filter(Boolean)
-                    )
-                    .slice(0, 5);
-            }
+                // Batch fetch product images for stores without hero images
+                const productImages = await batchFetchStoreProductImages(storesNeedingImages);
 
-            return {
-                id: store.id,
-                name: store.name,
-                slug: store.slug,
-                description: store.description,
-                logoUrl: store.logoUrl ?? null,
-                instagramAvatarUrl: igMap.get(store.tenantId) ?? null,
-                categories: store.categories || [],
-                heroMedia: store.heroMedia,
-                heroMediaType: store.heroMediaType as "image" | "video" | null,
-                heroMediaItems,
-                images,
-            };
-        }));
+                return stores.map((store) => {
+                    const heroMediaItems = parseHeroMediaItems((store as { heroMediaItems?: unknown }).heroMediaItems);
+                    const images = storeHeroImages.get(store.id) || productImages.get(store.id) || [];
+
+                    return {
+                        id: store.id,
+                        name: store.name,
+                        slug: store.slug,
+                        description: store.description,
+                        logoUrl: store.logoUrl ?? null,
+                        instagramAvatarUrl: igMap.get(store.tenantId) ?? null,
+                        categories: store.categories || [],
+                        heroMedia: store.heroMedia,
+                        heroMediaType: store.heroMediaType as "image" | "video" | null,
+                        heroMediaItems,
+                        images,
+                    };
+                });
+            },
+            TTL.MEDIUM // 5 minutes
+        );
     },
+
 
     /**
      * Get stores grouped by category
@@ -166,29 +217,31 @@ export const marketplaceService = {
     },
 
     async getStoreDetails(slug: string) {
-        const store = await storeRepo.findBySlug(slug);
-        if (!store) return null;
+        return withCache(
+            cacheKeys.stores.bySlug(slug),
+            async () => {
+                const store = await storeRepo.findBySlug(slug);
+                if (!store) return null;
 
-        const heroMediaItems = parseHeroMediaItems((store as { heroMediaItems?: unknown }).heroMediaItems);
+                const heroMediaItems = parseHeroMediaItems((store as { heroMediaItems?: unknown }).heroMediaItems);
 
-        return {
-            id: store.id,
-            name: store.name,
-            slug: store.slug,
-            description: store.description,
-            logoUrl: store.logoUrl ?? null,
-            // Assuming store has these fields or we map them. 
-            // The repo returns the DB object. If media fields are missing in DB schema, we might need to adjust.
-            // Based on Hero component, it expects rating, ratingCount, heroMedia.
-            // These might not be in the basic store schema but let's pass what we have
-            // and maybe fetch additional stats if needed.
-            rating: store.storeRating || 4.5, // Use actual rating from DB if available
-            ratingCount: store.storeRatingCount || 100, // Use actual rating count from DB
-            heroMedia: store.heroMedia, // Use actual hero media from DB
-            heroMediaType: store.heroMediaType as "image" | "video" | null,
-            heroMediaItems,
-        };
+                return {
+                    id: store.id,
+                    name: store.name,
+                    slug: store.slug,
+                    description: store.description,
+                    logoUrl: store.logoUrl ?? null,
+                    rating: store.storeRating || 4.5,
+                    ratingCount: store.storeRatingCount || 100,
+                    heroMedia: store.heroMedia,
+                    heroMediaType: store.heroMediaType as "image" | "video" | null,
+                    heroMediaItems,
+                };
+            },
+            TTL.MEDIUM
+        );
     },
+
 
     async getStoreProducts(slug: string, query?: string) {
         const store = await storeRepo.findBySlug(slug);

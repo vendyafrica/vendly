@@ -21,6 +21,7 @@ import {
     DropdownMenuTrigger,
 } from "@vendly/ui/components/dropdown-menu";
 import { useRouter } from "next/navigation";
+import React from "react";
 
 interface UserMenuProps {
     session: any;
@@ -34,6 +35,11 @@ interface UserMenuProps {
 }
 
 export function UserMenu({ session, tenantStatus, onShowLogin }: UserMenuProps) {
+    const [mounted, setMounted] = React.useState(false);
+    React.useEffect(() => {
+        setMounted(true);
+    }, []);
+
     const router = useRouter();
     const isSignedIn = !!session;
     const adminStoreSlug = tenantStatus?.adminStoreSlug ?? null;
@@ -43,6 +49,12 @@ export function UserMenu({ session, tenantStatus, onShowLogin }: UserMenuProps) 
         await signOut();
         router.refresh();
     };
+
+    if (!mounted) {
+        return (
+            <div className="h-8 w-8 rounded-full bg-neutral-100 animate-pulse" />
+        );
+    }
 
     if (!isSignedIn) {
         return (

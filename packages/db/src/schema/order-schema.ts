@@ -68,8 +68,13 @@ export const orders = pgTable(
         index("orders_status_idx").on(table.status),
         index("orders_payment_status_idx").on(table.paymentStatus),
         index("orders_created_at_idx").on(table.createdAt),
+        // Composite index for dashboard queries (orders by tenant sorted by date)
+        index("orders_tenant_created_idx").on(table.tenantId, table.createdAt),
+        // Composite for filtering by status and date range
+        index("orders_tenant_status_created_idx").on(table.tenantId, table.status, table.createdAt),
         unique("orders_store_number_unique").on(table.storeId, table.orderNumber),
     ]
+
 );
 
 /**

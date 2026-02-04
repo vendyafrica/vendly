@@ -14,37 +14,14 @@ import { UploadModal } from "./components/upload-modal";
 import { EditProductModal } from "./components/edit-product-modal";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@vendly/ui/components/dialog";
 import { useRouter } from "next/navigation";
-
-type ProductMediaItem = {
-  blobUrl: string;
-  blobPathname?: string | null;
-  contentType?: string | null;
-};
-
-type ProductApiRow = {
-  id: string;
-  storeId: string;
-  productName: string;
-  slug: string;
-  description?: string | null;
-  priceAmount: number;
-  currency: string;
-  quantity: number;
-  status: "draft" | "ready" | "active" | "sold-out";
-  media: ProductMediaItem[];
-};
-
-type ProductTableRow = {
-  id: string;
-  name: string;
-  slug: string;
-  description?: string | null;
-  priceAmount: number;
-  currency: string;
-  quantity: number;
-  status: "draft" | "ready" | "active" | "sold-out";
-  thumbnailUrl?: string;
-};
+import {
+  useProducts,
+  useDeleteProduct,
+  useProductDetail,
+  useInvalidateProducts,
+  type ProductTableRow,
+  type ProductApiRow,
+} from "@/hooks/use-products";
 
 function formatMoney(amount: number, currency: string) {
   return new Intl.NumberFormat("en-KE", {
@@ -58,63 +35,44 @@ export default function ProductsPage() {
   const router = useRouter();
   const { bootstrap, error: bootstrapError } = useTenant();
 
-  const [rows, setRows] = React.useState<ProductTableRow[]>([]);
-  const [isLoading, setIsLoading] = React.useState(true);
-  const [error, setError] = React.useState<string | null>(null);
+  // Use React Query for products with optimistic updates
+  const {
+    data: rows = [],
+    isLoading,
+    error: queryError,
+  } = useProducts(bootstrap?.storeId);
+
+  const deleteProduct = useDeleteProduct(bootstrap?.storeId ?? "");
+  const { invalidate } = useInvalidateProducts();
 
   const [uploadModalOpen, setUploadModalOpen] = React.useState(false);
   const [editModalOpen, setEditModalOpen] = React.useState(false);
-  const [editingProduct, setEditingProduct] = React.useState<ProductApiRow | null>(null);
+  // Type compatible with EditProductModal's Product interface
+  const [editingProduct, setEditingProduct] = React.useState<{
+    id: string;
+    productName: string;
+    description?: string;
+    priceAmount: number;
+    currency: string;
+    quantity: number;
+    status: string;
+    thumbnailUrl?: string;
+    media?: { id?: string; blobUrl: string; contentType?: string; blobPathname?: string }[];
+  } | null>(null);
+
   const [previewOpen, setPreviewOpen] = React.useState(false);
   const [previewProduct, setPreviewProduct] = React.useState<ProductTableRow | null>(null);
 
-  const fetchProducts = React.useCallback(async () => {
-    if (!bootstrap?.storeId) return;
-
-    setIsLoading(true);
-    setError(null);
-
-    try {
-      const res = await fetch(`/api/products?storeId=${bootstrap.storeId}`);
-      if (!res.ok) {
-        const text = await res.text();
-        throw new Error(text || "Failed to load products");
-      }
-
-      const data = (await res.json()) as { products: ProductApiRow[] };
-      const mapped: ProductTableRow[] = (data.products || []).map((p) => ({
-        id: p.id,
-        name: p.productName,
-        slug: p.slug,
-        description: p.description,
-        priceAmount: p.priceAmount,
-        currency: p.currency,
-        quantity: p.quantity,
-        status: p.status,
-        thumbnailUrl: p.media?.[0]?.blobUrl,
-      }));
-
-      setRows(mapped);
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Failed to load products");
-    } finally {
-      setIsLoading(false);
-    }
-  }, [bootstrap?.storeId]);
-
-  React.useEffect(() => {
-    if (bootstrap?.storeId) fetchProducts();
-  }, [bootstrap?.storeId, fetchProducts]);
-
+  // Optimistic delete - removes instantly from UI
   const handleDelete = async (id: string) => {
     if (!confirm("Delete this product?")) return;
-    try {
-      const res = await fetch(`/api/products/${id}`, { method: "DELETE" });
-      if (!res.ok) throw new Error("Failed to delete product");
-      await fetchProducts();
-    } catch (e) {
-      alert(e instanceof Error ? e.message : "Failed to delete product");
-    }
+
+    // This will optimistically remove the product from the list
+    deleteProduct.mutate(id, {
+      onError: (error) => {
+        alert(error instanceof Error ? error.message : "Failed to delete product");
+      },
+    });
   };
 
   const handleEdit = async (id: string) => {
@@ -122,7 +80,21 @@ export default function ProductsPage() {
       const res = await fetch(`/api/products/${id}`);
       if (!res.ok) throw new Error("Failed to load product");
       const product = (await res.json()) as ProductApiRow;
-      setEditingProduct(product);
+      // Convert null to undefined for fields to match modal's expected type
+      setEditingProduct({
+        id: product.id,
+        productName: product.productName,
+        description: product.description ?? undefined,
+        priceAmount: product.priceAmount,
+        currency: product.currency,
+        quantity: product.quantity,
+        status: product.status,
+        media: product.media?.map((m) => ({
+          blobUrl: m.blobUrl,
+          contentType: m.contentType ?? undefined,
+          blobPathname: m.blobPathname ?? undefined,
+        })),
+      });
       setEditModalOpen(true);
     } catch (e) {
       alert(e instanceof Error ? e.message : "Failed to load product");
@@ -132,6 +104,21 @@ export default function ProductsPage() {
   const handleView = (row: ProductTableRow) => {
     setPreviewProduct(row);
     setPreviewOpen(true);
+  };
+
+
+  const handleUploadComplete = () => {
+    // Invalidate and refetch products after upload
+    if (bootstrap?.storeId) {
+      invalidate(bootstrap.storeId);
+    }
+  };
+
+  const handleProductUpdated = () => {
+    // Invalidate and refetch products after edit
+    if (bootstrap?.storeId) {
+      invalidate(bootstrap.storeId);
+    }
   };
 
   const columns: ColumnDef<ProductTableRow>[] = [
@@ -206,6 +193,7 @@ export default function ProductsPage() {
             variant="ghost"
             size="icon"
             onClick={() => handleDelete(row.original.id)}
+            disabled={deleteProduct.isPending}
             className="h-9 w-9 text-destructive hover:text-destructive"
           >
             <HugeiconsIcon icon={Delete02Icon} className="size-4" />
@@ -215,6 +203,7 @@ export default function ProductsPage() {
     },
   ];
 
+  const error = queryError?.message ?? null;
   const totalProducts = rows.length;
   const activeCount = rows.filter((p) => p.status === "active" || p.status === "ready").length;
   const draftCount = rows.filter((p) => p.status === "draft").length;
@@ -275,7 +264,24 @@ export default function ProductsPage() {
       <SegmentedStatsCard segments={statSegments} />
 
       <div className="rounded-md border bg-card p-3">
-        <DataTable columns={columns} data={rows} />
+        {isLoading ? (
+          <div className="space-y-3">
+            {[1, 2, 3, 4, 5].map((i) => (
+              <div key={i} className="flex items-center gap-4 rounded-lg border border-dashed border-border/60 p-3 bg-muted/30">
+                <div className="size-10 bg-muted rounded-md animate-pulse shrink-0" />
+                <div className="flex-1 space-y-2">
+                  <div className="h-4 bg-muted rounded w-1/3 animate-pulse" />
+                  <div className="h-4 bg-muted rounded w-24 animate-pulse" />
+                </div>
+                <div className="h-4 bg-muted rounded w-16 animate-pulse shrink-0" />
+                <div className="h-6 bg-muted rounded w-20 animate-pulse shrink-0" />
+                <div className="size-8 bg-muted rounded animate-pulse shrink-0" />
+              </div>
+            ))}
+          </div>
+        ) : (
+          <DataTable columns={columns} data={rows} />
+        )}
       </div>
 
       <UploadModal
@@ -283,7 +289,7 @@ export default function ProductsPage() {
         onOpenChange={setUploadModalOpen}
         storeId={bootstrap?.storeId || ""}
         tenantId={bootstrap?.tenantId || ""}
-        onUploadComplete={fetchProducts}
+        onUploadComplete={handleUploadComplete}
       />
 
       <EditProductModal
@@ -291,7 +297,7 @@ export default function ProductsPage() {
         open={editModalOpen}
         onOpenChange={setEditModalOpen}
         tenantId={bootstrap?.tenantId || ""}
-        onProductUpdated={fetchProducts}
+        onProductUpdated={handleProductUpdated}
       />
 
       <Dialog open={previewOpen} onOpenChange={setPreviewOpen}>

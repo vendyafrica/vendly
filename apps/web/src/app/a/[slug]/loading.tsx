@@ -1,9 +1,5 @@
-import { Skeleton } from "@vendly/ui/components/skeleton"
+import { DashboardPageSkeleton } from "@/components/ui/page-skeletons";
 
 export default function Loading() {
-    return (
-        <div>
-            <Skeleton className="h-12 w-full" />
-        </div>
-    );
+    return <DashboardPageSkeleton />;
 }
