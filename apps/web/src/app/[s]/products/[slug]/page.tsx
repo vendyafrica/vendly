@@ -1,19 +1,16 @@
-import { ProductDetails } from "../../components/product-details";
-import { ProductGridReveal } from "../../components/product-grid-reveal";
-import { StorefrontFooter } from "../../components/footer";
 import { marketplaceService } from "@/lib/services/marketplace-service";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import type { Metadata } from "next";
 
 interface PageProps {
-    params: {
+    params: Promise<{
         s: string;
         slug: string;
-    };
+    }>;
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-    const { s: storeSlug, slug } = params;
+    const { s: storeSlug, slug } = await params;
     const store = await marketplaceService.getStoreDetails(storeSlug);
     const product = await marketplaceService.getStoreProduct(storeSlug, slug);
 
@@ -28,16 +25,19 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     const title = `${product.name} by ${store.name} | Vendly`;
     const description = product.description || `Shop ${product.name} from ${store.name} with trusted payments and delivery on Vendly.`;
 
+    // Legacy route; point canonical to new structure
+    const canonical = `/${store.slug}/${product.id}/${product.slug}`;
+
     return {
         title,
         description,
         alternates: {
-            canonical: `/${store.slug}/products/${product.slug}`,
+            canonical,
         },
         openGraph: {
             title,
             description,
-            url: `/${store.slug}/products/${product.slug}`,
+            url: canonical,
         },
         twitter: {
             title,
@@ -47,23 +47,17 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 }
 
 export default async function ProductPage({ params }: PageProps) {
-    const { s: storeSlug, slug } = params;
+    const { s: storeSlug, slug } = await params;
 
     const store = await marketplaceService.getStoreDetails(storeSlug);
     const product = await marketplaceService.getStoreProduct(storeSlug, slug);
-    const products = await marketplaceService.getStoreProducts(storeSlug);
 
     if (!store || !product) {
         notFound();
     }
 
-    return (
-        <main className="bg-white min-h-screen">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-28 pb-12 md:pt-32 md:pb-20">
-                <ProductDetails product={product} />
-            </div>
-            <ProductGridReveal products={products} />
-            <StorefrontFooter store={store} />
-        </main>
-    );
+    // Redirect legacy route to new canonical structure
+    redirect(`/${store.slug}/${product.id}/${product.slug}`);
+
+    return null;
 }

@@ -27,6 +27,7 @@ export default function RecentlyViewed() {
                         key={item.id}
                         index={index}
                         title={item.name}
+                        id={item.id}
                         slug={item.slug}
                         storeSlug={item.store.slug}
                         price={formatPrice(item.price, item.currency)}

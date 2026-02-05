@@ -11,6 +11,7 @@ interface ProductCardProps {
   image: string | null;
   rating: number;
   index?: number;
+  id: string;
   storeSlug?: string;
 }
 
@@ -24,14 +25,14 @@ const aspectVariants = [
   "aspect-[5/6]",
 ];
 
-export function ProductCard({ title, slug, price, image, index = 0, storeSlug }: ProductCardProps) {
+export function ProductCard({ title, slug, price, image, index = 0, storeSlug, id }: ProductCardProps) {
   const params = useParams();
   const currentStoreSlug = storeSlug || (params?.s as string);
   const aspectClass = aspectVariants[index % aspectVariants.length];
 
   return (
     <Link
-      href={`/${currentStoreSlug}/products/${slug}`}
+      href={`/${currentStoreSlug}/${id}/${slug}`}
       className="group block break-inside-avoid mb-3 sm:mb-4 lg:mb-5"
     >
       {/* Image Container */}

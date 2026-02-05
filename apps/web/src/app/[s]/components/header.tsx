@@ -184,7 +184,7 @@ export function StorefrontHeader() {
                             </Link>
 
                             <Link
-                                href={`/login?store=${encodeURIComponent(store.name)}&slug=${encodeURIComponent(store.slug)}`}
+                                href={`/${store.slug}/a/login?next=${encodeURIComponent(`/${store.slug}/a`)}`}
                                 className={`relative inline-flex h-10 w-10 items-center justify-center transition-colors ${isHomePage ? "hover:opacity-80" : "hover:bg-muted/70 rounded-full"}`}
                                 aria-label="Account"
                             >

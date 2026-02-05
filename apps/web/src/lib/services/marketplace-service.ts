@@ -16,6 +16,37 @@ export interface StoreWithCategory {
     images?: string[];
 }
 
+function slugifyName(name: string): string {
+    return name.toLowerCase().trim().replace(/[^a-z0-9\s-]/g, "").replace(/\s+/g, "-").replace(/-+/g, "-");
+}
+
+function mapProductRecord(product: any, store: { id: string; name: string; slug: string; logoUrl?: string | null }) {
+    const slug = product.slug || slugifyName(product.productName || "");
+    const description = product.description as string | null | undefined;
+    const priceAmount = Number(product.priceAmount || 0);
+    const mediaList = Array.isArray(product.media) ? product.media : [];
+    const images = mediaList
+        .map((m: any) => m?.media?.url || m?.media?.blobUrl)
+        .filter(Boolean) as string[];
+
+    return {
+        id: product.id,
+        slug,
+        name: product.productName,
+        description,
+        price: priceAmount,
+        currency: product.currency,
+        images,
+        rating: 4.5, // Placeholder
+        store: {
+            id: store.id,
+            name: store.name,
+            slug: store.slug,
+            logoUrl: store.logoUrl ?? null,
+        },
+    };
+}
+
 export interface MarketplaceSearchResult {
     stores: Array<{
         id: string;
@@ -306,23 +337,34 @@ export const marketplaceService = {
 
         const styleGuideType = (product as { styleGuideType?: string }).styleGuideType;
 
+        const mapped = mapProductRecord(product, store);
+
         return {
-            id: product.id,
-            slug: product.slug || product.productName.toLowerCase().replace(/\s+/g, "-"),
-            name: product.productName,
-            description: product.description, // Assuming description exists
-            price: Number(product.priceAmount || 0),
-            currency: product.currency,
-            images: (product.media?.map((m: any) => m.media?.url || m.media?.blobUrl).filter(Boolean) ?? []) as string[],
-            rating: 4.5, // Placeholder
+            ...mapped,
             styleGuideEnabled: Boolean((product as { styleGuideEnabled?: boolean }).styleGuideEnabled),
             styleGuideType: styleGuideType === "shoes" ? "shoes" : "clothes",
-            store: {
-                id: store.id,
-                name: store.name,
-                slug: store.slug,
-                logoUrl: store.logoUrl ?? null
-            }
+        };
+    },
+
+    async getStoreProductById(storeSlug: string, productId: string) {
+        const store = await storeRepo.findBySlug(storeSlug);
+        if (!store) return null;
+
+        const { productRepo } = await import("../data/product-repo");
+        const product = await productRepo.findById(productId);
+        if (!product) return null;
+
+        // Ensure product belongs to store and is active
+        if (product.storeId !== store.id) return null;
+        if ((product as { status?: string }).status && (product as { status?: string }).status !== "active") return null;
+
+        const mapped = mapProductRecord(product, store);
+        const styleGuideType = (product as { styleGuideType?: string }).styleGuideType;
+
+        return {
+            ...mapped,
+            styleGuideEnabled: Boolean((product as { styleGuideEnabled?: boolean }).styleGuideEnabled),
+            styleGuideType: styleGuideType === "shoes" ? "shoes" : "clothes",
         };
     },
 

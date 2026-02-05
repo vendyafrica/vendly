@@ -26,7 +26,7 @@ export default async function TenantDashboardLayout({
   const session = await auth.api.getSession({ headers: await headers() })
 
   if (!session?.user) {
-    redirect(`/login?redirect=${encodeURIComponent(basePath)}`)
+    redirect(`/${slug}/a/login?next=${encodeURIComponent(basePath)}`)
   }
 
   const store = await db.query.stores.findFirst({

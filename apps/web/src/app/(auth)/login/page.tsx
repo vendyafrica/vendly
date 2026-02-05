@@ -54,10 +54,14 @@ export default function LoginPage() {
 
 function LoginFormWrapper() {
     const searchParams = useSearchParams()
+    const redirectParam = searchParams.get("redirect")
+    const nextParam = searchParams.get("next")
     const storeName = searchParams.get("store")
     const storeSlug = searchParams.get("slug")
+
     const title = storeName ? `Welcome to ${storeName} Admin` : "Welcome to Vendly"
-    const redirectTo = storeSlug ? `/a/${storeSlug}` : undefined
+
+    const redirectTo = redirectParam || nextParam || (storeSlug ? `/a/${storeSlug}` : undefined)
 
     return <LoginForm title={title} redirectTo={redirectTo} />
 }
