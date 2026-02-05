@@ -8,7 +8,6 @@ import {
   ShoppingCart01Icon,
   Analytics02Icon,
   Message01Icon,
-  UserGroupIcon,
   CustomerServiceIcon,
   Settings01Icon,
   Store01Icon,
@@ -16,7 +15,10 @@ import {
   GroupLayersIcon,
   Payment02Icon,
   PackageOpenIcon,
-  UserShield02Icon
+  UserShield02Icon,
+  ArrowLeft01Icon,
+  ArrowRight01Icon,
+  UserGroupIcon
 } from "@hugeicons/core-free-icons";
 
 import {
@@ -33,6 +35,7 @@ import {
   SidebarMenuSub,
   SidebarMenuSubButton,
   SidebarMenuSubItem,
+  useSidebar,
 } from "@vendly/ui/components/sidebar";
 import Image from "next/image";
 import Link from "next/link";
@@ -90,6 +93,11 @@ const tenantAdminItems: SidebarNavItem[] = [
 
 const superAdminItems: SidebarNavItem[] = [
   {
+    title: "Dashboard",
+    url: "/",
+    icon: DashboardCircleIcon,
+  },
+  {
     title: "Tenants",
     url: "/tenants",
     icon: UserMultiple02Icon,
@@ -124,7 +132,6 @@ const superAdminItems: SidebarNavItem[] = [
     url: "/analytics",
     icon: Analytics02Icon,
   },
-
 ];
 
 function normalizePath(path: string) {
@@ -156,6 +163,7 @@ export function AppSidebar({
 }: React.ComponentProps<typeof Sidebar> & { basePath?: string }) {
   const pathname = usePathname();
   const params = useParams();
+  const { state, toggleSidebar } = useSidebar();
 
   // Try to get tenant from params first, then fallback to parsing basePath
   let tenant = getTenantFromParams(params);
@@ -179,17 +187,41 @@ export function AppSidebar({
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton
-              size="lg"
-              render={<Link href={basePath || "/"} />}
-            >
-              <div className="flex aspect-square size-6 items-center justify-center rounded-lg">
-                <Image src="/vendly.png" alt="Vendly" width={24} height={24} />
+            {state === "expanded" ? (
+              <div className="flex items-center gap-1">
+                <SidebarMenuButton
+                  size="lg"
+                  render={<Link href={basePath || "/"} />}
+                >
+                  <div className="flex aspect-square size-6 items-center justify-center rounded-lg">
+                    <Image src="/vendly.png" alt="Vendly" width={24} height={24} />
+                  </div>
+                  <div className="grid flex-1 text-left text-sm leading-tight">
+                    <span className="truncate font-semibold">Vendly</span>
+                  </div>
+                </SidebarMenuButton>
+
+                <button
+                  type="button"
+                  onClick={toggleSidebar}
+                  className="ml-auto inline-flex size-9 items-center justify-center rounded-md hover:bg-sidebar-accent text-sidebar-foreground/80"
+                  aria-label="Collapse sidebar"
+                >
+                  <HugeiconsIcon icon={ArrowLeft01Icon} className="size-4" />
+                </button>
               </div>
-              <div className="grid flex-1 text-left text-sm leading-tight">
-                <span className="truncate font-semibold">Vendly</span>
+            ) : (
+              <div className="flex items-center justify-center">
+                <button
+                  type="button"
+                  onClick={toggleSidebar}
+                  className="inline-flex size-9 items-center justify-center rounded-md hover:bg-sidebar-accent text-sidebar-foreground/80"
+                  aria-label="Expand sidebar"
+                >
+                  <HugeiconsIcon icon={ArrowRight01Icon} className="size-4" />
+                </button>
               </div>
-            </SidebarMenuButton>
+            )}
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarHeader>

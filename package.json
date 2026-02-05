@@ -10,20 +10,19 @@
     "test": "turbo run test",
     "check-types": "turbo run check-types"
   },
-
   "pnpm": {
     "overrides": {
       "@types/react": "19.2.7",
       "@types/react-dom": "19.2.3"
     }
   },
-
   "dependencies": {
     "turbo": "^2.7.2"
   },
   "devDependencies": {
     "@types/node": "^25.0.3",
-    "prettier": "^3.6.0"
+    "prettier": "^3.6.0",
+    "tsx": "^4.21.0"
   },
   "packageManager": "pnpm@8.15.6",
   "engines": {

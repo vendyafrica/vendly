@@ -2,6 +2,39 @@
 
 import * as React from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { useEffect } from "react";
+import { usePathname, useSearchParams } from "next/navigation";
+
+import posthog from "posthog-js";
+import { PostHogProvider as PHProvider } from "posthog-js/react";
+
+export function PostHogProvider({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    const key = process.env.NEXT_PUBLIC_POSTHOG_KEY;
+    if (!key) return;
+
+    posthog.init(key, {
+      api_host: process.env.NEXT_PUBLIC_POSTHOG_HOST,
+      defaults: "2025-11-30",
+    });
+  }, []);
+
+  useEffect(() => {
+    const key = process.env.NEXT_PUBLIC_POSTHOG_KEY;
+    if (!key) return;
+
+    const query = searchParams?.toString();
+    const url = query ? `${pathname}?${query}` : pathname;
+    posthog.capture("$pageview", {
+      $current_url: url,
+    });
+  }, [pathname, searchParams]);
+
+  return <PHProvider client={posthog}>{children}</PHProvider>;
+}
 
 export function Providers({ children }: { children: React.ReactNode }) {
   const [queryClient] = React.useState(

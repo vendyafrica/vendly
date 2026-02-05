@@ -1,4 +1,16 @@
-import { db, dbWs, and, eq, inArray, isNull, sql } from "@vendly/db";
+import {
+  TTL,
+  and,
+  cacheKeys,
+  db,
+  dbWs,
+  eq,
+  inArray,
+  invalidateCache,
+  isNull,
+  sql,
+  withCache,
+} from "@vendly/db";
 import { orders, orderItems, products, stores, tenants } from "@vendly/db";
 import { normalizePhoneToE164 } from "../utils/phone";
 import { z } from "zod";
@@ -148,6 +160,9 @@ export const orderService = {
       throw new Error("Failed to create order");
     }
 
+    void invalidateCache(cacheKeys.orders.list(store.tenantId));
+    void invalidateCache(cacheKeys.orders.stats(store.tenantId));
+
     return completeOrder;
   },
 
@@ -160,12 +175,18 @@ export const orderService = {
   },
 
   async listOrdersForTenant(tenantId: string) {
-    const list = await db.query.orders.findMany({
-      where: and(eq(orders.tenantId, tenantId), isNull(orders.deletedAt)),
-      with: { items: true, store: true },
-      orderBy: (o, { desc }) => [desc(o.createdAt)],
-    });
-    return list;
+    return withCache(
+      cacheKeys.orders.list(tenantId),
+      async () => {
+        const list = await db.query.orders.findMany({
+          where: and(eq(orders.tenantId, tenantId), isNull(orders.deletedAt)),
+          with: { items: true, store: true },
+          orderBy: (o, { desc }) => [desc(o.createdAt)],
+        });
+        return list;
+      },
+      TTL.SHORT
+    );
   },
 
   async updateOrderStatus(orderId: string, tenantId: string, input: UpdateOrderStatusInput) {
@@ -185,6 +206,9 @@ export const orderService = {
       })
       .where(and(eq(orders.id, orderId), eq(orders.tenantId, tenantId), isNull(orders.deletedAt)))
       .returning();
+
+    void invalidateCache(cacheKeys.orders.list(tenantId));
+    void invalidateCache(cacheKeys.orders.stats(tenantId));
 
     return updated;
   },

@@ -46,19 +46,20 @@ export default function StoresPage() {
     }, []);
 
     return (
-        <div className="flex flex-col gap-6">
-            <div className="flex items-center justify-between">
-                <div>
-                    <h1 className="text-3xl font-bold tracking-tight">Stores</h1>
-                    <p className="text-muted-foreground">
-                        Overview of all stores and their performance.
-                    </p>
-                </div>
+        <div className="flex flex-1 flex-col gap-6 p-4 pt-0">
+            {/* Header */}
+            <div>
+                <h1 className="text-2xl font-bold tracking-tight">Stores</h1>
+                <p className="text-sm text-muted-foreground">
+                    Overview of all stores and their performance
+                </p>
             </div>
 
+            {/* Stats */}
             <StoreStats stats={stats} isLoading={isLoading} />
 
-            <div className="rounded-md border bg-card">
+            {/* Stores Table */}
+            <div className="rounded-md border border-border/70 bg-card shadow-sm">
                 <StoreTable stores={stores} isLoading={isLoading} />
             </div>
         </div>

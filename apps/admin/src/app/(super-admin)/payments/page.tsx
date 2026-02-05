@@ -1,6 +1,9 @@
 "use client";
 
 import * as React from "react";
+import { SegmentedStatsCard } from "../components/SegmentedStatsCard";
+import { Badge } from "@vendly/ui/components/badge";
+import { cn } from "@vendly/ui/lib/utils";
 
 interface Payment {
     id: string;
@@ -31,56 +34,110 @@ export default function PaymentsPage() {
             });
     }, []);
 
+    // Calculate stats
+    const totalPayments = payments.length;
+    const successfulPayments = payments.filter(p => p.status === "PAID").length;
+    const totalRevenue = payments
+        .filter(p => p.status === "PAID")
+        .reduce((sum, p) => sum + p.amount, 0);
+    const successRate = totalPayments > 0 ? (successfulPayments / totalPayments) * 100 : 0;
+
     return (
-        <div className="flex flex-col gap-6">
-            <div className="flex items-center justify-between">
-                <div>
-                    <h1 className="text-3xl font-bold tracking-tight">Payments</h1>
-                    <p className="text-muted-foreground">
-                        Global payments history.
-                    </p>
-                </div>
+        <div className="flex flex-1 flex-col gap-6 p-4 pt-0">
+            {/* Header */}
+            <div>
+                <h1 className="text-2xl font-bold tracking-tight">Payments</h1>
+                <p className="text-sm text-muted-foreground">
+                    Global payments history across all stores
+                </p>
             </div>
 
-            <div className="rounded-md border bg-card p-4">
-                {isLoading ? (
-                    <p>Loading payments...</p>
-                ) : (
-                    <div className="space-y-2">
-                        {payments.length === 0 ? (
-                            <p className="text-muted-foreground">No payments found.</p>
-                        ) : (
-                            <div className="overflow-x-auto">
-                                <table className="w-full">
-                                    <thead>
-                                        <tr className="border-b">
-                                            <th className="text-left p-2">Provider</th>
-                                            <th className="text-left p-2">Reference</th>
-                                            <th className="text-left p-2">Store</th>
-                                            <th className="text-left p-2">Order #</th>
-                                            <th className="text-left p-2">Status</th>
-                                            <th className="text-right p-2">Amount</th>
-                                            <th className="text-left p-2">Date</th>
+            {/* Stats */}
+            <SegmentedStatsCard
+                segments={[
+                    {
+                        label: "Total Payments",
+                        value: isLoading ? "—" : totalPayments.toString(),
+                        changeLabel: "All transactions",
+                        changeTone: "neutral",
+                    },
+                    {
+                        label: "Successful",
+                        value: isLoading ? "—" : successfulPayments.toString(),
+                        changeLabel: "Paid orders",
+                        changeTone: "positive",
+                    },
+                    {
+                        label: "Total Revenue",
+                        value: isLoading ? "—" : new Intl.NumberFormat('en-UG', { style: 'currency', currency: 'UGX', minimumFractionDigits: 0 }).format(totalRevenue),
+                        changeLabel: "From paid orders",
+                        changeTone: "positive",
+                    },
+                    {
+                        label: "Success Rate",
+                        value: isLoading ? "—" : `${Math.round(successRate)}%`,
+                        changeLabel: "Payment completion",
+                        changeTone: successRate > 80 ? "positive" : successRate > 50 ? "neutral" : "negative",
+                    },
+                ]}
+            />
+
+            {/* Payments Table */}
+            <div className="rounded-md border border-border/70 bg-card shadow-sm">
+                <div className="p-6">
+                    {isLoading ? (
+                        <p className="text-sm text-muted-foreground">Loading payments...</p>
+                    ) : payments.length === 0 ? (
+                        <p className="text-sm text-muted-foreground">No payments found.</p>
+                    ) : (
+                        <div className="overflow-x-auto">
+                            <table className="w-full">
+                                <thead>
+                                    <tr className="border-b border-border/70">
+                                        <th className="text-left p-3 text-xs font-medium text-muted-foreground">Provider</th>
+                                        <th className="text-left p-3 text-xs font-medium text-muted-foreground">Reference</th>
+                                        <th className="text-left p-3 text-xs font-medium text-muted-foreground">Store</th>
+                                        <th className="text-left p-3 text-xs font-medium text-muted-foreground">Order #</th>
+                                        <th className="text-left p-3 text-xs font-medium text-muted-foreground">Status</th>
+                                        <th className="text-right p-3 text-xs font-medium text-muted-foreground">Amount</th>
+                                        <th className="text-left p-3 text-xs font-medium text-muted-foreground">Date</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {payments.map((payment) => (
+                                        <tr key={payment.id} className="border-b border-border/50 last:border-0">
+                                            <td className="p-3 text-sm">{payment.provider}</td>
+                                            <td className="p-3 font-mono text-xs text-muted-foreground">{payment.providerReference || 'N/A'}</td>
+                                            <td className="p-3 text-sm">{payment.storeName || 'N/A'}</td>
+                                            <td className="p-3 text-sm">{payment.orderNumber || 'N/A'}</td>
+                                            <td className="p-3">
+                                                <Badge
+                                                    variant="outline"
+                                                    className={cn(
+                                                        "px-2 py-0.5 rounded-full text-xs font-normal border-0",
+                                                        payment.status === "PAID"
+                                                            ? "bg-emerald-100 text-emerald-700 hover:bg-emerald-100 hover:text-emerald-700"
+                                                            : payment.status === "FAILED"
+                                                                ? "bg-rose-100 text-rose-700 hover:bg-rose-100 hover:text-rose-700"
+                                                                : "bg-amber-100 text-amber-700 hover:bg-amber-100 hover:text-amber-700"
+                                                    )}
+                                                >
+                                                    {payment.status}
+                                                </Badge>
+                                            </td>
+                                            <td className="p-3 text-right text-sm font-medium">
+                                                {new Intl.NumberFormat('en-UG', { style: 'currency', currency: payment.currency }).format(payment.amount)}
+                                            </td>
+                                            <td className="p-3 text-sm text-muted-foreground">
+                                                {new Date(payment.createdAt).toLocaleDateString()}
+                                            </td>
                                         </tr>
-                                    </thead>
-                                    <tbody>
-                                        {payments.map((payment) => (
-                                            <tr key={payment.id} className="border-b">
-                                                <td className="p-2">{payment.provider}</td>
-                                                <td className="p-2 font-mono text-xs">{payment.providerReference || 'N/A'}</td>
-                                                <td className="p-2">{payment.storeName || 'N/A'}</td>
-                                                <td className="p-2">{payment.orderNumber || 'N/A'}</td>
-                                                <td className="p-2">{payment.status}</td>
-                                                <td className="p-2 text-right">{new Intl.NumberFormat('en-UG', { style: 'currency', currency: payment.currency }).format(payment.amount)}</td>
-                                                <td className="p-2">{new Date(payment.createdAt).toLocaleDateString()}</td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            </div>
-                        )}
-                    </div>
-                )}
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    )}
+                </div>
             </div>
         </div>
     )

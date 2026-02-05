@@ -55,13 +55,19 @@ export function LoginForm() {
         const { data, error } = await signIn(email, password);
 
         if (error) {
-          // Better Auth often returns descriptive errors
-          setError(
-            error.message ||
-              error.status === 403
-              ? "Please verify your email address first."
-              : "Invalid email or password. Please try again."
-          );
+          // Handle different error types from Better Auth
+          let errorMessage = "Invalid email or password. Please try again.";
+
+          if (error.status === 401) {
+            // User not found or invalid credentials
+            errorMessage = "Account not found. Please sign up first or check your credentials.";
+          } else if (error.status === 403 || error.message?.toLowerCase().includes("verify")) {
+            errorMessage = "Please verify your email address first.";
+          } else if (error.message) {
+            errorMessage = error.message;
+          }
+
+          setError(errorMessage);
           return;
         }
 

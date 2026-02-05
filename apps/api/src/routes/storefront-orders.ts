@@ -3,6 +3,7 @@ import { createOrderSchema, orderService } from "../services/order-service";
 import { notifySellerNewOrder } from "../services/notifications";
 import { and, db, eq, isNull, payments, stores } from "@vendly/db";
 import { mtnMomoCollections } from "../services/mtn-momo-collections";
+import { capturePosthogEvent } from "../utils/posthog";
 
 export const storefrontOrdersRouter:Router = Router();
 
@@ -24,6 +25,18 @@ storefrontOrdersRouter.post("/storefront/:slug/orders", async (req, res, next) =
     }
 
     const order = await orderService.createOrder(slug, input);
+
+    capturePosthogEvent({
+      distinctId: order.customerEmail || order.id,
+      event: "order_created",
+      properties: {
+        orderId: order.id,
+        storeSlug: slug,
+        paymentMethod: order.paymentMethod,
+        totalAmount: order.totalAmount,
+        currency: order.currency,
+      },
+    });
 
     let momo: { referenceId: string } | null = null;
     if (order.paymentMethod === "mtn_momo") {

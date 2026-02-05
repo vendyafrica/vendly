@@ -114,6 +114,31 @@ export const auth = betterAuth({
             };
           }
         },
+        after: async (user, request) => {
+          // Auto-assign super_admin role for admin app users
+          if (request?.headers?.get("referer")?.includes("localhost:4000") ||
+            request?.headers?.get("host")?.includes("admin")) {
+            try {
+              const { platformRoles } = await import("@vendly/db/schema");
+
+              // Check if role already exists
+              const existingRole = await db.query.platformRoles.findFirst({
+                where: (roles, { eq }) => eq(roles.userId, user.id),
+              });
+
+              if (!existingRole) {
+                await db.insert(platformRoles).values({
+                  userId: user.id,
+                  name: user.name,
+                  role: "super_admin",
+                });
+                console.log(`✅ Assigned super_admin role to ${user.email} (OAuth sign-in)`);
+              }
+            } catch (error) {
+              console.error("Failed to assign super_admin role:", error);
+            }
+          }
+        },
       },
     },
   },
