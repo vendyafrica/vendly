@@ -37,7 +37,7 @@ export function StoreCard({ store }: StoreCardProps) {
           }
         }}
       >
-        <div className="aspect-square relative overflow-hidden">
+        <div className="aspect-4/3 relative overflow-hidden">
           {carouselImages.length > 0 ? (
             <Carousel className="h-full" disableDrag={true}>
               <CarouselContent className="h-full">
@@ -68,6 +68,14 @@ export function StoreCard({ store }: StoreCardProps) {
               No images yet
             </div>
           )}
+
+          {/* Rating badge inside image */}
+          {store.rating > 0 && (
+            <div className="absolute top-3 right-3 flex items-center gap-1 bg-black/60 backdrop-blur-md text-white text-xs font-semibold px-2.5 py-1 rounded-full shadow-sm">
+              <span>{store.rating}</span>
+              <Star className="w-3.5 h-3.5 text-yellow-400 fill-yellow-400" />
+            </div>
+          )}
         </div>
       </div>
 
@@ -95,12 +103,6 @@ export function StoreCard({ store }: StoreCardProps) {
           >
             {store.name}
           </Link>
-        </div>
-
-        {/* Rating */}
-        <div className="flex items-center gap-1">
-          <span className="text-sm font-bold text-foreground">{store.rating}</span>
-          <Star className="w-3.5 h-3.5 fill-foreground text-foreground" />
         </div>
       </div>
     </div>

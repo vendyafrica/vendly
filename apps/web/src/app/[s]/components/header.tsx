@@ -27,6 +27,7 @@ export function StorefrontHeader() {
     const [isVisible, setIsVisible] = useState(true);
     const [isSearchOpen, setIsSearchOpen] = useState(false);
     const searchContainerRef = useRef<HTMLDivElement | null>(null);
+    const lastScrollYRef = useRef(0);
 
     useEffect(() => {
         const fetchStore = async () => {
@@ -51,11 +52,37 @@ export function StorefrontHeader() {
     }, [params?.s]);
 
     useEffect(() => {
+        lastScrollYRef.current = window.scrollY;
+
         const handleScroll = () => {
-            setIsVisible(window.scrollY < 80);
+            const currentY = window.scrollY;
+            const isScrollingDown = currentY > lastScrollYRef.current;
+            lastScrollYRef.current = currentY;
+
+            // Always show when you're basically at the top.
+            if (currentY < 80) {
+                setIsVisible(true);
+                return;
+            }
+
+            // Hide while scrolling down.
+            if (isScrollingDown) {
+                setIsVisible(false);
+                return;
+            }
+
+            // Scrolling up: only show again when near the categories rail.
+            const rail = document.getElementById("storefront-categories-rail");
+            if (!rail) return;
+
+            const railTop = rail.getBoundingClientRect().top;
+            const headerRevealThreshold = 140;
+            if (railTop <= headerRevealThreshold) {
+                setIsVisible(true);
+            }
         };
 
-        window.addEventListener("scroll", handleScroll);
+        window.addEventListener("scroll", handleScroll, { passive: true });
         return () => window.removeEventListener("scroll", handleScroll);
     }, []);
 

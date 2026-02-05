@@ -26,18 +26,17 @@ export const storeRepo = {
         });
     },
 
-    // Find stores that have a specific category in their categories array
-    // Note: stores.categories is a text[] or jsonb column depending on schema
-    // We'll assume it's an array based on previous code usage
-    async findByCategoryName(categoryName: string) {
+    // Find stores that have a specific category in their categories array.
+    // NOTE: In practice, stores.categories may contain either category slugs (e.g. "women")
+    // or category names (e.g. "Women"). Use array overlap to match either.
+    async findByCategory(category: { slug: string; name: string }) {
         return db
             .select()
             .from(stores)
             .where(
                 and(
                     eq(stores.status, true),
-                    // Use sql operator for array containment to avoid strict type issues with Drizzle's arrayContains in some versions
-                    sql`${stores.categories} @> ${[categoryName]}`
+                    sql`${stores.categories} && ARRAY[${category.slug}, ${category.name}]::text[]`
                 )
             );
     },

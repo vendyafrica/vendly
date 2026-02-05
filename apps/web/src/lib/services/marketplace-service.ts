@@ -199,7 +199,7 @@ export const marketplaceService = {
             return [];
         }
 
-        const stores = await storeRepo.findByCategoryName(category.name);
+        const stores = await storeRepo.findByCategory({ slug: category.slug, name: category.name });
 
         const { productRepo } = await import("../data/product-repo");
 

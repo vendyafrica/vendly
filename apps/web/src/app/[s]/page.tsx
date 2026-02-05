@@ -9,14 +9,15 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 
 interface StorefrontPageProps {
-  params: {
+  params: Promise<{
     s: string; // The param is 's' based on folder name [s]
-  };
+  }>;
   searchParams?: Record<string, string | string[] | undefined>;
 }
 
 export async function generateMetadata({ params }: StorefrontPageProps): Promise<Metadata> {
-  const store = await marketplaceService.getStoreDetails(params.s);
+  const { s } = await params;
+  const store = await marketplaceService.getStoreDetails(s);
   if (!store) {
     return {
       title: "Store not found | Vendly",
@@ -47,7 +48,7 @@ export async function generateMetadata({ params }: StorefrontPageProps): Promise
 }
 
 export default async function StorefrontHomePage({ params, searchParams }: StorefrontPageProps) {
-  const { s: storeSlug } = params;
+  const { s: storeSlug } = await params;
   const search = searchParams?.q;
   const query = Array.isArray(search) ? search[0] : search;
 

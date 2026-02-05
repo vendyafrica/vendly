@@ -6,11 +6,14 @@ import { Button } from "@vendly/ui/components/button";
 import Link from "next/link";
 import type { Metadata } from "next";
 import { marketplaceService } from "@/lib/services/marketplace-service";
+import { notFound } from "next/navigation";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { ArrowLeftIcon } from "@hugeicons/core-free-icons";
 
 interface CategoryPageProps {
-    params: {
+    params: Promise<{
         category: string;
-    }
+    }>;
 }
 
 const formatCategoryName = (slug: string) =>
@@ -20,7 +23,7 @@ const formatCategoryName = (slug: string) =>
         .join(' ');
 
 export async function generateMetadata({ params }: CategoryPageProps): Promise<Metadata> {
-    const categorySlug = params.category;
+    const { category: categorySlug } = await params;
     const categoryName = formatCategoryName(categorySlug);
 
     const title = `${categoryName} | Shop ${categoryName} on Vendly`;
@@ -45,10 +48,12 @@ export async function generateMetadata({ params }: CategoryPageProps): Promise<M
 }
 
 export default async function CategoryPage({ params }: CategoryPageProps) {
-    const categorySlug = params.category;
+    const { category: categorySlug } = await params;
     const stores = await marketplaceService.getStoresBySpecificCategory(categorySlug);
 
-    // Transform to UI Model
+    if (!stores.length) {
+        notFound();
+    }
     const uiStores: MarketplaceStore[] = stores.map(store => ({
         id: store.id,
         name: store.name,
@@ -57,7 +62,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
         categories: store.categories || [],
         rating: 4.5,
         logoUrl: store.logoUrl ?? null,
-        images: [],
+        images: store.images ?? [],
     }));
 
     const categoryName = formatCategoryName(categorySlug);
@@ -66,23 +71,22 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
         <main className="min-h-screen bg-background text-foreground">
             <Header />
 
-            <div className="container mx-auto px-4 py-12">
-                <div className="flex justify-between items-center mb-8">
-                    <div>
-                        <h1 className="text-4xl font-bold mb-2">{categoryName}</h1>
-                        <p className="text-muted-foreground">
-                            {uiStores.length} {uiStores.length === 1 ? 'store' : 'stores'} in this category
-                        </p>
+            <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-10">
+                <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
+                    <div className="space-y-2">
+                        <h1 className="text-lg md:text-xl font-medium tracking-tight">{categoryName}</h1>
                     </div>
-                    <Link href="/">
-                        <Button variant="outline">
-                            Back to Home
-                        </Button>
+
+                    <Link href="/" className="shrink-0 text-foreground hover:text-foreground/80">
+                        <span className="flex items-center gap-2">
+                            <HugeiconsIcon icon={ArrowLeftIcon} size={18} />
+                            Back
+                        </span>
                     </Link>
                 </div>
+            </section>
 
-                <MarketplaceGrid stores={uiStores} loading={false} />
-            </div>
+            <MarketplaceGrid stores={uiStores} loading={false} />
 
             <Footer />
         </main>

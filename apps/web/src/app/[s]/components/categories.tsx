@@ -20,7 +20,7 @@ export function Categories() {
 
     useEffect(() => {
         const fetchCategories = async () => {
-            const slug = params?.storefront as string;
+            const slug = params?.s as string;
             if (!slug) {
                 setLoading(false);
                 return;
@@ -38,7 +38,7 @@ export function Categories() {
             }
         };
         fetchCategories();
-    }, [params?.storefront]);
+    }, [params?.s]);
 
     if (loading) {
         return (
@@ -57,12 +57,12 @@ export function Categories() {
     if (categories.length === 0) return null;
 
     return (
-        <nav className="border-b border-border bg-background sticky top-0 z-10">
+        <nav id="storefront-categories-rail" className="border-b border-border bg-background sticky top-0 z-10">
             <div className="px-3 sm:px-4 lg:px-6 xl:px-8">
                 <div className="flex gap-6 sm:gap-8 overflow-x-auto scrollbar-hide">
                     {/* All/Featured link */}
                     <Link
-                        href={`/${params?.storefront}`}
+                        href={`/${params?.s}`}
                         onClick={() => setActiveCategory("all")}
                         className={`
                             shrink-0 py-4 text-sm font-medium transition-colors relative
@@ -82,7 +82,7 @@ export function Categories() {
                     {categories.map((category) => (
                         <Link
                             key={category.slug}
-                            href={`/${params?.storefront}/categories/${category.slug}`}
+                            href={`/${params?.s}/categories/${category.slug}`}
                             onClick={() => setActiveCategory(category.slug)}
                             className={`
                                 shrink-0 py-4 text-sm font-medium transition-colors relative whitespace-nowrap
