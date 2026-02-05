@@ -25,10 +25,11 @@ interface MobileMenuProps {
     onClose: () => void;
     session: {
         user?: {
+            id: string;
             name?: string | null;
             email?: string | null;
             image?: string | null;
-        };
+        } | null;
     } | null;
     showSellButton: boolean;
     onSellNow: () => void;

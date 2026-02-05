@@ -15,7 +15,6 @@ import Search from "../search";
 import { useAppSession } from "@/contexts/app-session-context";
 import { useCart } from "@/contexts/cart-context";
 import { Portal } from "@/components/portal";
-import { ThemeToggle } from "@/components/theme-toggle";
 import { Logo, MobileLogo } from "./Logo";
 import { WishlistButton } from "./WishlistButton";
 import { CartButton } from "./CartButton";
@@ -129,8 +128,6 @@ export default function Header({
                             {/* Cart */}
                             <CartButton itemCount={itemCount} />
 
-                            <ThemeToggle />
-
                             {/* User Menu */}
                             <UserMenu
                                 session={session}
@@ -186,8 +183,7 @@ export default function Header({
                             </button>
 
                             <CartButton itemCount={itemCount} mobile />
-                            <ThemeToggle />
-                        </div>
+                            </div>
                     </div>
                 </div>
             </header>
