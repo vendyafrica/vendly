@@ -9,7 +9,6 @@ import { ShoppingBag02Icon, UserIcon, FavouriteIcon, Search01Icon } from "@hugei
 import { HeaderSkeleton } from "./skeletons";
 import { useCart } from "../../../contexts/cart-context";
 import { StorefrontSearch } from "./storefront-search";
-import { ThemeToggle } from "@/components/theme-toggle";
 
 interface StoreData {
     name: string;
@@ -164,8 +163,6 @@ export function StorefrontHeader() {
                             >
                                 <HugeiconsIcon icon={UserIcon} size={18} className={iconColor} />
                             </Link>
-
-                            <ThemeToggle />
                         </div>
                     </div>
                 </div>
