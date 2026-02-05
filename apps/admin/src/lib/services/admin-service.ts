@@ -1,6 +1,6 @@
 import { db } from "@vendly/db/db";
 import { tenants, stores, users, categories, type NewCategory } from "@vendly/db/schema";
-import { desc, sql, eq } from "drizzle-orm";
+import { desc, sql, eq } from "@vendly/db";
 
 /**
  * Admin Service for super-admin operations

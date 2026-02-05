@@ -16,10 +16,8 @@ import {
 import { Input } from "@vendly/ui/components/input";
 import { Label } from "@vendly/ui/components/label";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-
 export default function CategoriesPage() {
-    const [categories, setCategories] = React.useState([]);
+    const [categories, setCategories] = React.useState<any[]>([]);
     const [isLoading, setIsLoading] = React.useState(true);
     const [isCreateOpen, setIsCreateOpen] = React.useState(false);
     const [parentId, setParentId] = React.useState<string | null>(null);
@@ -31,10 +29,10 @@ export default function CategoriesPage() {
 
     const fetchCategories = async () => {
         try {
-            const res = await fetch(`${API_BASE}/api/admin/categories`);
+            const res = await fetch("/api/categories");
             const data = await res.json();
-            if (data.success) {
-                setCategories(data.data);
+            if (Array.isArray(data)) {
+                setCategories(data);
             }
         } catch (error) {
             console.error(error);
@@ -59,14 +57,14 @@ export default function CategoriesPage() {
         setIsSubmitting(true);
 
         try {
-            const res = await fetch(`${API_BASE}/api/admin/categories`, {
+            const res = await fetch("/api/categories", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     name,
                     slug,
                     parentId,
-                    level: parentId ? 1 : 0,
+                    level: parentId ? 1 : 0, // Simplified logic, API handles level too if parentId provided
                 }),
             });
 

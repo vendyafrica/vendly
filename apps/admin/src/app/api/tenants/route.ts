@@ -1,17 +1,22 @@
+import { db } from "@vendly/db/db";
+import { tenants } from "@vendly/db/schema";
+import { desc } from "@vendly/db";
 import { NextResponse } from "next/server";
-import { adminService } from "@/lib/services/admin-service";
+import { checkPlatformRoleApi } from "@/lib/auth-guard";
 
-/**
- * GET /api/tenants
- * Get all tenants (super-admin only)
- */
 export async function GET() {
+    const auth = await checkPlatformRoleApi(["super_admin"]);
+    if (auth.error) {
+        return NextResponse.json(auth, { status: auth.status });
+    }
+
     try {
-        // TODO: Add super-admin auth check
-        const result = await adminService.getAllTenants();
-        return NextResponse.json(result);
+        const data = await db.query.tenants.findMany({
+            orderBy: [desc(tenants.createdAt)],
+        });
+        return NextResponse.json(data);
     } catch (error) {
-        console.error("Error fetching tenants:", error);
+        console.error("Tenants API Error:", error);
         return NextResponse.json({ error: "Failed to fetch tenants" }, { status: 500 });
     }
 }

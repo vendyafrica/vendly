@@ -9,13 +9,38 @@ import {
 } from "@vendly/ui/components/field";
 import { Input } from "@vendly/ui/components/input";
 import { signIn, signInWithGoogle } from "../../../lib/auth";
-import { useRouter } from "next/navigation";
-import { useState, useTransition } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useState, useTransition, useEffect } from "react";
 
 export function LoginForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+
+  useEffect(() => {
+    const message = searchParams.get("message");
+    const error = searchParams.get("error");
+
+    if (message === "verify-email") {
+      setSuccessMessage("Account created! Please check your email to verify your account.");
+    } else if (message === "email-verified") {
+      setSuccessMessage("Email verified successfully! You can now sign in.");
+    }
+
+    if (error === "invalid-verification-link") {
+      setError("Invalid verification link. Please try signing up again.");
+    } else if (error === "invalid-or-expired-token") {
+      setError("Verification link is invalid or has expired. Please request a new one.");
+    } else if (error === "token-expired") {
+      setError("Verification link has expired. Please request a new one.");
+    } else if (error === "user-not-found") {
+      setError("User not found. Please sign up first.");
+    } else if (error === "verification-failed") {
+      setError("Email verification failed. Please try again.");
+    }
+  }, [searchParams]);
 
   const handleEmailSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -34,15 +59,15 @@ export function LoginForm() {
           setError(
             error.message ||
               error.status === 403
-                ? "Please verify your email address first."
-                : "Invalid email or password. Please try again."
+              ? "Please verify your email address first."
+              : "Invalid email or password. Please try again."
           );
           return;
         }
 
-        // Success → session cookie is set, redirect
-        router.push("/dashboard"); // ← change to your actual protected route
-        router.refresh();          // optional: refreshes server components
+        // Success → session cookie is set, redirect to dashboard
+        router.push("/");
+        router.refresh();
       } catch (err: any) {
         setError(
           err?.message || "An unexpected error occurred. Please try again."
@@ -80,6 +105,12 @@ export function LoginForm() {
                 Sign in to continue
               </p>
             </div>
+
+            {successMessage && (
+              <div className="mb-5 rounded-lg border border-green-500/50 bg-green-500/10 px-4 py-3 text-sm text-green-700">
+                {successMessage}
+              </div>
+            )}
 
             {error && (
               <div className="mb-5 rounded-lg border border-destructive/50 bg-destructive/10 px-4 py-3 text-sm text-destructive">
@@ -170,6 +201,13 @@ export function LoginForm() {
             </Field>
           </FieldGroup>
         </form>
+
+        <div className="mt-4 text-center text-sm text-muted-foreground">
+          Don't have an account?{" "}
+          <a href="/sign-up" className="text-primary hover:underline underline-offset-4">
+            Sign up
+          </a>
+        </div>
       </div>
     </div>
   );

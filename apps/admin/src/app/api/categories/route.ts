@@ -1,45 +1,76 @@
-import { NextRequest, NextResponse } from "next/server";
-import { adminService } from "@/lib/services/admin-service";
-import { z } from "zod";
+import { db } from "@vendly/db/db";
+import { categories } from "@vendly/db/schema";
+import { eq, asc } from "@vendly/db";
+import { NextResponse } from "next/server";
+import { checkPlatformRoleApi } from "@/lib/auth-guard";
 
-const createCategorySchema = z.object({
-    name: z.string().min(1).max(255),
-    slug: z.string().min(1).max(100),
-    description: z.string().optional(),
-    imageUrl: z.string().url().optional(),
-    parentId: z.string().uuid().optional(),
-    level: z.number().int().min(0).default(0),
-});
-
-/**
- * GET /api/categories
- * Get all categories (super-admin only)
- */
 export async function GET() {
+    // Public or Admin? "Manage categories" implies Admin.
+    // But storefront needs them too. This is ADMIN API.
+    const auth = await checkPlatformRoleApi(["super_admin"]);
+    if (auth.error) {
+        const isPublic = false; // Set to true if categories are public via this API? No, use explicit public API for storefront.
+        if (!isPublic) return NextResponse.json(auth, { status: auth.status });
+    }
+
     try {
-        // TODO: Add super-admin auth check
-        const categoryList = await adminService.getAllCategories();
-        return NextResponse.json(categoryList);
+        const data = await db.query.categories.findMany({
+            orderBy: [asc(categories.level), asc(categories.name)],
+        });
+        return NextResponse.json(data);
     } catch (error) {
-        console.error("Error fetching categories:", error);
+        console.error("Categories API Error:", error);
         return NextResponse.json({ error: "Failed to fetch categories" }, { status: 500 });
     }
 }
 
-/**
- * POST /api/categories
- * Create a new category (super-admin only)
- */
-export async function POST(request: NextRequest) {
-    try {
-        // TODO: Add super-admin auth check
-        const body = await request.json();
-        const input = createCategorySchema.parse(body);
+export async function POST(req: Request) {
+    const auth = await checkPlatformRoleApi(["super_admin"]);
+    if (auth.error) {
+        return NextResponse.json(auth, { status: auth.status });
+    }
 
-        const category = await adminService.createCategory(input);
-        return NextResponse.json(category, { status: 201 });
+    try {
+        const body = await req.json();
+        const { name, slug, image, parentId } = body;
+
+        if (!name || !slug) {
+            return NextResponse.json({ error: "Name and Slug are required" }, { status: 400 });
+        }
+
+        // Check slug uniqueness
+        const existing = await db.query.categories.findFirst({
+            where: eq(categories.slug, slug)
+        });
+        if (existing) {
+            return NextResponse.json({ error: "Slug already exists" }, { status: 409 });
+        }
+
+        let level = 0;
+        if (parentId) {
+            const parent = await db.query.categories.findFirst({
+                where: eq(categories.id, parentId),
+            });
+            if (!parent) {
+                return NextResponse.json({ error: "Parent category not found" }, { status: 400 });
+            }
+            level = parent.level + 1;
+        }
+
+        const [newCategory] = await db
+            .insert(categories)
+            .values({
+                name,
+                slug,
+                image,
+                parentId: parentId || null,
+                level,
+            })
+            .returning();
+
+        return NextResponse.json(newCategory);
     } catch (error) {
-        console.error("Error creating category:", error);
+        console.error("Create Category API Error:", error);
         return NextResponse.json({ error: "Failed to create category" }, { status: 500 });
     }
 }

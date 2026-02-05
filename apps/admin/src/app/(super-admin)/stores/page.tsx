@@ -4,8 +4,6 @@ import * as React from "react";
 import { StoreTable, type Store } from "./components/store-table";
 import { StoreStats } from "./components/store-stats";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-
 export default function StoresPage() {
     const [stores, setStores] = React.useState<Store[]>([]);
     const [stats, setStats] = React.useState({
@@ -18,12 +16,24 @@ export default function StoresPage() {
     React.useEffect(() => {
         const fetchData = async () => {
             try {
-                const res = await fetch(`${API_BASE}/api/admin/stores`);
-                const data = await res.json();
+                const [storesRes, dashboardRes] = await Promise.all([
+                    fetch("/api/stores"),
+                    fetch("/api/dashboard")
+                ]);
 
-                if (data.success) {
-                    setStores(data.data.stores);
-                    setStats(data.data.stats);
+                const storesData = await storesRes.json();
+                const dashboardData = await dashboardRes.json();
+
+                if (Array.isArray(storesData)) {
+                    setStores(storesData);
+                }
+
+                if (dashboardData.stores && dashboardData.marketplace) {
+                    setStats({
+                        totalStores: dashboardData.stores.total,
+                        totalRevenue: dashboardData.marketplace.gmv,
+                        totalSales: dashboardData.marketplace.totalOrders
+                    });
                 }
             } catch (error) {
                 console.error("Failed to fetch stores:", error);

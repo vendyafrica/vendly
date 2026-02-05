@@ -27,20 +27,24 @@ export function SignUpForm() {
             const password = formData.get("password") as string;
 
             try {
-                const { data, error } = await signUp(email, password, name);
+                // Use custom admin signup endpoint
+                const response = await fetch("/api/admin-signup", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({ email, password, name }),
+                });
 
-                if (error) {
-                    setError(
-                        error.message ||
-                            error.status === 403
-                            ? "Please verify your email address first."
-                            : "Invalid email or password. Please try again."
-                    );
+                const data = await response.json();
+
+                if (!response.ok) {
+                    setError(data.error || "Failed to create account. Please try again.");
                     return;
                 }
 
-                router.push("/dashboard");
-                router.refresh();
+                // Success - redirect to login with verification message
+                router.push("/login?message=verify-email");
             } catch (err: any) {
                 setError(
                     err?.message || "An unexpected error occurred. Please try again."
@@ -69,14 +73,14 @@ export function SignUpForm() {
                             </div>
                         )}
                         <Field>
-                            <FieldLabel htmlFor="full_name">Full Name</FieldLabel>
+                            <FieldLabel htmlFor="name">Full Name</FieldLabel>
                             <Input
-                                id="full_name"
-                                name="full_name"
+                                id="name"
+                                name="name"
                                 type="text"
                                 placeholder="Steve Jobs"
                                 required
-                                autoComplete="full_name"
+                                autoComplete="name"
                                 disabled={isPending}
                                 className="focus-visible:border-primary/60 focus-visible:ring-primary/20"
                             />
@@ -121,6 +125,13 @@ export function SignUpForm() {
                         </Field>
                     </FieldGroup>
                 </form>
+
+                <div className="mt-4 text-center text-sm text-muted-foreground">
+                    Already have an account?{" "}
+                    <a href="/login" className="text-primary hover:underline underline-offset-4">
+                        Sign in
+                    </a>
+                </div>
             </div>
         </div>
     );

@@ -4,8 +4,6 @@ import * as React from "react";
 import { TenantTable, type Tenant } from "./components/tenant-table";
 import { TenantStats } from "./components/tenant-stats";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-
 export default function TenantsPage() {
     const [tenants, setTenants] = React.useState<Tenant[]>([]);
     const [stats, setStats] = React.useState({
@@ -18,15 +16,27 @@ export default function TenantsPage() {
     React.useEffect(() => {
         const fetchData = async () => {
             try {
-                const res = await fetch(`${API_BASE}/api/admin/tenants`);
-                const data = await res.json();
+                const [tenantsRes, dashboardRes] = await Promise.all([
+                    fetch("/api/tenants"),
+                    fetch("/api/dashboard")
+                ]);
 
-                if (data.success) {
-                    setTenants(data.data.tenants);
-                    setStats(data.data.stats);
+                const tenantsData = await tenantsRes.json();
+                const dashboardData = await dashboardRes.json();
+
+                if (Array.isArray(tenantsData)) {
+                    setTenants(tenantsData);
+                }
+
+                if (dashboardData.tenants) {
+                    setStats({
+                        totalTenants: dashboardData.tenants.total,
+                        newThisMonth: dashboardData.tenants.new30d,
+                        activePlans: 0
+                    });
                 }
             } catch (error) {
-                console.error("Failed to fetch tenants:", error);
+                console.error("Failed to fetch data:", error);
             } finally {
                 setIsLoading(false);
             }

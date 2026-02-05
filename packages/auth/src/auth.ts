@@ -73,6 +73,30 @@ export const auth = betterAuth({
     },
     async afterEmailVerification(user, request) {
       console.log(`${user.email} has been successfully verified!`);
+
+      // For admin app, assign super_admin role after verification
+      if (request?.headers?.get("referer")?.includes("localhost:4000") ||
+        request?.headers?.get("host")?.includes("admin")) {
+        try {
+          const { platformRoles } = await import("@vendly/db/schema");
+
+          // Check if role already exists
+          const existingRole = await db.query.platformRoles.findFirst({
+            where: (roles, { eq }) => eq(roles.userId, user.id),
+          });
+
+          if (!existingRole) {
+            await db.insert(platformRoles).values({
+              userId: user.id,
+              name: user.name,
+              role: "super_admin",
+            });
+            console.log(`Assigned super_admin role to ${user.email}`);
+          }
+        } catch (error) {
+          console.error("Failed to assign super_admin role:", error);
+        }
+      }
     },
   },
 

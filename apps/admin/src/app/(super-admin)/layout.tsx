@@ -5,12 +5,15 @@ import {
   SidebarTrigger,
 } from "@vendly/ui/components/sidebar"
 import { headers } from "next/headers"
+import { requirePlatformRole } from "@/lib/auth-guard"
 
 export default async function DashboardLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
+  await requirePlatformRole(["super_admin"]);
+
   const headersList = await headers()
   const tenant = headersList.get('x-tenant-subdomain')
 
@@ -32,7 +35,7 @@ export default async function DashboardLayout({
               <>
                 <span className="text-muted-foreground">|</span>
                 <span className="text-sm text-muted-foreground">Tenant: {tenant}</span>
-              </>  
+              </>
             )}
           </div>
         </header>

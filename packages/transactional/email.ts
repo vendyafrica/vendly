@@ -77,4 +77,32 @@ export const sendWelcomeEmail = async ({ to, name, dashboardUrl }: SendWelcomeEm
   return data;
 };
 
+interface SendAdminVerificationProps {
+  to: string;
+  name: string;
+  verificationUrl: string;
+}
+
+export const sendAdminVerificationEmail = async ({ to, name, verificationUrl }: SendAdminVerificationProps) => {
+  const { AdminVerificationEmail } = await import('./emails/admin-verification');
+  const emailHtml = await render(React.createElement(AdminVerificationEmail, {
+    name,
+    url: verificationUrl,
+  }));
+
+  const data = await resend.emails.send({
+    from: 'Vendly Admin <admin@vendlyafrica.store>',
+    to,
+    subject: 'Verify your Vendly Admin account',
+    html: emailHtml,
+  });
+
+  if (data.error) {
+    console.error("Admin verification email failed", data.error);
+    throw new Error("Admin verification email failed to send");
+  }
+
+  return data;
+};
+
 export default sendEmail;

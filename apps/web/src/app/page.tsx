@@ -11,8 +11,8 @@ import { CollectionsRail } from "@/app/(m)/components/home/CollectionsRail";
 import { CategoryShelf } from "@/app/(m)/components/home/CategoryShelf";
 import type { Metadata } from "next";
 
-const homeTitle = "Vendly Marketplace | Discover and shop African creators";
-const homeDescription = "Shop trusted independent stores across Africa with Vendly. Browse categories, checkout securely with mobile money, and get delivery handled for you.";
+const homeTitle = "Vendly | Shop African Creators & Social Sellers";
+const homeDescription = "Discover and shop from African creators, students, and small sellers. Secure mobile money payments, integrated delivery, and trusted independent stores all in one marketplace.";
 
 export const metadata: Metadata = {
     title: homeTitle,
@@ -65,7 +65,7 @@ export default async function HomePage() {
         <main className="min-h-screen bg-background text-foreground">
             <Header hideSearch />
             <OneTapLogin />
-            
+
             <HeroSection />
             <CollectionsRail
                 categories={categories.map((c) => ({
