@@ -39,9 +39,9 @@ export function StoreCarousel({ images, className }: StoreCarouselProps) {
         {/* Navigation arrows — hover only */}
         {images.length > 1 && (
           <CarouselNavigation
-            className="opacity-0 transition-opacity duration-200 group-hover:opacity-100"
+            className="z-20 opacity-0 transition-opacity duration-200 group-hover:opacity-100"
             classNameButton={cn(
-              "cursor-pointer",
+              "cursor-pointer hover:cursor-pointer",
               "bg-white/90 hover:bg-white",
               "shadow-md",
               "pointer-events-auto"

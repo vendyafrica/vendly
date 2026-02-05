@@ -24,7 +24,7 @@ const geistMono = Geist_Mono({
 
 const siteUrl = "https://vendlyafrica.store";
 const defaultTitle = "Vendly";
-const defaultDescription = "Vendly - Find your next favorite product";
+const defaultDescription = "Vendly helps African creators and small sellers turn social audiences into storefronts with built-in payments, delivery, and marketplace discovery.";
 const defaultImage = `${siteUrl}/og-image.png`;
 
 export const metadata: Metadata = {

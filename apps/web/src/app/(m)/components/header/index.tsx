@@ -101,7 +101,7 @@ export default function Header({
     return (
         <>
             <header
-                className={`sticky top-0 z-40 w-full border-b border-border/60 bg-background/95 backdrop-blur-md transition-transform duration-300 ${isVisible ? "translate-y-0" : "-translate-y-full"
+                className={`sticky top-0 z-40 w-full bg-background/95 backdrop-blur-md transition-transform duration-300 ${isVisible ? "translate-y-0" : "-translate-y-full"
                     }`}
             >
                 {/* Desktop Header */}

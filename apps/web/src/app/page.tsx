@@ -1,15 +1,35 @@
-import CategoryCards from "@/app/(m)/components/CategoryCards";
 import Header from "@/app/(m)/components/header";
 import Footer from "@/app/(m)/components/footer";
-import { MarketplaceGrid } from "@/app/(m)/components/MarketplaceGrid";
 import { Button } from "@vendly/ui/components/button";
 import Link from "next/link";
 import { marketplaceService } from "@/lib/services/marketplace-service";
 import type { MarketplaceStore } from "@/types/marketplace";
 import type { StoreWithCategory } from "@/lib/services/marketplace-service";
 import { OneTapLogin } from "@/app/(m)/components/OneTapLogin";
-import { HugeiconsIcon } from "@hugeicons/react";
-import { ArrowRightIcon } from "@hugeicons/core-free-icons";
+import { HeroSection } from "@/app/(m)/components/home/HeroSection";
+import { CollectionsRail } from "@/app/(m)/components/home/CollectionsRail";
+import { CategoryShelf } from "@/app/(m)/components/home/CategoryShelf";
+import type { Metadata } from "next";
+
+const homeTitle = "Vendly Marketplace | Discover and shop African creators";
+const homeDescription = "Shop trusted independent stores across Africa with Vendly. Browse categories, checkout securely with mobile money, and get delivery handled for you.";
+
+export const metadata: Metadata = {
+    title: homeTitle,
+    description: homeDescription,
+    alternates: {
+        canonical: "/",
+    },
+    openGraph: {
+        title: homeTitle,
+        description: homeDescription,
+        url: "/",
+    },
+    twitter: {
+        title: homeTitle,
+        description: homeDescription,
+    },
+};
 
 export default async function HomePage() {
     const { categories, stores, storesByCategory } = await marketplaceService.getHomePageData();
@@ -20,8 +40,9 @@ export default async function HomePage() {
         slug: s.slug,
         description: s.description,
         categories: s.categories || [],
-        rating: 4.5,
+        rating: 4.5, // TODO: Replace with real rating when available
         logoUrl: s.logoUrl ?? null,
+        instagramAvatarUrl: s.instagramAvatarUrl ?? null,
         heroMedia: s.heroMedia ?? null,
         heroMediaType: s.heroMediaType ?? null,
         heroMediaItems: Array.isArray(s.heroMediaItems) ? s.heroMediaItems : [],
@@ -35,62 +56,51 @@ export default async function HomePage() {
         uiStoresByCategory[cat] = list.map(mapToMarketplaceStore);
     });
 
+    // Sort categories to show populated ones first
+    const sortedCategories = Object.entries(uiStoresByCategory)
+        .sort(([, a], [, b]) => b.length - a.length)
+        .slice(0, 6); // Limit to top 6 populated categories
+
     return (
         <main className="min-h-screen bg-background text-foreground">
-            <Header />
+            <Header hideSearch />
             <OneTapLogin />
-
-            <CategoryCards categories={
-                categories.map(c => ({
+            
+            <HeroSection />
+            <CollectionsRail
+                categories={categories.map((c) => ({
                     id: c.id,
                     name: c.name,
-                    image: null
-                })) as { id: string; name: string; image: null }[]
-            } />
+                    slug: c.slug,
+                    image: (c as { image?: string | null })?.image ?? null,
+                }))}
+            />
 
-            <div className="container mx-auto px-4 py-9">
-                <div className="flex items-start mb-8">
-                    <div>
-                        <h2 className="text-xl font-semibold mb-1">Discover your next favorite stores all in one place</h2>
-                    </div>
+            {uiStores.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-20 px-4 text-center">
+                    <h3 className="text-2xl font-semibold mb-4">No stores yet</h3>
+                    <p className="text-muted-foreground mb-8">Be the first to create a store on Vendly!</p>
+                    <Link href="/c">
+                        <Button size="lg">
+                            Create Your Store
+                        </Button>
+                    </Link>
                 </div>
-
-                {uiStores.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center py-20">
-                        <h3 className="text-2xl font-semibold mb-4">No stores yet</h3>
-                        <p className="text-muted-foreground mb-8">Be the first to create a store on Vendly!</p>
-                        <Link href="/c">
-                            <Button size="lg">
-                                Create Your Store
-                            </Button>
-                        </Link>
-                    </div>
-                ) : (
-                    <div className="space-y-9">
-                        <div>
-                            <h3 className="text-2xl font-semibold mb-3">Featured</h3>
-                            <MarketplaceGrid stores={uiStores} loading={false} />
-                        </div>
-
-                        {Object.entries(uiStoresByCategory).map(([categoryName, categoryStores]) => (
-                            <div key={categoryName}>
-                                <div className="flex justify-between items-center mb-3">
-                                    <h3 className="text-2xl font-semibold">{categoryName}</h3>
-                                    <span>
-                                        <Link
-                                            href={`/category/${categoryName.toLowerCase().replace(/\s+/g, '-')}`}
-                                            className="text-primary hover:underline"
-                                        >
-                                            <HugeiconsIcon icon={ArrowRightIcon} />
-                                        </Link>
-                                    </span>
-                                </div>
-                                <MarketplaceGrid stores={categoryStores.slice(0, 5)} loading={false} />
-                            </div>
+            ) : (
+                <>
+                    <div className="space-y-4 pb-12">
+                        {sortedCategories.map(([categoryName, categoryStores]) => (
+                            <CategoryShelf
+                                key={categoryName}
+                                title={categoryName}
+                                categorySlug={categoryName.toLowerCase().replace(/\s+/g, '-')}
+                                stores={categoryStores.slice(0, 12)}
+                            />
                         ))}
                     </div>
-                )}
-            </div>
+                </>
+            )}
+
             <Footer />
         </main>
     );

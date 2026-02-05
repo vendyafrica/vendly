@@ -1,6 +1,6 @@
 import { categoryRepo } from "../data/category-repo";
 import { storeRepo } from "../data/store-repo";
-import { withCache, cacheKeys, TTL, invalidateCache } from "@vendly/db";
+import { withCache, cacheKeys, TTL } from "@vendly/db";
 
 export interface StoreWithCategory {
     id: string;
@@ -8,11 +8,32 @@ export interface StoreWithCategory {
     slug: string;
     description: string | null;
     logoUrl?: string | null;
+    instagramAvatarUrl?: string | null;
     categories: string[];
     heroMedia?: string | null;
     heroMediaType?: "image" | "video" | null;
     heroMediaItems?: Array<{ url: string; type: "image" | "video" }>;
     images?: string[];
+}
+
+export interface MarketplaceSearchResult {
+    stores: Array<{
+        id: string;
+        name: string;
+        slug: string;
+        description: string | null;
+        logoUrl: string | null;
+        categories: string[];
+    }>;
+    products: Array<{
+        id: string;
+        name: string;
+        slug: string;
+        price: number;
+        currency: string;
+        image: string | null;
+        store: { slug: string; name: string } | null;
+    }>;
 }
 
 function parseHeroMediaItems(input: unknown): Array<{ url: string; type: "image" | "video" }> {
@@ -35,7 +56,7 @@ function parseHeroMediaItems(input: unknown): Array<{ url: string; type: "image"
 async function batchFetchStoreProductImages(storeIds: string[]): Promise<Map<string, string[]>> {
     if (storeIds.length === 0) return new Map();
 
-    const { db, products, productMedia, mediaObjects, eq, inArray } = await import("@vendly/db");
+    const { db, products, inArray } = await import("@vendly/db");
 
     // Fetch all products with media for the given stores in one query
     const productsWithMedia = await db.query.products.findMany({
@@ -302,6 +323,85 @@ export const marketplaceService = {
                 slug: store.slug,
                 logoUrl: store.logoUrl ?? null
             }
+        };
+    },
+
+    /**
+     * Full marketplace text search (stores + products) by name/description (case-insensitive LIKE)
+     */
+    async searchMarketplace(query: string, options?: { storeLimit?: number; productLimit?: number; includeDescriptions?: boolean }): Promise<MarketplaceSearchResult> {
+        const trimmed = query.trim();
+        if (!trimmed) return { stores: [], products: [] };
+
+        const storeLimit = options?.storeLimit ?? 12;
+        const productLimit = options?.productLimit ?? 20;
+        const includeDescriptions = options?.includeDescriptions ?? false;
+
+        const pattern = `%${trimmed.toLowerCase()}%`;
+
+        const { db, stores, products, isNull, and, or, eq, sql } = await import("@vendly/db");
+
+        const buildLike = (column: any, coalesceEmpty = false) =>
+            coalesceEmpty
+                ? sql`lower(coalesce(${column}, '')) like ${pattern}`
+                : sql`lower(${column}) like ${pattern}`;
+
+        const storeWhere = includeDescriptions
+            ? and(
+                eq(stores.status, true),
+                or(
+                    buildLike(stores.name),
+                    buildLike(stores.description, true)
+                ),
+                isNull(stores.deletedAt)
+            )
+            : and(
+                eq(stores.status, true),
+                buildLike(stores.name),
+                isNull(stores.deletedAt)
+            );
+
+        const [storeResults, productResults] = await Promise.all([
+            db.query.stores.findMany({
+                where: storeWhere,
+                limit: storeLimit,
+            }),
+            db.query.products.findMany({
+                where: and(
+                    eq(products.status, "active"),
+                    buildLike(products.productName),
+                    isNull(products.deletedAt)
+                ),
+                limit: productLimit,
+                with: {
+                    store: true,
+                    media: {
+                        with: { media: true },
+                        orderBy: (media, { asc }) => [asc(media.sortOrder)],
+                        limit: 1,
+                    },
+                },
+            })
+        ]);
+
+        return {
+            stores: storeResults.map((s) => ({
+                id: s.id,
+                name: s.name,
+                slug: s.slug,
+                description: s.description,
+                logoUrl: s.logoUrl ?? null,
+                categories: s.categories || [],
+            })),
+            products: productResults.map((p) => ({
+                id: p.id,
+                name: p.productName,
+                slug: p.slug,
+                price: Number(p.priceAmount ?? 0),
+                currency: p.currency,
+                image: p.media?.[0]?.media?.blobUrl || null,
+                store: p.store ? { slug: p.store.slug, name: p.store.name } : null,
+            })),
         };
     }
 };
