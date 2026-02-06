@@ -7,6 +7,7 @@ import { useAppSession } from "@/contexts/app-session-context";
 import { signOut } from "@vendly/auth/react";
 import { Bell } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useTenant } from "../tenant-context";
 
 export function DashboardHeader({
   title = "Dashboard",
@@ -17,15 +18,17 @@ export function DashboardHeader({
 }) {
   const { session } = useAppSession();
   const router = useRouter();
+  const { bootstrap } = useTenant();
 
   const fullName = session?.user?.name || "Admin";
   const firstName = fullName.split(" ")[0];
   const avatarUrl = session?.user?.image || "";
   const resolvedTenantName = tenantName || "Store";
+  const storefrontUrl = bootstrap?.storeSlug ? `/${bootstrap.storeSlug}` : "/";
 
   const handleSignOut = async () => {
     await signOut();
-    router.refresh();
+    router.push(storefrontUrl);
   };
 
   return (
