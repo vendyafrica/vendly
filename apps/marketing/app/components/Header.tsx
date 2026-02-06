@@ -1,141 +1,120 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import React from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { Menu01Icon, Cancel01Icon } from "@hugeicons/core-free-icons";
+import { Button } from "@vendly/ui/components/button";
+import { cn } from "@vendly/ui/lib/utils";
+
+const NAV_ITEMS = [
+  { label: "Features", href: "#features" },
+  { label: "Pricing", href: "#pricing" },
+  { label: "Company", href: "#company" },
+];
 
 export function Header() {
-    const [isScrolled, setIsScrolled] = useState(false);
-    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [open, setOpen] = React.useState(false);
+  const [scrolled, setScrolled] = React.useState(false);
 
-    useEffect(() => {
-        const handleScroll = () => {
-            setIsScrolled(window.scrollY > 20);
-        };
-        window.addEventListener("scroll", handleScroll);
-        return () => window.removeEventListener("scroll", handleScroll);
-    }, []);
+  React.useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 40);
+    window.addEventListener("scroll", onScroll);
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
-    return (
-        <header
-            className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${isScrolled
-                    ? "glass shadow-md py-3"
-                    : "bg-transparent py-5"
-                }`}
-        >
-            <div className="container mx-auto px-6 flex items-center justify-between">
-                {/* Logo */}
-                <Link href="/" className="flex items-center gap-2">
-                    <div className="w-10 h-10 rounded-xl bg-gradient-accent flex items-center justify-center">
-                        <span className="text-white font-bold text-xl font-heading">V</span>
-                    </div>
-                    <span className="text-2xl font-bold text-primary font-heading">Vendly</span>
-                </Link>
+  return (
+    <header className="fixed inset-x-0 top-0 z-50">
+      <nav
+        className={cn(
+          "transition-all duration-300",
+          scrolled
+            ? "bg-background/80 backdrop-blur-lg border-b border-black/5"
+            : "bg-transparent"
+        )}
+      >
+        <div className="mx-auto max-w-6xl px-6">
+          <div className="relative flex h-16 items-center justify-between">
+            {/* Logo */}
+            <Link href="/" className="flex items-center gap-2">
+              <Image
+                src="/vendly.png"
+                alt="Vendly"
+                width={36}
+                height={36}
+                priority
+              />
+            </Link>
 
-                {/* Desktop Navigation */}
-                <nav className="hidden md:flex items-center gap-8">
-                    <Link
-                        href="#how-it-works"
-                        className="text-gray-600 hover:text-primary transition-colors font-medium"
-                    >
-                        How It Works
-                    </Link>
-                    <Link
-                        href="#features"
-                        className="text-gray-600 hover:text-primary transition-colors font-medium"
-                    >
-                        Features
-                    </Link>
-                    <Link
-                        href="#sellers"
-                        className="text-gray-600 hover:text-primary transition-colors font-medium"
-                    >
-                        For Sellers
-                    </Link>
-                </nav>
+            {/* Desktop nav */}
+            <ul className="hidden lg:flex items-center gap-6 absolute left-1/2 -translate-x-1/2">
+              {NAV_ITEMS.map((item) => (
+                <li key={item.label}>
+                  <Link
+                    href={item.href}
+                    className="text-sm text-muted-foreground hover:text-foreground transition"
+                  >
+                    {item.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
 
-                {/* CTAs */}
-                <div className="hidden md:flex items-center gap-4">
-                    <Link
-                        href="/login"
-                        className="text-gray-600 hover:text-primary transition-colors font-medium"
-                    >
-                        Sign In
-                    </Link>
-                    <Link href="/signup" className="btn btn-primary">
-                        Start Selling Free
-                    </Link>
-                </div>
-
-                {/* Mobile Menu Button */}
-                <button
-                    className="md:hidden w-10 h-10 flex items-center justify-center rounded-lg hover:bg-gray-100 transition-colors"
-                    onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                    aria-label="Toggle menu"
-                >
-                    <svg
-                        className="w-6 h-6 text-primary"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                    >
-                        {isMobileMenuOpen ? (
-                            <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M6 18L18 6M6 6l12 12"
-                            />
-                        ) : (
-                            <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M4 6h16M4 12h16M4 18h16"
-                            />
-                        )}
-                    </svg>
-                </button>
+            {/* Desktop CTA */}
+            <div className="hidden lg:flex items-center gap-3">
+              <Link href="/login">
+                <Button variant="ghost">Login</Button>
+              </Link>
+              <Link href="/signup">
+                <Button variant="default">Get Started</Button>
+              </Link>
             </div>
 
-            {/* Mobile Menu */}
-            {isMobileMenuOpen && (
-                <div className="md:hidden absolute top-full left-0 right-0 glass shadow-lg border-t border-gray-100 animate-fade-in">
-                    <nav className="container mx-auto px-6 py-6 flex flex-col gap-4">
-                        <Link
-                            href="#how-it-works"
-                            className="text-gray-600 hover:text-primary transition-colors font-medium py-2"
-                            onClick={() => setIsMobileMenuOpen(false)}
-                        >
-                            How It Works
-                        </Link>
-                        <Link
-                            href="#features"
-                            className="text-gray-600 hover:text-primary transition-colors font-medium py-2"
-                            onClick={() => setIsMobileMenuOpen(false)}
-                        >
-                            Features
-                        </Link>
-                        <Link
-                            href="#sellers"
-                            className="text-gray-600 hover:text-primary transition-colors font-medium py-2"
-                            onClick={() => setIsMobileMenuOpen(false)}
-                        >
-                            For Sellers
-                        </Link>
-                        <hr className="border-gray-200" />
-                        <Link
-                            href="/login"
-                            className="text-gray-600 hover:text-primary transition-colors font-medium py-2"
-                        >
-                            Sign In
-                        </Link>
-                        <Link href="/signup" className="btn btn-primary w-full">
-                            Start Selling Free
-                        </Link>
-                    </nav>
-                </div>
-            )}
-        </header>
-    );
+            {/* Mobile toggle */}
+            <button
+              onClick={() => setOpen((v) => !v)}
+              aria-label="Toggle menu"
+              className="lg:hidden"
+            >
+              <HugeiconsIcon icon={open ? Cancel01Icon : Menu01Icon} />
+            </button>
+          </div>
+        </div>
+
+        {/* Mobile menu */}
+        <div
+          className={cn(
+            "lg:hidden overflow-hidden transition-all duration-300",
+            open ? "max-h-[400px]" : "max-h-0"
+          )}
+        >
+          <div className="mx-auto max-w-6xl px-6 pb-6">
+            <ul className="space-y-4 pt-4">
+              {NAV_ITEMS.map((item) => (
+                <li key={item.label}>
+                  <Link
+                    href={item.href}
+                    onClick={() => setOpen(false)}
+                    className="block text-base text-muted-foreground hover:text-foreground"
+                  >
+                    {item.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+
+            <div className="mt-6 flex flex-col gap-3">
+              <Link href="/login">
+                <Button variant="ghost">Login</Button>
+              </Link>
+              <Link href="/signup">
+                <Button variant="default">Get Started</Button>
+              </Link>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+  );
 }

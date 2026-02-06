@@ -1,18 +1,13 @@
-import { Header } from "./components/Header";
-import { HeroSection } from "./components/HeroSection";
-import { ShowcaseSection } from "./components/ShowcaseSection";
-import { HowItWorksSection } from "./components/HowItWorksSection";
-import { Footer } from "./components/Footer";
+import { Header } from "./components/header";
+import { Footer } from "./components/footer";
+import { Hero } from "./components/hero";
+
 
 export default function Home() {
   return (
     <>
       <Header />
-      <main>
-        <HeroSection />
-        <ShowcaseSection />
-        <HowItWorksSection />
-      </main>
+      <Hero />
       <Footer />
     </>
   );
