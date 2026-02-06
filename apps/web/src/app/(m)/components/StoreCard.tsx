@@ -51,7 +51,6 @@ export function StoreCard({ store }: StoreCardProps) {
                         className="object-cover"
                         sizes="(max-width: 768px) 100vw, 50vw"
                         priority={idx === 0}
-                        unoptimized
                       />
                     </div>
                   </CarouselItem>

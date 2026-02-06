@@ -1,3 +1,5 @@
+"use client";
+
 /**
  * Dynamic chart component wrappers
  * These components use next/dynamic to code-split heavy chart libraries (recharts)
@@ -5,7 +7,7 @@
  */
 
 import dynamic from "next/dynamic";
-import { Card, CardContent, CardHeader, CardTitle } from "@vendly/ui/components/card";
+import { Card, CardContent, CardHeader } from "@vendly/ui/components/card";
 import { cn } from "@vendly/ui/lib/utils";
 
 // Loading skeleton for charts

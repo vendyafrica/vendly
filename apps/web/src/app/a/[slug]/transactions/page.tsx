@@ -8,6 +8,7 @@ import { HugeiconsIcon } from "@hugeicons/react";
 import { Download04Icon, FilterIcon } from "@hugeicons/core-free-icons";
 import { SegmentedStatsCard } from "../components/SegmentedStatsCard";
 import { RecentTransactionsTable } from "../components/RecentTransactionsTable";
+import { OrdersPageSkeleton } from "@/components/ui/page-skeletons";
 
 const API_BASE = "";
 
@@ -44,16 +45,21 @@ export default function TransactionsPage() {
     const [orders, setOrders] = React.useState<OrderTableRow[]>([]);
     const [stats, setStats] = React.useState<OrderStatsResponse | null>(null);
     const [error, setError] = React.useState<string | null>(null);
+    const [isLoading, setIsLoading] = React.useState(true);
 
     // Fetch orders
     const fetchOrders = React.useCallback(async () => {
         if (!bootstrap) return;
 
         setError(null);
+        setIsLoading(true);
 
         try {
-            // Fetch orders list
-            const ordersResponse = await fetch(`${API_BASE}/api/orders`);
+            // Fetch orders + stats in parallel to reduce waterfall
+            const [ordersResponse, statsResponse] = await Promise.all([
+                fetch(`${API_BASE}/api/orders`),
+                fetch(`${API_BASE}/api/orders/stats`),
+            ]);
 
             if (!ordersResponse.ok) {
                 throw new Error(`Failed to fetch orders: ${ordersResponse.status}`);
@@ -78,15 +84,14 @@ export default function TransactionsPage() {
 
             setOrders(transformed);
 
-            // Fetch stats
-            const statsResponse = await fetch(`${API_BASE}/api/orders/stats`);
-
             if (statsResponse.ok) {
                 const statsData = (await statsResponse.json()) as OrderStatsResponse;
                 setStats(statsData);
             }
         } catch (err) {
             setError(err instanceof Error ? err.message : "Failed to load orders");
+        } finally {
+            setIsLoading(false);
         }
     }, [bootstrap]);
 
@@ -138,6 +143,10 @@ export default function TransactionsPage() {
         payment: o.paymentMethod,
         date: new Date(o.createdAt).toLocaleString("en-US", { month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit" }),
     })) as Parameters<typeof RecentTransactionsTable>[0]["rows"];
+
+    if (isLoading) {
+        return <OrdersPageSkeleton />;
+    }
 
     return (
         <div className="space-y-6 p-6">

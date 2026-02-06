@@ -3,17 +3,21 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@vendly/ui/components/avatar";
 import { Button } from "@vendly/ui/components/button";
 import { useAppSession } from "@/contexts/app-session-context";
-import { useTenant } from "../tenant-context";
 import { Bell } from "lucide-react";
 
-export function DashboardHeader({ title = "Dashboard" }: { title?: string }) {
+export function DashboardHeader({
+  title = "Dashboard",
+  tenantName,
+}: {
+  title?: string;
+  tenantName?: string | null;
+}) {
   const { session } = useAppSession();
-  const { bootstrap } = useTenant();
 
   const fullName = session?.user?.name || "Admin";
   const firstName = fullName.split(" ")[0];
   const avatarUrl = session?.user?.image || "";
-  const tenantName = bootstrap?.storeName || "Store";
+  const resolvedTenantName = tenantName || "Store";
 
   return (
     <header className="flex h-16 shrink-0 items-center justify-between gap-3 border-b bg-background/80 px-4 backdrop-blur supports-backdrop-filter:bg-background/60">
@@ -23,7 +27,7 @@ export function DashboardHeader({ title = "Dashboard" }: { title?: string }) {
         </div>
         <div className="hidden sm:flex items-center gap-2 text-sm text-muted-foreground">
           <span className="font-semibold text-muted-foreground">Welcome back, {firstName}</span>
-          <span className="truncate text-xs text-muted-foreground/60">• {tenantName}</span>
+          <span className="truncate text-xs text-muted-foreground/60">• {resolvedTenantName}</span>
         </div>
       </div>
 

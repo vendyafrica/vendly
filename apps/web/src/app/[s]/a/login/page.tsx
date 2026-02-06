@@ -8,7 +8,16 @@ function LoginInner({ storeSlug }: { storeSlug: string }) {
   const searchParams = useSearchParams();
   const next = searchParams.get("next");
 
-  const redirectTo = next && next.startsWith(`/${storeSlug}/a`) ? next : `/${storeSlug}/a`;
+  const canonicalBase = `/a/${storeSlug}`;
+  const legacyBase = `/${storeSlug}/a`;
+
+  const normalizedNext = next
+    ? next.startsWith(legacyBase)
+      ? `${canonicalBase}${next.slice(legacyBase.length)}`
+      : next
+    : null;
+
+  const redirectTo = normalizedNext && normalizedNext.startsWith(canonicalBase) ? normalizedNext : canonicalBase;
   const title = `Welcome to ${storeSlug} Admin`;
 
   return <LoginForm title={title} redirectTo={redirectTo} />;

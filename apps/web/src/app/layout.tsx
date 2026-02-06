@@ -60,31 +60,10 @@ export default async function RootLayout({
 }: {
   children: ReactNode;
 }) {
+  const headerList = await headers();
   const sessionPromise = auth.api.getSession({
-    headers: await headers(),
+    headers: headerList,
   });
-
-  async function SessionProvider({
-    children: sessionChildren,
-    sessionPromise,
-  }: {
-    children: ReactNode;
-    sessionPromise: ReturnType<typeof auth.api.getSession>;
-  }) {
-    const session = await sessionPromise;
-
-    return (
-      <AppSessionProvider session={session}>
-        <CartProvider>{sessionChildren}</CartProvider>
-      </AppSessionProvider>
-    );
-  }
-
-  const FallbackSession = ({ children: fallbackChildren }: { children: ReactNode }) => (
-    <AppSessionProvider session={null}>
-      <CartProvider>{fallbackChildren}</CartProvider>
-    </AppSessionProvider>
-  );
 
   return (
     <html lang="en" className={nunitoSans.variable}>
@@ -131,14 +110,32 @@ export default async function RootLayout({
         <Analytics />
         <PostHogProvider>
           <Providers>
-            <Suspense fallback={<FallbackSession>{children}</FallbackSession>}>
-              <SessionProvider sessionPromise={sessionPromise}>
-                {children}
-              </SessionProvider>
+            <Suspense
+              fallback={
+                <AppSessionProvider session={null}>
+                  <CartProvider>{children}</CartProvider>
+                </AppSessionProvider>
+              }
+            >
+              {/* Stream session so shell can render without blocking */}
+              <SessionBoundary sessionPromise={sessionPromise}>
+                <CartProvider>{children}</CartProvider>
+              </SessionBoundary>
             </Suspense>
           </Providers>
         </PostHogProvider>
       </body>
     </html>
   );
+}
+
+async function SessionBoundary({
+  children,
+  sessionPromise,
+}: {
+  children: ReactNode;
+  sessionPromise: ReturnType<typeof auth.api.getSession>;
+}) {
+  const session = await sessionPromise;
+  return <AppSessionProvider session={session}>{children}</AppSessionProvider>;
 }

@@ -7,17 +7,12 @@ const nextConfig: NextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
-  experimental: {
-    optimizePackageImports: [
-      "lucide-react",
-      "@hugeicons/react",
-      "@hugeicons/core-free-icons",
-      "recharts",
-    ],
-  },
   transpilePackages: ["@vendly/ui", "@vendly/auth"],
   outputFileTracingRoot: repoRoot,
   allowedDevOrigins: ["harmonically-carpetless-janna.ngrok-free.dev", "*.ngrok-free.dev"],
+  experimental: {
+    optimizePackageImports: ["lucide-react"],
+  },
   images: {
     remotePatterns: [
       {

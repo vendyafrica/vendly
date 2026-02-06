@@ -34,13 +34,20 @@ async function fetchTenantBootstrap(storeSlug: string): Promise<TenantBootstrap>
   return res.json();
 }
 
-export function TenantProvider({ children }: { children: React.ReactNode }) {
+export function TenantProvider({
+  children,
+  initialBootstrap,
+}: {
+  children: React.ReactNode;
+  initialBootstrap?: TenantBootstrap | null;
+}) {
   const params = useParams();
   const storeSlug = params?.slug as string;
 
   const query = useQuery({
     queryKey: ["tenant-bootstrap", storeSlug],
     queryFn: () => fetchTenantBootstrap(storeSlug),
+    initialData: initialBootstrap ?? undefined,
     enabled: Boolean(storeSlug),
   });
 

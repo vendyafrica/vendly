@@ -1,6 +1,3 @@
-"use client";
-
-import { useTenant } from "./tenant-context";
 import { SegmentedStatsCard } from "./components/SegmentedStatsCard";
 import { RevenueAreaChartCard, TopProductsBarChartCard } from "./components/DynamicCharts";
 import { RecentTransactionsTable } from "./components/RecentTransactionsTable";
@@ -94,45 +91,31 @@ function formatCurrency(amount: number) {
 }
 
 export default function DashboardPage() {
-  const { isLoading: isBootstrapping, error: bootstrapError } = useTenant();
-
-  const isLoading = isBootstrapping;
-
-  const error = bootstrapError;
-
   return (
     <div className="space-y-6">
-      {error && (
-        <div className="bg-destructive/10 text-destructive p-4 rounded-md">
-          <div className="flex items-center justify-between gap-3">
-            <div className="text-sm">{error}</div>
-          </div>
-        </div>
-      )}
-
       <SegmentedStatsCard
         segments={[
           {
             label: "Total Profit",
-            value: isLoading ? "—" : formatCurrency(30720),
+            value: formatCurrency(30720),
             changeLabel: "+12.04% Last 30 days",
             changeTone: "positive",
           },
           {
             label: "Total Orders",
-            value: isLoading ? "—" : "15,350",
+            value: "15,350",
             changeLabel: "+16.02% Last 30 days",
             changeTone: "positive",
           },
           {
             label: "New Customers",
-            value: isLoading ? "—" : "4,972",
+            value: "4,972",
             changeLabel: "+19.08% Last 30 days",
             changeTone: "positive",
           },
           {
             label: "Conversion Rate",
-            value: isLoading ? "—" : "5.18%",
+            value: "5.18%",
             changeLabel: "+10.02% Last 30 days",
             changeTone: "positive",
           },
