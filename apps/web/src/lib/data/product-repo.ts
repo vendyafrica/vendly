@@ -1,11 +1,13 @@
 import { db, products, eq, and } from "@vendly/db";
 
 export const productRepo = {
-    async findByStoreSlug(storeSlug: string) {
+    async findByStoreSlug(_storeSlug: string) {
         // Since products relates to stores via storeId, we need to join or first get storeId.
         // However, we can use db.query if relations are set up, or a manual join.
         // Given we likely have storeId from the caller (storeRepo.findBySlug), we could ask for storeId directly.
         // But to keep it simple and robust, let's do a join or use query builder.
+
+        void _storeSlug;
 
         return db.query.products.findMany({
             where: (products, { eq, and }) => and(
@@ -36,12 +38,25 @@ export const productRepo = {
                 eq(products.storeId, storeId),
                 eq(products.status, "active")
             ),
+            columns: {
+                id: true,
+                slug: true,
+                productName: true,
+                description: true,
+                priceAmount: true,
+                currency: true,
+            },
             with: {
                 media: {
                     with: {
-                        media: true
+                        media: {
+                            columns: {
+                                blobUrl: true,
+                            },
+                        },
                     },
-                    orderBy: (media, { desc }) => [desc(media.isFeatured)]
+                    orderBy: (media, { desc }) => [desc(media.isFeatured)],
+                    limit: 1,
                 }
             },
         });

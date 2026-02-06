@@ -1,11 +1,13 @@
 import Image from "next/image";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { StarIcon } from "@hugeicons/core-free-icons";
+import { DeferredHeroVideo } from "./deferred-hero-video";
 
 interface HeroProps {
     store: {
         name: string;
         description: string | null;
+
         rating: number;
         ratingCount: number;
         heroMedia?: string | null;
@@ -31,20 +33,30 @@ export function Hero({ store }: HeroProps) {
         store.heroMediaType === "video" ||
         (typeof mediaUrl === "string" && !!mediaUrl.match(/\.(mp4|webm|ogg)$/i));
 
+    const posterUrl =
+        heroMediaItems.find((i) => i.type === "image")?.url ||
+        (!isVideo ? mediaUrl : null) ||
+        "/images/hero-fallback.png";
+
     return (
         <section className="relative h-[60vh] sm:h-[70vh] md:h-[75vh] lg:h-[80vh] w-full overflow-hidden mb-8 sm:mb-12">
             <div className="relative h-full w-full overflow-hidden rounded-none sm:rounded-b-3xl md:rounded-b-[40px]">
                 {/* Media - Video or Image */}
                 {isVideo ? (
-                    <video
-                        autoPlay
-                        muted
-                        loop
-                        playsInline
-                        className="absolute inset-0 w-full h-full object-cover"
-                    >
-                        <source src={mediaUrl} type="video/mp4" />
-                    </video>
+                    <>
+                        <Image
+                            src={posterUrl}
+                            alt={`${store.name} hero`}
+                            fill
+                            priority
+                            className="object-cover"
+                            sizes="100vw"
+                        />
+                        <DeferredHeroVideo
+                            src={mediaUrl}
+                            className="absolute inset-0 w-full h-full object-cover"
+                        />
+                    </>
                 ) : (
                     <Image
                         src={mediaUrl}
@@ -52,6 +64,7 @@ export function Hero({ store }: HeroProps) {
                         fill
                         priority
                         className="object-cover"
+                        sizes="100vw"
                     />
                 )}
 

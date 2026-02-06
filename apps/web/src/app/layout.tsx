@@ -2,14 +2,8 @@ import "@vendly/ui/globals.css";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Nunito_Sans } from "next/font/google";
 import type { ReactNode } from "react";
-import { Suspense } from "react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
-import { CartProvider } from "../contexts/cart-context";
-import { AppSessionProvider } from "../contexts/app-session-context";
-import { PostHogProvider, Providers } from "./providers";
-import { auth } from "@vendly/auth";
-import { headers } from "next/headers";
-import { Analytics } from "@vercel/analytics/next"
+import { Analytics } from "@vercel/analytics/next";
 
 const nunitoSans = Nunito_Sans({ variable: "--font-sans" });
 
@@ -60,11 +54,6 @@ export default async function RootLayout({
 }: {
   children: ReactNode;
 }) {
-  const headerList = await headers();
-  const sessionPromise = auth.api.getSession({
-    headers: headerList,
-  });
-
   return (
     <html lang="en" className={nunitoSans.variable}>
       <body
@@ -108,34 +97,8 @@ export default async function RootLayout({
         />
         <SpeedInsights />
         <Analytics />
-        <PostHogProvider>
-          <Providers>
-            <Suspense
-              fallback={
-                <AppSessionProvider session={null}>
-                  <CartProvider>{children}</CartProvider>
-                </AppSessionProvider>
-              }
-            >
-              {/* Stream session so shell can render without blocking */}
-              <SessionBoundary sessionPromise={sessionPromise}>
-                <CartProvider>{children}</CartProvider>
-              </SessionBoundary>
-            </Suspense>
-          </Providers>
-        </PostHogProvider>
+        {children}
       </body>
     </html>
   );
-}
-
-async function SessionBoundary({
-  children,
-  sessionPromise,
-}: {
-  children: ReactNode;
-  sessionPromise: ReturnType<typeof auth.api.getSession>;
-}) {
-  const session = await sessionPromise;
-  return <AppSessionProvider session={session}>{children}</AppSessionProvider>;
 }

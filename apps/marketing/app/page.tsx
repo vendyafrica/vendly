@@ -1,9 +1,19 @@
-import { Button } from "@vendly/ui/components/button";
+import { Header } from "./components/Header";
+import { HeroSection } from "./components/HeroSection";
+import { ShowcaseSection } from "./components/ShowcaseSection";
+import { HowItWorksSection } from "./components/HowItWorksSection";
+import { Footer } from "./components/Footer";
 
-export default function Home() {  
+export default function Home() {
   return (
-    <div>
-      <Button>Test Button</Button>
-    </div>
+    <>
+      <Header />
+      <main>
+        <HeroSection />
+        <ShowcaseSection />
+        <HowItWorksSection />
+      </main>
+      <Footer />
+    </>
   );
 }

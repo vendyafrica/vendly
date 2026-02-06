@@ -299,24 +299,33 @@ export const marketplaceService = {
         const store = await storeRepo.findBySlug(slug);
         if (!store) return [];
 
-        // Dynamic import to avoid circular dependency
-        const { productRepo } = await import("../data/product-repo");
-        const products = await productRepo.findByStoreId(store.id);
+        const normalizedQuery = query?.trim().toLowerCase() || "";
+        const cacheKey = cacheKeys.products.list(store.id, 1, normalizedQuery ? `q=${normalizedQuery}` : "all");
 
-        const filtered = query
-            ? products.filter((p: any) => p.productName?.toLowerCase().includes(query.toLowerCase()))
-            : products;
+        return withCache(
+            cacheKey,
+            async () => {
+                // Dynamic import to avoid circular dependency
+                const { productRepo } = await import("../data/product-repo");
+                const products = await productRepo.findByStoreId(store.id);
 
-        return filtered.map((p: any) => ({
-            id: p.id,
-            slug: p.slug || p.productName.toLowerCase().replace(/\s+/g, "-"),
-            name: p.productName,
-            price: Number(p.priceAmount || 0),
-            currency: p.currency,
-            // Extract first image from media relation if available
-            image: p.media?.[0]?.media?.url || p.media?.[0]?.media?.blobUrl || null,
-            rating: 4.5 // Placeholder
-        }));
+                const filtered = normalizedQuery
+                    ? products.filter((p: any) => p.productName?.toLowerCase().includes(normalizedQuery))
+                    : products;
+
+                return filtered.map((p: any) => ({
+                    id: p.id,
+                    slug: p.slug || p.productName.toLowerCase().replace(/\s+/g, "-"),
+                    name: p.productName,
+                    price: Number(p.priceAmount || 0),
+                    currency: p.currency,
+                    // Extract first image from media relation if available
+                    image: p.media?.[0]?.media?.url || p.media?.[0]?.media?.blobUrl || null,
+                    rating: 4.5 // Placeholder
+                }));
+            },
+            TTL.SHORT
+        );
     },
 
     async getStoreProduct(storeSlug: string, productSlug: string) {

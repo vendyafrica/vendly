@@ -3,21 +3,23 @@ import { StorefrontFooter } from "./components/footer";
 import { Categories } from "./components/categories";
 import { Hero } from "./components/hero";
 import { StorefrontViewTracker } from "./components/StorefrontViewTracker";
-// Re-saving to trigger rebuild and resolve hydration sync
 import { marketplaceService } from "@/lib/services/marketplace-service";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
+import { cache } from "react";
+
+const getStoreDetailsCached = cache((slug: string) => marketplaceService.getStoreDetails(slug));
 
 interface StorefrontPageProps {
   params: Promise<{
-    s: string; // The param is 's' based on folder name [s]
+    s: string;
   }>;
   searchParams?: Promise<Record<string, string | string[] | undefined>>;
 }
 
 export async function generateMetadata({ params }: StorefrontPageProps): Promise<Metadata> {
   const { s } = await params;
-  const store = await marketplaceService.getStoreDetails(s);
+  const store = await getStoreDetailsCached(s);
   if (!store) {
     return {
       title: "Store not found | Vendly",
@@ -53,8 +55,10 @@ export default async function StorefrontHomePage({ params, searchParams }: Store
   const search = resolvedSearchParams?.q;
   const query = Array.isArray(search) ? search[0] : search;
 
-  const store = await marketplaceService.getStoreDetails(storeSlug);
-  const products = await marketplaceService.getStoreProducts(storeSlug, query);
+  const [store, products] = await Promise.all([
+    getStoreDetailsCached(storeSlug),
+    marketplaceService.getStoreProducts(storeSlug, query),
+  ]);
 
   if (!store) {
     notFound();
