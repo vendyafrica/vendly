@@ -10,37 +10,37 @@ import {
 import { Input } from "@vendly/ui/components/input";
 import { signIn, signInWithGoogle } from "../../../lib/auth";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useState, useTransition, useEffect } from "react";
+import { useState, useTransition } from "react";
 
 export function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const redirectTo = searchParams.get("redirect");
 
-  useEffect(() => {
-    const message = searchParams.get("message");
-    const error = searchParams.get("error");
+  const message = searchParams.get("message");
+  const urlError = searchParams.get("error");
 
-    if (message === "verify-email") {
-      setSuccessMessage("Account created! Please check your email to verify your account.");
-    } else if (message === "email-verified") {
-      setSuccessMessage("Email verified successfully! You can now sign in.");
-    }
+  const successMessage =
+    message === "verify-email"
+      ? "Account created! Please check your email to verify your account."
+      : message === "email-verified"
+        ? "Email verified successfully! You can now sign in."
+        : null;
 
-    if (error === "invalid-verification-link") {
-      setError("Invalid verification link. Please try signing up again.");
-    } else if (error === "invalid-or-expired-token") {
-      setError("Verification link is invalid or has expired. Please request a new one.");
-    } else if (error === "token-expired") {
-      setError("Verification link has expired. Please request a new one.");
-    } else if (error === "user-not-found") {
-      setError("User not found. Please sign up first.");
-    } else if (error === "verification-failed") {
-      setError("Email verification failed. Please try again.");
-    }
-  }, [searchParams]);
+  const urlErrorMessage =
+    urlError === "invalid-verification-link"
+      ? "Invalid verification link. Please try signing up again."
+      : urlError === "invalid-or-expired-token"
+        ? "Verification link is invalid or has expired. Please request a new one."
+        : urlError === "token-expired"
+          ? "Verification link has expired. Please request a new one."
+          : urlError === "user-not-found"
+            ? "User not found. Please sign up first."
+            : urlError === "verification-failed"
+              ? "Email verification failed. Please try again."
+              : null;
 
   const handleEmailSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -52,7 +52,7 @@ export function LoginForm() {
       const password = formData.get("password") as string;
 
       try {
-        const { data, error } = await signIn(email, password);
+        const { error } = await signIn(email, password);
 
         if (error) {
           // Handle different error types from Better Auth
@@ -72,11 +72,13 @@ export function LoginForm() {
         }
 
         // Success → session cookie is set, redirect to dashboard
-        router.push("/");
+        router.push(redirectTo || "/");
         router.refresh();
-      } catch (err: any) {
+      } catch (err: unknown) {
         setError(
-          err?.message || "An unexpected error occurred. Please try again."
+          err instanceof Error
+            ? err.message
+            : "An unexpected error occurred. Please try again."
         );
       }
     });
@@ -90,9 +92,11 @@ export function LoginForm() {
         // This usually triggers a redirect to Google → promise may not resolve here
         signInWithGoogle();
         // No need to await or handle return value in most cases
-      } catch (err: any) {
+      } catch (err: unknown) {
         setError(
-          err?.message || "Failed to start Google sign-in. Please try again."
+          err instanceof Error
+            ? err.message
+            : "Failed to start Google sign-in. Please try again."
         );
       }
     });
@@ -115,6 +119,12 @@ export function LoginForm() {
             {successMessage && (
               <div className="mb-5 rounded-lg border border-green-500/50 bg-green-500/10 px-4 py-3 text-sm text-green-700">
                 {successMessage}
+              </div>
+            )}
+
+            {urlErrorMessage && !error && (
+              <div className="mb-5 rounded-lg border border-destructive/50 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+                {urlErrorMessage}
               </div>
             )}
 
@@ -143,7 +153,7 @@ export function LoginForm() {
                 <FieldLabel htmlFor="password">Password</FieldLabel>
                 <a
                   href="/forgot-password"
-                  className="text-sm text-primary hover:underline underline-offset-4"
+                  className={`text-sm text-primary hover:underline underline-offset-4 ${isPending ? "pointer-events-none opacity-60" : ""}`}
                 >
                   Forgot password?
                 </a>
@@ -209,7 +219,7 @@ export function LoginForm() {
         </form>
 
         <div className="mt-4 text-center text-sm text-muted-foreground">
-          Don't have an account?{" "}
+          Don&apos;t have an account?{" "}
           <a href="/sign-up" className="text-primary hover:underline underline-offset-4">
             Sign up
           </a>

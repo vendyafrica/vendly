@@ -23,6 +23,43 @@ export async function POST(req: Request) {
         });
 
         if (existingUser) {
+            const existingSuperAdmin = await db.query.platformRoles.findFirst({
+                where: eq(platformRoles.role, "super_admin"),
+            });
+
+            // Bootstrap-only: if there is no super admin yet, allow existing user to receive a verification
+            // email to activate/verify and become the first super admin.
+            if (!existingSuperAdmin) {
+                // Create verification token
+                const token = crypto.randomBytes(32).toString("hex");
+                const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+
+                // Remove any existing verification records for this identifier (avoid duplicates)
+                await db.delete(verification).where(eq(verification.identifier, email));
+
+                await db.insert(verification).values({
+                    id: crypto.randomUUID(),
+                    identifier: email,
+                    value: token,
+                    expiresAt,
+                });
+
+                // Create verification URL - use our custom verification endpoint
+                const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:4000";
+                const verificationUrl = `${baseUrl}/api/verify-email?token=${token}&email=${encodeURIComponent(email)}`;
+
+                await sendAdminVerificationEmail({
+                    to: email,
+                    name: existingUser.name,
+                    verificationUrl,
+                });
+
+                return NextResponse.json({
+                    success: true,
+                    message: "Account already exists. Please check your email to verify your account.",
+                });
+            }
+
             return NextResponse.json(
                 { error: "User with this email already exists" },
                 { status: 422 }
@@ -33,10 +70,13 @@ export async function POST(req: Request) {
         const { hashPassword } = await import("better-auth/crypto");
         const hashedPassword = await hashPassword(password);
 
+        const userId = crypto.randomUUID();
+
         // Create user
         const [newUser] = await db
             .insert(users)
             .values({
+                id: userId,
                 email,
                 name,
                 emailVerified: false,
@@ -44,7 +84,8 @@ export async function POST(req: Request) {
             .returning();
 
         // Create account with password for email/password authentication
-        await db.insert(account).values({
+        await (db.insert(account) as any).values({
+            id: crypto.randomUUID(),
             userId: newUser.id,
             accountId: newUser.id,
             providerId: "credential",
@@ -55,7 +96,10 @@ export async function POST(req: Request) {
         const token = crypto.randomBytes(32).toString("hex");
         const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
 
+        await db.delete(verification).where(eq(verification.identifier, email));
+
         await db.insert(verification).values({
+            id: crypto.randomUUID(),
             identifier: email,
             value: token,
             expiresAt,

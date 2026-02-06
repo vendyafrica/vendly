@@ -7,14 +7,17 @@ import {
     FieldLabel,
 } from "@vendly/ui/components/field";
 import { Input } from "@vendly/ui/components/input";
-import { signUp } from "../../../lib/auth";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useState, useTransition } from "react";
 
 export function SignUpForm() {
     const router = useRouter();
+    const searchParams = useSearchParams();
     const [isPending, startTransition] = useTransition();
     const [error, setError] = useState<string | null>(null);
+
+    const redirectTo = searchParams.get("redirect");
+    const defaultEmail = searchParams.get("email") || "";
 
     const handleEmailSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -44,10 +47,15 @@ export function SignUpForm() {
                 }
 
                 // Success - redirect to login with verification message
-                router.push("/login?message=verify-email");
-            } catch (err: any) {
+                const loginUrl = redirectTo
+                    ? `/login?message=verify-email&redirect=${encodeURIComponent(redirectTo)}`
+                    : "/login?message=verify-email";
+                router.push(loginUrl);
+            } catch (err: unknown) {
                 setError(
-                    err?.message || "An unexpected error occurred. Please try again."
+                    err instanceof Error
+                        ? err.message
+                        : "An unexpected error occurred. Please try again."
                 );
             }
         });
@@ -86,7 +94,6 @@ export function SignUpForm() {
                             />
                         </Field>
 
-
                         <Field>
                             <FieldLabel htmlFor="email">Email address</FieldLabel>
                             <Input
@@ -96,6 +103,7 @@ export function SignUpForm() {
                                 placeholder="name@example.com"
                                 required
                                 autoComplete="email"
+                                defaultValue={defaultEmail}
                                 disabled={isPending}
                                 className="focus-visible:border-primary/60 focus-visible:ring-primary/20"
                             />
@@ -128,7 +136,10 @@ export function SignUpForm() {
 
                 <div className="mt-4 text-center text-sm text-muted-foreground">
                     Already have an account?{" "}
-                    <a href="/login" className="text-primary hover:underline underline-offset-4">
+                    <a
+                        href="/login"
+                        className={`text-primary hover:underline underline-offset-4 ${isPending ? "pointer-events-none opacity-60" : ""}`}
+                    >
                         Sign in
                     </a>
                 </div>

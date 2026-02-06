@@ -5,10 +5,17 @@ export default function proxy(request: NextRequest) {
   const sessionToken = request.cookies.get("vendly.session_token")?.value ||
     request.cookies.get("__Secure-vendly.session_token")?.value;
 
+  const isAuthPageRoute = request.nextUrl.pathname.startsWith("/sign-in") ||
+    request.nextUrl.pathname.startsWith("/sign-up") ||
+    request.nextUrl.pathname.startsWith("/login");
+
   const isAuthRoute = request.nextUrl.pathname.startsWith("/sign-in") ||
     request.nextUrl.pathname.startsWith("/sign-up") ||
     request.nextUrl.pathname.startsWith("/login") ||
-    request.nextUrl.pathname.startsWith("/api/auth");
+    request.nextUrl.pathname.startsWith("/api/auth") ||
+    request.nextUrl.pathname.startsWith("/api/admin-signup") ||
+    request.nextUrl.pathname.startsWith("/api/verify-email") ||
+    request.nextUrl.pathname.startsWith("/api/super-admin/invite/accept");
 
   const isPublic = request.nextUrl.pathname === "/favicon.ico" ||
     request.nextUrl.pathname.startsWith("/_next") ||
@@ -28,7 +35,7 @@ export default function proxy(request: NextRequest) {
   }
 
   // Redirect authenticated users away from auth pages
-  if (sessionToken && isAuthRoute && !request.nextUrl.pathname.startsWith("/api/auth")) {
+  if (sessionToken && isAuthPageRoute) {
     return NextResponse.redirect(new URL("/", request.url));
   }
 

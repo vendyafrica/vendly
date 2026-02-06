@@ -1,8 +1,7 @@
 import { db } from "@vendly/db/db";
-import { users, verification, platformRoles, account } from "@vendly/db/schema";
+import { users, verification, platformRoles } from "@vendly/db/schema";
 import { eq, and } from "@vendly/db";
 import { NextResponse } from "next/server";
-import { cookies } from "next/headers";
 
 export async function GET(req: Request) {
     try {
@@ -59,7 +58,11 @@ export async function GET(req: Request) {
             where: eq(platformRoles.userId, user.id),
         });
 
-        if (!existingRole) {
+        const existingSuperAdmin = await db.query.platformRoles.findFirst({
+            where: eq(platformRoles.role, "super_admin"),
+        });
+
+        if (!existingRole && !existingSuperAdmin) {
             await db.insert(platformRoles).values({
                 userId: user.id,
                 name: user.name,

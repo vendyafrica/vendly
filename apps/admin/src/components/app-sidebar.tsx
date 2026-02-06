@@ -118,6 +118,11 @@ const superAdminItems: SidebarNavItem[] = [
     icon: UserGroupIcon,
   },
   {
+    title: "Invite",
+    url: "/invite",
+    icon: UserShield02Icon,
+  },
+  {
     title: "Payments",
     url: "/payments",
     icon: Payment02Icon,

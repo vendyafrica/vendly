@@ -105,4 +105,32 @@ export const sendAdminVerificationEmail = async ({ to, name, verificationUrl }: 
   return data;
 };
 
+interface SendSuperAdminInviteProps {
+  to: string;
+  invitedByName: string;
+  inviteUrl: string;
+}
+
+export const sendSuperAdminInviteEmail = async ({ to, invitedByName, inviteUrl }: SendSuperAdminInviteProps) => {
+  const { SuperAdminInviteEmail } = await import('./emails/super-admin-invite');
+  const emailHtml = await render(React.createElement(SuperAdminInviteEmail, {
+    invitedByName,
+    url: inviteUrl,
+  }));
+
+  const data = await resend.emails.send({
+    from: 'Vendly Admin <admin@vendlyafrica.store>',
+    to,
+    subject: 'You have been invited to become a Vendly Super Admin',
+    html: emailHtml,
+  });
+
+  if (data.error) {
+    console.error("Super admin invite email failed", data.error);
+    throw new Error("Super admin invite email failed to send");
+  }
+
+  return data;
+};
+
 export default sendEmail;
