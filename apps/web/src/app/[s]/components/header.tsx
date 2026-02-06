@@ -7,7 +7,7 @@ import Image from "next/image";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { ShoppingBag02Icon, UserIcon, FavouriteIcon, Search01Icon } from "@hugeicons/core-free-icons";
 import { HeaderSkeleton } from "./skeletons";
-import { useCart } from "../../../contexts/cart-context";
+import { useCart } from "@/contexts/cart-context";
 import { StorefrontSearch } from "./storefront-search";
 
 interface StoreData {

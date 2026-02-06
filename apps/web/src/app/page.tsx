@@ -34,7 +34,8 @@ export const metadata: Metadata = {
 };
 
 export default async function HomePage() {
-  const { categories, stores, storesByCategory } = await marketplaceService.getHomePageData();
+  const { categories, stores, storesByCategory } =
+    await marketplaceService.getHomePageData();
 
   const mapToMarketplaceStore = (s: StoreWithCategory): MarketplaceStore => ({
     id: s.id,

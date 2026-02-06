@@ -1,29 +1,66 @@
 import type { ReactNode } from "react";
+import { Suspense } from "react";
 import Image from "next/image";
-import { OnboardingProvider } from "./context/onboarding-context";
+import { headers } from "next/headers";
+import { auth } from "@vendly/auth";
 
-export default function OnboardingLayout({
+import { OnboardingProvider } from "./context/onboarding-context";
+import { AppSessionProvider } from "@/contexts/app-session-context";
+
+export default async function OnboardingLayout({
     children,
 }: {
     children: ReactNode
 }) {
+    const headerList = await headers();
+    const sessionPromise = auth.api.getSession({ headers: headerList });
+
     return (
         <OnboardingProvider>
-            <div className="h-screen bg-muted flex flex-col overflow-hidden">
+            <Suspense
+                fallback={
+                    <AppSessionProvider session={null}>
+                        <div className="h-screen bg-muted flex flex-col overflow-hidden">
+                            <header className="flex items-start justify-between p-6 shrink-0">
+                                <div className="flex items-center gap-1">
+                                    <Image src="/vendly.png" alt="Vendly" width={32} height={32} />
+                                    <span className="text-md font-semibold">vendly.</span>
+                                </div>
+                            </header>
 
-                <header className="flex items-start justify-between p-6 shrink-0">
-                    <div className="flex items-center gap-1">
-                        <Image src="/vendly.png" alt="Vendly" width={32} height={32} />
-                        <span className="text-md font-semibold">vendly.</span>
-                    </div>
-                </header>
+                            <main className="flex-1 flex items-center justify-center px-6">
+                                <div className="w-full max-w-4xl">{children}</div>
+                            </main>
+                        </div>
+                    </AppSessionProvider>
+                }
+            >
+                <SessionBoundary sessionPromise={sessionPromise}>
+                    <div className="h-screen bg-muted flex flex-col overflow-hidden">
+                        <header className="flex items-start justify-between p-6 shrink-0">
+                            <div className="flex items-center gap-1">
+                                <Image src="/vendly.png" alt="Vendly" width={32} height={32} />
+                                <span className="text-md font-semibold">vendly.</span>
+                            </div>
+                        </header>
 
-                <main className="flex-1 flex items-center justify-center px-6">
-                    <div className="w-full max-w-4xl">
-                        {children}
+                        <main className="flex-1 flex items-center justify-center px-6">
+                            <div className="w-full max-w-4xl">{children}</div>
+                        </main>
                     </div>
-                </main>
-            </div>
+                </SessionBoundary>
+            </Suspense>
         </OnboardingProvider>
     )
+}
+
+async function SessionBoundary({
+    children,
+    sessionPromise,
+}: {
+    children: ReactNode;
+    sessionPromise: ReturnType<typeof auth.api.getSession>;
+}) {
+    const session = await sessionPromise;
+    return <AppSessionProvider session={session}>{children}</AppSessionProvider>;
 }

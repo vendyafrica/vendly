@@ -15,8 +15,8 @@ const SpeedInsights = dynamic(
 export function ThirdParty() {
   return (
     <>
-      <SpeedInsights />
       <Analytics />
+      <SpeedInsights />
     </>
   );
 }
