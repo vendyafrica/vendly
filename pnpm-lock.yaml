@@ -241,7 +241,7 @@ importers:
         specifier: ^2.0.0
         version: 2.0.0
       '@hugeicons/react':
-        specifier: ^1.1.4
+        specifier: ^1.1.1
         version: 1.1.4(react@19.2.3)
       '@vendly/ui':
         specifier: workspace:*
