@@ -1,96 +1,106 @@
-"use client";
-
 import { SegmentedStatsCard } from "../components/SegmentedStatsCard";
-import { DataTable } from "../components/DataTable";
-import type { ColumnDef } from "@tanstack/react-table";
+import { db } from "@vendly/db/db";
+import { orders, stores } from "@vendly/db/schema";
+import { and, desc, eq, isNull, sql } from "@vendly/db";
+import { CustomersTable, type CustomerRow } from "./CustomersTable";
 
-type CustomerRow = {
-  name: string;
-  email: string;
-  orders: number;
-  totalSpend: number;
-  lastOrder: string;
-  status: "Active" | "Churn Risk" | "New";
-};
+export default async function CustomersPage({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
+  const { slug } = await params;
 
-const customers: CustomerRow[] = [
-  { name: "Alex Morgan", email: "alex@domain.com", orders: 42, totalSpend: 12850, lastOrder: "2025-11-16T10:15:00Z", status: "Active" },
-  { name: "Megan Rapin", email: "megan@domain.com", orders: 31, totalSpend: 9870, lastOrder: "2025-11-13T16:20:00Z", status: "Active" },
-  { name: "Kristie Mewis", email: "kristie@domain.com", orders: 18, totalSpend: 6420, lastOrder: "2025-11-14T15:42:00Z", status: "New" },
-  { name: "Rose Lavelle", email: "rose@domain.com", orders: 22, totalSpend: 8200, lastOrder: "2025-11-15T17:54:00Z", status: "Active" },
-  { name: "Tobin Heath", email: "tobin@domain.com", orders: 9, totalSpend: 3120, lastOrder: "2025-11-16T09:45:00Z", status: "Churn Risk" },
-];
+  const store = await db.query.stores.findFirst({
+    where: and(eq(stores.slug, slug), isNull(stores.deletedAt)),
+    columns: { id: true, tenantId: true, defaultCurrency: true },
+  });
 
-const columns: ColumnDef<CustomerRow>[] = [
-  {
-    accessorKey: "name",
-    header: "Customer",
-    cell: ({ row }) => (
-      <div className="flex flex-col">
-        <span className="font-medium">{row.original.name}</span>
-        <span className="text-xs text-muted-foreground">{row.original.email}</span>
+  if (!store) {
+    return (
+      <div className="space-y-6 p-6">
+        <div className="rounded-md border bg-card p-6 text-sm text-muted-foreground">Store not found.</div>
       </div>
-    ),
-  },
-  {
-    accessorKey: "orders",
-    header: "Orders",
-  },
-  {
-    accessorKey: "totalSpend",
-    header: "Total Spend",
-    cell: ({ row }) =>
-      new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", minimumFractionDigits: 0 }).format(
-        row.original.totalSpend
-      ),
-  },
-  {
-    accessorKey: "lastOrder",
-    header: "Last Order",
-    cell: ({ row }) => new Date(row.original.lastOrder).toLocaleString("en-US", {
-      month: "short",
-      day: "numeric",
-      year: "numeric",
-      hour: "numeric",
-      minute: "2-digit",
-    }),
-  },
-  {
-    accessorKey: "status",
-    header: "Status",
-    cell: ({ row }) => {
-      const status = row.original.status;
-      const tone = status === "Active" ? "text-emerald-600" : status === "New" ? "text-primary" : "text-amber-600";
-      return <span className={`text-sm font-medium ${tone}`}>{status}</span>;
-    },
-  },
-];
+    );
+  }
 
-export default function CustomersPage() {
+  const currency = store.defaultCurrency || "KES";
+  const now = new Date();
+  const newThreshold = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+  const churnThreshold = new Date(now.getTime() - 60 * 24 * 60 * 60 * 1000);
+
+  const rowsAgg = await db
+    .select({
+      email: orders.customerEmail,
+      name: sql<string>`MAX(${orders.customerName})`,
+      orders: sql<number>`COALESCE(COUNT(*), 0)::int`,
+      totalSpend: sql<number>`COALESCE(SUM(${orders.totalAmount}), 0)::int`,
+      lastOrderAt: sql<Date>`MAX(${orders.createdAt})`,
+      firstOrderAt: sql<Date>`MIN(${orders.createdAt})`,
+    })
+    .from(orders)
+    .where(
+      and(
+        eq(orders.tenantId, store.tenantId),
+        eq(orders.storeId, store.id),
+        isNull(orders.deletedAt)
+      )
+    )
+    .groupBy(orders.customerEmail)
+    .orderBy(desc(sql`MAX(${orders.createdAt})`))
+    .limit(100);
+
+  const customers: CustomerRow[] = rowsAgg.map((r) => {
+    const last = r.lastOrderAt ? new Date(r.lastOrderAt) : null;
+    const first = r.firstOrderAt ? new Date(r.firstOrderAt) : null;
+
+    const status: CustomerRow["status"] =
+      first && first >= newThreshold
+        ? "New"
+        : last && last < churnThreshold
+          ? "Churn Risk"
+          : "Active";
+
+    return {
+      name: r.name || "—",
+      email: r.email,
+      orders: r.orders,
+      totalSpend: Number(r.totalSpend || 0),
+      currency,
+      lastOrder: (last ?? new Date(0)).toISOString(),
+      status,
+    };
+  });
+
+  const totalCustomers = customers.length;
+  const newCount = customers.filter((c) => c.status === "New").length;
+  const activeCount = customers.filter((c) => c.status === "Active").length;
+  const churnCount = customers.filter((c) => c.status === "Churn Risk").length;
+
   const statSegments = [
     {
       label: "Total Customers",
-      value: "8,420",
-      changeLabel: "+6.2% vs last 30 days",
-      changeTone: "positive" as const,
+      value: totalCustomers.toLocaleString(),
+      changeLabel: "",
+      changeTone: "neutral" as const,
     },
     {
-      label: "New This Month",
-      value: "512",
-      changeLabel: "+3.4% vs last 30 days",
-      changeTone: "positive" as const,
+      label: "New (30 days)",
+      value: newCount.toLocaleString(),
+      changeLabel: "",
+      changeTone: "neutral" as const,
     },
     {
       label: "Active",
-      value: "6,980",
-      changeLabel: "+1.8% vs last 30 days",
-      changeTone: "positive" as const,
+      value: activeCount.toLocaleString(),
+      changeLabel: "",
+      changeTone: "neutral" as const,
     },
     {
       label: "Churn Risk",
-      value: "184",
-      changeLabel: "-0.6% vs last 30 days",
-      changeTone: "positive" as const,
+      value: churnCount.toLocaleString(),
+      changeLabel: "",
+      changeTone: "neutral" as const,
     },
   ];
 
@@ -104,7 +114,7 @@ export default function CustomersPage() {
       <SegmentedStatsCard segments={statSegments} />
 
       <div className="rounded-md border bg-card p-3">
-        <DataTable columns={columns} data={customers} />
+        <CustomersTable rows={customers} />
       </div>
     </div>
   );

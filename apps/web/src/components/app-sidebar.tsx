@@ -74,7 +74,7 @@ const tenantAdminItems: SidebarNavItem[] = [
   },
   {
     title: "Notifications",
-    url: "/messages",
+    url: "/notifications",
     icon: Message01Icon,
   },
   {
@@ -83,14 +83,14 @@ const tenantAdminItems: SidebarNavItem[] = [
     icon: CustomerServiceIcon,
   },
   {
-    title: "Studio",
-    url: "/studio",
-    icon: Store01Icon,
-  },
-  {
     title: "Integrations",
     url: "/integrations",
     icon: ConnectIcon,
+  },
+  {
+    title: "Studio",
+    url: "/studio",
+    icon: Store01Icon,
   },
 ];
 
@@ -130,7 +130,6 @@ const superAdminItems: SidebarNavItem[] = [
     url: "/analytics",
     icon: Analytics02Icon,
   },
-
 ];
 
 function normalizePath(path: string) {

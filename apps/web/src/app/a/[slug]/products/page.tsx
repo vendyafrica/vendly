@@ -26,6 +26,7 @@ import {
   type ProductTableRow,
   type ProductApiRow,
 } from "@/hooks/use-products";
+import { ProductsPageSkeleton } from "@/components/ui/page-skeletons";
 
 function formatMoney(amount: number, currency: string) {
   return new Intl.NumberFormat("en-KE", {
@@ -227,28 +228,32 @@ export default function ProductsPage() {
     {
       label: "Total Products",
       value: totalProducts.toLocaleString(),
-      changeLabel: "+4.2% vs last 30 days",
-      changeTone: "positive" as const,
+      changeLabel: "",
+      changeTone: "neutral" as const,
     },
     {
       label: "Active",
       value: activeCount.toLocaleString(),
-      changeLabel: "+2.1% vs last 30 days",
-      changeTone: "positive" as const,
+      changeLabel: "",
+      changeTone: "neutral" as const,
     },
     {
       label: "Low Stock",
       value: lowStockCount.toLocaleString(),
-      changeLabel: "+6 items vs last 30 days",
+      changeLabel: "",
       changeTone: "neutral" as const,
     },
     {
       label: "Drafts",
       value: draftCount.toLocaleString(),
-      changeLabel: "-3 vs last 30 days",
-      changeTone: "positive" as const,
+      changeLabel: "",
+      changeTone: "neutral" as const,
     },
   ];
+
+  if (isLoading) {
+    return <ProductsPageSkeleton />;
+  }
 
   return (
     <div className="space-y-6 p-6">

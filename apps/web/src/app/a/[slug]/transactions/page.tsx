@@ -107,25 +107,25 @@ export default function TransactionsPage() {
         {
             label: "Total Volume",
             value: stats ? new Intl.NumberFormat("en-US", { style: "currency", currency }).format(stats.totalRevenue) : "—",
-            changeLabel: "+12% vs last 30 days",
-            changeTone: "positive" as const,
+            changeLabel: "",
+            changeTone: "neutral" as const,
         },
         {
             label: "Transactions",
             value: stats ? stats.orderCount.toLocaleString() : "—",
-            changeLabel: "+8% vs last 30 days",
-            changeTone: "positive" as const,
+            changeLabel: "",
+            changeTone: "neutral" as const,
         },
         {
             label: "Pending",
             value: stats ? stats.pendingCount.toLocaleString() : "—",
-            changeLabel: "-3% vs last 30 days",
-            changeTone: "positive" as const,
+            changeLabel: "",
+            changeTone: "neutral" as const,
         },
         {
             label: "Refunded",
             value: stats ? new Intl.NumberFormat("en-US", { style: "currency", currency }).format(stats.refundedAmount) : "—",
-            changeLabel: "+1.2% vs last 30 days",
+            changeLabel: "",
             changeTone: "neutral" as const,
         },
     ];
