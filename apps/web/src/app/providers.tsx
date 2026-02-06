@@ -2,45 +2,59 @@
 
 import * as React from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { useEffect } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 
-import posthog from "posthog-js";
-import { PostHogProvider as PHProvider } from "posthog-js/react";
+import type { PostHog } from "posthog-js";
 
 export function PostHogProvider({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const isProd = process.env.NODE_ENV === "production";
+  const [client, setClient] = React.useState<PostHog | null>(null);
 
-  useEffect(() => {
+  React.useEffect(() => {
     if (!isProd) return;
     const key = process.env.NEXT_PUBLIC_POSTHOG_KEY;
     if (!key) return;
 
-    posthog.init(key, {
-      api_host: process.env.NEXT_PUBLIC_POSTHOG_HOST,
-      defaults: "2025-11-30",
-    });
+    let cancelled = false;
+
+    import("posthog-js")
+      .then((m) => {
+        const ph = m.default;
+        ph.init(key, {
+          api_host: process.env.NEXT_PUBLIC_POSTHOG_HOST,
+          defaults: "2025-11-30",
+        });
+        if (!cancelled) setClient(ph);
+      })
+      .catch(() => {
+        // Ignore analytics load failures
+      });
+
+    return () => {
+      cancelled = true;
+    };
   }, [isProd]);
 
-  useEffect(() => {
+  React.useEffect(() => {
     if (!isProd) return;
     const key = process.env.NEXT_PUBLIC_POSTHOG_KEY;
     if (!key) return;
+    if (!client) return;
 
     const query = searchParams?.toString();
     const url = query ? `${pathname}?${query}` : pathname;
-    posthog.capture("$pageview", {
+    client.capture("$pageview", {
       $current_url: url,
     });
-  }, [isProd, pathname, searchParams]);
+  }, [isProd, pathname, searchParams, client]);
 
   if (!isProd || !process.env.NEXT_PUBLIC_POSTHOG_KEY) {
     return <>{children}</>;
   }
 
-  return <PHProvider client={posthog}>{children}</PHProvider>;
+  return <>{children}</>;
 }
 
 export function Providers({ children }: { children: React.ReactNode }) {

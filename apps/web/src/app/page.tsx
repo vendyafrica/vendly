@@ -10,13 +10,7 @@ import { HeroSection } from "@/app/(m)/components/home/HeroSection";
 import { CollectionsRail } from "@/app/(m)/components/home/CollectionsRail";
 import { CategoryShelf } from "@/app/(m)/components/home/CategoryShelf";
 import type { Metadata } from "next";
-import { Suspense } from "react";
-import { headers } from "next/headers";
-import { auth } from "@vendly/auth";
-import { PostHogProvider, Providers } from "./providers";
-import { AppSessionProvider } from "@/contexts/app-session-context";
-import { CartProvider } from "@/contexts/cart-context";
-import type { ReactNode } from "react";
+import MarketplaceLayout from "./(m)/layout";
 
 const homeTitle = "Vendly | Shop African Creators & Social Sellers";
 const homeDescription =
@@ -40,11 +34,7 @@ export const metadata: Metadata = {
 };
 
 export default async function HomePage() {
-  const headerList = await headers();
-  const sessionPromise = auth.api.getSession({ headers: headerList });
-
-  const { categories, stores, storesByCategory } =
-    await marketplaceService.getHomePageData();
+  const { categories, stores, storesByCategory } = await marketplaceService.getHomePageData();
 
   const mapToMarketplaceStore = (s: StoreWithCategory): MarketplaceStore => ({
     id: s.id,
@@ -74,127 +64,44 @@ export default async function HomePage() {
     .slice(0, 6); // Limit to top 6 populated categories
 
   return (
-    <PostHogProvider>
-      <Providers>
-        <Suspense
-          fallback={
-            <AppSessionProvider session={null}>
-              <CartProvider>
-                <main className="min-h-screen bg-background text-foreground">
-                  <Header hideSearch />
-                  <OneTapLogin />
+    <MarketplaceLayout>
+      <main className="min-h-screen bg-background text-foreground">
+        <Header hideSearch />
+        <OneTapLogin />
 
-                  <HeroSection />
-                  <CollectionsRail
-                    categories={categories.map((c) => ({
-                      id: c.id,
-                      name: c.name,
-                      slug: c.slug,
-                      image: (c as { image?: string | null })?.image ?? null,
-                    }))}
-                  />
+        <HeroSection />
+        <CollectionsRail
+          categories={categories.map((c) => ({
+            id: c.id,
+            name: c.name,
+            slug: c.slug,
+            image: (c as { image?: string | null })?.image ?? null,
+          }))}
+        />
 
-                  {uiStores.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center py-20 px-4 text-center">
-                      <h3 className="text-2xl font-semibold mb-4">
-                        No stores yet
-                      </h3>
-                      <p className="text-muted-foreground mb-8">
-                        Be the first to create a store on Vendly!
-                      </p>
-                      <Link href="/c">
-                        <Button size="lg">Create Your Store</Button>
-                      </Link>
-                    </div>
-                  ) : (
-                    <>
-                      <div className="space-y-4 pb-12">
-                        {sortedCategories.map(
-                          ([categoryName, categoryStores]) => (
-                            <CategoryShelf
-                              key={categoryName}
-                              title={categoryName}
-                              categorySlug={categoryName
-                                .toLowerCase()
-                                .replace(/\s+/g, "-")}
-                              stores={categoryStores.slice(0, 12)}
-                            />
-                          ),
-                        )}
-                      </div>
-                    </>
-                  )}
+        {uiStores.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-20 px-4 text-center">
+            <h3 className="text-2xl font-semibold mb-4">No stores yet</h3>
+            <p className="text-muted-foreground mb-8">Be the first to create a store on Vendly!</p>
+            <Link href="/c">
+              <Button size="lg">Create Your Store</Button>
+            </Link>
+          </div>
+        ) : (
+          <div className="space-y-4 pb-12">
+            {sortedCategories.map(([categoryName, categoryStores]) => (
+              <CategoryShelf
+                key={categoryName}
+                title={categoryName}
+                categorySlug={categoryName.toLowerCase().replace(/\s+/g, "-")}
+                stores={categoryStores.slice(0, 12)}
+              />
+            ))}
+          </div>
+        )}
 
-                  <Footer />
-                </main>
-              </CartProvider>
-            </AppSessionProvider>
-          }
-        >
-          <SessionBoundary sessionPromise={sessionPromise}>
-            <CartProvider>
-              <main className="min-h-screen bg-background text-foreground">
-                <Header hideSearch />
-                <OneTapLogin />
-
-                <HeroSection />
-                <CollectionsRail
-                  categories={categories.map((c) => ({
-                    id: c.id,
-                    name: c.name,
-                    slug: c.slug,
-                    image: (c as { image?: string | null })?.image ?? null,
-                  }))}
-                />
-
-                {uiStores.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center py-20 px-4 text-center">
-                    <h3 className="text-2xl font-semibold mb-4">
-                      No stores yet
-                    </h3>
-                    <p className="text-muted-foreground mb-8">
-                      Be the first to create a store on Vendly!
-                    </p>
-                    <Link href="/c">
-                      <Button size="lg">Create Your Store</Button>
-                    </Link>
-                  </div>
-                ) : (
-                  <>
-                    <div className="space-y-4 pb-12">
-                      {sortedCategories.map(
-                        ([categoryName, categoryStores]) => (
-                          <CategoryShelf
-                            key={categoryName}
-                            title={categoryName}
-                            categorySlug={categoryName
-                              .toLowerCase()
-                              .replace(/\s+/g, "-")}
-                            stores={categoryStores.slice(0, 12)}
-                          />
-                        ),
-                      )}
-                    </div>
-                  </>
-                )}
-
-                <Footer />
-              </main>
-            </CartProvider>
-          </SessionBoundary>
-        </Suspense>
-      </Providers>
-    </PostHogProvider>
+        <Footer />
+      </main>
+    </MarketplaceLayout>
   );
-}
-
-async function SessionBoundary({
-  children,
-  sessionPromise,
-}: {
-  children: ReactNode;
-  sessionPromise: ReturnType<typeof auth.api.getSession>;
-}) {
-  const session = await sessionPromise;
-  return <AppSessionProvider session={session}>{children}</AppSessionProvider>;
 }

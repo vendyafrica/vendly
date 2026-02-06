@@ -4,37 +4,40 @@ import { HugeiconsIcon } from "@hugeicons/react";
 import { Search01Icon, ArrowRight01Icon } from "@hugeicons/core-free-icons";
 import { Button } from "@vendly/ui/components/button";
 import { Input } from "@vendly/ui/components/input";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
+import dynamic from "next/dynamic";
 
-import { Typewriter } from "@/components/ui/typewriter";
 import { heroCopy, type HeroMode } from "@/content/heroCopy";
+
+const Typewriter = dynamic(
+  () => import("@/components/ui/typewriter").then((m) => m.Typewriter),
+  { ssr: false }
+);
 
 export function HeroSection() {
   const [searchQuery, setSearchQuery] = useState("");
-  // Default to a deterministic value for SSR to avoid hydration mismatches.
-  const [mode, setMode] = useState<HeroMode>("aspirational");
-
-  useEffect(() => {
+  const [mode] = useState<HeroMode>(() => {
     const storageKey = "vendly-hero-mode";
+
+    // Deterministic fallback for non-browser environments.
+    if (typeof window === "undefined") return "aspirational";
 
     const stored = window.sessionStorage.getItem(storageKey);
     if (stored === "aspirational" || stored === "scale") {
-      setMode(stored);
-      return;
+      return stored;
     }
 
     const options: HeroMode[] = ["aspirational", "scale"];
     const randomMode = options[Math.floor(Math.random() * options.length)];
     window.sessionStorage.setItem(storageKey, randomMode);
-    setMode(randomMode);
-  }, []);
+    return randomMode;
+  });
 
   const copy = useMemo(() => heroCopy[mode], [mode]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     console.log("Searching for:", searchQuery);
-    // TODO: Implement search navigation
   };
 
   return (

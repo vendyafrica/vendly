@@ -2,8 +2,7 @@ import "@vendly/ui/globals.css";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Nunito_Sans } from "next/font/google";
 import type { ReactNode } from "react";
-import { SpeedInsights } from "@vercel/speed-insights/next";
-import { Analytics } from "@vercel/analytics/next";
+import { ThirdParty } from "./third-party";
 
 const nunitoSans = Nunito_Sans({ variable: "--font-sans" });
 
@@ -95,8 +94,7 @@ export default async function RootLayout({
             }),
           }}
         />
-        <SpeedInsights />
-        <Analytics />
+        <ThirdParty />
         {children}
       </body>
     </html>
