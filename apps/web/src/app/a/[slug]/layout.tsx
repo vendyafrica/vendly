@@ -26,28 +26,31 @@ export default async function TenantDashboardLayout({
   const session = await auth.api.getSession({ headers: await headers() })
 
   if (!session?.user) {
-    redirect(`/${slug}/a/login?next=${encodeURIComponent(basePath)}`)
+    redirect(`/a/${slug}/login?next=${encodeURIComponent(basePath)}`)
   }
 
-  const store = await db.query.stores.findFirst({
-    where: and(eq(stores.slug, slug), isNull(stores.deletedAt)),
-    columns: { tenantId: true },
-  })
+  // Parallelize independent DB queries to avoid waterfall
+  const [store, platformRole] = await Promise.all([
+    db.query.stores.findFirst({
+      where: and(eq(stores.slug, slug), isNull(stores.deletedAt)),
+      columns: { tenantId: true },
+    }),
+    db.query.platformRoles.findFirst({
+      where: eq(platformRoles.userId, session.user.id),
+      columns: { role: true },
+    }),
+  ])
 
   if (!store) {
     redirect("/")
   }
 
+  // Fetch membership after we have tenantId
   const membership = await db.query.tenantMemberships.findFirst({
     where: and(
       eq(tenantMemberships.tenantId, store.tenantId),
       eq(tenantMemberships.userId, session.user.id)
     ),
-    columns: { role: true },
-  })
-
-  const platformRole = await db.query.platformRoles.findFirst({
-    where: eq(platformRoles.userId, session.user.id),
     columns: { role: true },
   })
 

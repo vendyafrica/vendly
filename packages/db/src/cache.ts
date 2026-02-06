@@ -5,24 +5,42 @@ const hasRedisConfig = Boolean(
     process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN
 );
 
-console.log('[Cache] Redis config status:', {
-    hasConfig: hasRedisConfig,
-    url: process.env.UPSTASH_REDIS_REST_URL ? '✓ set' : '✗ missing',
-    token: process.env.UPSTASH_REDIS_REST_TOKEN ? '✓ set' : '✗ missing',
-});
+const cacheDebug = process.env.CACHE_DEBUG === "1";
 
-// Create Redis client only if configured
-export const redis = hasRedisConfig
-    ? new Redis({
-        url: process.env.UPSTASH_REDIS_REST_URL!,
-        token: process.env.UPSTASH_REDIS_REST_TOKEN!,
-    })
+if (cacheDebug) {
+    console.log('[Cache] Redis config status:', {
+        hasConfig: hasRedisConfig,
+        url: process.env.UPSTASH_REDIS_REST_URL ? '✓ set' : '✗ missing',
+        token: process.env.UPSTASH_REDIS_REST_TOKEN ? '✓ set' : '✗ missing',
+    });
+}
+
+declare global {
+    // eslint-disable-next-line no-var
+    var __vendlyRedisClient: Redis | null | undefined;
+}
+
+// Create Redis client only if configured (singleton across dev module reloads)
+const resolvedRedis = hasRedisConfig
+    ? (globalThis.__vendlyRedisClient ??
+        new Redis({
+            url: process.env.UPSTASH_REDIS_REST_URL!,
+            token: process.env.UPSTASH_REDIS_REST_TOKEN!,
+        }))
     : null;
 
-if (redis) {
-    console.log('[Cache] ✓ Redis client initialized successfully');
-} else {
-    console.log('[Cache] ✗ Redis client NOT initialized - caching disabled');
+if (hasRedisConfig) {
+    globalThis.__vendlyRedisClient = resolvedRedis;
+}
+
+export const redis = resolvedRedis;
+
+if (cacheDebug) {
+    if (redis) {
+        console.log('[Cache] ✓ Redis client initialized successfully');
+    } else {
+        console.log('[Cache] ✗ Redis client NOT initialized - caching disabled');
+    }
 }
 
 
@@ -82,35 +100,35 @@ export async function withCache<T>(
     fetcher: () => Promise<T>,
     ttlSeconds: number = TTL.MEDIUM
 ): Promise<T> {
-    console.log(`[Cache] withCache called for key: ${key}`);
+    if (cacheDebug) console.log(`[Cache] withCache called for key: ${key}`);
 
     // If Redis is not configured, bypass cache
     if (!redis) {
-        console.log(`[Cache] BYPASS - Redis not configured, fetching directly`);
+        if (cacheDebug) console.log(`[Cache] BYPASS - Redis not configured, fetching directly`);
         return fetcher();
     }
 
     try {
         // Try to get from cache
-        console.log(`[Cache] Attempting to read from Redis...`);
+        if (cacheDebug) console.log(`[Cache] Attempting to read from Redis...`);
         const cached = await redis.get<T>(key);
         if (cached !== null && cached !== undefined) {
-            console.log(`[Cache] HIT ✓ - Returning cached data for key: ${key}`);
+            if (cacheDebug) console.log(`[Cache] HIT ✓ - Returning cached data for key: ${key}`);
             return cached;
         }
-        console.log(`[Cache] MISS - No cached data found for key: ${key}`);
+        if (cacheDebug) console.log(`[Cache] MISS - No cached data found for key: ${key}`);
     } catch (error) {
         // Log but don't fail - fallback to direct fetch
         console.error(`[Cache] READ ERROR for key ${key}:`, error);
     }
 
     // Fetch fresh data
-    console.log(`[Cache] Fetching fresh data...`);
+    if (cacheDebug) console.log(`[Cache] Fetching fresh data...`);
     const data = await fetcher();
 
     // Cache the result (fire and forget)
     if (redis && data !== null && data !== undefined) {
-        console.log(`[Cache] Writing to Redis with TTL ${ttlSeconds}s...`);
+        if (cacheDebug) console.log(`[Cache] Writing to Redis with TTL ${ttlSeconds}s...`);
         redis.setex(key, ttlSeconds, data).catch((error) => {
             console.error(`[Cache] WRITE ERROR for key ${key}:`, error);
         });

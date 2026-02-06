@@ -11,8 +11,10 @@ import { PostHogProvider as PHProvider } from "posthog-js/react";
 export function PostHogProvider({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const isProd = process.env.NODE_ENV === "production";
 
   useEffect(() => {
+    if (!isProd) return;
     const key = process.env.NEXT_PUBLIC_POSTHOG_KEY;
     if (!key) return;
 
@@ -20,9 +22,10 @@ export function PostHogProvider({ children }: { children: React.ReactNode }) {
       api_host: process.env.NEXT_PUBLIC_POSTHOG_HOST,
       defaults: "2025-11-30",
     });
-  }, []);
+  }, [isProd]);
 
   useEffect(() => {
+    if (!isProd) return;
     const key = process.env.NEXT_PUBLIC_POSTHOG_KEY;
     if (!key) return;
 
@@ -31,7 +34,11 @@ export function PostHogProvider({ children }: { children: React.ReactNode }) {
     posthog.capture("$pageview", {
       $current_url: url,
     });
-  }, [pathname, searchParams]);
+  }, [isProd, pathname, searchParams]);
+
+  if (!isProd || !process.env.NEXT_PUBLIC_POSTHOG_KEY) {
+    return <>{children}</>;
+  }
 
   return <PHProvider client={posthog}>{children}</PHProvider>;
 }
@@ -47,9 +54,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
             // Keep inactive data in cache for 5 minutes
             gcTime: 5 * 60 * 1000,
             // Refetch when window regains focus for fresh data
-            refetchOnWindowFocus: true,
-            // Only refetch if data is stale
-            refetchOnMount: "always",
+            refetchOnWindowFocus: false,
+            // Only refetch if data is stale (avoid redundant calls in dev)
+            refetchOnMount: false,
             // Single retry on failure
             retry: 1,
             // Don't retry on 4xx errors

@@ -3,8 +3,7 @@
 import * as React from "react";
 import { useTenant } from "../tenant-context";
 import { SegmentedStatsCard } from "../components/SegmentedStatsCard";
-import { RevenueAreaChartCard, type RevenuePoint } from "../components/RevenueAreaChartCard";
-import { VisitsAreaChartCard, type VisitsPoint } from "../components/VisitsAreaChartCard";
+import { RevenueAreaChartCard, VisitsAreaChartCard, type RevenuePoint, type VisitsPoint } from "../components/DynamicCharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@vendly/ui/components/card";
 
 type OverviewResponse = {

@@ -2,9 +2,9 @@
 
 import { useTenant } from "./tenant-context";
 import { SegmentedStatsCard } from "./components/SegmentedStatsCard";
-import { RevenueAreaChartCard } from "./components/RevenueAreaChartCard";
-import { TopProductsBarChartCard } from "./components/TopProductsBarChartCard";
+import { RevenueAreaChartCard, TopProductsBarChartCard } from "./components/DynamicCharts";
 import { RecentTransactionsTable } from "./components/RecentTransactionsTable";
+
 
 // Mock Data for Main Chart (Revenue)
 const mockRevenueData = [

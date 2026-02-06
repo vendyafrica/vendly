@@ -2,6 +2,7 @@ import "@vendly/ui/globals.css";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Nunito_Sans } from "next/font/google";
 import type { ReactNode } from "react";
+import { Suspense } from "react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { CartProvider } from "../contexts/cart-context";
 import { AppSessionProvider } from "../contexts/app-session-context";
@@ -59,9 +60,31 @@ export default async function RootLayout({
 }: {
   children: ReactNode;
 }) {
-  const session = await auth.api.getSession({
+  const sessionPromise = auth.api.getSession({
     headers: await headers(),
   });
+
+  async function SessionProvider({
+    children: sessionChildren,
+    sessionPromise,
+  }: {
+    children: ReactNode;
+    sessionPromise: ReturnType<typeof auth.api.getSession>;
+  }) {
+    const session = await sessionPromise;
+
+    return (
+      <AppSessionProvider session={session}>
+        <CartProvider>{sessionChildren}</CartProvider>
+      </AppSessionProvider>
+    );
+  }
+
+  const FallbackSession = ({ children: fallbackChildren }: { children: ReactNode }) => (
+    <AppSessionProvider session={null}>
+      <CartProvider>{fallbackChildren}</CartProvider>
+    </AppSessionProvider>
+  );
 
   return (
     <html lang="en" className={nunitoSans.variable}>
@@ -108,9 +131,11 @@ export default async function RootLayout({
         <Analytics />
         <PostHogProvider>
           <Providers>
-            <AppSessionProvider session={session}>
-              <CartProvider>{children}</CartProvider>
-            </AppSessionProvider>
+            <Suspense fallback={<FallbackSession>{children}</FallbackSession>}>
+              <SessionProvider sessionPromise={sessionPromise}>
+                {children}
+              </SessionProvider>
+            </Suspense>
           </Providers>
         </PostHogProvider>
       </body>

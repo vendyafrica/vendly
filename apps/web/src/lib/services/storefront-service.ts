@@ -1,29 +1,35 @@
 import { db, stores, products, eq, and, isNull, instagramAccounts } from "@vendly/db";
+import { cache } from "react";
 
 /**
  * Storefront Service for serverless environment
  * Handles public store data queries (no auth required)
  */
+
+const findStoreBySlugCached = cache(async (slug: string) => {
+    const store = await db.query.stores.findFirst({
+        where: and(eq(stores.slug, slug), isNull(stores.deletedAt)),
+    });
+
+    if (!store) return undefined;
+
+    const igAccount = await db.query.instagramAccounts.findFirst({
+        where: and(eq(instagramAccounts.tenantId, store.tenantId), eq(instagramAccounts.isActive, true))
+    });
+
+    if (igAccount?.profilePictureUrl) {
+        return { ...store, logoUrl: igAccount.profilePictureUrl };
+    }
+
+    return store;
+});
+
 export const storefrontService = {
     /**
      * Find store by slug
      */
     async findStoreBySlug(slug: string) {
-        const store = await db.query.stores.findFirst({
-            where: and(eq(stores.slug, slug), isNull(stores.deletedAt)),
-        });
-
-        if (!store) return undefined;
-
-        const igAccount = await db.query.instagramAccounts.findFirst({
-            where: and(eq(instagramAccounts.tenantId, store.tenantId), eq(instagramAccounts.isActive, true))
-        });
-
-        if (igAccount?.profilePictureUrl) {
-            return { ...store, logoUrl: igAccount.profilePictureUrl };
-        }
-
-        return store;
+        return findStoreBySlugCached(slug);
     },
 
     /**

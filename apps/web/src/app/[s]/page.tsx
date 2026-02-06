@@ -12,7 +12,7 @@ interface StorefrontPageProps {
   params: Promise<{
     s: string; // The param is 's' based on folder name [s]
   }>;
-  searchParams?: Record<string, string | string[] | undefined>;
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
 }
 
 export async function generateMetadata({ params }: StorefrontPageProps): Promise<Metadata> {
@@ -49,7 +49,8 @@ export async function generateMetadata({ params }: StorefrontPageProps): Promise
 
 export default async function StorefrontHomePage({ params, searchParams }: StorefrontPageProps) {
   const { s: storeSlug } = await params;
-  const search = searchParams?.q;
+  const resolvedSearchParams = await searchParams;
+  const search = resolvedSearchParams?.q;
   const query = Array.isArray(search) ? search[0] : search;
 
   const store = await marketplaceService.getStoreDetails(storeSlug);
