@@ -10,8 +10,10 @@ import { and, eq, isNull } from "@vendly/db";
 import { Suspense } from "react";
 
 import { SidebarInset, SidebarProvider } from "@vendly/ui/components/sidebar";
+import { Providers } from "../../../providers";
 import { DashboardHeader } from "./components/DashboardHeader";
 import { TenantProvider } from "./tenant-context";
+import { AppSessionProvider } from "@/contexts/app-session-context";
 
 export default async function TenantDashboardLayout({
   children,
@@ -83,29 +85,33 @@ async function TenantDashboardLayoutInner({
   }
 
   return (
-    <TenantProvider
-      initialBootstrap={{
-        tenantId: store.tenantId,
-        storeId: store.id,
-        storeSlug: slug,
-        storeName: store.name,
-      }}
-    >
-      <SidebarProvider
-        style={
-          {
-            "--sidebar-width": "14rem",
-          } as React.CSSProperties
-        }
-      >
-        <AppSidebar basePath={basePath} />
-        <SidebarInset>
-          <DashboardHeader tenantName={store.name} />
-          <div className="flex flex-1 flex-col gap-4 p-4 pt-4 pb-24 md:pb-4">{children}</div>
-        </SidebarInset>
+    <Providers>
+      <AppSessionProvider session={{ user: session.user }}>
+        <TenantProvider
+          initialBootstrap={{
+            tenantId: store.tenantId,
+            storeId: store.id,
+            storeSlug: slug,
+            storeName: store.name,
+          }}
+        >
+          <SidebarProvider
+            style={
+              {
+                "--sidebar-width": "14rem",
+              } as React.CSSProperties
+            }
+          >
+            <AppSidebar basePath={basePath} />
+            <SidebarInset>
+              <DashboardHeader tenantName={store.name} />
+              <div className="flex flex-1 flex-col gap-4 p-4 pt-4 pb-24 md:pb-4">{children}</div>
+            </SidebarInset>
 
-        <AdminMobileDock basePath={basePath} />
-      </SidebarProvider>
-    </TenantProvider>
+            <AdminMobileDock basePath={basePath} />
+          </SidebarProvider>
+        </TenantProvider>
+      </AppSessionProvider>
+    </Providers>
   );
 }

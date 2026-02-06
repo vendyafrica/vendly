@@ -4,6 +4,28 @@ import { eq, and, isNull, desc, sql, like } from "@vendly/db";
 import { mediaService, type UploadFile } from "./media-service";
 import type { CreateProductInput, ProductFilters, ProductWithMedia, UpdateProductInput } from "./product-models";
 
+function slugifyName(name: string) {
+    return name
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-|-$/g, "");
+}
+
+async function generateUniqueSlug(tx: { query: typeof db.query }, storeId: string, base: string) {
+    let slug = base;
+    let suffix = 1;
+
+    while (
+        await tx.query.products.findFirst({
+            where: and(eq(products.storeId, storeId), eq(products.slug, slug)),
+        })
+    ) {
+        slug = `${base}-${suffix++}`;
+    }
+
+    return slug;
+}
+
 /**
  * Product Service for serverless environment
  */
@@ -17,11 +39,10 @@ export const productService = {
         data: CreateProductInput,
         files: UploadFile[] = []
     ): Promise<ProductWithMedia> {
-        const slug = data.slug ?? data.title.toLowerCase()
-            .replace(/[^a-z0-9]+/g, "-")
-            .replace(/^-|-$/g, "");
+        const baseSlug = slugifyName(data.title);
 
         const createdProduct = await dbWs.transaction(async (tx) => {
+            const slug = await generateUniqueSlug(tx, data.storeId, baseSlug);
             // Create product
             const [product] = await tx.insert(products).values({
                 tenantId,
