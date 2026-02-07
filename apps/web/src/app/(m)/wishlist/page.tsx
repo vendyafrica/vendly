@@ -20,7 +20,7 @@ export default function WishlistAllPage() {
 
     if (items.length === 0) {
         return (
-            <main className="min-h-screen bg-[#F9F9F7]">
+            <main className="min-h-screen">
                 <div className="max-w-3xl mx-auto px-4 py-12">
                     <div className="flex items-center gap-2 mb-6">
                         <Link href="/" className="p-2 -ml-2 hover:bg-neutral-100 rounded-full transition-colors">
@@ -49,7 +49,7 @@ export default function WishlistAllPage() {
     }
 
     return (
-        <main className="min-h-screen bg-[#F9F9F7]">
+        <main className="min-h-screen">
             <div className="max-w-4xl mx-auto px-4 md:px-6 lg:px-8 py-10 space-y-6">
                 <div className="flex items-center gap-2 mb-1">
                     <Link href="/" className="p-2 -ml-2 hover:bg-neutral-100 rounded-full transition-colors">

@@ -1,12 +1,12 @@
 import { db } from "@vendly/db/db";
-import { tenants, stores, orders, storefrontSessions, payments } from "@vendly/db/schema";
+import { tenants, stores, orders, storefrontSessions } from "@vendly/db/schema";
 import { count, eq, gte, sum, desc } from "@vendly/db";
 import { TTL, withCache } from "@vendly/db";
 import { NextResponse } from "next/server";
-import { checkPlatformRoleApi } from "@/lib/auth-guard";
+import { checkSuperAdminApi } from "@/lib/auth-guard";
 
 export async function GET() {
-    const auth = await checkPlatformRoleApi(["super_admin"]);
+    const auth = await checkSuperAdminApi(["super_admin"]);
     if (auth.error) {
         return NextResponse.json(auth, { status: auth.status });
     }
@@ -50,8 +50,6 @@ export async function GET() {
                 const gmv = Number(gmvResult?.total || 0);
 
                 const [totalOrders] = await db.select({ count: count() }).from(orders);
-                const [totalPayments] = await db.select({ count: count() }).from(payments);
-
                 // 4. Top Stores by Revenue
                 const topStoresByRevenue = await db
                     .select({
@@ -93,7 +91,6 @@ export async function GET() {
                     marketplace: {
                         gmv: gmv,
                         totalOrders: totalOrders.count,
-                        totalPayments: totalPayments.count,
                     },
                     topStores: {
                         byRevenue: topStoresByRevenue,

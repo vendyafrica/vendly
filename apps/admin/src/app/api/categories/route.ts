@@ -38,7 +38,6 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: "Name and Slug are required" }, { status: 400 });
         }
 
-        // Check slug uniqueness
         const existing = await db.query.categories.findFirst({
             where: eq(categories.slug, slug)
         });

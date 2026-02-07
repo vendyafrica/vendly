@@ -26,7 +26,7 @@ export async function PATCH(
     req: Request,
     { params }: { params: Promise<{ id: string }> }
 ) {
-    const auth = await checkPlatformRoleApi(["super_admin"]);
+    const auth = await checkSuperAdminApi(["super_admin"]);
     if (auth.error) {
         return NextResponse.json(auth, { status: auth.status });
     }
@@ -73,7 +73,7 @@ export async function DELETE(
     req: Request,
     { params }: { params: Promise<{ id: string }> }
 ) {
-    const auth = await checkPlatformRoleApi(["super_admin"]);
+    const auth = await checkSuperAdminApi(["super_admin"]);
     if (auth.error) {
         return NextResponse.json(auth, { status: auth.status });
     }

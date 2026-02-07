@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { checkPlatformRoleApi } from "@/lib/auth-guard";
+import { checkSuperAdminApi } from "@/lib/auth-guard";
 import { db } from "@vendly/db/db";
 import { verification } from "@vendly/db/schema";
 import { eq } from "@vendly/db";
@@ -8,7 +8,7 @@ import { sendSuperAdminInviteEmail } from "@vendly/transactional";
 
 export async function POST(req: Request) {
     try {
-        const authz = await checkPlatformRoleApi(["super_admin"]);
+        const authz = await checkSuperAdminApi(["super_admin"]);
         if ("error" in authz) {
             return NextResponse.json({ error: authz.error }, { status: authz.status });
         }

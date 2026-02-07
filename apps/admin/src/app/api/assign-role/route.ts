@@ -3,7 +3,7 @@ import { superAdmins } from "@vendly/db/schema";
 import { NextResponse } from "next/server";
 import { getSession } from "@/lib/auth-guard";
 
-export async function POST(req: Request) {
+export async function POST() {
     try {
         const session = await getSession();
 

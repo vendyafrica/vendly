@@ -30,11 +30,9 @@ export async function POST(req: Request) {
             // Bootstrap-only: if there is no super admin yet, allow existing user to receive a verification
             // email to activate/verify and become the first super admin.
             if (!existingSuperAdmin) {
-                // Create verification token
                 const token = crypto.randomBytes(32).toString("hex");
                 const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
 
-                // Remove any existing verification records for this identifier (avoid duplicates)
                 await db.delete(verification).where(eq(verification.identifier, email));
 
                 await db.insert(verification).values({
