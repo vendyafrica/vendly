@@ -3,8 +3,8 @@ import { headers } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 import { productService } from "@/lib/services/product-service";
 import { db } from "@vendly/db/db";
-import { tenantMemberships } from "@vendly/db/schema";
-import { eq } from "@vendly/db";
+import { stores, tenantMemberships } from "@vendly/db/schema";
+import { eq, and, isNull } from "@vendly/db";
 import { z } from "zod";
 
 const bulkCreateSchema = z.object({
@@ -39,6 +39,15 @@ export async function POST(request: NextRequest) {
         const body = await request.json();
         const { storeId, items } = bulkCreateSchema.parse(body);
 
+        const store = await db.query.stores.findFirst({
+            where: and(eq(stores.id, storeId), eq(stores.tenantId, membership.tenantId), isNull(stores.deletedAt)),
+            columns: { defaultCurrency: true },
+        });
+
+        if (!store) {
+            return NextResponse.json({ error: "Store not found" }, { status: 404 });
+        }
+
         // Helper to generate a unique draft slug
         const generateDraftSlug = () => {
             const timestamp = Date.now().toString(36); // base36 timestamp
@@ -59,9 +68,8 @@ export async function POST(request: NextRequest) {
                     title,
                     description: "", // Empty for now, user can edit later
                     priceAmount: 0,
-                    currency: "KES",
+                    currency: store.defaultCurrency || "UGX",
                     status: "draft",
-                    isFeatured: false,
                     source: "bulk-upload",
                     slug: generateDraftSlug(), // Guaranteed-unique slug
                 },

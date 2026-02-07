@@ -1,6 +1,7 @@
 import { auth } from "@vendly/auth";
 import { headers } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 import { productService } from "@/lib/services/product-service";
 import { productQuerySchema, createProductSchema } from "@/lib/services/product-models";
 import { db } from "@vendly/db/db";
@@ -72,8 +73,8 @@ export async function POST(request: NextRequest) {
         // Check if it's multipart form data or JSON
         const contentType = request.headers.get("content-type") || "";
 
-        let input: any;
-        let files: any[] = [];
+        let input: z.infer<typeof createProductSchema>;
+        const files: Array<{ buffer: Buffer; originalname: string; mimetype: string }> = [];
 
         if (contentType.includes("multipart/form-data")) {
             const formData = await request.formData();
@@ -83,7 +84,7 @@ export async function POST(request: NextRequest) {
                 title: formData.get("title"),
                 description: formData.get("description") || undefined,
                 priceAmount: Number(formData.get("priceAmount")) || 0,
-                currency: formData.get("currency") || "KES",
+                currency: formData.get("currency") || "UGX",
             });
 
             // Get files
@@ -99,14 +100,14 @@ export async function POST(request: NextRequest) {
                 }
             }
         } else {
-            const body = await request.json();
+            const body: unknown = await request.json();
             input = createProductSchema.parse(body);
         }
 
         const product = await productService.createProduct(
             membership.tenantId,
             membership.tenant.slug,
-            input,
+            input as Parameters<typeof productService.createProduct>[2],
             files
         );
 

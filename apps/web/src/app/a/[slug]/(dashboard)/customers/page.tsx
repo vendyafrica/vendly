@@ -24,7 +24,7 @@ export default async function CustomersPage({
     );
   }
 
-  const currency = store.defaultCurrency || "KES";
+  const currency = store.defaultCurrency || "USD";
   const now = new Date();
   const newThreshold = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
   const churnThreshold = new Date(now.getTime() - 60 * 24 * 60 * 60 * 1000);

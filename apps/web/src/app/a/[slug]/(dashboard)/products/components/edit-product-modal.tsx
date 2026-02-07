@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { HugeiconsIcon } from "@hugeicons/react";
-import { Loading03Icon, Upload04Icon, Cancel01Icon, ImageUpload01Icon } from "@hugeicons/core-free-icons";
+import { Loading03Icon, Cancel01Icon, ImageUpload01Icon } from "@hugeicons/core-free-icons";
 import {
     Dialog,
     DialogContent,
@@ -16,6 +16,7 @@ import { Label } from "@vendly/ui/components/label";
 import { Textarea } from "@vendly/ui/components/textarea";
 import Image from "next/image";
 import { upload } from "@vercel/blob/client";
+import { useTenant } from "../../tenant-context";
 
 interface Product {
     id: string;
@@ -61,6 +62,9 @@ export function EditProductModal({
     tenantId,
     onProductUpdated,
 }: EditProductModalProps) {
+    const { bootstrap } = useTenant();
+    const storeCurrency = bootstrap?.defaultCurrency || "UGX";
+
     const [productName, setProductName] = React.useState("");
     const [description, setDescription] = React.useState("");
     const [priceAmount, setPriceAmount] = React.useState<string>("");
@@ -70,7 +74,6 @@ export function EditProductModal({
 
     // Image management
     const [files, setFiles] = React.useState<UploadedFile[]>([]);
-    const [isDragging, setIsDragging] = React.useState(false);
     const fileInputRef = React.useRef<HTMLInputElement>(null);
     const initialMediaSignatureRef = React.useRef<string>("[]");
 
@@ -174,25 +177,6 @@ export function EditProductModal({
             handleUploadFiles(selectedFiles);
         }
         if (fileInputRef.current) fileInputRef.current.value = "";
-    };
-
-    const handleDragOver = (e: React.DragEvent) => {
-        e.preventDefault();
-        setIsDragging(true);
-    };
-
-    const handleDragLeave = (e: React.DragEvent) => {
-        e.preventDefault();
-        setIsDragging(false);
-    };
-
-    const handleDrop = (e: React.DragEvent) => {
-        e.preventDefault();
-        setIsDragging(false);
-        const droppedFiles = Array.from(e.dataTransfer.files);
-        if (droppedFiles.length > 0) {
-            handleUploadFiles(droppedFiles);
-        }
     };
 
     const removeFile = (index: number) => {
@@ -308,17 +292,14 @@ export function EditProductModal({
                             onDragOver={(e) => {
                                 e.preventDefault();
                                 e.stopPropagation();
-                                setIsDragging(true);
                             }}
                             onDragLeave={(e) => {
                                 e.preventDefault();
                                 e.stopPropagation();
-                                setIsDragging(false);
                             }}
                             onDrop={(e) => {
                                 e.preventDefault();
                                 e.stopPropagation();
-                                setIsDragging(false);
                                 if (!isSaving && e.dataTransfer.files?.length) {
                                     handleUploadFiles(Array.from(e.dataTransfer.files));
                                 }
@@ -469,7 +450,7 @@ export function EditProductModal({
 
                             <div className="grid grid-cols-2 gap-3">
                                 <div className="space-y-2">
-                                    <Label htmlFor="priceAmount">Price (KES)</Label>
+                                    <Label htmlFor="priceAmount">Price ({storeCurrency})</Label>
                                     <Input
                                         id="priceAmount"
                                         value={priceAmount}

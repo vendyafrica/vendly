@@ -3,7 +3,7 @@ import { headers } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 import { storeService } from "@/lib/services/store-service";
 import { db } from "@vendly/db/db";
-import { tenants, tenantMemberships } from "@vendly/db/schema";
+import { tenantMemberships } from "@vendly/db/schema";
 import { eq } from "@vendly/db";
 import { z } from "zod";
 
@@ -17,7 +17,9 @@ const updateStoreSchema = z.object({
     storeContactPhone: z.string().optional(),
     storeAddress: z.string().optional(),
     categories: z.array(z.string()).optional(),
-    status: z.enum(["draft", "active", "suspended"]).optional(),
+    // DB schema stores status as boolean (active flag). Align validation accordingly.
+    status: z.boolean().optional(),
+    defaultCurrency: z.enum(["UGX", "KES", "USD"]).optional(),
 });
 
 /**

@@ -1,6 +1,5 @@
 "use client";
 
-import * as React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@vendly/ui/components/card";
 
 interface StatCardProps {
@@ -60,11 +59,11 @@ export function OrderStats({
     orderCount = 0,
     pendingCount = 0,
     refundedAmount = 0,
-    currency = "KES",
+    currency = "USD",
     isLoading = false,
 }: OrderStatsProps) {
     const formatCurrency = (amount: number) => {
-        return new Intl.NumberFormat("en-KE", {
+        return new Intl.NumberFormat("en-US", {
             style: "currency",
             currency,
             minimumFractionDigits: 2,

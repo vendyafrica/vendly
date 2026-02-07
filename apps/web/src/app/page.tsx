@@ -12,9 +12,11 @@ import { CategoryShelf } from "@/app/(m)/components/home/CategoryShelf";
 import type { Metadata } from "next";
 import MarketplaceLayout from "./(m)/layout";
 
+export const dynamic = "force-dynamic";
+
 const homeTitle = "Vendly | Shop African Creators & Social Sellers";
 const homeDescription =
-  "Discover and shop from African creators, students, and small sellers. Secure mobile money payments, integrated delivery, and trusted independent stores all in one marketplace.";
+  "Discover and shop from African creators, brands, and small sellers. Secure mobile money payments, integrated delivery, and trusted independent stores all in one marketplace.";
 
 export const metadata: Metadata = {
   title: homeTitle,

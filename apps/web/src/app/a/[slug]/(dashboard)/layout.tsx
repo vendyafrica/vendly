@@ -49,7 +49,7 @@ async function TenantDashboardLayoutInner({
   const sessionPromise = auth.api.getSession({ headers: headerList });
   const storePromise = db.query.stores.findFirst({
     where: and(eq(stores.slug, slug), isNull(stores.deletedAt)),
-    columns: { id: true, tenantId: true, name: true },
+    columns: { id: true, tenantId: true, name: true, defaultCurrency: true },
   });
 
   const session = await sessionPromise;
@@ -94,6 +94,7 @@ async function TenantDashboardLayoutInner({
             storeId: store.id,
             storeSlug: slug,
             storeName: store.name,
+            defaultCurrency: store.defaultCurrency,
           }}
         >
           <SidebarProvider

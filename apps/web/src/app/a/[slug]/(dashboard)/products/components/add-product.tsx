@@ -16,6 +16,7 @@ import { Input } from "@vendly/ui/components/input";
 import { Label } from "@vendly/ui/components/label";
 import Image from "next/image";
 import { upload } from "@vercel/blob/client";
+import { useTenant } from "../../tenant-context";
 
 interface AddProductProps {
     storeId?: string;
@@ -31,6 +32,9 @@ interface UploadedFile {
 }
 
 export function AddProduct({ storeId, onProductCreated }: AddProductProps) {
+    const { bootstrap } = useTenant();
+    const currency = bootstrap?.defaultCurrency || "UGX";
+
     const [open, setOpen] = React.useState(false);
     const [files, setFiles] = React.useState<UploadedFile[]>([]);
     const [isSubmitting, setIsSubmitting] = React.useState(false);
@@ -213,7 +217,7 @@ export function AddProduct({ storeId, onProductCreated }: AddProductProps) {
 
                         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                             <div className="space-y-2">
-                                <Label htmlFor="price">Price (KES)</Label>
+                                <Label htmlFor="price">Price ({currency})</Label>
                                 <Input
                                     id="price"
                                     name="priceAmount"

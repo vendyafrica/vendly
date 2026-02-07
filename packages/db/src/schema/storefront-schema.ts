@@ -25,7 +25,7 @@ export const stores = pgTable(
         logoUrl: text("logo_url"),
         categories: text("categories").array().default([]),
         status: boolean("status").notNull().default(false),
-        defaultCurrency: text("default_currency").default("KES").notNull(),
+        defaultCurrency: text("default_currency").default("UGX").notNull(),
 
         storeContactPhone: text("store_contact_phone"),
         storeContactEmail: text("store_contact_email"),
