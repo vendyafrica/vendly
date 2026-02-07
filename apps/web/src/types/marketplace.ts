@@ -6,9 +6,6 @@ export interface MarketplaceStore {
     logoUrl?: string | null;
     instagramAvatarUrl?: string | null;
     images?: string[];
-    heroMedia?: string | null;
-    heroMediaType?: "image" | "video" | null;
-    heroMediaItems?: Array<{ url: string; type: "image" | "video" }>;
-    rating: number;
+    heroMedia?: string[];
     categories: string[];
 }

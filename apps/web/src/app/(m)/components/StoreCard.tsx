@@ -4,7 +4,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { MarketplaceStore } from "@/types/marketplace";
-import { Star } from "lucide-react";
 import {
   Carousel,
   CarouselContent,
@@ -65,14 +64,6 @@ export function StoreCard({ store }: StoreCardProps) {
           ) : (
             <div className="flex h-full items-center justify-center bg-muted text-muted-foreground">
               No images yet
-            </div>
-          )}
-
-          {/* Rating badge inside image */}
-          {store.rating > 0 && (
-            <div className="absolute top-3 right-3 flex items-center gap-1 bg-black/60 backdrop-blur-md text-white text-xs font-semibold px-2.5 py-1 rounded-full shadow-sm">
-              <span>{store.rating}</span>
-              <Star className="w-3.5 h-3.5 text-yellow-400 fill-yellow-400" />
             </div>
           )}
         </div>

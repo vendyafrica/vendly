@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { productService } from "@/lib/services/product-service";
 import { productQuerySchema, createProductSchema } from "@/lib/services/product-models";
 import { db } from "@vendly/db/db";
-import { tenants, tenantMemberships } from "@vendly/db/schema";
+import { tenantMemberships } from "@vendly/db/schema";
 import { eq } from "@vendly/db";
 
 /**
@@ -33,7 +33,6 @@ export async function GET(request: NextRequest) {
         const filters = productQuerySchema.parse({
             storeId: searchParams.get("storeId") || undefined,
             source: searchParams.get("source") || undefined,
-            isFeatured: searchParams.get("isFeatured") || undefined,
             page: searchParams.get("page") || 1,
             limit: searchParams.get("limit") || 20,
             search: searchParams.get("search") || undefined,
@@ -85,7 +84,6 @@ export async function POST(request: NextRequest) {
                 description: formData.get("description") || undefined,
                 priceAmount: Number(formData.get("priceAmount")) || 0,
                 currency: formData.get("currency") || "KES",
-                isFeatured: formData.get("isFeatured") === "true",
             });
 
             // Get files

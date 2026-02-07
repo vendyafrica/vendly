@@ -20,7 +20,7 @@ export default function StudioPage() {
     const [isLoading, setIsLoading] = useState(true);
     const [isEditingHero, setIsEditingHero] = useState(false);
     const [tenantId, setTenantId] = useState<string | null>(null);
-    const [heroMediaItems, setHeroMediaItems] = useState<Array<{ url: string; type: "image" | "video" }>>([]);
+    const [heroMedia, setHeroMedia] = useState<string[]>([]);
     const [iframeKey, setIframeKey] = useState(0);
 
     const storefrontUrl =
@@ -36,7 +36,7 @@ export default function StudioPage() {
                 if (response.ok) {
                     const store = await response.json();
                     setTenantId(store.tenantId ?? null);
-                    setHeroMediaItems(Array.isArray(store.heroMediaItems) ? store.heroMediaItems : []);
+                    setHeroMedia(Array.isArray(store.heroMedia) ? store.heroMedia : []);
                 }
             } catch (error) {
                 console.error("Failed to fetch store data:", error);
@@ -45,8 +45,8 @@ export default function StudioPage() {
         fetchStoreData();
     }, [storeSlug]);
 
-    const handleHeroUpdate = (items: Array<{ url: string; type: "image" | "video" }>) => {
-        setHeroMediaItems(items);
+    const handleHeroUpdate = (urls: string[]) => {
+        setHeroMedia(urls);
         // Reload the iframe to reflect changes
         setIsLoading(true);
         setIframeKey((prev) => prev + 1);
@@ -60,7 +60,7 @@ export default function StudioPage() {
                     <HeroEditor
                         storeSlug={storeSlug}
                         tenantId={tenantId}
-                        heroMediaItems={heroMediaItems}
+                        heroMedia={heroMedia}
                         onUpdate={handleHeroUpdate}
                     />
                     <div className="absolute top-4 left-4">

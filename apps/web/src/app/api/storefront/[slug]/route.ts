@@ -25,11 +25,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
             slug: store.slug,
             description: store.description,
             logoUrl: store.logoUrl ?? null,
-            rating: store.storeRating || 0,
-            ratingCount: store.storeRatingCount || 0,
             heroMedia: store.heroMedia,
-            heroMediaType: store.heroMediaType,
-            heroMediaItems: store.heroMediaItems ?? [],
         });
     } catch (error) {
         console.error("Error fetching store data:", error);

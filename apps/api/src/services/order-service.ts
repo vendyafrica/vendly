@@ -31,15 +31,6 @@ export const createOrderSchema = z.object({
   customerEmail: z.string().email(),
   customerPhone: z.string().optional(),
   paymentMethod: z.enum(["card", "mpesa", "mtn_momo", "paypal", "cash_on_delivery"]).default("cash_on_delivery"),
-  shippingAddress: z
-    .object({
-      street: z.string().optional(),
-      city: z.string().optional(),
-      state: z.string().optional(),
-      postalCode: z.string().optional(),
-      country: z.string().optional(),
-    })
-    .optional(),
   notes: z.string().optional(),
   items: z.array(orderItemInputSchema).min(1),
 });
@@ -115,8 +106,7 @@ export const orderService = {
 
     const orderNumber = `ORD-${((countResult?.count || 0) + 1).toString().padStart(4, "0")}`;
 
-    const shippingCost = 0;
-    const totalAmount = subtotal + shippingCost;
+    const totalAmount = subtotal;
 
     const order = await dbWs.transaction(async (tx) => {
       const [newOrder] = await tx
@@ -131,10 +121,8 @@ export const orderService = {
           paymentMethod: input.paymentMethod,
           paymentStatus: "pending",
           status: "pending",
-          shippingAddress: input.shippingAddress,
           notes: input.notes,
           subtotal,
-          shippingCost,
           totalAmount,
           currency,
         })

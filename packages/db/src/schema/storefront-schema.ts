@@ -1,19 +1,14 @@
-import { relations } from "drizzle-orm";
 import {
     pgTable,
     text,
-    jsonb,
     timestamp,
     uuid,
     index,
     unique,
     boolean,
-    integer,
 } from "drizzle-orm/pg-core";
 
 import { tenants } from "./tenant-schema";
-import { users } from "./auth-schema";
-import { storeCustomers } from "./customer-schema";
 
 
 export const stores = pgTable(
@@ -29,12 +24,6 @@ export const stores = pgTable(
         description: text("description"),
         logoUrl: text("logo_url"),
         categories: text("categories").array().default([]),
-        storeRating: integer("store_rating").default(0),
-        storeRatingCount: integer("store_rating_count").default(0),
-
-        customDomain: text("custom_domain").unique(),
-        domainVerified: boolean("domain_verified").default(false),
-        domainVerifiedAt: timestamp("domain_verified_at"),
         status: boolean("status").notNull().default(false),
         defaultCurrency: text("default_currency").default("KES").notNull(),
 
@@ -42,9 +31,7 @@ export const stores = pgTable(
         storeContactEmail: text("store_contact_email"),
         storeAddress: text("store_address"),
         
-        heroMedia: text("hero_media"),
-        heroMediaType: text("hero_media_type"),
-        heroMediaItems: jsonb("hero_media_items").$type<Array<{ url: string; type: "image" | "video" }>>().default([]),
+        heroMedia: text("hero_media").array().default([]),
 
         createdAt: timestamp("created_at").defaultNow().notNull(),
         updatedAt: timestamp("updated_at")
@@ -60,23 +47,5 @@ export const stores = pgTable(
     ]
 );
 
-export const storeCustomersRelations = relations(storeCustomers, ({ one }) => ({
-    tenant: one(tenants, {
-        fields: [storeCustomers.tenantId],
-        references: [tenants.id],
-    }),
-    store: one(stores, {
-        fields: [storeCustomers.storeId],
-        references: [stores.id],
-    }),
-    user: one(users, {
-        fields: [storeCustomers.userId],
-        references: [users.id],
-    }),
-}));
-
 export type Store = typeof stores.$inferSelect;
 export type NewStore = typeof stores.$inferInsert;
-
-export type StoreCustomer = typeof storeCustomers.$inferSelect;
-export type NewStoreCustomer = typeof storeCustomers.$inferInsert;

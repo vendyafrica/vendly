@@ -43,12 +43,9 @@ export default async function HomePage() {
     slug: s.slug,
     description: s.description,
     categories: s.categories || [],
-    rating: 4.5, // TODO: Replace with real rating when available
     logoUrl: s.logoUrl ?? null,
     instagramAvatarUrl: s.instagramAvatarUrl ?? null,
-    heroMedia: s.heroMedia ?? null,
-    heroMediaType: s.heroMediaType ?? null,
-    heroMediaItems: Array.isArray(s.heroMediaItems) ? s.heroMediaItems : [],
+    heroMedia: Array.isArray(s.heroMedia) ? s.heroMedia : [],
     images: Array.isArray(s.images) ? s.images : [],
   });
 
@@ -59,10 +56,9 @@ export default async function HomePage() {
     uiStoresByCategory[cat] = list.map(mapToMarketplaceStore);
   });
 
-  // Sort categories to show populated ones first
   const sortedCategories = Object.entries(uiStoresByCategory)
     .sort(([, a], [, b]) => b.length - a.length)
-    .slice(0, 6); // Limit to top 6 populated categories
+    .slice(0, 6); 
 
   return (
     <MarketplaceLayout>

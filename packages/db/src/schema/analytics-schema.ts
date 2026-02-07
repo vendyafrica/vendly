@@ -103,50 +103,6 @@ export const storefrontEvents = pgTable(
   ]
 );
 
-export const payments = pgTable(
-  "payments",
-  {
-    id: uuid("id").primaryKey().defaultRandom(),
-    tenantId: uuid("tenant_id")
-      .notNull()
-      .references(() => tenants.id, { onDelete: "cascade" }),
-    storeId: uuid("store_id")
-      .notNull()
-      .references(() => stores.id, { onDelete: "cascade" }),
-
-    orderId: uuid("order_id").references(() => orders.id, { onDelete: "set null" }),
-
-    provider: text("provider").notNull(),
-    providerReference: text("provider_reference"),
-
-    status: text("status").notNull().default("pending"),
-
-    amount: integer("amount").notNull().default(0),
-    currency: text("currency").notNull().default("UGX"),
-
-    fees: integer("fees"),
-    netAmount: integer("net_amount"),
-
-    phoneNumber: text("phone_number"),
-    customerEmail: text("customer_email"),
-
-    raw: jsonb("raw").default({}),
-
-    createdAt: timestamp("created_at").defaultNow().notNull(),
-    updatedAt: timestamp("updated_at")
-      .defaultNow()
-      .$onUpdate(() => new Date())
-      .notNull(),
-  },
-  (table) => [
-    index("payments_tenant_store_idx").on(table.tenantId, table.storeId),
-    index("payments_order_idx").on(table.orderId),
-    index("payments_status_idx").on(table.status),
-    index("payments_created_idx").on(table.storeId, table.createdAt),
-    index("payments_provider_ref_idx").on(table.providerReference),
-  ]
-);
-
 export const storefrontSessionsRelations = relations(storefrontSessions, ({ one, many }) => ({
   tenant: one(tenants, {
     fields: [storefrontSessions.tenantId],
@@ -186,26 +142,8 @@ export const storefrontEventsRelations = relations(storefrontEvents, ({ one }) =
   }),
 }));
 
-export const paymentsRelations = relations(payments, ({ one }) => ({
-  tenant: one(tenants, {
-    fields: [payments.tenantId],
-    references: [tenants.id],
-  }),
-  store: one(stores, {
-    fields: [payments.storeId],
-    references: [stores.id],
-  }),
-  order: one(orders, {
-    fields: [payments.orderId],
-    references: [orders.id],
-  }),
-}));
-
 export type StorefrontSession = typeof storefrontSessions.$inferSelect;
 export type NewStorefrontSession = typeof storefrontSessions.$inferInsert;
 
 export type StorefrontEvent = typeof storefrontEvents.$inferSelect;
 export type NewStorefrontEvent = typeof storefrontEvents.$inferInsert;
-
-export type Payment = typeof payments.$inferSelect;
-export type NewPayment = typeof payments.$inferInsert;

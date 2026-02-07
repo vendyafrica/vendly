@@ -1,7 +1,7 @@
 import type { Request, Response } from "express";
 import { Router } from "express";
 import { z } from "zod";
- import { and, db, eq, isNull, orders, payments, stores } from "@vendly/db";
+ import { and, db, eq, isNull, orders, stores } from "@vendly/db";
 import { mtnMomoCollections, requestToPayInputSchema } from "../services/mtn-momo-collections";
 
 export const mtnMomoRouter: Router = Router();
@@ -22,29 +22,17 @@ async function updatePaymentAndOrderFromMtnStatus(referenceId: string) {
   const mtnStatus = await mtnMomoCollections.getRequestToPayStatus(referenceId);
   const normalized = normalizeMtnPaymentStatus(mtnStatus.status);
 
-  const existing = await db.query.payments.findFirst({
-    where: and(eq(payments.provider, "mtn_momo"), eq(payments.providerReference, referenceId)),
-  });
-
-  if (existing) {
+  // MVP: payments are inferred; we only update the order paymentStatus where possible.
+  // Best-effort: if the client used `externalId = order.id` (initiate endpoint does), we can update by that.
+  const externalId = (mtnStatus as { externalId?: unknown }).externalId;
+  if (typeof externalId === "string") {
     await db
-      .update(payments)
+      .update(orders)
       .set({
-        status: normalized,
-        raw: mtnStatus,
+        paymentStatus: normalized,
         updatedAt: new Date(),
       })
-      .where(eq(payments.id, existing.id));
-
-    if (existing.orderId) {
-      await db
-        .update(orders)
-        .set({
-          paymentStatus: normalized,
-          updatedAt: new Date(),
-        })
-        .where(and(eq(orders.id, existing.orderId), isNull(orders.deletedAt)));
-    }
+      .where(and(eq(orders.id, externalId), isNull(orders.deletedAt)));
   }
 
   return { mtnStatus, normalized };
@@ -82,7 +70,7 @@ mtnMomoRouter.post("/storefront/:slug/payments/mtn-momo/request-to-pay", async (
   try {
     const body = requestToPayBodySchema.parse(req.body);
 
-    const { store, order } = await assertStoreAndOrder({ storeSlug: req.params.slug, orderId: body.orderId });
+    await assertStoreAndOrder({ storeSlug: req.params.slug, orderId: body.orderId });
 
     const result = await mtnMomoCollections.requestToPay({
       amount: body.amount,
@@ -93,22 +81,6 @@ mtnMomoRouter.post("/storefront/:slug/payments/mtn-momo/request-to-pay", async (
       payeeNote: body.payeeNote,
       callbackUrl: body.callbackUrl,
       referenceId: body.referenceId,
-    });
-
-    await db.insert(payments).values({
-      tenantId: store.tenantId,
-      storeId: store.id,
-      orderId: order.id,
-      provider: "mtn_momo",
-      providerReference: result.referenceId,
-      status: "pending",
-      amount: order.totalAmount,
-      currency: order.currency,
-      phoneNumber: order.customerPhone,
-      customerEmail: order.customerEmail,
-      raw: {
-        requestedAt: new Date().toISOString(),
-      },
     });
 
     return res.status(202).json({ ...result });
@@ -130,7 +102,7 @@ const initiateForOrderBodySchema = z.object({
 mtnMomoRouter.post("/storefront/:slug/payments/mtn-momo/initiate", async (req, res, next) => {
   try {
     const body = initiateForOrderBodySchema.parse(req.body);
-    const { store, order } = await assertStoreAndOrder({ storeSlug: req.params.slug, orderId: body.orderId });
+    const { order } = await assertStoreAndOrder({ storeSlug: req.params.slug, orderId: body.orderId });
 
     if (!order.customerPhone && !body.payerMsisdn) {
       throw new Error("Missing payer phone number. Provide customerPhone on the order or payerMsisdn in the request.");
@@ -144,22 +116,6 @@ mtnMomoRouter.post("/storefront/:slug/payments/mtn-momo/initiate", async (req, r
       payerMessage: body.payerMessage,
       payeeNote: body.payeeNote,
       callbackUrl: body.callbackUrl,
-    });
-
-    await db.insert(payments).values({
-      tenantId: store.tenantId,
-      storeId: store.id,
-      orderId: order.id,
-      provider: "mtn_momo",
-      providerReference: result.referenceId,
-      status: "pending",
-      amount: order.totalAmount,
-      currency: order.currency,
-      phoneNumber: body.payerMsisdn || order.customerPhone,
-      customerEmail: order.customerEmail,
-      raw: {
-        requestedAt: new Date().toISOString(),
-      },
     });
 
     return res.status(202).json({
@@ -195,18 +151,8 @@ const byOrderParamsSchema = z.object({
 mtnMomoRouter.get("/storefront/:slug/payments/mtn-momo/by-order/:orderId", async (req, res, next) => {
   try {
     const { orderId } = byOrderParamsSchema.parse(req.params);
-    const { store, order } = await assertStoreAndOrder({ storeSlug: req.params.slug, orderId });
-
-    const list = await db.query.payments.findMany({
-      where: and(
-        eq(payments.provider, "mtn_momo"),
-        eq(payments.storeId, store.id),
-        eq(payments.orderId, order.id)
-      ),
-      orderBy: (p, { desc }) => [desc(p.createdAt)],
-    });
-
-    return res.status(200).json({ orderId: order.id, payments: list });
+    await assertStoreAndOrder({ storeSlug: req.params.slug, orderId });
+    return res.status(200).json({ orderId, payments: [] });
   } catch (err) {
     next(err);
   }

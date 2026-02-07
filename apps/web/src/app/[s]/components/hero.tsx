@@ -1,42 +1,19 @@
 import Image from "next/image";
-import { HugeiconsIcon } from "@hugeicons/react";
-import { StarIcon } from "@hugeicons/core-free-icons";
 import { DeferredHeroVideo } from "./deferred-hero-video";
 
 interface HeroProps {
     store: {
         name: string;
         description: string | null;
-
-        rating: number;
-        ratingCount: number;
-        heroMedia?: string | null;
-        heroMediaType?: "image" | "video" | null | string;
-        heroMediaItems?: Array<{ url: string; type: "image" | "video" }>;
+        heroMedia?: string[];
     };
 }
 
 export function Hero({ store }: HeroProps) {
-    const formatRatingCount = (count: number) => {
-        if (count >= 1000) {
-            return `${(count / 1000).toFixed(1)}K`;
-        }
-        return count.toString();
-    };
-
-    const heroMediaItems = Array.isArray(store.heroMediaItems) ? store.heroMediaItems : [];
-    const firstItem = heroMediaItems[0];
-
-    const mediaUrl = firstItem?.url || store.heroMedia || "/images/hero-fallback.png";
-    const isVideo =
-        firstItem?.type === "video" ||
-        store.heroMediaType === "video" ||
-        (typeof mediaUrl === "string" && !!mediaUrl.match(/\.(mp4|webm|ogg)$/i));
-
-    const posterUrl =
-        heroMediaItems.find((i) => i.type === "image")?.url ||
-        (!isVideo ? mediaUrl : null) ||
-        "/images/hero-fallback.png";
+    const heroMedia = Array.isArray(store.heroMedia) ? store.heroMedia : [];
+    const mediaUrl = heroMedia[0] || "/images/hero-fallback.png";
+    const isVideo = typeof mediaUrl === "string" && !!mediaUrl.match(/\.(mp4|webm|ogg)$/i);
+    const posterUrl = "/images/hero-fallback.png";
 
     return (
         <section className="relative h-[60vh] sm:h-[70vh] md:h-[75vh] lg:h-[80vh] w-full overflow-hidden mb-8 sm:mb-12">
@@ -83,17 +60,6 @@ export function Hero({ store }: HeroProps) {
                                     {store.description}
                                 </p>
                             )}
-                        </div>
-
-                        {/* Rating badge */}
-                        <div className="flex items-center gap-1.5 sm:gap-2 bg-white/20 backdrop-blur-md rounded-full px-3 py-1.5 sm:px-4 sm:py-2">
-                            <HugeiconsIcon icon={StarIcon} size={18} className="fill-white" />
-                            <span className="text-sm sm:text-base font-medium text-white">
-                                {store.rating.toFixed(1)}
-                            </span>
-                            <span className="text-xs sm:text-sm text-white/80">
-                                ({formatRatingCount(store.ratingCount)})
-                            </span>
                         </div>
                     </div>
                 </div>

@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { createOrderSchema, orderService } from "../services/order-service";
 import { notifySellerNewOrder } from "../services/notifications";
-import { and, db, eq, isNull, payments, stores } from "@vendly/db";
+import { and, db, eq, isNull, stores } from "@vendly/db";
 import { mtnMomoCollections } from "../services/mtn-momo-collections";
 import { capturePosthogEvent } from "../utils/posthog";
 
@@ -57,22 +57,6 @@ storefrontOrdersRouter.post("/storefront/:slug/orders", async (req, res, next) =
         payerMessage: `Pay for ${order.orderNumber}`,
         payeeNote: "Vendly",
         callbackUrl: process.env.MTN_MOMO_CALLBACK_URL,
-      });
-
-      await db.insert(payments).values({
-        tenantId: store.tenantId,
-        storeId: store.id,
-        orderId: order.id,
-        provider: "mtn_momo",
-        providerReference: result.referenceId,
-        status: "pending",
-        amount: order.totalAmount,
-        currency: order.currency,
-        phoneNumber: order.customerPhone,
-        customerEmail: order.customerEmail,
-        raw: {
-          requestedAt: new Date().toISOString(),
-        },
       });
 
       momo = { referenceId: result.referenceId };

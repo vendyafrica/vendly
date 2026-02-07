@@ -204,6 +204,13 @@
       "when": 1770200522329,
       "tag": "0028_modern_tenebrous",
       "breakpoints": true
+    },
+    {
+      "idx": 29,
+      "version": "7",
+      "when": 1770445482878,
+      "tag": "0029_large_nick_fury",
+      "breakpoints": true
     }
   ]
 }

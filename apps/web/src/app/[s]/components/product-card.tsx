@@ -9,7 +9,6 @@ interface ProductCardProps {
   slug: string;
   price: string;
   image: string | null;
-  rating: number;
   index?: number;
   id: string;
   storeSlug?: string;

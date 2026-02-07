@@ -7,7 +7,6 @@ interface Product {
     price: number;
     currency: string;
     image: string | null;
-    rating: number;
 }
 
 interface ProductGridProps {
@@ -44,7 +43,6 @@ export function ProductGrid({ products }: ProductGridProps) {
                     slug={product.slug}
                     price={formatPrice(product.price, product.currency)}
                     image={product.image}
-                    rating={product.rating}
                 />
             ))}
         </div>

@@ -10,9 +10,7 @@ export interface StoreWithCategory {
     logoUrl?: string | null;
     instagramAvatarUrl?: string | null;
     categories: string[];
-    heroMedia?: string | null;
-    heroMediaType?: "image" | "video" | null;
-    heroMediaItems?: Array<{ url: string; type: "image" | "video" }>;
+    heroMedia?: string[];
     images?: string[];
 }
 
@@ -20,13 +18,34 @@ function slugifyName(name: string): string {
     return name.toLowerCase().trim().replace(/[^a-z0-9\s-]/g, "").replace(/\s+/g, "-").replace(/-+/g, "-");
 }
 
-function mapProductRecord(product: any, store: { id: string; name: string; slug: string; logoUrl?: string | null }) {
+type ProductMediaRow = { media?: { url?: string | null; blobUrl?: string | null } | null };
+type ProductRecordForMarketplace = {
+    id: string;
+    slug: string | null;
+    productName: string;
+    description: string | null;
+    priceAmount: unknown;
+    currency: string;
+    media?: ProductMediaRow[];
+};
+
+type ProductRepoListItem = {
+    id: string;
+    storeId: string;
+    slug: string | null;
+    productName: string;
+    priceAmount: unknown;
+    currency: string;
+    media?: ProductMediaRow[];
+};
+
+function mapProductRecord(product: ProductRecordForMarketplace, store: { id: string; name: string; slug: string; logoUrl?: string | null }) {
     const slug = product.slug || slugifyName(product.productName || "");
     const description = product.description as string | null | undefined;
     const priceAmount = Number(product.priceAmount || 0);
     const mediaList = Array.isArray(product.media) ? product.media : [];
     const images = mediaList
-        .map((m: any) => m?.media?.url || m?.media?.blobUrl)
+        .map((m) => m?.media?.url || m?.media?.blobUrl)
         .filter(Boolean) as string[];
 
     return {
@@ -37,7 +56,6 @@ function mapProductRecord(product: any, store: { id: string; name: string; slug:
         price: priceAmount,
         currency: product.currency,
         images,
-        rating: 4.5, // Placeholder
         store: {
             id: store.id,
             name: store.name,
@@ -65,20 +83,6 @@ export interface MarketplaceSearchResult {
         image: string | null;
         store: { slug: string; name: string } | null;
     }>;
-}
-
-function parseHeroMediaItems(input: unknown): Array<{ url: string; type: "image" | "video" }> {
-    if (!Array.isArray(input)) return [];
-    return input
-        .map((i) => {
-            if (!i || typeof i !== "object") return null;
-            const url = (i as { url?: unknown }).url;
-            const type = (i as { type?: unknown }).type;
-            if (typeof url !== "string") return null;
-            if (type !== "image" && type !== "video") return null;
-            return { url, type };
-        })
-        .filter((x): x is { url: string; type: "image" | "video" } => Boolean(x));
 }
 
 /**
@@ -110,7 +114,7 @@ async function batchFetchStoreProductImages(storeIds: string[]): Promise<Map<str
     for (const product of productsWithMedia) {
         const existingImages = storeImages.get(product.storeId) || [];
         const productImages = (product.media ?? [])
-            .map((m: any) => m?.media?.blobUrl)
+            .map((m) => m?.media?.blobUrl)
             .filter(Boolean);
 
         // Limit to 5 images per store
@@ -149,10 +153,9 @@ export const marketplaceService = {
                 const storeHeroImages = new Map<string, string[]>();
 
                 for (const store of stores) {
-                    const heroMediaItems = parseHeroMediaItems((store as { heroMediaItems?: unknown }).heroMediaItems);
-                    const heroImages = heroMediaItems
-                        .filter((i) => i.type === "image")
-                        .map((i) => i.url);
+                    const heroImages = Array.isArray((store as { heroMedia?: unknown }).heroMedia)
+                        ? (((store as { heroMedia?: unknown }).heroMedia as unknown[])?.filter((u) => typeof u === "string") as string[])
+                        : [];
 
                     if (heroImages.length > 0) {
                         storeHeroImages.set(store.id, heroImages);
@@ -165,7 +168,6 @@ export const marketplaceService = {
                 const productImages = await batchFetchStoreProductImages(storesNeedingImages);
 
                 return stores.map((store) => {
-                    const heroMediaItems = parseHeroMediaItems((store as { heroMediaItems?: unknown }).heroMediaItems);
                     const images = storeHeroImages.get(store.id) || productImages.get(store.id) || [];
 
                     return {
@@ -176,9 +178,7 @@ export const marketplaceService = {
                         logoUrl: store.logoUrl ?? null,
                         instagramAvatarUrl: igMap.get(store.tenantId) ?? null,
                         categories: store.categories || [],
-                        heroMedia: store.heroMedia,
-                        heroMediaType: store.heroMediaType as "image" | "video" | null,
-                        heroMediaItems,
+                        heroMedia: (store as { heroMedia?: string[] }).heroMedia ?? [],
                         images,
                     };
                 });
@@ -235,19 +235,18 @@ export const marketplaceService = {
         const { productRepo } = await import("../data/product-repo");
 
         return Promise.all(stores.map(async (store) => {
-            const heroMediaItems = parseHeroMediaItems((store as { heroMediaItems?: unknown }).heroMediaItems);
-            const heroImages = heroMediaItems
-                .filter((i) => i.type === "image")
-                .map((i) => i.url);
+            const heroImages = Array.isArray((store as { heroMedia?: unknown }).heroMedia)
+                ? (((store as { heroMedia?: unknown }).heroMedia as unknown[])?.filter((u) => typeof u === "string") as string[])
+                : [];
 
             let images: string[] = heroImages;
 
             if (images.length === 0) {
-                const products = await productRepo.findByStoreId(store.id);
+                const products = (await productRepo.findByStoreId(store.id)) as ProductRepoListItem[];
                 images = products
-                    .flatMap((p: any) =>
+                    .flatMap((p) =>
                         (p.media ?? [])
-                            .map((m: any) => m?.media?.blobUrl ?? m?.media?.url ?? null)
+                            .map((m) => m?.media?.blobUrl ?? m?.media?.url ?? null)
                             .filter(Boolean)
                     )
                     .slice(0, 5);
@@ -260,9 +259,7 @@ export const marketplaceService = {
                 description: store.description,
                 logoUrl: store.logoUrl ?? null,
                 categories: store.categories || [],
-                heroMedia: store.heroMedia,
-                heroMediaType: store.heroMediaType as "image" | "video" | null,
-                heroMediaItems,
+                heroMedia: (store as { heroMedia?: string[] }).heroMedia ?? [],
                 images,
             };
         }));
@@ -275,19 +272,13 @@ export const marketplaceService = {
                 const store = await storeRepo.findBySlug(slug);
                 if (!store) return null;
 
-                const heroMediaItems = parseHeroMediaItems((store as { heroMediaItems?: unknown }).heroMediaItems);
-
                 return {
                     id: store.id,
                     name: store.name,
                     slug: store.slug,
                     description: store.description,
                     logoUrl: store.logoUrl ?? null,
-                    rating: store.storeRating || 4.5,
-                    ratingCount: store.storeRatingCount || 100,
-                    heroMedia: store.heroMedia,
-                    heroMediaType: store.heroMediaType as "image" | "video" | null,
-                    heroMediaItems,
+                    heroMedia: (store as { heroMedia?: string[] }).heroMedia ?? [],
                 };
             },
             TTL.MEDIUM
@@ -307,13 +298,13 @@ export const marketplaceService = {
             async () => {
                 // Dynamic import to avoid circular dependency
                 const { productRepo } = await import("../data/product-repo");
-                const products = await productRepo.findByStoreId(store.id);
+                const products = (await productRepo.findByStoreId(store.id)) as ProductRepoListItem[];
 
                 const filtered = normalizedQuery
-                    ? products.filter((p: any) => p.productName?.toLowerCase().includes(normalizedQuery))
+                    ? products.filter((p) => p.productName?.toLowerCase().includes(normalizedQuery))
                     : products;
 
-                return filtered.map((p: any) => ({
+                return filtered.map((p) => ({
                     id: p.id,
                     slug: p.slug || p.productName.toLowerCase().replace(/\s+/g, "-"),
                     name: p.productName,
@@ -321,7 +312,6 @@ export const marketplaceService = {
                     currency: p.currency,
                     // Extract first image from media relation if available
                     image: p.media?.[0]?.media?.url || p.media?.[0]?.media?.blobUrl || null,
-                    rating: 4.5 // Placeholder
                 }));
             },
             TTL.SHORT
@@ -335,23 +325,19 @@ export const marketplaceService = {
         const { productRepo } = await import("../data/product-repo");
         // Optimization: Ideally repo has findOneBySlug. For now, we fetch all and find. 
         // This mirrors storefrontService logic but we should improve repo later.
-        const products = await productRepo.findByStoreId(store.id);
+        const products = (await productRepo.findByStoreId(store.id)) as ProductRepoListItem[];
 
-        const product = products.find((p: any) => {
+        const product = products.find((p) => {
             const slug = p.slug || p.productName.toLowerCase().replace(/\s+/g, "-");
             return slug === productSlug;
         });
 
         if (!product) return null;
 
-        const styleGuideType = (product as { styleGuideType?: string }).styleGuideType;
-
         const mapped = mapProductRecord(product, store);
 
         return {
             ...mapped,
-            styleGuideEnabled: Boolean((product as { styleGuideEnabled?: boolean }).styleGuideEnabled),
-            styleGuideType: styleGuideType === "shoes" ? "shoes" : "clothes",
         };
     },
 
@@ -360,7 +346,7 @@ export const marketplaceService = {
         if (!store) return null;
 
         const { productRepo } = await import("../data/product-repo");
-        const product = await productRepo.findById(productId);
+        const product = (await productRepo.findById(productId)) as (ProductRecordForMarketplace & { storeId: string; status?: string }) | null;
         if (!product) return null;
 
         // Ensure product belongs to store and is active
@@ -368,12 +354,8 @@ export const marketplaceService = {
         if ((product as { status?: string }).status && (product as { status?: string }).status !== "active") return null;
 
         const mapped = mapProductRecord(product, store);
-        const styleGuideType = (product as { styleGuideType?: string }).styleGuideType;
-
         return {
             ...mapped,
-            styleGuideEnabled: Boolean((product as { styleGuideEnabled?: boolean }).styleGuideEnabled),
-            styleGuideType: styleGuideType === "shoes" ? "shoes" : "clothes",
         };
     },
 
@@ -392,7 +374,7 @@ export const marketplaceService = {
 
         const { db, stores, products, isNull, and, or, eq, sql } = await import("@vendly/db");
 
-        const buildLike = (column: any, coalesceEmpty = false) =>
+        const buildLike = (column: unknown, coalesceEmpty = false) =>
             coalesceEmpty
                 ? sql`lower(coalesce(${column}, '')) like ${pattern}`
                 : sql`lower(${column}) like ${pattern}`;
