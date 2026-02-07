@@ -222,6 +222,7 @@ export default function ProductsPage() {
                 alt={row.original.name}
                 fill
                 className="object-cover"
+                unoptimized={row.original.thumbnailUrl.includes("blob.vercel-storage.com")}
               />
             ) : (
               <div className="flex size-full items-center justify-center text-xs text-muted-foreground">N/A</div>

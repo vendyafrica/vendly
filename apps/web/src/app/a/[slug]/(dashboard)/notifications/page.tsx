@@ -1,7 +1,8 @@
 import { SegmentedStatsCard } from "../components/SegmentedStatsCard";
 import { db } from "@vendly/db/db";
-import { orders, payments, stores } from "@vendly/db/schema";
 import { and, desc, eq, isNull } from "@vendly/db";
+import { orders, stores } from "@vendly/db/schema";
+
 import { NotificationsTable, type NotificationRow } from "./NotificationsTable";
 
 function timeAgo(from: Date, to: Date) {
@@ -38,36 +39,21 @@ export default async function NotificationsPage({
 
   const now = new Date();
 
-  const [recentOrders, recentPayments] = await Promise.all([
-    db.query.orders.findMany({
-      where: and(eq(orders.tenantId, store.tenantId), eq(orders.storeId, store.id), isNull(orders.deletedAt)),
-      orderBy: [desc(orders.createdAt)],
-      limit: 15,
-      columns: {
-        id: true,
-        orderNumber: true,
-        customerName: true,
-        paymentStatus: true,
-        status: true,
-        totalAmount: true,
-        currency: true,
-        createdAt: true,
-      },
-    }),
-    db.query.payments.findMany({
-      where: and(eq(payments.tenantId, store.tenantId), eq(payments.storeId, store.id)),
-      orderBy: [desc(payments.createdAt)],
-      limit: 15,
-      columns: {
-        id: true,
-        provider: true,
-        status: true,
-        amount: true,
-        currency: true,
-        createdAt: true,
-      },
-    }),
-  ]);
+  const recentOrders = await db.query.orders.findMany({
+    where: and(eq(orders.tenantId, store.tenantId), eq(orders.storeId, store.id), isNull(orders.deletedAt)),
+    orderBy: [desc(orders.createdAt)],
+    limit: 15,
+    columns: {
+      id: true,
+      orderNumber: true,
+      customerName: true,
+      paymentStatus: true,
+      status: true,
+      totalAmount: true,
+      currency: true,
+      createdAt: true,
+    },
+  });
 
   const orderEvents = recentOrders.map((o) => {
     const summary =
@@ -94,35 +80,12 @@ export default async function NotificationsPage({
     };
   });
 
-  const paymentEvents = recentPayments.map((p) => {
-    const providerLabel = p.provider ? p.provider.toUpperCase() : "Payment";
-    const summary =
-      p.status === "paid" || p.status === "success"
-        ? `${providerLabel} payment succeeded`
-        : p.status === "failed"
-          ? `${providerLabel} payment failed`
-          : `${providerLabel} payment pending`;
-
-    return {
-      _sortAt: p.createdAt,
-      row: {
-        id: p.id,
-        type: "Payment" as const,
-        summary,
-        channel: "In-App" as const,
-        status: "New" as const,
-        time: timeAgo(new Date(p.createdAt), now),
-      },
-    };
-  });
-
-  const notifications: NotificationRow[] = [...orderEvents, ...paymentEvents]
+  const notifications: NotificationRow[] = orderEvents
     .sort((a, b) => new Date(b._sortAt).getTime() - new Date(a._sortAt).getTime())
     .slice(0, 20)
     .map((x) => x.row);
 
   const orderCount = recentOrders.length;
-  const paymentCount = recentPayments.length;
   const total = notifications.length;
 
   const statSegments = [
@@ -135,12 +98,6 @@ export default async function NotificationsPage({
     {
       label: "Orders",
       value: orderCount.toLocaleString(),
-      changeLabel: "",
-      changeTone: "neutral" as const,
-    },
-    {
-      label: "Payments",
-      value: paymentCount.toLocaleString(),
       changeLabel: "",
       changeTone: "neutral" as const,
     },

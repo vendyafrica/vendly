@@ -9,11 +9,15 @@ interface HeroProps {
     };
 }
 
+const FALLBACK_HERO_IMAGE = "https://cdn.cosmos.so/d48eee2c-5cfa-4bb9-a35d-ec78717c2c7e?format=jpeg";
+
 export function Hero({ store }: HeroProps) {
     const heroMedia = Array.isArray(store.heroMedia) ? store.heroMedia : [];
-    const mediaUrl = heroMedia[0] || "/images/hero-fallback.png";
+    const mediaUrl = heroMedia[0] || FALLBACK_HERO_IMAGE;
     const isVideo = typeof mediaUrl === "string" && !!mediaUrl.match(/\.(mp4|webm|ogg)$/i);
-    const posterUrl = "/images/hero-fallback.png";
+    const posterUrl = FALLBACK_HERO_IMAGE;
+
+    const isBlobUrl = typeof mediaUrl === "string" && mediaUrl.includes("blob.vercel-storage.com");
 
     return (
         <section className="relative h-[60vh] sm:h-[70vh] md:h-[75vh] lg:h-[80vh] w-full overflow-hidden mb-8 sm:mb-12">
@@ -42,6 +46,7 @@ export function Hero({ store }: HeroProps) {
                         priority
                         className="object-cover"
                         sizes="100vw"
+                        unoptimized={isBlobUrl}
                     />
                 )}
 

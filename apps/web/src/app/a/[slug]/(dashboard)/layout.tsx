@@ -12,6 +12,7 @@ import { Suspense } from "react";
 import { SidebarInset, SidebarProvider } from "@vendly/ui/components/sidebar";
 import { Providers } from "../../../providers";
 import { DashboardHeader } from "./components/DashboardHeader";
+import { HeaderActionsProvider } from "./components/header-actions-context";
 import { TenantProvider } from "./tenant-context";
 import { AppSessionProvider } from "@/contexts/app-session-context";
 
@@ -103,10 +104,12 @@ async function TenantDashboardLayoutInner({
             }
           >
             <AppSidebar basePath={basePath} />
-            <SidebarInset>
-              <DashboardHeader tenantName={store.name} />
-              <div className="flex flex-1 flex-col gap-4 p-4 pt-4 pb-24 md:pb-4">{children}</div>
-            </SidebarInset>
+            <HeaderActionsProvider>
+              <SidebarInset>
+                <DashboardHeader tenantName={store.name} />
+                <div className="flex flex-1 flex-col gap-4 p-4 pt-4 pb-24 md:pb-4">{children}</div>
+              </SidebarInset>
+            </HeaderActionsProvider>
 
             <AdminMobileDock basePath={basePath} />
           </SidebarProvider>
