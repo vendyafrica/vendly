@@ -3,7 +3,7 @@ import { headers } from "next/headers";
 import { NextResponse } from "next/server";
 import { db } from "@vendly/db/db";
 import { and, eq, isNull } from "@vendly/db";
-import { platformRoles, stores, tenantMemberships } from "@vendly/db/schema";
+import { stores, superAdmins, tenantMemberships } from "@vendly/db/schema";
 
 export const GET = async () => {
     const session = await auth.api.getSession({
@@ -31,12 +31,12 @@ export const GET = async () => {
         .where(and(eq(stores.tenantId, membership.tenantId), isNull(stores.deletedAt)))
         .limit(1);
 
-    const platformRole = await db.query.platformRoles.findFirst({
-        where: eq(platformRoles.userId, session.user.id),
-        columns: { role: true },
+    const superAdmin = await db.query.superAdmins.findFirst({
+        where: eq(superAdmins.userId, session.user.id),
+        columns: { id: true },
     });
 
-    const isTenantAdmin = ["owner", "admin"].includes(membership.role) || platformRole?.role === "super_admin";
+    const isTenantAdmin = ["owner", "admin"].includes(membership.role) || !!superAdmin;
 
     return NextResponse.json({
         hasTenant,

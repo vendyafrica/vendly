@@ -30,6 +30,7 @@ interface FilePreview {
     isUploading: boolean;
     url?: string;
     pathname?: string;
+    error?: string;
 }
 
 const API_BASE = "";
@@ -151,17 +152,21 @@ export function UploadModal({
                                     url: blob.url,
                                     pathname: blob.pathname,
                                     isUploading: false,
+                                    error: undefined,
                                 };
                                 return updated;
                             });
                         } catch (err) {
+                            const message = err instanceof Error ? err.message : String(err);
                             console.error(`Failed to upload ${file.name}:`, err);
+                            setError(`Failed to upload ${file.name}: ${message}`);
                             setFiles((prev) => {
                                 const updated = [...prev];
                                 if (!updated[index]) return prev;
                                 updated[index] = {
                                     ...updated[index],
                                     isUploading: false,
+                                    error: message,
                                 };
                                 return updated;
                             });
@@ -174,7 +179,11 @@ export function UploadModal({
 
             const anyFailed = filesRef.current.some((f) => !f.url);
             if (anyFailed) {
-                throw new Error("Some uploads failed. Please remove failed items and try again.");
+                const firstFailure = filesRef.current.find((f) => !f.url);
+                const failureMessage = firstFailure?.error
+                    ? `Some uploads failed: ${firstFailure.error}`
+                    : "Some uploads failed. Please remove failed items and try again.";
+                throw new Error(failureMessage);
             }
         } finally {
             setIsUploading(false);

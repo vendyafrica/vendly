@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 import { headers } from "next/headers";
 import { auth } from "@vendly/auth";
 import { db } from "@vendly/db/db";
-import { platformRoles, stores, tenantMemberships } from "@vendly/db/schema";
+import { stores, tenantMemberships, superAdmins } from "@vendly/db/schema";
 import { and, eq, isNull } from "@vendly/db";
 import { Suspense } from "react";
 
@@ -63,10 +63,10 @@ async function TenantDashboardLayoutInner({
     redirect("/");
   }
 
-  const [platformRole, membership] = await Promise.all([
-    db.query.platformRoles.findFirst({
-      where: eq(platformRoles.userId, session.user.id),
-      columns: { role: true },
+  const [superAdmin, membership] = await Promise.all([
+    db.query.superAdmins.findFirst({
+      where: eq(superAdmins.userId, session.user.id),
+      columns: { id: true },
     }),
     db.query.tenantMemberships.findFirst({
       where: and(
@@ -78,7 +78,7 @@ async function TenantDashboardLayoutInner({
   ]);
 
   const isTenantAdmin = membership && ["owner", "admin"].includes(membership.role);
-  const isSuperAdmin = platformRole?.role === "super_admin";
+  const isSuperAdmin = !!superAdmin;
 
   if (!isTenantAdmin && !isSuperAdmin) {
     redirect(`/a/${slug}/unauthorized`);

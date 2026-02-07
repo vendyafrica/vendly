@@ -3,7 +3,7 @@ import { genericOAuth, magicLink, oneTap } from "better-auth/plugins";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { db } from "@vendly/db/db";
 import * as schema from "@vendly/db/schema";
-import { sendEmail, sendMagicLinkEmail } from "@vendly/transactional";
+import { sendEmail, sendMagicLinkEmail, sendSellerMagicLinkEmail } from "@vendly/transactional";
 import { getInstagramToken, getInstagramUserInfo } from "./instagram";
 
 const baseURL =
@@ -81,18 +81,14 @@ export const auth = betterAuth({
       if (request?.headers?.get("referer")?.includes("localhost:4000") ||
         request?.headers?.get("host")?.includes("admin")) {
         try {
-          const { platformRoles } = await import("@vendly/db/schema");
-
-          // Check if role already exists
-          const existingRole = await db.query.platformRoles.findFirst({
-            where: (roles, { eq }) => eq(roles.userId, user.id),
+          const existingRole = await db.query.superAdmins.findFirst({
+            where: (sa, { eq }) => eq(sa.userId, user.id),
+            columns: { id: true },
           });
 
           if (!existingRole) {
-            await db.insert(platformRoles).values({
+            await db.insert(schema.superAdmins).values({
               userId: user.id,
-              name: user.name,
-              role: "super_admin",
             });
             console.log(`Assigned super_admin role to ${user.email}`);
           }
@@ -122,18 +118,14 @@ export const auth = betterAuth({
           if (request?.headers?.get("referer")?.includes("localhost:4000") ||
             request?.headers?.get("host")?.includes("admin")) {
             try {
-              const { platformRoles } = await import("@vendly/db/schema");
-
-              // Check if role already exists
-              const existingRole = await db.query.platformRoles.findFirst({
-                where: (roles, { eq }) => eq(roles.userId, user.id),
+              const existingRole = await db.query.superAdmins.findFirst({
+                where: (sa, { eq }) => eq(sa.userId, user.id),
+                columns: { id: true },
               });
 
               if (!existingRole) {
-                await db.insert(platformRoles).values({
+                await db.insert(schema.superAdmins).values({
                   userId: user.id,
-                  name: user.name,
-                  role: "super_admin",
                 });
                 console.log(`✅ Assigned super_admin role to ${user.email} (OAuth sign-in)`);
               }
@@ -186,6 +178,17 @@ export const auth = betterAuth({
 
     magicLink({
       async sendMagicLink({ email, url }) {
+        // If the magic link is used for seller onboarding, send a dedicated template.
+        // We detect this by checking the embedded callback URL.
+        const isSellerOnboarding = url.includes("entry=seller_magic");
+        if (isSellerOnboarding) {
+          await sendSellerMagicLinkEmail({
+            to: email,
+            url,
+          });
+          return;
+        }
+
         await sendMagicLinkEmail({
           to: email,
           url,

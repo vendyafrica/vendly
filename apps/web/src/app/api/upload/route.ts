@@ -16,6 +16,7 @@ export async function POST(request: Request): Promise<NextResponse> {
         });
 
         if (!session?.user) {
+            console.error("/api/upload unauthorized: no session user");
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
 
@@ -29,7 +30,7 @@ export async function POST(request: Request): Promise<NextResponse> {
         const jsonResponse = await handleUpload({
             body,
             request,
-            onBeforeGenerateToken: async (pathname, clientPayload) => {
+            onBeforeGenerateToken: async (pathname, _clientPayload) => {
                 // Parse tenantId from pathname: tenants/{tenantId}/...
                 const match = pathname.match(/^tenants\/([^/]+)\//);
                 if (!match) {
@@ -47,6 +48,11 @@ export async function POST(request: Request): Promise<NextResponse> {
                 });
 
                 if (!membership) {
+                    console.error("/api/upload forbidden", {
+                        userId: session.user.id,
+                        requestedTenantId,
+                        pathname,
+                    });
                     throw new Error("Unauthorized: You do not have access to this tenant.");
                 }
 
@@ -63,7 +69,7 @@ export async function POST(request: Request): Promise<NextResponse> {
                     callbackUrl,
                 };
             },
-            onUploadCompleted: async ({ blob, tokenPayload }) => {
+            onUploadCompleted: async ({ blob, tokenPayload: _tokenPayload }) => {
                 console.log("Upload completed:", blob.url);
                 // We could log to DB here if we parse tokenPayload
             },
@@ -71,6 +77,7 @@ export async function POST(request: Request): Promise<NextResponse> {
 
         return NextResponse.json(jsonResponse);
     } catch (error) {
+        console.error("/api/upload failed", error);
         return NextResponse.json(
             { error: (error as Error).message },
             { status: 400 }

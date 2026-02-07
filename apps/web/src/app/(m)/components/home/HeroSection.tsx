@@ -18,8 +18,6 @@ export function HeroSection() {
   const [searchQuery, setSearchQuery] = useState("");
   const [mode] = useState<HeroMode>(() => {
     const storageKey = "vendly-hero-mode";
-
-    // Deterministic fallback for non-browser environments.
     if (typeof window === "undefined") return "aspirational";
 
     const stored = window.sessionStorage.getItem(storageKey);
@@ -27,10 +25,8 @@ export function HeroSection() {
       return stored;
     }
 
-    const options: HeroMode[] = ["aspirational", "scale"];
-    const randomMode = options[Math.floor(Math.random() * options.length)];
-    window.sessionStorage.setItem(storageKey, randomMode);
-    return randomMode;
+    window.sessionStorage.setItem(storageKey, "aspirational");
+    return "aspirational";
   });
 
   const copy = useMemo(() => heroCopy[mode], [mode]);
