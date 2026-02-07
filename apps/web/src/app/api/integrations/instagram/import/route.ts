@@ -2,9 +2,27 @@ import { auth } from "@vendly/auth";
 import { headers } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 import { db, dbWs } from "@vendly/db/db";
-import { tenantMemberships, instagramAccounts, instagramSyncJobs, account } from "@vendly/db/schema";
+import { tenantMemberships, instagramAccounts, instagramSyncJobs, account, stores } from "@vendly/db/schema";
 import { eq, and } from "@vendly/db";
 import { z } from "zod";
+import { parseInstagramCaption } from "@/lib/instagram/parse-caption";
+
+type InstagramMediaChild = {
+  id: string | number;
+  media_type?: string | null;
+  media_url?: string | null;
+  thumbnail_url?: string | null;
+};
+
+type InstagramMediaItem = {
+  id: string | number;
+  caption?: string | null;
+  media_type?: string | null;
+  media_url?: string | null;
+  thumbnail_url?: string | null;
+  permalink?: string | null;
+  children?: { data?: InstagramMediaChild[] | null } | null;
+};
 
 const importSchema = z.object({
   storeId: z.string().uuid(),
@@ -37,6 +55,14 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { storeId } = importSchema.parse(body);
 
+    const store = await db.query.stores.findFirst({
+      where: and(eq(stores.id, storeId), eq(stores.tenantId, membership.tenantId)),
+    });
+
+    if (!store) {
+      return NextResponse.json({ error: "Store not found" }, { status: 404 });
+    }
+
     const instagramAuthAccount = await db.query.account.findFirst({
       where: and(eq(account.userId, session.user.id), eq(account.providerId, "instagram")),
     });
@@ -62,7 +88,7 @@ export async function POST(request: NextRequest) {
       throw new Error(mediaData.error.message || "Failed to fetch media");
     }
 
-    const mediaItems = mediaData.data || [];
+    const mediaItems: InstagramMediaItem[] = Array.isArray(mediaData?.data) ? mediaData.data : [];
 
     // 3. Update Account with Profile Picture
     const existing = await db.query.instagramAccounts.findFirst({
@@ -106,15 +132,12 @@ export async function POST(request: NextRequest) {
     let createdCount = 0;
 
     await dbWs.transaction(async (tx) => {
-      // Import Media Objects, Products, ProductVariants, ProductMedia
-      // Dynamic import to avoid circular dep issues if any, but regular import is fine here
-      // We need to import tables to use in transaction. imported at top.
-      const { products, productVariants, mediaObjects, productMedia } = await import("@vendly/db/schema");
+      const { products, mediaObjects, productMedia } = await import("@vendly/db/schema");
 
       for (const item of mediaItems) {
-        const caption = item.caption || "Instagram Product";
-        const slug = slugify(caption);
-        const price = 0; // Default price
+        const caption = (item.caption as string | null | undefined) || "";
+        const parsed = parseInstagramCaption(caption, store.defaultCurrency);
+        const slug = slugify(parsed.productName);
 
         // Create Product
         const [product] = await tx
@@ -122,85 +145,94 @@ export async function POST(request: NextRequest) {
           .values({
             tenantId: membership.tenantId,
             storeId: storeId,
-            productName: caption.slice(0, 100),
+            productName: parsed.productName,
             slug: slug,
-            description: item.caption,
-            priceAmount: price,
-            currency: "KES",
+            description: parsed.description,
+            priceAmount: parsed.priceAmount,
+            currency: parsed.currency,
             status: "draft", // Import as draft
             source: "instagram",
-            sourceId: item.id,
-            sourceUrl: item.permalink,
-            hasContentVariants: item.media_type === "CAROUSEL_ALBUM",
+            sourceId: String(item.id),
+            sourceUrl: item.permalink ? String(item.permalink) : null,
+            variants: [],
           })
           .returning();
 
         createdCount++;
 
+        const variantEntries: Array<{ name: string; sourceMediaId: string; mediaObjectId: string; mediaType?: string }> = [];
+
         // Process Content (Variants or Single Media)
-        if (item.media_type === "CAROUSEL_ALBUM" && item.children?.data) {
-          // Create Variants for each child
+        if (item.media_type === "CAROUSEL_ALBUM" && Array.isArray(item.children?.data)) {
+          let idx = 0;
           for (const child of item.children.data) {
-            const [variant] = await tx
-              .insert(productVariants)
+            idx++;
+            const childId = String(child.id);
+            const childMediaType = String(child.media_type || "IMAGE");
+            const childUrl = String(child.media_url || child.thumbnail_url || "");
+            if (!childUrl) continue;
+
+            const contentType = childMediaType === "VIDEO" ? "video/mp4" : "image/jpeg";
+            const [mediaObj] = await tx
+              .insert(mediaObjects)
               .values({
                 tenantId: membership.tenantId,
-                productId: product.id,
-                variantName: "Option", // Generic name, maybe use index
-                priceAmount: price,
+                blobUrl: childUrl,
+                blobPathname: childId,
+                contentType,
+                source: "instagram",
+                sourceMediaId: childId,
               })
               .returning();
 
-            // Create Media Object
-            const [mediaObj] = await tx.insert(mediaObjects).values({
-              tenantId: membership.tenantId,
-              blobUrl: child.media_url,
-              blobPathname: child.id, // Using IG ID as key proxy
-              contentType: child.media_type === "VIDEO" ? "video/mp4" : "image/jpeg",
-              source: "instagram",
-              sourceMediaId: child.id,
-            }).returning();
-
-            // Link Media to Variant and Product
             await tx.insert(productMedia).values({
               tenantId: membership.tenantId,
               productId: product.id,
-              variantId: variant.id,
               mediaId: mediaObj.id,
-              isFeatured: false,
+              isFeatured: idx === 1,
+              sortOrder: idx - 1,
+            });
+
+            variantEntries.push({
+              name: `Option ${idx}`,
+              sourceMediaId: childId,
+              mediaObjectId: mediaObj.id,
+              mediaType: childMediaType,
             });
           }
         } else {
-          // Single Image/Video
-          // Create Default Variant
-          const [variant] = await tx
-            .insert(productVariants)
-            .values({
+          const itemId = String(item.id);
+          const itemType = String(item.media_type || "IMAGE");
+          const itemUrl = String(item.media_url || item.thumbnail_url || "");
+          if (itemUrl) {
+            const contentType = itemType === "VIDEO" ? "video/mp4" : "image/jpeg";
+            const [mediaObj] = await tx
+              .insert(mediaObjects)
+              .values({
+                tenantId: membership.tenantId,
+                blobUrl: itemUrl,
+                blobPathname: itemId,
+                contentType,
+                source: "instagram",
+                sourceMediaId: itemId,
+              })
+              .returning();
+
+            await tx.insert(productMedia).values({
               tenantId: membership.tenantId,
               productId: product.id,
-              variantName: "Default",
-              priceAmount: price,
-            })
-            .returning();
+              mediaId: mediaObj.id,
+              isFeatured: true,
+              sortOrder: 0,
+            });
+          }
+        }
 
-          // Create Media Object
-          const [mediaObj] = await tx.insert(mediaObjects).values({
-            tenantId: membership.tenantId,
-            blobUrl: item.media_url,
-            blobPathname: item.id,
-            contentType: item.media_type === "VIDEO" ? "video/mp4" : "image/jpeg",
-            source: "instagram",
-            sourceMediaId: item.id,
-          }).returning();
-
-          // Link Media to Product (and Variant)
-          await tx.insert(productMedia).values({
-            tenantId: membership.tenantId,
-            productId: product.id,
-            variantId: variant.id,
-            mediaId: mediaObj.id,
-            isFeatured: true,
-          });
+        if (variantEntries.length) {
+          await tx
+            .update(products)
+            .set({ variants: variantEntries, updatedAt: new Date() })
+            .where(eq(products.id, product.id));
         }
       }
     });
@@ -220,8 +252,9 @@ export async function POST(request: NextRequest) {
       jobId: job.id,
       message: `Imported ${createdCount} products successfully.`,
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Instagram import error:", error);
-    return NextResponse.json({ error: error.message || "Import failed" }, { status: 500 });
+    const message = error instanceof Error ? error.message : "Import failed";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

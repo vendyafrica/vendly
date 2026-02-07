@@ -19,6 +19,7 @@ if (!baseURL) {
 }
 
 const isProd = process.env.NODE_ENV === "production";
+const isSecure = isProd || baseURL.startsWith("https://");
 
 function extractNameFromEmail(email: string): string {
   const emailPrefix = email.split("@")[0];
@@ -211,14 +212,14 @@ export const auth = betterAuth({
     cookies: {
       state: {
         attributes: {
-          sameSite: isProd ? "none" : "lax",
-          secure: isProd,
+          sameSite: isSecure ? "none" : "lax",
+          secure: isSecure,
         },
       },
     },
     defaultCookieAttributes: {
-      sameSite: isProd ? "none" : "lax",
-      secure: isProd,
+      sameSite: isSecure ? "none" : "lax",
+      secure: isSecure,
     },
   },
 
