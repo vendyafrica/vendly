@@ -1,7 +1,27 @@
 import { auth } from "@vendly/auth";
 import { headers } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
+import { db, instagramAccounts, eq, and } from "@vendly/db";
 import { cartService } from "@/lib/services/cart-service";
+
+type CartItemWithRelations = {
+    productId: string;
+    quantity: number;
+    product: {
+        id: string;
+        productName: string;
+        priceAmount: number;
+        currency: string;
+        media?: { media?: { blobUrl?: string | null } | null }[];
+        store?: {
+            id?: string;
+            name?: string;
+            slug?: string;
+            tenantId?: string;
+            logoUrl?: string | null;
+        };
+    };
+};
 
 /**
  * GET /api/cart
@@ -19,8 +39,32 @@ export async function GET() {
 
         const { items } = await cartService.getUserCart(session.user.id);
 
+        // Fetch Instagram profile pictures for involved tenants
+        const tenantIds = Array.from(new Set(
+            items
+                .map((item: CartItemWithRelations) => item.product.store?.tenantId)
+                .filter((id): id is string => typeof id === "string" && id.length > 0)
+        ));
+
+        const igMap = new Map<string, string>();
+        for (const tenantId of tenantIds) {
+            const igAccount = await db.query.instagramAccounts.findFirst({
+                where: and(
+                    eq(instagramAccounts.tenantId, tenantId),
+                    eq(instagramAccounts.isActive, true)
+                )
+            });
+
+            if (igAccount?.profilePictureUrl) {
+                igMap.set(tenantId, igAccount.profilePictureUrl);
+            }
+        }
+
         // Format for frontend
-        const formattedItems = items.map((item: any) => ({
+        const formattedItems = items.map((item: CartItemWithRelations) => {
+            const storeTenantId = item.product.store?.tenantId;
+
+            return {
             id: item.productId,
             quantity: item.quantity,
             product: {
@@ -35,9 +79,12 @@ export async function GET() {
                 id: item.product.store?.id,
                 name: item.product.store?.name,
                 slug: item.product.store?.slug,
-                logoUrl: item.product.store?.logoUrl ?? null,
+                logoUrl: storeTenantId
+                    ? igMap.get(storeTenantId) ?? item.product.store?.logoUrl ?? null
+                    : item.product.store?.logoUrl ?? null,
             }
-        }));
+            };
+        });
 
         return NextResponse.json(formattedItems);
     } catch (error) {

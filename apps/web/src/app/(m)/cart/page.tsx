@@ -78,7 +78,7 @@ export default function CartPage() {
                                     <div className="flex items-center gap-3">
                                         <Avatar className="h-10 w-10 border border-neutral-100">
                                             <AvatarImage
-                                                src={store.logoUrl || `https://ui-avatars.com/api/?name=${store.name}&background=random`}
+                                                src={store.logoUrl || undefined}
                                                 alt={store.name}
                                             />
                                             <AvatarFallback>{store.name.charAt(0)}</AvatarFallback>

@@ -57,9 +57,9 @@ export function Hero({ store }: HeroProps) {
                 <div className="absolute bottom-0 left-0 right-0 p-5 sm:p-6 md:p-8 lg:p-10">
                     <div className="flex items-end justify-between flex-wrap gap-4">
                         <div className="text-white">
-                            <h1 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-medium mb-2">
+                            {/* <h1 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-medium mb-2">
                                 {store.name}
-                            </h1>
+                            </h1> */}
                             {store.description && (
                                 <p className="text-sm sm:text-base md:text-md text-white/90 max-w-lg">
                                     {store.description}
