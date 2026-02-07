@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { z } from "zod";
 
 const mtnEnvSchema = z.enum(["sandbox", "production"]);
@@ -156,96 +157,26 @@ export const mtnMomoCollections = {
   getBaseUrl,
   getTargetEnvironmentHeader,
 
+  // MTN MoMo disabled: return stub reference without making external calls
   async requestToPay(input: RequestToPayInput): Promise<RequestToPayResult> {
     const parsed = requestToPayInputSchema.parse(input);
-    const subscriptionKey = getRequiredEnv("MTN_MOMO_COLLECTION_SUBSCRIPTION_KEY");
-
-    const accessToken = await getAccessToken();
-    const baseUrl = getBaseUrl();
-
     const referenceId = parsed.referenceId || crypto.randomUUID();
-
-    const headers: Record<string, string> = {
-      Authorization: `Bearer ${accessToken}`,
-      "X-Reference-Id": referenceId,
-      "X-Target-Environment": getTargetEnvironmentHeader(),
-      "Ocp-Apim-Subscription-Key": subscriptionKey,
-      "Content-Type": "application/json",
-    };
-
-    if (parsed.callbackUrl) {
-      headers["X-Callback-Url"] = parsed.callbackUrl;
-    }
-
-    const payload = {
-      amount: parsed.amount,
-      currency: parsed.currency,
-      externalId: parsed.externalId,
-      payer: {
-        partyIdType: "MSISDN",
-        partyId: parsed.payerMsisdn,
-      },
-      payerMessage: parsed.payerMessage || "",
-      payeeNote: parsed.payeeNote || "",
-    };
-
-    const { ok, status, json, text } = await fetchJson(`${baseUrl}/collection/v1_0/requesttopay`, {
-      method: "POST",
-      headers,
-      body: JSON.stringify(payload),
-    });
-
-    if (!ok) {
-      throw new Error(
-        `MTN MoMo requestToPay failed (${status}): ${pickErrorMessage(json, text || "Unknown error")}`
-      );
-    }
-
-    // 202 Accepted is expected
     return { referenceId };
   },
 
+  // MTN MoMo disabled: always return pending status
   async getRequestToPayStatus(referenceId: string): Promise<RequestToPayStatus> {
     if (!referenceId) throw new Error("Missing referenceId");
-
-    const subscriptionKey = getRequiredEnv("MTN_MOMO_COLLECTION_SUBSCRIPTION_KEY");
-    const accessToken = await getAccessToken();
-    const baseUrl = getBaseUrl();
-
-    const { ok, status, json, text } = await fetchJson(`${baseUrl}/collection/v1_0/requesttopay/${referenceId}`, {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-        "X-Target-Environment": getTargetEnvironmentHeader(),
-        "Ocp-Apim-Subscription-Key": subscriptionKey,
-      },
-    });
-
-    if (!ok) {
-      throw new Error(
-        `MTN MoMo get status failed (${status}): ${pickErrorMessage(json, text || "Unknown error")}`
-      );
-    }
-
-    return json as RequestToPayStatus;
+    return {
+      amount: "0",
+      currency: "",
+      externalId: referenceId,
+      status: "PENDING",
+    };
   },
 
+  // MTN MoMo disabled: skip validation
   async validateAccountHolderMsisdn(msisdn: string): Promise<boolean> {
-    if (!msisdn) return false;
-
-    const subscriptionKey = getRequiredEnv("MTN_MOMO_COLLECTION_SUBSCRIPTION_KEY");
-    const accessToken = await getAccessToken();
-    const baseUrl = getBaseUrl();
-
-    const res = await fetch(`${baseUrl}/collection/v1_0/accountholder/msisdn/${encodeURIComponent(msisdn)}/active`, {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-        "X-Target-Environment": getTargetEnvironmentHeader(),
-        "Ocp-Apim-Subscription-Key": subscriptionKey,
-      },
-    });
-
-    return res.status === 200;
+    return false;
   },
 };

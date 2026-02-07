@@ -4,7 +4,7 @@ import {
   SidebarProvider,
 } from "@vendly/ui/components/sidebar"
 import { headers } from "next/headers"
-import { requirePlatformRole } from "@/lib/auth-guard"
+import { requireSuperAdmin } from "@/lib/auth-guard"
 import { DashboardHeader } from "./components/DashboardHeader"
 
 export default async function DashboardLayout({
@@ -12,7 +12,7 @@ export default async function DashboardLayout({
 }: {
   children: React.ReactNode
 }) {
-  const { session } = await requirePlatformRole(["super_admin"]);
+  const { session } = await requireSuperAdmin(["super_admin"]);
   const user = session.user;
 
   // Mock title based on path could be added here or passed from pages

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { db } from "@vendly/db/db";
-import { users, verification, platformRoles } from "@vendly/db/schema";
+import { users, verification, superAdmins } from "@vendly/db/schema";
 import { eq, and } from "@vendly/db";
 import { auth } from "@vendly/auth";
 import { headers } from "next/headers";
@@ -53,14 +53,13 @@ export async function GET(req: Request) {
             return NextResponse.redirect(new URL("/unauthorized", req.url));
         }
 
-        const existingRole = await db.query.platformRoles.findFirst({
-            where: eq(platformRoles.userId, session.user.id),
+        const existingRole = await db.query.superAdmins.findFirst({
+            where: eq(superAdmins.userId, session.user.id),
         });
 
         if (!existingRole) {
-            await db.insert(platformRoles).values({
+            await db.insert(superAdmins).values({
                 userId: session.user.id,
-                name: session.user.name,
                 role: "super_admin",
             });
         }

@@ -1,5 +1,5 @@
 import { db } from "@vendly/db/db";
-import { users, verification, platformRoles } from "@vendly/db/schema";
+import { users, verification, superAdmins } from "@vendly/db/schema";
 import { NextResponse } from "next/server";
 import { sendAdminVerificationEmail } from "@vendly/transactional";
 import { eq } from "@vendly/db";
@@ -23,8 +23,8 @@ export async function POST(req: Request) {
         });
 
         if (existingUser) {
-            const existingSuperAdmin = await db.query.platformRoles.findFirst({
-                where: eq(platformRoles.role, "super_admin"),
+            const existingSuperAdmin = await db.query.superAdmins.findFirst({
+                columns: { id: true },
             });
 
             // Bootstrap-only: if there is no super admin yet, allow existing user to receive a verification

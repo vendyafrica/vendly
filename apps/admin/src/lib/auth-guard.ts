@@ -2,7 +2,7 @@ import { auth } from "@vendly/auth";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { db } from "@vendly/db/db";
-import { platformRoles } from "@vendly/db/schema";
+import { superAdmins } from "@vendly/db/schema";
 import { eq } from "@vendly/db";
 
 export async function getSession() {
@@ -15,14 +15,14 @@ export async function getSession() {
  * Enforces platform role check for Server Components / Actions.
  * Redirects if unauthorized.
  */
-export async function requirePlatformRole(allowedRoles: string[]) {
+export async function requireSuperAdmin(allowedRoles: string[]) {
     const session = await getSession();
     if (!session) {
         redirect("/login");
     }
 
-    const userRole = await db.query.platformRoles.findFirst({
-        where: eq(platformRoles.userId, session.user.id),
+    const userRole = await db.query.superAdmins.findFirst({
+        where: eq(superAdmins.userId, session.user.id),
     });
 
     if (!userRole || !allowedRoles.includes(userRole.role)) {
@@ -36,14 +36,14 @@ export async function requirePlatformRole(allowedRoles: string[]) {
  * Checks platform role for API Routes.
  * Returns null or error response if unauthorized.
  */
-export async function checkPlatformRoleApi(allowedRoles: string[]) {
+export async function checkSuperAdminApi(allowedRoles: string[]) {
     const session = await getSession();
     if (!session) {
         return { error: "Unauthorized", status: 401 };
     }
 
-    const userRole = await db.query.platformRoles.findFirst({
-        where: eq(platformRoles.userId, session.user.id),
+    const userRole = await db.query.superAdmins.findFirst({
+        where: eq(superAdmins.userId, session.user.id),
     });
 
     if (!userRole || !allowedRoles.includes(userRole.role)) {

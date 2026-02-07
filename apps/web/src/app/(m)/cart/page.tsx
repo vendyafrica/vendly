@@ -18,7 +18,7 @@ export default function CartPage() {
 
     if (itemCount === 0) {
         return (
-            <main className="min-h-screen bg-[#F9F9F7]">
+            <main className="min-h-screen">
                 <Header hideSearch />
 
                 <div className="max-w-3xl mx-auto px-4 py-8">
@@ -55,7 +55,7 @@ export default function CartPage() {
     }
 
     return (
-        <main className="min-h-screen bg-[#F9F9F7]">
+        <main className="min-h-screen">
             <Header hideSearch />
 
             <div className="max-w-3xl mx-auto px-4 py-8 space-y-6">

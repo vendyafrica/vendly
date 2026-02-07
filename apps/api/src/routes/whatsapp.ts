@@ -4,6 +4,7 @@ import type { Router as ExpressRouter } from "express";
 import type { RawBodyRequest } from "../types/raw-body";
 import { orderService } from "../services/order-service";
 import { whatsappClient } from "../services/whatsapp/whatsapp-client";
+import { notifyCustomerOrderAccepted, notifyCustomerOrderOutForDelivery } from "../services/notifications";
 
 function formatSellerOrderDetails(order: { orderNumber: string; currency?: string | null; items?: Array<{ productName?: string | null; quantity?: number | null; unitPrice?: number | null; totalPrice?: number | null } | null>; customerPhone?: string | null; shippingAddress?: unknown; notes?: string | null }) {
   const lines: string[] = [];
@@ -176,7 +177,7 @@ whatsappRouter.post("/webhooks/whatsapp", async (req, res) => {
     }
 
     // MVP command parsing:
-    // - "accept" / "decline" / "ready"
+    // - "accept" / "decline" / "ready" / "out"
     // - optionally: "accept ORD-0001"
     const parts = normalized.split(/\s+/).filter(Boolean);
     const action = parts[0];
@@ -184,14 +185,14 @@ whatsappRouter.post("/webhooks/whatsapp", async (req, res) => {
 
     const order = maybeOrderNumber
       ? await orderService.getOrderByOrderNumberForTenant(tenantId, maybeOrderNumber.toUpperCase())
-      : action === "ready"
+      : action === "ready" || action === "out"
         ? await orderService.getLatestOrderForTenantByStatus(tenantId, ["processing"])
         : await orderService.getLatestOrderForTenantByStatus(tenantId, ["pending"]);
 
     if (!order) {
       await whatsappClient.sendTextMessage({
         to: from,
-        body: "No matching order found. Reply like: ACCEPT ORD-0001, DECLINE ORD-0001, or READY ORD-0001.",
+        body: "No matching order found. Reply like: ACCEPT ORD-0001, DECLINE ORD-0001, OUT ORD-0001, or READY ORD-0001.",
       });
       return res.sendStatus(200);
     }
@@ -202,6 +203,16 @@ whatsappRouter.post("/webhooks/whatsapp", async (req, res) => {
         to: from,
         body: `Accepted ${order.orderNumber}. Reply READY ${order.orderNumber} when it is ready for pickup.`,
       });
+
+      // Notify customer (best-effort)
+      try {
+        const full = await orderService.getOrderById(order.id);
+        if (full) {
+          await notifyCustomerOrderAccepted({ order: full });
+        }
+      } catch (err) {
+        console.error("[WhatsAppWebhook] Failed to notify customer (accepted)", err);
+      }
 
       // Follow-up details message (no template changes required)
       try {
@@ -215,6 +226,25 @@ whatsappRouter.post("/webhooks/whatsapp", async (req, res) => {
       } catch (err) {
         console.error("[WhatsAppWebhook] Failed to send order details", err);
       }
+      return res.sendStatus(200);
+    }
+
+    if (action === "out") {
+      // No DB status change for MVP. We only notify the customer.
+      await whatsappClient.sendTextMessage({
+        to: from,
+        body: `Noted. We will notify the customer that ${order.orderNumber} is out for delivery.`,
+      });
+
+      try {
+        const full = await orderService.getOrderById(order.id);
+        if (full) {
+          await notifyCustomerOrderOutForDelivery({ order: full });
+        }
+      } catch (err) {
+        console.error("[WhatsAppWebhook] Failed to notify customer (out for delivery)", err);
+      }
+
       return res.sendStatus(200);
     }
 
@@ -238,7 +268,7 @@ whatsappRouter.post("/webhooks/whatsapp", async (req, res) => {
 
     await whatsappClient.sendTextMessage({
       to: from,
-      body: "Unknown command. Reply: ACCEPT, DECLINE, or READY (optionally with order number).",
+      body: "Unknown command. Reply: ACCEPT, DECLINE, OUT, or READY (optionally with order number).",
     });
   } catch (err) {
     console.error("[WhatsAppWebhook] Handler error", err);

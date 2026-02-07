@@ -2,31 +2,28 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { useParams } from "next/navigation";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { ArrowLeft01Icon, Delete02Icon } from "@hugeicons/core-free-icons";
 import { Button } from "@vendly/ui/components/button";
 import { useWishlist } from "@/hooks/use-wishlist";
 
-export default function WishlistClient() {
-    const params = useParams();
-    const storeSlug = params?.s as string;
+const FALLBACK_PRODUCT_IMAGE = "https://cdn.cosmos.so/25e7ef9d-3d95-486d-b7db-f0d19c1992d7?format=jpeg";
+
+const formatPrice = (amount: number | undefined, currency: string | undefined) => {
+    if (amount === undefined || amount === null || Number.isNaN(amount)) return "—";
+    const c = currency || "";
+    return `${c} ${amount.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 })}`.trim();
+};
+
+export default function WishlistAllPage() {
     const { items, removeFromWishlist } = useWishlist();
-
-    const FALLBACK_PRODUCT_IMAGE = "https://cdn.cosmos.so/25e7ef9d-3d95-486d-b7db-f0d19c1992d7?format=jpeg";
-
-    const formatPrice = (amount: number | undefined, currency: string | undefined) => {
-        if (amount === undefined || amount === null || Number.isNaN(amount)) return "—";
-        const c = currency || "";
-        return `${c} ${amount.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 })}`.trim();
-    };
 
     if (items.length === 0) {
         return (
-            <main className="min-h-screen">
+            <main className="min-h-screen bg-[#F9F9F7]">
                 <div className="max-w-3xl mx-auto px-4 py-12">
                     <div className="flex items-center gap-2 mb-6">
-                        <Link href={`/${storeSlug || ""}`} className="p-2 -ml-2 hover:bg-neutral-100 rounded-full transition-colors">
+                        <Link href="/" className="p-2 -ml-2 hover:bg-neutral-100 rounded-full transition-colors">
                             <HugeiconsIcon icon={ArrowLeft01Icon} className="h-5 w-5" />
                         </Link>
                         <h1 className="text-xl font-semibold">Wishlist</h1>
@@ -40,7 +37,7 @@ export default function WishlistClient() {
                         <p className="text-neutral-500 mb-8">
                             Tap the heart on a product to save it here for later.
                         </p>
-                        <Link href={`/${storeSlug || ""}`}>
+                        <Link href="/">
                             <Button size="lg" className="rounded-full px-8 h-12">
                                 Continue Shopping
                             </Button>
@@ -50,22 +47,22 @@ export default function WishlistClient() {
             </main>
         );
     }
-    
+
     return (
-        <main className="min-h-screen">
+        <main className="min-h-screen bg-[#F9F9F7]">
             <div className="max-w-4xl mx-auto px-4 md:px-6 lg:px-8 py-10 space-y-6">
                 <div className="flex items-center gap-2 mb-1">
-                    <Link href={`/${storeSlug || ""}`} className="p-2 -ml-2 hover:bg-neutral-100 rounded-full transition-colors">
+                    <Link href="/" className="p-2 -ml-2 hover:bg-neutral-100 rounded-full transition-colors">
                         <HugeiconsIcon icon={ArrowLeft01Icon} className="h-5 w-5" />
                     </Link>
                     <h1 className="text-2xl font-semibold">Wishlist</h1>
                     <span className="ml-2 text-sm text-neutral-500">{items.length} item{items.length === 1 ? "" : "s"}</span>
                 </div>
-                <p className="text-sm text-neutral-500">Saved products from this store</p>
+                <p className="text-sm text-neutral-500">Saved products across all stores</p>
 
                 <div className="space-y-4">
                     {items.map((item) => {
-                        const href = item.slug ? `/${storeSlug}/products/${item.slug}` : `/${storeSlug}`;
+                        const href = item.slug && item.store?.slug ? `/${item.store.slug}/products/${item.slug}` : "/";
                         return (
                             <div
                                 key={item.id}

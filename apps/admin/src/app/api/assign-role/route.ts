@@ -1,5 +1,5 @@
 import { db } from "@vendly/db/db";
-import { platformRoles } from "@vendly/db/schema";
+import { superAdmins } from "@vendly/db/schema";
 import { NextResponse } from "next/server";
 import { getSession } from "@/lib/auth-guard";
 
@@ -12,7 +12,7 @@ export async function POST(req: Request) {
         }
 
         // Check if user already has a platform role
-        const existingRole = await db.query.platformRoles.findFirst({
+        const existingRole = await db.query.superAdmins.findFirst({
             where: (roles, { eq }) => eq(roles.userId, session.user.id),
         });
 
@@ -25,9 +25,8 @@ export async function POST(req: Request) {
         }
 
         // Assign super_admin role to the new user
-        await db.insert(platformRoles).values({
+        await db.insert(superAdmins).values({
             userId: session.user.id,
-            name: session.user.name,
             role: "super_admin",
         });
 

@@ -18,6 +18,44 @@ export interface RecentItem {
 
 const MAX_RECENT_ITEMS = 20;
 const STORAGE_KEY = "vendly_recent_items";
+const RECENT_TTL_MS = 1000 * 60 * 60 * 24 * 7; // 7 days
+
+function isValidRecentItem(item: unknown): item is RecentItem {
+    if (!item || typeof item !== "object") return false;
+    const i = item as Record<string, unknown>;
+    const store = i.store as Record<string, unknown> | undefined;
+
+    return (
+        typeof i.id === "string" &&
+        typeof i.name === "string" &&
+        typeof i.price === "number" &&
+        typeof i.currency === "string" &&
+        typeof i.image === "string" &&
+        typeof i.slug === "string" &&
+        typeof i.viewedAt === "number" &&
+        !!store &&
+        typeof store.name === "string" &&
+        typeof store.slug === "string"
+    );
+}
+
+function sanitizeRecentItems(items: unknown, now = Date.now()): RecentItem[] {
+    if (!Array.isArray(items)) return [];
+
+    const seen = new Set<string>();
+    const cleaned: RecentItem[] = [];
+
+    for (const raw of items) {
+        if (!isValidRecentItem(raw)) continue;
+        if (now - raw.viewedAt > RECENT_TTL_MS) continue;
+        if (seen.has(raw.id)) continue;
+        seen.add(raw.id);
+        cleaned.push(raw);
+    }
+
+    cleaned.sort((a, b) => b.viewedAt - a.viewedAt);
+    return cleaned.slice(0, MAX_RECENT_ITEMS);
+}
 
 export function useRecentlyViewed() {
     const [recentItems, setRecentItems] = useState<RecentItem[]>([]);
@@ -28,7 +66,13 @@ export function useRecentlyViewed() {
         try {
             const stored = localStorage.getItem(STORAGE_KEY);
             if (stored) {
-                setRecentItems(JSON.parse(stored));
+                const parsed = JSON.parse(stored);
+                const cleaned = sanitizeRecentItems(parsed);
+                setRecentItems(cleaned);
+
+                if (cleaned.length !== (Array.isArray(parsed) ? parsed.length : 0)) {
+                    localStorage.setItem(STORAGE_KEY, JSON.stringify(cleaned));
+                }
             }
         } catch (error) {
             console.error("Failed to load recently viewed items", error);
@@ -43,7 +87,7 @@ export function useRecentlyViewed() {
             // Remove existing item if it exists (to move it to top)
             const filtered = prev.filter((i) => i.id !== newItem.id);
             // Add new item to front
-            const updated = [newItem, ...filtered].slice(0, MAX_RECENT_ITEMS);
+            const updated = sanitizeRecentItems([newItem, ...filtered]);
 
             // Persist to storage
             try {
