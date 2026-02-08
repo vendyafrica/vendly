@@ -163,6 +163,13 @@ export function MobileMenu({
                             delay={150}
                         />
 
+                        <MenuItem
+                            label="Admin dashboard"
+                            href="/admin"
+                            onClick={onClose}
+                            delay={175}
+                        />
+
                         {isSignedIn && (
                             <>
                                 <div className="h-px bg-border my-4" />

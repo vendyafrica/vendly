@@ -46,6 +46,8 @@ export function TopProductsBarChartCard({
   data: TopProductPoint[];
   className?: string;
 }) {
+  const hasData = data.length > 0;
+  const safeData = hasData ? data : [{ product: "—", sales: 0 }];
   const topProductsConfig = {
     sales: {
       label: "Sales",
@@ -68,10 +70,10 @@ export function TopProductsBarChartCard({
         </div>
       </CardHeader>
       <CardContent>
-        <ChartContainer config={topProductsConfig} className="h-[260px] w-full md:h-[340px]">
+        <ChartContainer config={topProductsConfig} className="aspect-auto h-[260px] min-h-[220px] w-full md:h-[340px]">
           <BarChart
             accessibilityLayer
-            data={data}
+            data={safeData}
             layout="vertical"
             margin={{
               left: 0,
@@ -94,7 +96,7 @@ export function TopProductsBarChartCard({
               stroke="hsl(var(--primary))"
               strokeWidth={1}
             >
-              {data.map((entry, idx) => (
+              {safeData.map((entry, idx) => (
                 <Cell key={entry.product} fill={entry.fill || palette[idx % palette.length]} />
               ))}
               <LabelList
@@ -112,6 +114,9 @@ export function TopProductsBarChartCard({
             </Bar>
           </BarChart>
         </ChartContainer>
+        {!hasData ? (
+          <div className="mt-2 text-xs text-muted-foreground">No product sales yet.</div>
+        ) : null}
       </CardContent>
     </Card>
   );

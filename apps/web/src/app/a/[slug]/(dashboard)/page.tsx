@@ -195,7 +195,7 @@ export default async function DashboardPage({
       <SegmentedStatsCard segments={statSegments} />
 
       {/* Charts Section */}
-      <div className="grid gap-5 md:grid-cols-7 lg:grid-cols-7">
+      <div className="grid grid-cols-1 gap-5 md:grid-cols-7 lg:grid-cols-7">
         <RevenueAreaChartCard
           className="md:col-span-4"
           title="Total Revenue"
