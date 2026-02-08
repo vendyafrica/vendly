@@ -1,43 +1,21 @@
-import Link from 'next/link'
-import Image from 'next/image'
-
-const links = [
-    { label: 'Features', href: '#' },
-    { label: 'Pricing', href: '#' },
-    { label: 'About', href: '#' },
-    { label: 'Blog', href: '#' },
-    { label: 'Contact', href: '#' },
-]
+import Link from "next/link";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { InstagramIcon, WhatsappBusinessIcon } from "@hugeicons/core-free-icons";
 
 export function Footer() {
     return (
-        <footer className="bg-background @container py-12">
-            <div className="mx-auto max-w-6xl px-6">
-                <div className="flex flex-col">
-                    <Link
-                        href="/"
-                        aria-label="go home"
-                        className="hover:bg-foreground/5 -ml-1.5 flex size-8 rounded-lg *:m-auto">
-                        <Image
-                        src="/vendly.png"
-                        alt="logo"
-                        width={32}
-                        height={32}
-                        />
-                    </Link>
-                    <nav className="my-8 flex flex-wrap gap-x-8 gap-y-2">
-                        {links.map((link) => (
-                            <Link
-                                key={link.label}
-                                href={link.href}
-                                className="text-muted-foreground hover:text-foreground text-sm transition-colors">
-                                {link.label}
-                            </Link>
-                        ))}
-                    </nav>
-                    <p className="text-muted-foreground mt-2 border-t pt-6 text-sm">&copy; {2026} vendly. </p>
+        <footer className="w-full py-12 text-center text-white/40">
+            <div className="container mx-auto px-4">
+                <div className="flex flex-col items-center justify-center gap-6">
+                    <p className="text-sm">
+                        &copy; {new Date().getFullYear()} Vendly Africa. All rights reserved.
+                    </p>
+                    <div className="flex items-center gap-6 text-sm">
+                        <Link href="#" className="hover:text-primary transition-colors"><HugeiconsIcon icon={InstagramIcon} /></Link>
+                        <Link href="#" className="hover:text-primary transition-colors"><HugeiconsIcon icon={WhatsappBusinessIcon} /></Link>
+                    </div>
                 </div>
             </div>
         </footer>
-    )
+    );
 }
