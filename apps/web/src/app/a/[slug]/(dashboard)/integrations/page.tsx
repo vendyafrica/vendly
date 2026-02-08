@@ -18,6 +18,9 @@ export default function IntegrationsPage() {
   const [importError, setImportError] = React.useState<string | null>(null);
   const [syncError, setSyncError] = React.useState<string | null>(null);
   const [isConnectedFromApi, setIsConnectedFromApi] = React.useState(false);
+  const [isDeleting, setIsDeleting] = React.useState(false);
+  const [deleteError, setDeleteError] = React.useState<string | null>(null);
+  const [deleteSuccess, setDeleteSuccess] = React.useState(false);
 
   // Check status on mount
   React.useEffect(() => {
@@ -62,7 +65,6 @@ export default function IntegrationsPage() {
         }
       }
     };
-
     void run();
 
     return () => {
@@ -108,6 +110,27 @@ export default function IntegrationsPage() {
     }
   };
 
+  const handleDelete = async () => {
+    setIsDeleting(true);
+    setDeleteError(null);
+    setDeleteSuccess(false);
+
+    try {
+      const res = await fetch("/api/integrations/instagram", { method: "DELETE" });
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(text || "Failed to delete Instagram data");
+      }
+
+      setIsConnectedFromApi(false);
+      setDeleteSuccess(true);
+    } catch (e) {
+      setDeleteError(e instanceof Error ? e.message : "Failed to delete Instagram data");
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   return (
     <div className="space-y-6 p-6">
       <div>
@@ -140,6 +163,27 @@ export default function IntegrationsPage() {
           {importError && (
             <div className="bg-destructive/10 text-destructive p-3 rounded-md text-sm">{importError}</div>
           )}
+
+          <div className="pt-2 space-y-2">
+            <Button
+              variant="destructive"
+              onClick={handleDelete}
+              disabled={isDeleting || !connected}
+            >
+              {isDeleting ? "Deleting..." : "Disconnect & delete Instagram data"}
+            </Button>
+            <p className="text-sm text-muted-foreground">
+              Removes tokens and Instagram account data stored by Vendly. Imported products remain.
+            </p>
+            {deleteError && (
+              <div className="bg-destructive/10 text-destructive p-3 rounded-md text-sm">{deleteError}</div>
+            )}
+            {deleteSuccess && (
+              <div className="bg-emerald-50 text-emerald-700 p-3 rounded-md text-sm">
+                Instagram connection removed and data deleted.
+              </div>
+            )}
+          </div>
         </CardContent>
       </Card>
     </div>
