@@ -172,7 +172,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       range: { from: from.toISOString(), to: to.toISOString() },
-      currency: store.defaultCurrency || "KES",
+      currency: store.defaultCurrency || "USD",
       kpis: {
         revenuePaid: kpiPaid?.revenuePaid || 0,
         ordersPaid: kpiPaid?.ordersPaid || 0,

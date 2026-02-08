@@ -2,7 +2,6 @@ import { relations } from "drizzle-orm";
 import {
     pgTable,
     text,
-    jsonb,
     timestamp,
     uuid,
     integer,
@@ -14,9 +13,6 @@ import { tenants } from "./tenant-schema";
 import { stores } from "./storefront-schema";
 import { products } from "./product-schema";
 
-/**
- * Orders table - represents customer orders
- */
 export const orders = pgTable(
     "orders",
     {
@@ -28,35 +24,20 @@ export const orders = pgTable(
             .notNull()
             .references(() => stores.id, { onDelete: "cascade" }),
 
-        // Order identification
         orderNumber: text("order_number").notNull(),
 
-        // Customer info (snapshot at order time)
         customerName: text("customer_name").notNull(),
         customerEmail: text("customer_email").notNull(),
         customerPhone: text("customer_phone"),
 
-        // Order status
-        status: text("status").notNull().default("pending"), // pending, processing, completed, cancelled, refunded
-        paymentMethod: text("payment_method").notNull().default("cash_on_delivery"), // card, mpesa, paypal, cash_on_delivery
-        paymentStatus: text("payment_status").notNull().default("pending"), // pending, paid, failed, refunded
+        status: text("status").notNull().default("pending"),
+        paymentMethod: text("payment_method").notNull().default("cash_on_delivery"),
+        paymentStatus: text("payment_status").notNull().default("pending"),
 
-        // Pricing (stored in smallest currency unit, e.g., cents)
         subtotal: integer("subtotal").notNull().default(0),
-        shippingCost: integer("shipping_cost").notNull().default(0),
         totalAmount: integer("total_amount").notNull().default(0),
         currency: text("currency").notNull().default("UGX"),
 
-        // Shipping address
-        shippingAddress: jsonb("shipping_address").$type<{
-            street?: string;
-            city?: string;
-            state?: string;
-            postalCode?: string;
-            country?: string;
-        }>(),
-
-        // Additional info
         notes: text("notes"),
 
         createdAt: timestamp("created_at").defaultNow().notNull(),
@@ -68,18 +49,13 @@ export const orders = pgTable(
         index("orders_status_idx").on(table.status),
         index("orders_payment_status_idx").on(table.paymentStatus),
         index("orders_created_at_idx").on(table.createdAt),
-        // Composite index for dashboard queries (orders by tenant sorted by date)
         index("orders_tenant_created_idx").on(table.tenantId, table.createdAt),
-        // Composite for filtering by status and date range
         index("orders_tenant_status_created_idx").on(table.tenantId, table.status, table.createdAt),
         unique("orders_store_number_unique").on(table.storeId, table.orderNumber),
     ]
 
 );
 
-/**
- * Order Items table - individual items within an order
- */
 export const orderItems = pgTable(
     "order_items",
     {
@@ -93,11 +69,9 @@ export const orderItems = pgTable(
         productId: uuid("product_id")
             .references(() => products.id, { onDelete: "set null" }),
 
-        // Product snapshot at order time
         productName: text("product_name").notNull(),
         productImage: text("product_image"),
 
-        // Quantity and pricing
         quantity: integer("quantity").notNull().default(1),
         unitPrice: integer("unit_price").notNull(),
         totalPrice: integer("total_price").notNull(),
@@ -111,7 +85,6 @@ export const orderItems = pgTable(
     ]
 );
 
-// Relations
 export const ordersRelations = relations(orders, ({ one, many }) => ({
     tenant: one(tenants, {
         fields: [orders.tenantId],
@@ -139,7 +112,6 @@ export const orderItemsRelations = relations(orderItems, ({ one }) => ({
     }),
 }));
 
-// Types
 export type Order = typeof orders.$inferSelect;
 export type NewOrder = typeof orders.$inferInsert;
 

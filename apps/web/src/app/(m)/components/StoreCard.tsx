@@ -4,7 +4,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { MarketplaceStore } from "@/types/marketplace";
-import { Star } from "lucide-react";
 import {
   Carousel,
   CarouselContent,
@@ -17,9 +16,11 @@ interface StoreCardProps {
   store: MarketplaceStore;
 }
 
+const FALLBACK_STORE_IMAGE = "https://cdn.cosmos.so/64986e58-da40-41e5-b0e2-1d041230c287?format=jpeg";
+
 export function StoreCard({ store }: StoreCardProps) {
   const router = useRouter();
-  const carouselImages = store.images ?? [];
+  const carouselImages = store.images && store.images.length > 0 ? store.images : [FALLBACK_STORE_IMAGE];
 
   return (
     <div className="group">
@@ -51,6 +52,7 @@ export function StoreCard({ store }: StoreCardProps) {
                         className="object-cover"
                         sizes="(max-width: 768px) 100vw, 50vw"
                         priority={idx === 0}
+                        unoptimized={src.includes("blob.vercel-storage.com")}
                       />
                     </div>
                   </CarouselItem>
@@ -67,14 +69,6 @@ export function StoreCard({ store }: StoreCardProps) {
               No images yet
             </div>
           )}
-
-          {/* Rating badge inside image */}
-          {store.rating > 0 && (
-            <div className="absolute top-3 right-3 flex items-center gap-1 bg-black/60 backdrop-blur-md text-white text-xs font-semibold px-2.5 py-1 rounded-full shadow-sm">
-              <span>{store.rating}</span>
-              <Star className="w-3.5 h-3.5 text-yellow-400 fill-yellow-400" />
-            </div>
-          )}
         </div>
       </div>
 
@@ -88,6 +82,7 @@ export function StoreCard({ store }: StoreCardProps) {
                 fill
                 sizes="24px"
                 className="object-cover"
+                unoptimized={(store.instagramAvatarUrl || store.logoUrl)!.includes("blob.vercel-storage.com")}
               />
             ) : (
               <div className="w-full h-full flex items-center justify-center text-[10px] font-semibold text-muted-foreground">

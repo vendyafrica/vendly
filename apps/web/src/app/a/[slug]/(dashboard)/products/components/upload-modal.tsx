@@ -15,6 +15,7 @@ import { Input } from "@vendly/ui/components/input";
 import { Label } from "@vendly/ui/components/label";
 import { Textarea } from "@vendly/ui/components/textarea";
 import Image from "next/image";
+import { useTenant } from "../../tenant-context";
 
 interface UploadModalProps {
     open: boolean;
@@ -30,6 +31,7 @@ interface FilePreview {
     isUploading: boolean;
     url?: string;
     pathname?: string;
+    error?: string;
 }
 
 const API_BASE = "";
@@ -41,6 +43,9 @@ export function UploadModal({
     tenantId,
     onUploadComplete,
 }: UploadModalProps) {
+    const { bootstrap } = useTenant();
+    const currency = bootstrap?.defaultCurrency || "UGX";
+
     const [files, setFiles] = React.useState<FilePreview[]>([]);
     const [isUploading, setIsUploading] = React.useState(false);
     const [error, setError] = React.useState<string | null>(null);
@@ -151,17 +156,21 @@ export function UploadModal({
                                     url: blob.url,
                                     pathname: blob.pathname,
                                     isUploading: false,
+                                    error: undefined,
                                 };
                                 return updated;
                             });
                         } catch (err) {
+                            const message = err instanceof Error ? err.message : String(err);
                             console.error(`Failed to upload ${file.name}:`, err);
+                            setError(`Failed to upload ${file.name}: ${message}`);
                             setFiles((prev) => {
                                 const updated = [...prev];
                                 if (!updated[index]) return prev;
                                 updated[index] = {
                                     ...updated[index],
                                     isUploading: false,
+                                    error: message,
                                 };
                                 return updated;
                             });
@@ -174,7 +183,11 @@ export function UploadModal({
 
             const anyFailed = filesRef.current.some((f) => !f.url);
             if (anyFailed) {
-                throw new Error("Some uploads failed. Please remove failed items and try again.");
+                const firstFailure = filesRef.current.find((f) => !f.url);
+                const failureMessage = firstFailure?.error
+                    ? `Some uploads failed: ${firstFailure.error}`
+                    : "Some uploads failed. Please remove failed items and try again.";
+                throw new Error(failureMessage);
             }
         } finally {
             setIsUploading(false);
@@ -232,7 +245,7 @@ export function UploadModal({
                     title: productName.trim(),
                     description: description.trim(),
                     priceAmount: Math.max(0, Math.floor(Number(priceAmount))),
-                    currency: "KES",
+                    currency,
                     quantity: quantity ? Math.max(0, Math.floor(Number(quantity))) : 0,
                     source: "manual",
                     status: "draft",
@@ -461,7 +474,7 @@ export function UploadModal({
 
                             <div className="grid grid-cols-2 gap-3">
                                 <div className="space-y-2">
-                                    <Label htmlFor="priceAmount">Price (KES)</Label>
+                                    <Label htmlFor="priceAmount">Price ({currency})</Label>
                                     <Input
                                         id="priceAmount"
                                         value={priceAmount}

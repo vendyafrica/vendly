@@ -12,11 +12,13 @@ import Footer from "../components/footer";
 import RecentlyViewed from "../components/RecentlyViewed";
 
 export default function CartPage() {
-    const { items, itemsByStore, updateQuantity, removeItem, itemCount } = useCart();
+    const { itemsByStore, updateQuantity, removeItem, itemCount } = useCart();
+
+    const FALLBACK_PRODUCT_IMAGE = "https://cdn.cosmos.so/25e7ef9d-3d95-486d-b7db-f0d19c1992d7?format=jpeg";
 
     if (itemCount === 0) {
         return (
-            <main className="min-h-screen bg-[#F9F9F7]">
+            <main className="min-h-screen">
                 <Header hideSearch />
 
                 <div className="max-w-3xl mx-auto px-4 py-8">
@@ -33,7 +35,7 @@ export default function CartPage() {
                         </div>
                         <h2 className="text-xl font-semibold mb-2">Your cart is empty</h2>
                         <p className="text-neutral-500 mb-8">
-                            Looks like you haven't added anything to your cart yet.
+                            Looks like you have not added anything to your cart yet.
                         </p>
                         <Link href="/">
                             <Button size="lg" className="rounded-full px-8 h-12">
@@ -53,7 +55,7 @@ export default function CartPage() {
     }
 
     return (
-        <main className="min-h-screen bg-[#F9F9F7]">
+        <main className="min-h-screen">
             <Header hideSearch />
 
             <div className="max-w-3xl mx-auto px-4 py-8 space-y-6">
@@ -76,7 +78,7 @@ export default function CartPage() {
                                     <div className="flex items-center gap-3">
                                         <Avatar className="h-10 w-10 border border-neutral-100">
                                             <AvatarImage
-                                                src={store.logoUrl || `https://ui-avatars.com/api/?name=${store.name}&background=random`}
+                                                src={store.logoUrl || undefined}
                                                 alt={store.name}
                                             />
                                             <AvatarFallback>{store.name.charAt(0)}</AvatarFallback>
@@ -96,18 +98,13 @@ export default function CartPage() {
                                     {storeItems.map((item) => (
                                         <div key={item.id} className="p-6 flex gap-5">
                                             <div className="relative h-24 w-24 bg-neutral-50 rounded-xl overflow-hidden shrink-0 border border-neutral-100">
-                                                {item.product.image ? (
-                                                    <Image
-                                                        src={item.product.image}
-                                                        alt={item.product.name}
-                                                        fill
-                                                        className="object-cover"
-                                                    />
-                                                ) : (
-                                                    <div className="h-full w-full flex items-center justify-center text-neutral-400 text-xs">
-                                                        No Image
-                                                    </div>
-                                                )}
+                                                <Image
+                                                    src={item.product.image || FALLBACK_PRODUCT_IMAGE}
+                                                    alt={item.product.name}
+                                                    fill
+                                                    className="object-cover"
+                                                    unoptimized={(item.product.image || "").includes("blob.vercel-storage.com")}
+                                                />
                                             </div>
 
                                             <div className="flex-1 flex flex-col justify-between py-0.5">

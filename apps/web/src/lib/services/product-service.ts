@@ -55,7 +55,6 @@ export const productService = {
                 source: data.source,
                 sourceId: data.sourceId,
                 sourceUrl: data.sourceUrl,
-                isFeatured: data.isFeatured,
                 status: data.status,
             }).returning();
 
@@ -216,7 +215,7 @@ export const productService = {
         limit: number;
         totalPages: number;
     }> {
-        const { storeId, source, isFeatured, page, limit, search } = filters;
+        const { storeId, source, page, limit, search } = filters;
         const offset = (page - 1) * limit;
 
         const conditions = [
@@ -226,7 +225,6 @@ export const productService = {
 
         if (storeId) conditions.push(eq(products.storeId, storeId));
         if (source) conditions.push(eq(products.source, source));
-        if (isFeatured !== undefined) conditions.push(eq(products.isFeatured, isFeatured));
         if (search) conditions.push(like(products.productName, `%${search}%`));
 
         const whereClause = and(...conditions);

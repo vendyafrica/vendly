@@ -50,6 +50,17 @@ export const signInWithMagicLink = async (email: string, options?: { callbackURL
   return data;
 }
 
+export const signInWithSellerMagicLink = async (
+  email: string,
+  options?: { callbackURL?: string }
+) => {
+  const data = await authClient.signIn.magicLink({
+    email,
+    callbackURL: options?.callbackURL || "/c/personal?entry=seller_magic",
+  });
+  return data;
+};
+
 export const signUp = async (email: string, password: string, name: string) => {
   const data = await authClient.signUp.email({
     email,

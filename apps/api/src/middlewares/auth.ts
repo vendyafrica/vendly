@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import { auth } from "@vendly/auth";
 import { AuthenticatedRequest,TenantRole,PlatformRole } from "../types/auth-types";
 import { db } from "@vendly/db";
-import { tenantMemberships , platformRoles } from "@vendly/db";
+import { tenantMemberships, superAdmins } from "@vendly/db";
 import { and, eq } from "drizzle-orm";
 
 
@@ -102,8 +102,8 @@ export function requirePlatformRole(allowed: PlatformRole[]) {
             return res.status(401).json({ error: "Unauthorized" });
         }
 
-        const role = await db.query.platformRoles.findFirst({
-            where: eq(platformRoles.userId, auth.userId),
+        const role = await db.query.superAdmins.findFirst({
+            where: eq(superAdmins.userId, auth.userId),
         });
 
         if (!role || !allowed.includes(role.role as PlatformRole)) {

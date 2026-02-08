@@ -13,14 +13,14 @@ import { CoverUpload } from "./cover-upload";
 interface HeroEditorProps {
     storeSlug: string;
     tenantId: string | null;
-    heroMediaItems: Array<{ url: string; type: "image" | "video" }>;
-    onUpdate: (items: Array<{ url: string; type: "image" | "video" }>) => void;
+    heroMedia: string[];
+    onUpdate: (urls: string[]) => void;
 }
 
 export function HeroEditor({ 
     storeSlug, 
     tenantId,
-    heroMediaItems,
+    heroMedia,
     onUpdate 
 }: HeroEditorProps) {
     const [isSaving, setIsSaving] = useState(false);
@@ -38,11 +38,8 @@ export function HeroEditor({
             }
 
             const blob = await uploadFile(file, `tenants/${tenantId}/hero`);
-            const mediaType = file.type.startsWith("video/") ? "video" : "image";
-            const coverItem = { url: blob.url, type: mediaType } as const;
-
-            const rest = heroMediaItems.filter((_, idx) => idx !== 0);
-            const nextItems = [coverItem, ...rest];
+            const rest = heroMedia.filter((_, idx) => idx !== 0);
+            const nextUrls = [blob.url, ...rest];
 
             const response = await fetch(`/api/storefront/${storeSlug}/hero`, {
                 method: "PUT",
@@ -50,7 +47,7 @@ export function HeroEditor({
                     "Content-Type": "application/json",
                 },
                 body: JSON.stringify({
-                    heroMediaItems: nextItems,
+                    heroMedia: nextUrls,
                 }),
             });
 
@@ -58,7 +55,7 @@ export function HeroEditor({
                 throw new Error("Failed to update hero media");
             }
 
-            onUpdate(nextItems);
+            onUpdate(nextUrls);
         } catch (error) {
             console.error("Failed to upload hero media:", error);
             alert("Failed to upload hero media. Please try again.");
@@ -73,7 +70,7 @@ export function HeroEditor({
         try {
             setIsSaving(true);
 
-            const nextItems = heroMediaItems.filter((_, i) => i !== index);
+            const nextUrls = heroMedia.filter((_, i) => i !== index);
 
             const response = await fetch(`/api/storefront/${storeSlug}/hero`, {
                 method: "PUT",
@@ -81,7 +78,7 @@ export function HeroEditor({
                     "Content-Type": "application/json",
                 },
                 body: JSON.stringify({
-                    heroMediaItems: nextItems,
+                    heroMedia: nextUrls,
                 }),
             });
 
@@ -89,7 +86,7 @@ export function HeroEditor({
                 throw new Error("Failed to remove hero media");
             }
 
-            onUpdate(nextItems);
+            onUpdate(nextUrls);
         } catch (error) {
             console.error("Failed to remove hero media:", error);
             alert("Failed to remove hero media. Please try again.");
@@ -98,15 +95,16 @@ export function HeroEditor({
         }
     };
 
-    const hasHeroMedia = heroMediaItems.length > 0;
-    const firstItem = heroMediaItems[0];
+    const hasHeroMedia = heroMedia.length > 0;
+    const firstUrl = heroMedia[0];
+    const isFirstVideo = typeof firstUrl === "string" && !!firstUrl.match(/\.(mp4|webm|ogg)$/i);
 
     return (
         <div className="relative group">
             {/* Hero Display */}
             <div className="relative h-[60vh] sm:h-[70vh] md:h-[75vh] lg:h-[80vh] w-full overflow-hidden rounded-b-3xl">
                 {hasHeroMedia ? (
-                    firstItem?.type === "video" ? (
+                    isFirstVideo ? (
                         <video
                             autoPlay
                             muted
@@ -114,11 +112,11 @@ export function HeroEditor({
                             playsInline
                             className="w-full h-full object-cover"
                         >
-                            <source src={firstItem.url} type="video/mp4" />
+                            <source src={firstUrl} type="video/mp4" />
                         </video>
                     ) : (
                         <Image
-                            src={firstItem.url}
+                            src={firstUrl}
                             alt="Store hero"
                             fill
                             priority
@@ -130,7 +128,7 @@ export function HeroEditor({
                         <div className="text-center">
                             <HugeiconsIcon 
                                 icon={Image02Icon} 
-                                size={48} 
+                                size={48}
                                 className="mx-auto mb-4 text-neutral-400" 
                             />
                             <p className="text-neutral-500 text-lg">No hero media</p>
@@ -158,22 +156,22 @@ export function HeroEditor({
                         onFileSelected={handleCoverSelected}
                     />
 
-                    {heroMediaItems.length > 0 && (
+                    {heroMedia.length > 0 && (
                         <div className="grid grid-cols-3 gap-2">
-                            {heroMediaItems.slice(0, 6).map((item, idx) => (
+                            {heroMedia.slice(0, 6).map((url, idx) => (
                                 <button
-                                    key={`${item.url}-${idx}`}
+                                    key={`${url}-${idx}`}
                                     type="button"
                                     onClick={() => handleRemove(idx)}
                                     disabled={isSaving}
                                     className="relative aspect-square overflow-hidden rounded-md border border-border/60"
                                 >
-                                    {item.type === "video" ? (
+                                    {url.match(/\.(mp4|webm|ogg)$/i) ? (
                                         <div className="w-full h-full bg-neutral-100 flex items-center justify-center">
                                             <HugeiconsIcon icon={PlayIcon} size={18} className="text-neutral-500" />
                                         </div>
                                     ) : (
-                                        <Image src={item.url} alt="Hero item" fill className="object-cover" />
+                                        <Image src={url} alt="Hero item" fill className="object-cover" />
                                     )}
                                 </button>
                             ))}

@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { HugeiconsIcon } from "@hugeicons/react";
-import { StarIcon, ArrowRight01Icon } from "@hugeicons/core-free-icons";
+import { ArrowRight01Icon } from "@hugeicons/core-free-icons";
 import type { MarketplaceStore } from "@/types/marketplace";
 import {
     Carousel,
@@ -42,9 +42,9 @@ export function FeaturedStoresShelf({ stores }: FeaturedStoresShelfProps) {
                             <CarouselItem key={store.id} className="pl-4 md:basis-1/2 lg:basis-1/3">
                                 <Link href={`/${store.slug}`} className="group block h-full">
                                     <div className="relative aspect-video overflow-hidden rounded-2xl bg-muted border border-border/50">
-                                        {store.heroMediaItems?.[0]?.url || store.images?.[0] ? (
+                                        {store.heroMedia?.[0] || store.images?.[0] ? (
                                             <Image
-                                                src={store.heroMediaItems?.[0]?.url || store.images?.[0] || ""}
+                                                src={store.heroMedia?.[0] || store.images?.[0] || ""}
                                                 alt={store.name}
                                                 fill
                                                 className="object-cover transition-transform duration-500 group-hover:scale-105"
@@ -94,14 +94,6 @@ export function FeaturedStoresShelf({ stores }: FeaturedStoresShelfProps) {
                                                 </p>
                                             )}
                                         </div>
-
-                                        {/* Rating Badge */}
-                                        {store.rating > 0 && (
-                                            <div className="absolute top-3 right-3 flex items-center gap-1 bg-black/40 backdrop-blur-md text-white text-xs font-bold px-2.5 py-1 rounded-full border border-white/10">
-                                                <span>{store.rating}</span>
-                                                <HugeiconsIcon icon={StarIcon} size={12} className="text-yellow-400 fill-yellow-400" />
-                                            </div>
-                                        )}
                                     </div>
                                 </Link>
                             </CarouselItem>

@@ -32,6 +32,13 @@ export async function GET(request: NextRequest) {
 
     const store = await db.query.stores.findFirst({
         where: and(eq(stores.slug, storeSlug), eq(stores.tenantId, membership.tenantId), isNull(stores.deletedAt)),
+        columns: {
+            id: true,
+            slug: true,
+            name: true,
+            tenantId: true,
+            defaultCurrency: true,
+        },
     });
 
     if (!store) {
@@ -44,5 +51,6 @@ export async function GET(request: NextRequest) {
         storeId: store.id,
         storeSlug: store.slug,
         storeName: store.name,
+        defaultCurrency: store.defaultCurrency,
     });
 }

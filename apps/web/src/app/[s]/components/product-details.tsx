@@ -29,7 +29,7 @@ interface ProductDetailsProps {
         currency: string;
         images: string[];
         videos?: string[];
-        rating: number;
+        rating?: number;
         store: {
             id: string;
             name: string;
@@ -115,9 +115,18 @@ export function ProductDetails({ product }: ProductDetailsProps) {
     // Data is ensured by parent component
     if (!product) return null;
 
+    const ratingValue = typeof product.rating === "number" && Number.isFinite(product.rating)
+        ? product.rating
+        : 0;
+
+    const storeAvatarUrl = product.store.logoUrl
+        || `https://avatar.vercel.sh/${encodeURIComponent(product.store.slug || product.store.id)}.svg?text=${encodeURIComponent(product.store.name.charAt(0) || "S")}`;
+
+    const FALLBACK_PRODUCT_IMAGE = "https://cdn.cosmos.so/25e7ef9d-3d95-486d-b7db-f0d19c1992d7?format=jpeg";
+
     const validImages = product.images && product.images.length > 0
         ? product.images
-        : ["/images/placeholder-product.png"];
+        : [FALLBACK_PRODUCT_IMAGE];
 
     // Ensure we always have 5 images for the gallery layout
     // If we have fewer than 5, we repeat the existing images to fill the slots
@@ -147,6 +156,7 @@ export function ProductDetails({ product }: ProductDetailsProps) {
                                     sizes="90vw"
                                     className="object-cover"
                                     priority={index === 0}
+                                    unoptimized={img.includes("blob.vercel-storage.com")}
                                 />
                             </div>
                         ))}
@@ -174,6 +184,7 @@ export function ProductDetails({ product }: ProductDetailsProps) {
                                         fill
                                         sizes="120px"
                                         className="object-cover"
+                                        unoptimized={img.includes("blob.vercel-storage.com")}
                                     />
                                 </button>
                             ))}
@@ -187,6 +198,7 @@ export function ProductDetails({ product }: ProductDetailsProps) {
                                 sizes="(max-width: 1024px) 100vw, 60vw"
                                 className="object-cover"
                                 priority
+                                unoptimized={currentImage.includes("blob.vercel-storage.com")}
                             />
                         </div>
                     </div>
@@ -199,16 +211,16 @@ export function ProductDetails({ product }: ProductDetailsProps) {
                     <div className="flex items-center gap-3 mb-8">
                         <Avatar className="h-8 w-8">
                             <AvatarImage
-                                src={product.store.logoUrl || "https://github.com/shadcn.png"}
+                                src={storeAvatarUrl}
                                 alt={product.store.name}
                             />
-                            <AvatarFallback>{product.store.name[0]}</AvatarFallback>
+                            <AvatarFallback>{product.store.name?.[0] || "S"}</AvatarFallback>
                         </Avatar>
                         <div>
                             <p className="text-sm font-medium text-neutral-900">{product.store.name}</p>
                             <div className="flex items-center gap-1">
                                 <HugeiconsIcon icon={StarIcon} size={12} className="fill-neutral-900 text-neutral-900" />
-                                <span className="text-xs text-neutral-500">{product.rating.toFixed(1)} Rating</span>
+                                <span className="text-xs text-neutral-500">{ratingValue.toFixed(1) !== "NaN" ? ratingValue.toFixed(1) : "0.0"} Rating</span>
                             </div>
                         </div>
                     </div>

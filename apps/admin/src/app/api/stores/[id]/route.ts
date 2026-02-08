@@ -2,13 +2,13 @@ import { db } from "@vendly/db/db";
 import { stores, tenants, products, orders, storefrontSessions } from "@vendly/db/schema";
 import { eq, and, count, sum } from "@vendly/db";
 import { NextResponse } from "next/server";
-import { checkPlatformRoleApi } from "@/lib/auth-guard";
+import { checkSuperAdminApi } from "@/lib/auth-guard";
 
 export async function GET(
     req: Request,
     { params }: { params: Promise<{ id: string }> }
 ) {
-    const auth = await checkPlatformRoleApi(["super_admin"]);
+    const auth = await checkSuperAdminApi(["super_admin"]);
     if (auth.error) {
         return NextResponse.json(auth, { status: auth.status });
     }
@@ -23,8 +23,7 @@ export async function GET(
                 slug: stores.slug,
                 status: stores.status,
                 description: stores.description,
-                customDomain: stores.customDomain,
-                domainVerified: stores.domainVerified,
+              
                 createdAt: stores.createdAt,
                 tenantName: tenants.fullName,
                 tenantId: tenants.id,
@@ -75,7 +74,7 @@ export async function PATCH(
     req: Request,
     { params }: { params: Promise<{ id: string }> }
 ) {
-    const auth = await checkPlatformRoleApi(["super_admin"]);
+    const auth = await checkSuperAdminApi(["super_admin"]);
     if (auth.error) {
         return NextResponse.json(auth, { status: auth.status });
     }

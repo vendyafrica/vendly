@@ -5,13 +5,14 @@ import { redirect } from "next/navigation";
 import { headers } from "next/headers";
 import { auth } from "@vendly/auth";
 import { db } from "@vendly/db/db";
-import { platformRoles, stores, tenantMemberships } from "@vendly/db/schema";
+import { stores, tenantMemberships, superAdmins } from "@vendly/db/schema";
 import { and, eq, isNull } from "@vendly/db";
 import { Suspense } from "react";
 
 import { SidebarInset, SidebarProvider } from "@vendly/ui/components/sidebar";
 import { Providers } from "../../../providers";
 import { DashboardHeader } from "./components/DashboardHeader";
+import { HeaderActionsProvider } from "./components/header-actions-context";
 import { TenantProvider } from "./tenant-context";
 import { AppSessionProvider } from "@/contexts/app-session-context";
 
@@ -48,7 +49,7 @@ async function TenantDashboardLayoutInner({
   const sessionPromise = auth.api.getSession({ headers: headerList });
   const storePromise = db.query.stores.findFirst({
     where: and(eq(stores.slug, slug), isNull(stores.deletedAt)),
-    columns: { id: true, tenantId: true, name: true },
+    columns: { id: true, tenantId: true, name: true, defaultCurrency: true },
   });
 
   const session = await sessionPromise;
@@ -63,10 +64,10 @@ async function TenantDashboardLayoutInner({
     redirect("/");
   }
 
-  const [platformRole, membership] = await Promise.all([
-    db.query.platformRoles.findFirst({
-      where: eq(platformRoles.userId, session.user.id),
-      columns: { role: true },
+  const [superAdmin, membership] = await Promise.all([
+    db.query.superAdmins.findFirst({
+      where: eq(superAdmins.userId, session.user.id),
+      columns: { id: true },
     }),
     db.query.tenantMemberships.findFirst({
       where: and(
@@ -78,7 +79,7 @@ async function TenantDashboardLayoutInner({
   ]);
 
   const isTenantAdmin = membership && ["owner", "admin"].includes(membership.role);
-  const isSuperAdmin = platformRole?.role === "super_admin";
+  const isSuperAdmin = !!superAdmin;
 
   if (!isTenantAdmin && !isSuperAdmin) {
     redirect(`/a/${slug}/unauthorized`);
@@ -93,6 +94,7 @@ async function TenantDashboardLayoutInner({
             storeId: store.id,
             storeSlug: slug,
             storeName: store.name,
+            defaultCurrency: store.defaultCurrency,
           }}
         >
           <SidebarProvider
@@ -103,10 +105,12 @@ async function TenantDashboardLayoutInner({
             }
           >
             <AppSidebar basePath={basePath} />
-            <SidebarInset>
-              <DashboardHeader tenantName={store.name} />
-              <div className="flex flex-1 flex-col gap-4 p-4 pt-4 pb-24 md:pb-4">{children}</div>
-            </SidebarInset>
+            <HeaderActionsProvider>
+              <SidebarInset>
+                <DashboardHeader tenantName={store.name} />
+                <div className="flex flex-1 flex-col gap-4 p-4 pt-4 pb-24 md:pb-4">{children}</div>
+              </SidebarInset>
+            </HeaderActionsProvider>
 
             <AdminMobileDock basePath={basePath} />
           </SidebarProvider>

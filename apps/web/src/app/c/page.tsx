@@ -14,7 +14,7 @@ import {
   Payment01FreeIcons,
   Analytics01FreeIcons,
 } from "@hugeicons/core-free-icons";
-import { signInWithGoogle, signInWithMagicLink } from "@vendly/auth/react";
+import { signInWithGoogle, signInWithMagicLink, signInWithSellerMagicLink } from "@vendly/auth/react";
 import { useEffect, useState } from "react";
 import { useOnboarding } from "./context/onboarding-context";
 import { GoogleIcon } from "@vendly/ui/components/svgs/google";
@@ -55,7 +55,32 @@ export default function Welcome() {
     setFormState("loading");
 
     try {
-      await signInWithMagicLink(email);
+      // Precheck if this email already belongs to a seller (tenant.billingEmail)
+      const res = await fetch(`/api/seller/precheck?email=${encodeURIComponent(email)}`);
+      if (!res.ok) {
+        throw new Error("Failed to check seller status");
+      }
+      const data = await res.json() as { isSeller: boolean; adminStoreSlug?: string | null; tenantSlug?: string | null };
+
+      if (data.isSeller) {
+        // Existing seller: send login magic link to admin login page
+        const adminSlug = data.adminStoreSlug || data.tenantSlug;
+        if (!adminSlug) {
+          throw new Error("Seller account found but store slug missing");
+        }
+
+        await signInWithMagicLink(email, {
+          callbackURL: `/a/${adminSlug}/login`,
+        });
+        setFormState("sent");
+        setError("We found an existing seller account. Check your email to sign in.");
+        return;
+      }
+
+      // New seller: proceed to seller onboarding
+      await signInWithSellerMagicLink(email, {
+        callbackURL: "/c/personal?entry=seller_magic",
+      });
       setFormState("sent");
     } catch {
       setError("Failed to send magic link. Please try again.");

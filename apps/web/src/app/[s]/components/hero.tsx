@@ -1,42 +1,23 @@
 import Image from "next/image";
-import { HugeiconsIcon } from "@hugeicons/react";
-import { StarIcon } from "@hugeicons/core-free-icons";
 import { DeferredHeroVideo } from "./deferred-hero-video";
 
 interface HeroProps {
     store: {
         name: string;
         description: string | null;
-
-        rating: number;
-        ratingCount: number;
-        heroMedia?: string | null;
-        heroMediaType?: "image" | "video" | null | string;
-        heroMediaItems?: Array<{ url: string; type: "image" | "video" }>;
+        heroMedia?: string[];
     };
 }
 
+const FALLBACK_HERO_IMAGE = "https://cdn.cosmos.so/d48eee2c-5cfa-4bb9-a35d-ec78717c2c7e?format=jpeg";
+
 export function Hero({ store }: HeroProps) {
-    const formatRatingCount = (count: number) => {
-        if (count >= 1000) {
-            return `${(count / 1000).toFixed(1)}K`;
-        }
-        return count.toString();
-    };
+    const heroMedia = Array.isArray(store.heroMedia) ? store.heroMedia : [];
+    const mediaUrl = heroMedia[0] || FALLBACK_HERO_IMAGE;
+    const isVideo = typeof mediaUrl === "string" && !!mediaUrl.match(/\.(mp4|webm|ogg)$/i);
+    const posterUrl = FALLBACK_HERO_IMAGE;
 
-    const heroMediaItems = Array.isArray(store.heroMediaItems) ? store.heroMediaItems : [];
-    const firstItem = heroMediaItems[0];
-
-    const mediaUrl = firstItem?.url || store.heroMedia || "/images/hero-fallback.png";
-    const isVideo =
-        firstItem?.type === "video" ||
-        store.heroMediaType === "video" ||
-        (typeof mediaUrl === "string" && !!mediaUrl.match(/\.(mp4|webm|ogg)$/i));
-
-    const posterUrl =
-        heroMediaItems.find((i) => i.type === "image")?.url ||
-        (!isVideo ? mediaUrl : null) ||
-        "/images/hero-fallback.png";
+    const isBlobUrl = typeof mediaUrl === "string" && mediaUrl.includes("blob.vercel-storage.com");
 
     return (
         <section className="relative h-[60vh] sm:h-[70vh] md:h-[75vh] lg:h-[80vh] w-full overflow-hidden mb-8 sm:mb-12">
@@ -65,6 +46,7 @@ export function Hero({ store }: HeroProps) {
                         priority
                         className="object-cover"
                         sizes="100vw"
+                        unoptimized={isBlobUrl}
                     />
                 )}
 
@@ -75,25 +57,14 @@ export function Hero({ store }: HeroProps) {
                 <div className="absolute bottom-0 left-0 right-0 p-5 sm:p-6 md:p-8 lg:p-10">
                     <div className="flex items-end justify-between flex-wrap gap-4">
                         <div className="text-white">
-                            <h1 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-medium mb-2">
+                            {/* <h1 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-medium mb-2">
                                 {store.name}
-                            </h1>
+                            </h1> */}
                             {store.description && (
                                 <p className="text-sm sm:text-base md:text-md text-white/90 max-w-lg">
                                     {store.description}
                                 </p>
                             )}
-                        </div>
-
-                        {/* Rating badge */}
-                        <div className="flex items-center gap-1.5 sm:gap-2 bg-white/20 backdrop-blur-md rounded-full px-3 py-1.5 sm:px-4 sm:py-2">
-                            <HugeiconsIcon icon={StarIcon} size={18} className="fill-white" />
-                            <span className="text-sm sm:text-base font-medium text-white">
-                                {store.rating.toFixed(1)}
-                            </span>
-                            <span className="text-xs sm:text-sm text-white/80">
-                                ({formatRatingCount(store.ratingCount)})
-                            </span>
                         </div>
                     </div>
                 </div>

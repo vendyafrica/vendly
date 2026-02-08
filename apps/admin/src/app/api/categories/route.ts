@@ -2,12 +2,12 @@ import { db } from "@vendly/db/db";
 import { categories } from "@vendly/db/schema";
 import { eq, asc } from "@vendly/db";
 import { NextResponse } from "next/server";
-import { checkPlatformRoleApi } from "@/lib/auth-guard";
+import { checkSuperAdminApi } from "@/lib/auth-guard";
 
 export async function GET() {
     // Public or Admin? "Manage categories" implies Admin.
     // But storefront needs them too. This is ADMIN API.
-    const auth = await checkPlatformRoleApi(["super_admin"]);
+    const auth = await checkSuperAdminApi(["super_admin"]);
     if (auth.error) {
         const isPublic = false; // Set to true if categories are public via this API? No, use explicit public API for storefront.
         if (!isPublic) return NextResponse.json(auth, { status: auth.status });
@@ -25,7 +25,7 @@ export async function GET() {
 }
 
 export async function POST(req: Request) {
-    const auth = await checkPlatformRoleApi(["super_admin"]);
+    const auth = await checkSuperAdminApi(["super_admin"]);
     if (auth.error) {
         return NextResponse.json(auth, { status: auth.status });
     }
@@ -38,7 +38,6 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: "Name and Slug are required" }, { status: 400 });
         }
 
-        // Check slug uniqueness
         const existing = await db.query.categories.findFirst({
             where: eq(categories.slug, slug)
         });

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, { createContext, useContext, useState, useEffect, useRef } from "react";
 import { useAppSession } from "./app-session-context";
 import { trackStorefrontEvents } from "@/lib/storefront-tracking";
 
@@ -35,6 +35,7 @@ interface CartContextType {
     clearStoreFromCart: (storeId: string) => void;
     cartTotal: number;
     itemCount: number;
+    totalQuantity: number;
     itemsByStore: Record<string, CartItem[]>; // Grouped by storeId
 }
 
@@ -44,6 +45,8 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     const { session } = useAppSession();
     const [items, setItems] = useState<CartItem[]>([]);
     const [isLoaded, setIsLoaded] = useState(false);
+    const isSyncingRef = useRef(false);
+    const prevUserIdRef = useRef<string | undefined>(undefined);
 
     // Initial Load
     useEffect(() => {
@@ -75,12 +78,103 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         loadCart();
     }, [session]);
 
+    // Merge guest cart into server cart when user logs in (one-time per login session)
+    useEffect(() => {
+        const userId = session?.user?.id;
+        const prevUserId = prevUserIdRef.current;
+
+        // Only run when transitioning from logged-out to a logged-in user
+        if (!userId || userId === prevUserId || isSyncingRef.current) {
+            prevUserIdRef.current = userId;
+            return;
+        }
+
+        const mergeGuestCart = async () => {
+            try {
+                isSyncingRef.current = true;
+
+                // Load guest cart from localStorage
+                let guestItems: CartItem[] = [];
+                try {
+                    const guestRaw = localStorage.getItem("vendly_cart");
+                    guestItems = guestRaw ? (JSON.parse(guestRaw) as CartItem[]) : [];
+                } catch {
+                    guestItems = [];
+                }
+
+                // Nothing to merge
+                if (!Array.isArray(guestItems) || guestItems.length === 0) {
+                    return;
+                }
+
+                // Clear guest storage early to prevent any chance of double-merge on re-renders
+                localStorage.removeItem("vendly_cart");
+
+                // Fetch server cart
+                const serverRes = await fetch(`${API_BASE}/api/cart`, {
+                    headers: { "x-user-id": userId }
+                });
+                const serverItems: CartItem[] = serverRes.ok ? await serverRes.json() : [];
+
+                // Merge by product id; prefer sum of quantities
+                const mergedMap = new Map<string, CartItem>();
+
+                for (const item of serverItems) {
+                    mergedMap.set(item.id, { ...item });
+                }
+
+                for (const item of guestItems) {
+                    const existing = mergedMap.get(item.id);
+                    if (existing) {
+                        mergedMap.set(item.id, {
+                            ...existing,
+                            quantity: existing.quantity + item.quantity,
+                        });
+                    } else {
+                        mergedMap.set(item.id, { ...item });
+                    }
+                }
+
+                const mergedItems = Array.from(mergedMap.values());
+
+                for (const item of mergedItems) {
+                    try {
+                        await fetch(`${API_BASE}/api/cart`, {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/json",
+                                "x-user-id": userId,
+                            },
+                            body: JSON.stringify({
+                                productId: item.product.id,
+                                storeId: item.store.id,
+                                quantity: item.quantity,
+                            }),
+                        });
+                    } catch (e) {
+                        console.error("Failed to sync guest cart item", e);
+                    }
+                }
+
+                setItems(mergedItems);
+            } catch (e) {
+                console.error("Failed to merge guest cart", e);
+            } finally {
+                isSyncingRef.current = false;
+                prevUserIdRef.current = userId;
+            }
+        };
+
+        void mergeGuestCart();
+    }, [session?.user?.id, session?.user, session]);
+
     // Save changes
     useEffect(() => {
-        if (isLoaded) {
+        // Only persist a guest cart. Logged-in carts are persisted server-side.
+        if (isLoaded && !session?.user) {
             localStorage.setItem("vendly_cart", JSON.stringify(items));
         }
-    }, [items, isLoaded]);
+    }, [items, isLoaded, session?.user]);
 
     const addItem = async (newItem: Omit<CartItem, "quantity">, quantity = 1) => {
         if (newItem?.store?.slug && newItem?.product?.id) {
@@ -94,24 +188,24 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
             ]);
         }
 
-        // Optimistic update
+        let nextQuantity = quantity;
+
+        // Optimistic update (also computes the exact quantity we should persist)
         setItems((prev) => {
             const existing = prev.find((item) => item.id === newItem.id);
             if (existing) {
+                nextQuantity = existing.quantity + quantity;
                 return prev.map((item) =>
                     item.id === newItem.id
-                        ? { ...item, quantity: item.quantity + quantity }
+                        ? { ...item, quantity: nextQuantity }
                         : item
                 );
             }
-            return [...prev, { ...newItem, quantity }];
+            nextQuantity = quantity;
+            return [...prev, { ...newItem, quantity: nextQuantity }];
         });
 
         if (session?.user) {
-            // Find the new quantity
-            const currentItem = items.find(i => i.id === newItem.id);
-            const newQuantity = (currentItem?.quantity || 0) + quantity;
-
             try {
                 await fetch(`${API_BASE}/api/cart`, {
                     method: "POST",
@@ -122,7 +216,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
                     body: JSON.stringify({
                         productId: newItem.product.id,
                         storeId: newItem.store.id,
-                        quantity: newQuantity
+                        quantity: nextQuantity
                     })
                 });
             } catch (e) {
@@ -214,7 +308,8 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         0
     );
 
-    const itemCount = items.reduce((count, item) => count + item.quantity, 0);
+    const totalQuantity = items.reduce((count, item) => count + item.quantity, 0);
+    const itemCount = items.length;
 
     const itemsByStore = items.reduce((groups, item) => {
         const storeId = item.store.id;
@@ -236,6 +331,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
                 clearStoreFromCart,
                 cartTotal,
                 itemCount,
+                totalQuantity,
                 itemsByStore,
             }}
         >

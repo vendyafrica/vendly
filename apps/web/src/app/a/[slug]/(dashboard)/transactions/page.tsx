@@ -101,7 +101,7 @@ export default function TransactionsPage() {
         }
     }, [bootstrap, fetchOrders]);
 
-    const currency = stats?.currency || "USD";
+    const currency = stats?.currency || bootstrap?.defaultCurrency || "UGX";
 
     const statSegments = [
         {

@@ -43,11 +43,7 @@ export const products = pgTable(
     sourceId: text("source_id"),
     sourceUrl: text("source_url"),
 
-    isFeatured: boolean("is_featured").default(false),
-    hasContentVariants: boolean("has_content_variants").default(false),
-
-    styleGuideEnabled: boolean("style_guide_enabled").default(false),
-    styleGuideType: text("style_guide_type"),
+    variants: jsonb("variants").default([]),
 
     viewCount: integer("view_count").default(0).notNull(),
 
@@ -63,43 +59,11 @@ export const products = pgTable(
     index("products_status_idx").on(table.status),
     // Composite index for filtering products by store and status (common query)
     index("products_store_status_idx").on(table.storeId, table.status),
-    // Index for featured products queries
-    index("products_store_featured_idx").on(table.storeId, table.isFeatured),
     // Index for recently updated products
     index("products_store_updated_idx").on(table.storeId, table.updatedAt),
     unique("products_store_slug_unique").on(table.storeId, table.slug),
   ],
 
-);
-
-export const productVariants = pgTable(
-  "product_variants",
-  {
-    id: uuid("id").primaryKey().defaultRandom(),
-    tenantId: uuid("tenant_id")
-      .notNull()
-      .references(() => tenants.id, { onDelete: "cascade" }),
-    productId: uuid("product_id")
-      .notNull()
-      .references(() => products.id, { onDelete: "cascade" }),
-
-    variantName: text("variant_name"),
-    priceAmount: integer("price_amount").notNull(),
-    currency: text("currency").default("UGX"),
-    quantity: integer("quantity").notNull().default(0),
-
-    options: jsonb("options").$type<{ size?: string; color?: string }>(),
-
-    isActive: boolean("is_active").default(true),
-    sortOrder: integer("sort_order").default(0),
-
-    createdAt: timestamp("created_at").defaultNow().notNull(),
-    updatedAt: timestamp("updated_at")
-      .defaultNow()
-      .$onUpdate(() => new Date())
-      .notNull(),
-  },
-  (table) => [index("product_variants_product_idx").on(table.productId)],
 );
 
 export const productMedia = pgTable(
@@ -115,10 +79,6 @@ export const productMedia = pgTable(
     mediaId: uuid("media_id")
       .notNull()
       .references(() => mediaObjects.id, { onDelete: "cascade" }),
-
-    variantId: uuid("variant_id").references(() => productVariants.id, {
-      onDelete: "set null",
-    }),
 
     sortOrder: integer("sort_order").default(0).notNull(),
     isFeatured: boolean("is_featured").default(false).notNull(),
@@ -185,24 +145,8 @@ export const productsRelations = relations(products, ({ one, many }) => ({
     fields: [products.storeId],
     references: [stores.id],
   }),
-  variants: many(productVariants),
   media: many(productMedia),
 }));
-
-export const productVariantsRelations = relations(
-  productVariants,
-  ({ one, many }) => ({
-    tenant: one(tenants, {
-      fields: [productVariants.tenantId],
-      references: [tenants.id],
-    }),
-    product: one(products, {
-      fields: [productVariants.productId],
-      references: [products.id],
-    }),
-    media: many(productMedia),
-  }),
-);
 
 export const productMediaRelations = relations(productMedia, ({ one }) => ({
   tenant: one(tenants, {
@@ -217,10 +161,6 @@ export const productMediaRelations = relations(productMedia, ({ one }) => ({
     fields: [productMedia.mediaId],
     references: [mediaObjects.id],
   }),
-  variant: one(productVariants, {
-    fields: [productMedia.variantId],
-    references: [productVariants.id],
-  }),
 }));
 
 export type MediaObject = typeof mediaObjects.$inferSelect;
@@ -228,9 +168,6 @@ export type NewMediaObject = typeof mediaObjects.$inferInsert;
 
 export type Product = typeof products.$inferSelect;
 export type NewProduct = typeof products.$inferInsert;
-
-export type ProductVariant = typeof productVariants.$inferSelect;
-export type NewProductVariant = typeof productVariants.$inferInsert;
 
 export type ProductMedia = typeof productMedia.$inferSelect;
 export type NewProductMedia = typeof productMedia.$inferInsert;

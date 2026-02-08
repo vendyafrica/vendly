@@ -1,5 +1,5 @@
 import { db } from "@vendly/db/db";
-import { users, verification, platformRoles } from "@vendly/db/schema";
+import { users, verification, superAdmins } from "@vendly/db/schema";
 import { eq, and } from "@vendly/db";
 import { NextResponse } from "next/server";
 
@@ -54,18 +54,17 @@ export async function GET(req: Request) {
             .where(eq(users.id, user.id));
 
         // Assign super_admin role
-        const existingRole = await db.query.platformRoles.findFirst({
-            where: eq(platformRoles.userId, user.id),
+        const existingRole = await db.query.superAdmins.findFirst({
+            where: eq(superAdmins.userId, user.id),
         });
 
-        const existingSuperAdmin = await db.query.platformRoles.findFirst({
-            where: eq(platformRoles.role, "super_admin"),
+        const existingSuperAdmin = await db.query.superAdmins.findFirst({
+            columns: { id: true },
         });
 
         if (!existingRole && !existingSuperAdmin) {
-            await db.insert(platformRoles).values({
+            await db.insert(superAdmins).values({
                 userId: user.id,
-                name: user.name,
                 role: "super_admin",
             });
             console.log(`Assigned super_admin role to ${user.email}`);

@@ -3,6 +3,8 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useParams } from "next/navigation";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { ArrowLeft01Icon, Delete02Icon } from "@hugeicons/core-free-icons";
 import { Button } from "@vendly/ui/components/button";
 import { useWishlist } from "@/hooks/use-wishlist";
 
@@ -11,68 +13,115 @@ export default function WishlistClient() {
     const storeSlug = params?.s as string;
     const { items, removeFromWishlist } = useWishlist();
 
+    const FALLBACK_PRODUCT_IMAGE = "https://cdn.cosmos.so/25e7ef9d-3d95-486d-b7db-f0d19c1992d7?format=jpeg";
+
+    const formatPrice = (amount: number | undefined, currency: string | undefined) => {
+        if (amount === undefined || amount === null || Number.isNaN(amount)) return "—";
+        const c = currency || "";
+        return `${c} ${amount.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 })}`.trim();
+    };
+
     if (items.length === 0) {
         return (
-            <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-28 pb-20">
-                <h1 className="text-xl font-semibold text-neutral-900">Wishlist</h1>
-                <p className="mt-2 text-sm text-neutral-600">You haven’t saved anything yet.</p>
-                <div className="mt-6">
-                    <Link href={`/${storeSlug}`}>
-                        <Button>Continue shopping</Button>
-                    </Link>
+            <main className="min-h-screen">
+                <div className="max-w-3xl mx-auto px-4 py-12">
+                    <div className="flex items-center gap-2 mb-6">
+                        <Link href={`/${storeSlug || ""}`} className="p-2 -ml-2 hover:bg-neutral-100 rounded-full transition-colors">
+                            <HugeiconsIcon icon={ArrowLeft01Icon} className="h-5 w-5" />
+                        </Link>
+                        <h1 className="text-xl font-semibold">Wishlist</h1>
+                    </div>
+
+                    <div className="bg-white rounded-3xl border border-neutral-200 p-12 flex flex-col items-center justify-center text-center shadow-sm">
+                        <div className="bg-neutral-50 p-6 rounded-full mb-6">
+                            <HugeiconsIcon icon={Delete02Icon} className="h-10 w-10 text-neutral-300" />
+                        </div>
+                        <h2 className="text-xl font-semibold mb-2">No saved items</h2>
+                        <p className="text-neutral-500 mb-8">
+                            Tap the heart on a product to save it here for later.
+                        </p>
+                        <Link href={`/${storeSlug || ""}`}>
+                            <Button size="lg" className="rounded-full px-8 h-12">
+                                Continue Shopping
+                            </Button>
+                        </Link>
+                    </div>
                 </div>
-            </div>
+            </main>
         );
     }
-
+    
     return (
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-28 pb-20">
-            <div className="flex items-end justify-between gap-4">
-                <div>
-                    <h1 className="text-xl font-semibold text-neutral-900">Wishlist</h1>
-                    <p className="mt-1 text-sm text-neutral-600">Saved items</p>
+        <main className="min-h-screen">
+            <div className="max-w-4xl mx-auto px-4 md:px-6 lg:px-8 py-10 space-y-6">
+                <div className="flex items-center gap-2 mb-1">
+                    <Link href={`/${storeSlug || ""}`} className="p-2 -ml-2 hover:bg-neutral-100 rounded-full transition-colors">
+                        <HugeiconsIcon icon={ArrowLeft01Icon} className="h-5 w-5" />
+                    </Link>
+                    <h1 className="text-2xl font-semibold">Wishlist</h1>
+                    <span className="ml-2 text-sm text-neutral-500">{items.length} item{items.length === 1 ? "" : "s"}</span>
                 </div>
-                <Link href={`/${storeSlug}`} className="text-sm text-neutral-700 hover:text-neutral-900">
-                    Continue shopping
-                </Link>
-            </div>
+                <p className="text-sm text-neutral-500">Saved products from this store</p>
 
-            <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {items.map((item) => {
-                    const href = item.slug ? `/${storeSlug}/products/${item.slug}` : `/${storeSlug}`;
-                    return (
-                        <div key={item.id} className="rounded-xl border border-neutral-200 overflow-hidden bg-white">
-                            <Link href={href} className="block">
-                                <div className="relative aspect-4/5 bg-neutral-50">
-                                    <Image
-                                        src={item.image || "/images/placeholder-product.png"}
-                                        alt={item.name}
-                                        fill
-                                        sizes="(max-width: 768px) 100vw, 33vw"
-                                        className="object-cover"
-                                    />
-                                </div>
-                            </Link>
-                            <div className="p-4">
-                                <div className="text-sm font-medium text-neutral-900 line-clamp-2">{item.name}</div>
-                                <div className="mt-1 text-sm text-neutral-700">{item.currency} {item.price.toLocaleString()}</div>
-                                <div className="mt-4 flex items-center gap-2">
-                                    <Link href={href} className="flex-1">
-                                        <Button className="w-full" variant="outline">View</Button>
-                                    </Link>
-                                    <Button
-                                        type="button"
-                                        variant="outline"
-                                        onClick={() => removeFromWishlist(item.id)}
-                                    >
-                                        Remove
-                                    </Button>
+                <div className="space-y-4">
+                    {items.map((item) => {
+                        const href = item.slug ? `/${storeSlug}/products/${item.slug}` : `/${storeSlug}`;
+                        return (
+                            <div
+                                key={item.id}
+                                className="bg-white rounded-2xl border border-neutral-200 shadow-sm transition-all duration-200 hover:shadow-md"
+                            >
+                                <div className="p-5 flex gap-5 items-start">
+                                    <div className="relative h-24 w-24 bg-neutral-50 rounded-2xl overflow-hidden shrink-0 border border-neutral-100">
+                                        <Image
+                                            src={item.image || FALLBACK_PRODUCT_IMAGE}
+                                            alt={item.name}
+                                            fill
+                                            className="object-cover"
+                                            sizes="120px"
+                                        />
+                                    </div>
+
+                                    <div className="flex-1 flex flex-col justify-between py-0.5">
+                                        <div className="flex justify-between items-start gap-4">
+                                            <div className="space-y-1">
+                                                <h3 className="font-semibold text-base leading-snug">
+                                                    <Link href={href} className="hover:underline">
+                                                        {item.name}
+                                                    </Link>
+                                                </h3>
+                                                {item.store?.name && (
+                                                    <p className="text-xs text-neutral-500">{item.store.name}</p>
+                                                )}
+                                            </div>
+                                            <div className="text-right">
+                                                <span className="inline-flex items-center rounded-full bg-neutral-100 px-3 py-1 text-xs font-semibold text-neutral-700">
+                                                    {formatPrice(item.price, item.currency)}
+                                                </span>
+                                            </div>
+                                        </div>
+
+                                        <div className="flex items-center justify-between mt-4 gap-3">
+                                            <Link href={href} className="flex-1">
+                                                <Button variant="outline" className="w-full h-10 rounded-full text-sm font-medium">
+                                                    View product
+                                                </Button>
+                                            </Link>
+                                            <button
+                                                onClick={() => removeFromWishlist(item.id)}
+                                                className="ml-1 text-neutral-400 hover:text-red-500 transition-colors p-2"
+                                                aria-label="Remove from wishlist"
+                                            >
+                                                <HugeiconsIcon icon={Delete02Icon} size={18} />
+                                            </button>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    );
-                })}
+                        );
+                    })}
+                </div>
             </div>
-        </div>
+        </main>
     );
 }

@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { HugeiconsIcon } from "@hugeicons/react";
-import { Loading03Icon, Upload04Icon, Cancel01Icon } from "@hugeicons/core-free-icons";
+import { Loading03Icon, Cancel01Icon, ImageUpload01Icon } from "@hugeicons/core-free-icons";
 import {
     Dialog,
     DialogContent,
@@ -16,6 +16,7 @@ import { Label } from "@vendly/ui/components/label";
 import { Textarea } from "@vendly/ui/components/textarea";
 import Image from "next/image";
 import { upload } from "@vercel/blob/client";
+import { useTenant } from "../../tenant-context";
 
 interface Product {
     id: string;
@@ -61,6 +62,9 @@ export function EditProductModal({
     tenantId,
     onProductUpdated,
 }: EditProductModalProps) {
+    const { bootstrap } = useTenant();
+    const storeCurrency = bootstrap?.defaultCurrency || "UGX";
+
     const [productName, setProductName] = React.useState("");
     const [description, setDescription] = React.useState("");
     const [priceAmount, setPriceAmount] = React.useState<string>("");
@@ -70,7 +74,6 @@ export function EditProductModal({
 
     // Image management
     const [files, setFiles] = React.useState<UploadedFile[]>([]);
-    const [isDragging, setIsDragging] = React.useState(false);
     const fileInputRef = React.useRef<HTMLInputElement>(null);
     const initialMediaSignatureRef = React.useRef<string>("[]");
 
@@ -155,9 +158,15 @@ export function EditProductModal({
                     }
                     return updated;
                 });
-            } catch (error) {
-                console.error("Upload failed", error);
-                setFiles(prev => prev.filter((_, idx) => idx !== index));
+            } catch (err) {
+                const message = err instanceof Error ? err.message : "Upload failed";
+                console.error("Upload failed", err);
+                setError(`Failed to upload ${file.name}: ${message}`);
+                setFiles(prev => {
+                    const next = [...prev];
+                    if (next[index]) next[index].isUploading = false;
+                    return next;
+                });
             }
         }));
     };
@@ -168,25 +177,6 @@ export function EditProductModal({
             handleUploadFiles(selectedFiles);
         }
         if (fileInputRef.current) fileInputRef.current.value = "";
-    };
-
-    const handleDragOver = (e: React.DragEvent) => {
-        e.preventDefault();
-        setIsDragging(true);
-    };
-
-    const handleDragLeave = (e: React.DragEvent) => {
-        e.preventDefault();
-        setIsDragging(false);
-    };
-
-    const handleDrop = (e: React.DragEvent) => {
-        e.preventDefault();
-        setIsDragging(false);
-        const droppedFiles = Array.from(e.dataTransfer.files);
-        if (droppedFiles.length > 0) {
-            handleUploadFiles(droppedFiles);
-        }
     };
 
     const removeFile = (index: number) => {
@@ -235,7 +225,8 @@ export function EditProductModal({
                 description,
                 priceAmount: priceValue,
                 quantity: quantityValue,
-                status: "active",
+                // preserve current status unless explicitly changed elsewhere
+                status: product.status,
             };
 
             const currentMediaSignature = JSON.stringify(
@@ -281,120 +272,220 @@ export function EditProductModal({
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
+            <DialogContent className="sm:max-w-3xl" showCloseButton={false}>
                 <DialogHeader>
                     <DialogTitle>Edit Product</DialogTitle>
                 </DialogHeader>
 
-                <form onSubmit={handleSubmit} className="space-y-4">
-                    {/* Image Management */}
-                    <div className="space-y-2">
-                        <Label>Product Images</Label>
-                        <div
-                            className={`border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors ${isDragging
-                                ? "border-primary bg-primary/5"
-                                : "border-border/70 hover:bg-muted/50"
-                                }`}
-                            onClick={() => fileInputRef.current?.click()}
-                            onDragOver={handleDragOver}
-                            onDragLeave={handleDragLeave}
-                            onDrop={handleDrop}
-                        >
-                            <HugeiconsIcon icon={Upload04Icon} className="size-8 mx-auto text-muted-foreground" />
-                            <p className="text-sm text-muted-foreground mt-2">
-                                Click or drag to add images
-                            </p>
-                        </div>
-                        <input
-                            ref={fileInputRef}
-                            type="file"
-                            accept="image/*"
-                            multiple
-                            className="hidden"
-                            onChange={handleFileChange}
-                        />
-
-                        {files.length > 0 && (
-                            <div className="grid grid-cols-4 gap-3 mt-3">
-                                {files.map((f, i) => (
-                                    <div key={i} className="relative aspect-square group">
-                                        <Image
-                                            src={f.previewUrl}
-                                            alt="Preview"
-                                            fill
-                                            className={`object-cover rounded-md transition-opacity ${f.isUploading ? 'opacity-50' : 'opacity-100'}`}
-                                        />
-                                        {f.isUploading && (
-                                            <div className="absolute inset-0 flex items-center justify-center">
-                                                <HugeiconsIcon icon={Loading03Icon} className="size-5 animate-spin text-white" />
-                                            </div>
-                                        )}
-                                        <button
-                                            type="button"
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                removeFile(i);
-                                            }}
-                                            className="absolute -top-1.5 -right-1.5 bg-destructive text-destructive-foreground rounded-full p-1 shadow-sm opacity-0 group-hover:opacity-100 transition-opacity"
-                                        >
-                                            <HugeiconsIcon icon={Cancel01Icon} className="size-3" />
-                                        </button>
-                                    </div>
-                                ))}
-                            </div>
-                        )}
-                    </div>
-
+                <div className="space-y-4">
                     {error && (
                         <p className="text-sm text-destructive bg-destructive/10 p-3 rounded-md">
                             {error}
                         </p>
                     )}
 
-                    <div className="space-y-2">
-                        <Label htmlFor="productName">Product Name</Label>
-                        <Input
-                            id="productName"
-                            value={productName}
-                            onChange={(e) => setProductName(e.target.value)}
-                            placeholder="Enter product name"
-                            required
-                        />
-                    </div>
+                    <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                        {/* Gallery / drop zone */}
+                        <div
+                            className="border-2 border-dashed border-border/70 rounded-lg p-4 md:p-5 lg:p-6 cursor-pointer hover:bg-muted/50 transition-colors"
+                            onClick={() => !isSaving && fileInputRef.current?.click()}
+                            onDragOver={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                            }}
+                            onDragLeave={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                            }}
+                            onDrop={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                if (!isSaving && e.dataTransfer.files?.length) {
+                                    handleUploadFiles(Array.from(e.dataTransfer.files));
+                                }
+                            }}
+                        >
+                            {files.length === 0 ? (
+                                <div className="text-center py-10">
+                                    <HugeiconsIcon
+                                        icon={ImageUpload01Icon}
+                                        className="size-14 mx-auto text-muted-foreground"
+                                    />
+                                    <p className="text-sm text-muted-foreground mt-3 font-medium">
+                                        Drag & drop product media here
+                                    </p>
+                                    <p className="text-xs text-muted-foreground mt-1">
+                                        Images up to 10MB each
+                                    </p>
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        className="mt-4"
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            fileInputRef.current?.click();
+                                        }}
+                                        disabled={isSaving}
+                                    >
+                                        Upload media
+                                    </Button>
+                                </div>
+                            ) : (
+                                <div className="space-y-4">
+                                    {/* Featured image */}
+                                    <div className="relative aspect-square max-h-80 mx-auto">
+                                        {files[0].contentType.startsWith("video/") ? (
+                                            <video
+                                                src={files[0].previewUrl}
+                                                className={`h-full w-full rounded-md object-cover transition-opacity ${files[0].isUploading ? "opacity-60" : "opacity-100"}`}
+                                                muted
+                                                playsInline
+                                                controls
+                                            />
+                                        ) : (
+                                            <div className="relative h-full w-full">
+                                                <Image
+                                                    src={files[0].previewUrl}
+                                                    alt="Featured preview"
+                                                    fill
+                                                    className={`object-contain rounded-md transition-opacity ${files[0].isUploading ? "opacity-60" : "opacity-100"}`}
+                                                />
+                                            </div>
+                                        )}
+                                        {files[0].isUploading && (
+                                            <div className="absolute inset-0 flex items-center justify-center">
+                                                <div className="size-10 rounded-full bg-background/80 flex items-center justify-center">
+                                                    <div className="size-7 rounded-full border-2 border-primary/60 border-t-primary animate-spin" />
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
 
-                    <div className="space-y-2">
-                        <Label htmlFor="description">Description</Label>
-                        <Textarea
-                            id="description"
-                            value={description}
-                            onChange={(e) => setDescription(e.target.value)}
-                            placeholder="Describe your product..."
-                            rows={4}
-                        />
-                    </div>
+                                    {/* Thumbnail strip */}
+                                    <div className="grid grid-cols-5 gap-2 sm:grid-cols-6">
+                                        {files.map((f, i) => (
+                                            <div
+                                                key={i}
+                                                className={`relative aspect-square cursor-pointer border-2 rounded-md ${i === 0 ? "border-primary" : "border-transparent hover:border-border"}`}
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    if (i !== 0) {
+                                                        setFiles((prev) => {
+                                                            const updated = [...prev];
+                                                            const [moved] = updated.splice(i, 1);
+                                                            updated.unshift(moved);
+                                                            return updated;
+                                                        });
+                                                    }
+                                                }}
+                                            >
+                                                <Image
+                                                    src={f.previewUrl}
+                                                    alt="Preview"
+                                                    fill
+                                                    className={`object-cover rounded-md transition-opacity ${f.isUploading ? "opacity-60" : "opacity-100"}`}
+                                                />
+                                                {f.isUploading && (
+                                                    <div className="absolute inset-0 flex items-center justify-center">
+                                                        <div className="size-5 rounded-full border-2 border-white/60 border-t-white animate-spin" />
+                                                    </div>
+                                                )}
 
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                            <Label htmlFor="price">Price (KES)</Label>
-                            <Input
-                                id="price"
-                                type="number"
-                                min="0"
-                                value={priceAmount}
-                                onChange={(e) => setPriceAmount(e.target.value)}
-                                placeholder="Enter price"
+                                                {!isSaving && (
+                                                    <button
+                                                        type="button"
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            removeFile(i);
+                                                        }}
+                                                        className="absolute -top-1 -right-1 bg-destructive text-destructive-foreground rounded-full p-0.5 shadow-sm"
+                                                    >
+                                                        <HugeiconsIcon icon={Cancel01Icon} className="size-3" />
+                                                    </button>
+                                                )}
+                                            </div>
+                                        ))}
+
+                                        {/* Add more tile */}
+                                        <button
+                                            type="button"
+                                            className="relative aspect-square border-2 border-dashed border-border/70 rounded-md flex items-center justify-center hover:bg-muted/10"
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                fileInputRef.current?.click();
+                                            }}
+                                            disabled={isSaving}
+                                        >
+                                            <HugeiconsIcon icon={ImageUpload01Icon} className="size-5 text-muted-foreground" />
+                                            <span className="sr-only">Add more media</span>
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
+
+                            <input
+                                ref={fileInputRef}
+                                type="file"
+                                accept="image/*"
+                                multiple
+                                className="hidden"
+                                onChange={handleFileChange}
+                                disabled={isSaving}
                             />
                         </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="quantity">Quantity</Label>
-                            <Input
-                                id="quantity"
-                                type="number"
-                                min="0"
-                                value={quantity}
-                                onChange={(e) => setQuantity(e.target.value)}
-                                placeholder="Enter quantity"
-                            />
+
+                        {/* Details */}
+                        <div className="space-y-4">
+                            <div className="space-y-2">
+                                <Label htmlFor="productName">Product Name</Label>
+                                <Input
+                                    id="productName"
+                                    value={productName}
+                                    onChange={(e) => setProductName(e.target.value)}
+                                    placeholder="e.g. Black Hoodie"
+                                    required
+                                    disabled={isSaving}
+                                />
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-3">
+                                <div className="space-y-2">
+                                    <Label htmlFor="priceAmount">Price ({storeCurrency})</Label>
+                                    <Input
+                                        id="priceAmount"
+                                        value={priceAmount}
+                                        onChange={(e) => setPriceAmount(e.target.value)}
+                                        placeholder="0"
+                                        type="number"
+                                        min="0"
+                                        disabled={isSaving}
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="quantity">Quantity</Label>
+                                    <Input
+                                        id="quantity"
+                                        value={quantity}
+                                        onChange={(e) => setQuantity(e.target.value)}
+                                        placeholder="0"
+                                        type="number"
+                                        min="0"
+                                        disabled={isSaving}
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label htmlFor="description">Description</Label>
+                                <Textarea
+                                    id="description"
+                                    value={description}
+                                    onChange={(e) => setDescription(e.target.value)}
+                                    placeholder="Describe the product..."
+                                    rows={5}
+                                    disabled={isSaving}
+                                />
+                            </div>
                         </div>
                     </div>
 
@@ -407,18 +498,18 @@ export function EditProductModal({
                         >
                             Cancel
                         </Button>
-                        <Button type="submit" disabled={isSaving || files.some(f => f.isUploading)}>
+                        <Button type="submit" disabled={isSaving || files.some(f => f.isUploading)} onClick={handleSubmit}>
                             {isSaving ? (
                                 <>
                                     <HugeiconsIcon icon={Loading03Icon} className="size-4 mr-2 animate-spin" />
                                     Saving...
                                 </>
                             ) : (
-                                "Done"
+                                "Save changes"
                             )}
                         </Button>
                     </DialogFooter>
-                </form>
+                </div>
             </DialogContent>
         </Dialog>
     );

@@ -46,6 +46,8 @@ function inferCountryCode(raw: string | undefined): string {
 export default function PersonalInfo() {
   const { data, savePersonal, goBack, isLoading, error } = useOnboarding();
 
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const [fullName, setFullName] = useState(data.personal?.fullName ?? "");
   const [phoneNumber, setPhoneNumber] = useState(
     data.personal?.phoneNumber ?? "",
@@ -65,7 +67,12 @@ export default function PersonalInfo() {
       return;
     }
 
-    await savePersonal({ fullName, phoneNumber: normalized });
+    setIsSubmitting(true);
+    try {
+      await savePersonal({ fullName, phoneNumber: normalized });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -160,10 +167,10 @@ export default function PersonalInfo() {
 
           <Button
             type="submit"
-            disabled={isLoading}
+            disabled={isLoading || isSubmitting}
             className="bg-primary hover:bg-primary/90 hover:text-white"
           >
-            {isLoading ? "Saving..." : "Continue"}
+            {isSubmitting ? "Saving..." : "Continue"}
           </Button>
         </div>
       </form>

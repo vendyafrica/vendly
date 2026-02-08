@@ -9,12 +9,10 @@ export default function RecentlyViewed() {
     if (!isLoaded) return null; // Avoid hydration mismatch or flash
     if (recentItems.length === 0) return null;
 
-    // Helper to format price same as ProductGrid
-    const formatPrice = (amount: number, currency: string) => {
-        if (currency === "KES") {
-            return `KES ${amount.toLocaleString()}`;
-        }
-        return `$${(amount / 100).toFixed(2)}`;
+    const formatPrice = (amount: number | undefined, currency: string | undefined) => {
+        if (amount === undefined || amount === null || Number.isNaN(amount)) return "—";
+        const c = currency || "";
+        return `${c} ${amount.toLocaleString()}`.trim();
     };
 
     return (
@@ -32,7 +30,6 @@ export default function RecentlyViewed() {
                         storeSlug={item.store.slug}
                         price={formatPrice(item.price, item.currency)}
                         image={item.image}
-                        rating={5} // Default rating or store if available, RecentItem needs rating if we want to show it. For now hardcode or omit if optional
                     />
                 ))}
             </div>

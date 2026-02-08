@@ -10,6 +10,7 @@ export type TenantBootstrap = {
   storeId: string;
   storeSlug: string;
   storeName?: string;
+  defaultCurrency?: string;
 };
 
 type TenantContextValue = {

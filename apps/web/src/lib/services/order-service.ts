@@ -80,9 +80,7 @@ export const orderService = {
             .where(eq(orders.storeId, store.id));
         const orderNumber = `ORD-${((countResult?.count || 0) + 1).toString().padStart(4, "0")}`;
 
-        // Calculate totals
-        const shippingCost = 0;
-        const totalAmount = subtotal + shippingCost;
+        const totalAmount = subtotal;
 
         // Create order with transaction
         const order = await dbWs.transaction(async (tx) => {
@@ -98,10 +96,8 @@ export const orderService = {
                     paymentMethod: input.paymentMethod,
                     paymentStatus: "pending",
                     status: "pending",
-                    shippingAddress: input.shippingAddress,
                     notes: input.notes,
                     subtotal,
-                    shippingCost,
                     totalAmount,
                     currency,
                 })
@@ -240,6 +236,11 @@ export const orderService = {
      * Get order statistics
      */
     async getOrderStats(tenantId: string): Promise<OrderStats> {
+        const store = await db.query.stores.findFirst({
+            where: and(eq(stores.tenantId, tenantId), isNull(stores.deletedAt)),
+            columns: { defaultCurrency: true },
+        });
+
         const [revenueResult] = await db
             .select({
                 total: sql<number>`COALESCE(SUM(total_amount), 0)::int`,
@@ -297,7 +298,7 @@ export const orderService = {
             pendingChange: "+0% from last month",
             refundedAmount: refundedResult?.total || 0,
             refundedChange: "+0% from last month",
-            currency: "KES",
+            currency: store?.defaultCurrency || "UGX",
         };
     },
 };

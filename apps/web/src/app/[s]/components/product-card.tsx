@@ -9,11 +9,12 @@ interface ProductCardProps {
   slug: string;
   price: string;
   image: string | null;
-  rating: number;
   index?: number;
   id: string;
   storeSlug?: string;
 }
+
+const FALLBACK_PRODUCT_IMAGE = "https://cdn.cosmos.so/25e7ef9d-3d95-486d-b7db-f0d19c1992d7?format=jpeg";
 
 // More subtle aspect ratio variations
 const aspectVariants = [
@@ -30,6 +31,9 @@ export function ProductCard({ title, slug, price, image, index = 0, storeSlug, i
   const currentStoreSlug = storeSlug || (params?.s as string);
   const aspectClass = aspectVariants[index % aspectVariants.length];
 
+  const imageUrl = image || FALLBACK_PRODUCT_IMAGE;
+  const isBlobUrl = imageUrl.includes("blob.vercel-storage.com");
+
   return (
     <Link
       href={`/${currentStoreSlug}/${id}/${slug}`}
@@ -37,13 +41,14 @@ export function ProductCard({ title, slug, price, image, index = 0, storeSlug, i
     >
       {/* Image Container */}
       <div className={`relative overflow-hidden rounded-lg ${aspectClass} bg-muted`}>
-        {image ? (
+        {imageUrl ? (
           <Image
-            src={image}
+            src={imageUrl}
             alt={title}
             fill
             sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, 20vw"
             className="object-cover transition-all duration-700 ease-out group-hover:scale-[1.03]"
+            unoptimized={isBlobUrl}
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center text-muted-foreground">

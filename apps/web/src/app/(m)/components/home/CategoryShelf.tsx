@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { HugeiconsIcon } from "@hugeicons/react";
-import { StarIcon, ArrowRight01Icon } from "@hugeicons/core-free-icons";
+import { ArrowRight01Icon } from "@hugeicons/core-free-icons";
 import type { MarketplaceStore } from "@/types/marketplace";
 import { StoreCarousel } from "@/app/(m)/components/StoreCarousel";
 import {
@@ -43,7 +43,7 @@ export function CategoryShelf({ title, stores, categorySlug }: CategoryShelfProp
                                     <div className="relative aspect-4/3 overflow-hidden rounded-xl bg-muted border border-border/50 mb-3">
                                         {(() => {
                                             const images = [
-                                                ...(store.heroMediaItems?.map((m) => m.url).filter(Boolean) ?? []),
+                                                ...(store.heroMedia?.filter(Boolean) ?? []),
                                                 ...(store.images?.filter(Boolean) ?? []),
                                             ];
 
@@ -74,14 +74,6 @@ export function CategoryShelf({ title, stores, categorySlug }: CategoryShelfProp
                                             </div>
                                             );
                                         })()}
-                                        
-                                        {/* Rating Badge */}
-                                        {store.rating > 0 && (
-                                            <div className="absolute top-2 right-2 flex items-center gap-1 bg-background/90 backdrop-blur-sm text-foreground text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm">
-                                                <span>{store.rating}</span>
-                                                <HugeiconsIcon icon={StarIcon} size={10} className="text-yellow-500 fill-yellow-500" />
-                                            </div>
-                                        )}
                                     </div>
 
                                     <div className="flex items-center gap-3">

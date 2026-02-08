@@ -12,9 +12,11 @@ import { CategoryShelf } from "@/app/(m)/components/home/CategoryShelf";
 import type { Metadata } from "next";
 import MarketplaceLayout from "./(m)/layout";
 
+export const dynamic = "force-dynamic";
+
 const homeTitle = "Vendly | Shop African Creators & Social Sellers";
 const homeDescription =
-  "Discover and shop from African creators, students, and small sellers. Secure mobile money payments, integrated delivery, and trusted independent stores all in one marketplace.";
+  "Discover and shop from African creators, brands, and small sellers. Secure mobile money payments, integrated delivery, and trusted independent stores all in one marketplace.";
 
 export const metadata: Metadata = {
   title: homeTitle,
@@ -43,12 +45,9 @@ export default async function HomePage() {
     slug: s.slug,
     description: s.description,
     categories: s.categories || [],
-    rating: 4.5, // TODO: Replace with real rating when available
     logoUrl: s.logoUrl ?? null,
     instagramAvatarUrl: s.instagramAvatarUrl ?? null,
-    heroMedia: s.heroMedia ?? null,
-    heroMediaType: s.heroMediaType ?? null,
-    heroMediaItems: Array.isArray(s.heroMediaItems) ? s.heroMediaItems : [],
+    heroMedia: Array.isArray(s.heroMedia) ? s.heroMedia : [],
     images: Array.isArray(s.images) ? s.images : [],
   });
 
@@ -59,10 +58,9 @@ export default async function HomePage() {
     uiStoresByCategory[cat] = list.map(mapToMarketplaceStore);
   });
 
-  // Sort categories to show populated ones first
   const sortedCategories = Object.entries(uiStoresByCategory)
     .sort(([, a], [, b]) => b.length - a.length)
-    .slice(0, 6); // Limit to top 6 populated categories
+    .slice(0, 6); 
 
   return (
     <MarketplaceLayout>

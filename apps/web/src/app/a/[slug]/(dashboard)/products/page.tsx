@@ -9,9 +9,11 @@ import { useTenant } from "../tenant-context";
 import Image from "next/image";
 import { Button } from "@vendly/ui/components/button";
 import { HugeiconsIcon } from "@hugeicons/react";
-import { Delete02Icon, Edit02Icon, MoreHorizontalIcon } from "@hugeicons/core-free-icons";
+import { Delete02Icon, Edit02Icon, MoreHorizontalIcon, SparklesIcon } from "@hugeicons/core-free-icons";
 import { UploadModal } from "./components/upload-modal";
 import { EditProductModal } from "./components/edit-product-modal";
+import { Checkbox } from "@vendly/ui/components/checkbox";
+
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -48,6 +50,9 @@ export default function ProductsPage() {
 
   const deleteProduct = useDeleteProduct(bootstrap?.storeId ?? "");
   const { invalidate } = useInvalidateProducts();
+
+  const [rowSelection, setRowSelection] = React.useState<Record<string, boolean>>({});
+  const [isPublishing, setIsPublishing] = React.useState(false);
 
   const [uploadModalOpen, setUploadModalOpen] = React.useState(false);
   const [editModalOpen, setEditModalOpen] = React.useState(false);
@@ -116,7 +121,95 @@ export default function ProductsPage() {
     }
   };
 
+  const selectedIds = React.useMemo(() => Object.keys(rowSelection), [rowSelection]);
+
+  const handlePublishSelected = React.useCallback(async () => {
+    if (selectedIds.length === 0) return;
+    try {
+      setIsPublishing(true);
+      const res = await fetch("/api/products/bulk", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ids: selectedIds, action: "publish" }),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => null);
+        throw new Error(data?.error || "Publish failed");
+      }
+      if (bootstrap?.storeId) {
+        invalidate(bootstrap.storeId);
+      }
+      setRowSelection({});
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Publish failed");
+    } finally {
+      setIsPublishing(false);
+    }
+  }, [bootstrap?.storeId, invalidate, selectedIds]);
+
+  React.useEffect(() => {
+    // Clear selections for rows that no longer exist
+    const existingIds = new Set(rows.map((r) => r.id));
+    setRowSelection((prev) => {
+      let changed = false;
+      const next: Record<string, boolean> = {};
+      Object.entries(prev).forEach(([id, value]) => {
+        if (value && existingIds.has(id)) {
+          next[id] = true;
+        } else {
+          changed = true;
+        }
+      });
+      // If nothing changed, return prev to avoid unnecessary rerenders
+      if (!changed && Object.keys(prev).length === Object.keys(next).length) {
+        return prev;
+      }
+      return next;
+    });
+  }, [rows]);
+
+  const toggleAll = (checked: boolean) => {
+    if (checked) {
+      const next: Record<string, boolean> = {};
+      rows.forEach((r) => {
+        next[r.id] = true;
+      });
+      setRowSelection(next);
+    } else {
+      setRowSelection({});
+    }
+  };
+
+  const toggleOne = (id: string, checked: boolean) => {
+    setRowSelection((prev) => {
+      const next = { ...prev };
+      if (checked) next[id] = true;
+      else delete next[id];
+      return next;
+    });
+  };
+
   const columns: ColumnDef<ProductTableRow>[] = [
+    {
+      id: "select",
+      header: () => (
+        <Checkbox
+          aria-label="Select all"
+          checked={selectedIds.length > 0 && selectedIds.length === rows.length}
+          indeterminate={selectedIds.length > 0 && selectedIds.length < rows.length}
+          onCheckedChange={(checked) => toggleAll(Boolean(checked))}
+        />
+      ),
+      cell: ({ row }) => (
+        <Checkbox
+          aria-label="Select row"
+          checked={rowSelection[row.original.id]}
+          onCheckedChange={(checked) => toggleOne(row.original.id, Boolean(checked))}
+        />
+      ),
+      size: 32,
+      enableSorting: false,
+    },
     {
       id: "product",
       header: "Product",
@@ -129,6 +222,7 @@ export default function ProductsPage() {
                 alt={row.original.name}
                 fill
                 className="object-cover"
+                unoptimized={row.original.thumbnailUrl.includes("blob.vercel-storage.com")}
               />
             ) : (
               <div className="flex size-full items-center justify-center text-xs text-muted-foreground">N/A</div>
@@ -269,11 +363,26 @@ export default function ProductsPage() {
           <h1 className="text-3xl font-semibold tracking-tight">Products</h1>
           <p className="text-sm text-muted-foreground">Keep your catalog tidy and stay on top of stock.</p>
         </div>
-        <AddProductButton
-          onUploadClick={() => {
-            setUploadModalOpen(true);
-          }}
-        />
+        <div className="flex flex-col sm:flex-row gap-2 sm:items-center">
+          <Button
+            variant="outline"
+            disabled={selectedIds.length === 0 || isPublishing}
+            onClick={handlePublishSelected}
+            className="sm:order-1"
+          >
+            {isPublishing ? "Publishing..." : (
+              <span className="inline-flex items-center gap-2">
+                <HugeiconsIcon icon={SparklesIcon} className="size-4" />
+                Publish
+              </span>
+            )}
+          </Button>
+          <AddProductButton
+            onUploadClick={() => {
+              setUploadModalOpen(true);
+            }}
+          />
+        </div>
       </div>
 
       <SegmentedStatsCard segments={statSegments} />
@@ -295,7 +404,16 @@ export default function ProductsPage() {
             ))}
           </div>
         ) : (
-          <DataTable columns={columns} data={rows} />
+          <DataTable
+            columns={columns}
+            data={rows}
+            rowSelection={rowSelection}
+            onRowSelectionChange={(updater) => {
+              setRowSelection((prev) =>
+                typeof updater === "function" ? updater(prev) : updater
+              );
+            }}
+          />
         )}
       </div>
 

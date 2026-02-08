@@ -75,7 +75,7 @@ export default function AnalyticsPage() {
     }
   }, [bootstrap?.storeSlug, fetchOverview]);
 
-  const currency = data?.currency || "KES";
+  const currency = data?.currency || bootstrap?.defaultCurrency || "UGX ";
 
   const kpiSegments = [
     {

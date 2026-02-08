@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { Button } from "@vendly/ui/components/button";
 import {
   Empty,
@@ -14,7 +15,14 @@ import { useOnboarding } from "../context/onboarding-context";
 
 export default function Complete() {
   const router = useRouter();
-  const { data, isComplete, isLoading } = useOnboarding();
+  const { data, isLoading } = useOnboarding();
+
+  const [storeSlug] = useState<string | null>(() =>
+    typeof window === "undefined" ? null : localStorage.getItem("vendly_store_slug")
+  );
+  const [tenantSlug] = useState<string | null>(() =>
+    typeof window === "undefined" ? null : localStorage.getItem("vendly_tenant_slug")
+  );
 
   // Show loading state
   if (isLoading) {
@@ -63,8 +71,8 @@ export default function Complete() {
             🎉 Your store is ready!
           </EmptyTitle>
           <EmptyDescription className="text-sm text-muted-foreground">
-            Congratulations {data.personal?.fullName?.split(" ")[0]}!
-            Your store &quot;{data.store?.storeName}&quot; has been created successfully.
+            Congratulations {data.personal?.fullName?.split(" ")[0] || "there"}!
+            Your store {data.store?.storeName ? `"${data.store?.storeName}" ` : ""}has been created successfully.
           </EmptyDescription>
         </EmptyHeader>
         <EmptyContent className="space-y-3">
@@ -72,16 +80,10 @@ export default function Complete() {
             size="lg"
             className="w-full cursor-pointer"
             onClick={() => {
-              // Navigate to the admin dashboard
-              const tenantSlug = localStorage.getItem("vendly_tenant_slug");
-              const storeSlug = localStorage.getItem("vendly_store_slug");
-
-              if (storeSlug) {
-                window.location.href = `/a/${storeSlug}`;
-              } else if (tenantSlug) {
-                window.location.href = `/a/${tenantSlug}`;
+              const targetSlug = storeSlug || tenantSlug;
+              if (targetSlug) {
+                window.location.href = `/a/${targetSlug}`;
               } else {
-                // Fallback or error handling
                 console.error("No redirect path found");
               }
             }}
@@ -93,12 +95,16 @@ export default function Complete() {
             size="lg"
             className="w-full cursor-pointer"
             onClick={() => {
-              // Navigate to the store preview
-              const storeSlug = data.store?.storeName
+              const fallbackSlug = data.store?.storeName
                 ?.toLowerCase()
                 .replace(/[^a-z0-9]+/g, "-")
                 .replace(/^-|-$/g, "");
-              router.push(`/${storeSlug || "store"}`);
+              const targetSlug = storeSlug || fallbackSlug;
+              if (targetSlug) {
+                router.push(`/${targetSlug}`);
+              } else {
+                router.push("/");
+              }
             }}
           >
             Preview Store

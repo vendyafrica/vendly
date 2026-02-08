@@ -1,5 +1,5 @@
 import { db } from "@vendly/db/db";
-import { users, verification, platformRoles } from "@vendly/db/schema";
+import { users, verification, superAdmins } from "@vendly/db/schema";
 import { NextResponse } from "next/server";
 import { sendAdminVerificationEmail } from "@vendly/transactional";
 import { eq } from "@vendly/db";
@@ -23,18 +23,16 @@ export async function POST(req: Request) {
         });
 
         if (existingUser) {
-            const existingSuperAdmin = await db.query.platformRoles.findFirst({
-                where: eq(platformRoles.role, "super_admin"),
+            const existingSuperAdmin = await db.query.superAdmins.findFirst({
+                columns: { id: true },
             });
 
             // Bootstrap-only: if there is no super admin yet, allow existing user to receive a verification
             // email to activate/verify and become the first super admin.
             if (!existingSuperAdmin) {
-                // Create verification token
                 const token = crypto.randomBytes(32).toString("hex");
                 const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
 
-                // Remove any existing verification records for this identifier (avoid duplicates)
                 await db.delete(verification).where(eq(verification.identifier, email));
 
                 await db.insert(verification).values({

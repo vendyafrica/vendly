@@ -2,6 +2,7 @@ import { resend } from './resend';
 import { render } from '@react-email/components';
 import { VerificationEmail } from './emails/verification';
 import { MagicLinkEmail } from './emails/magic-link';
+import { SellerMagicLinkEmail } from './emails/seller-magic-link';
 import * as React from 'react';
 
 interface SendVerificationProps {
@@ -48,6 +49,23 @@ export const sendMagicLinkEmail = async ({ to, url }: SendMagicLinkProps) => {
 
   if (data.error) {
     throw new Error("Magic link email failed to send");
+  }
+
+  return data;
+};
+
+export const sendSellerMagicLinkEmail = async ({ to, url }: SendMagicLinkProps) => {
+  const emailHtml = await render(React.createElement(SellerMagicLinkEmail, { url }));
+
+  const data = await resend.emails.send({
+    from: 'Vendly <noreply@vendlyafrica.store>',
+    to,
+    subject: 'Finish setting up your Vendly store',
+    html: emailHtml,
+  });
+
+  if (data.error) {
+    throw new Error("Seller magic link email failed to send");
   }
 
   return data;
