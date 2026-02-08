@@ -41,7 +41,7 @@ const CATEGORY_DATA = [
     },
 ];
 
-async function seed() {
+async function seedCategories() {
     console.log("Seeding categories...");
 
     for (const cat of CATEGORY_DATA) {
@@ -64,12 +64,15 @@ async function seed() {
             await db.insert(categories).values(cat);
         }
     }
-
-    console.log("Seeding complete.");
-    process.exit(0);
 }
 
-seed().catch((err) => {
-    console.error("Seeding failed:", err);
-    process.exit(1);
-});
+async function seed() {
+    try {
+        await seedCategories();
+        console.log("Seeding complete.");
+    } catch (err) {
+        console.error("Seeding failed:", err);
+    }
+}
+
+seed();
