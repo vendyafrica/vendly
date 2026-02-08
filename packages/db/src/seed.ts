@@ -39,6 +39,18 @@ const CATEGORY_DATA = [
         image: "https://cdn.cosmos.so/64986e58-da40-41e5-b0e2-1d041230c287?format=jpeg",
         level: 0,
     },
+    {
+        name: "Babies & Toddlers",
+        slug: "babies-and-toddlers",
+        image: "https://cdn.cosmos.so/8f0e2e15-4940-42f1-880a-58a692c03fa7?format=jpeg",
+        level: 0,
+    },
+    {
+        name: "Electronics",
+        slug: "electronics",
+        image: "https://cdn.cosmos.so/f78c6679-210d-4ac3-9891-2b63dfce19f1?format=jpeg",
+        level: 0,
+    }
 ];
 
 async function seedCategories() {

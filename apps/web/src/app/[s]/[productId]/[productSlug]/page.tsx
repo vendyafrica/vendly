@@ -5,6 +5,10 @@ import { marketplaceService } from "@/lib/services/marketplace-service";
 import { notFound, redirect } from "next/navigation";
 import type { Metadata } from "next";
 
+function isUuid(value: string) {
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
+}
+
 interface PageProps {
   params: Promise<{
     s: string;
@@ -15,6 +19,14 @@ interface PageProps {
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { s: storeSlug, productId } = await params;
+
+  if (!isUuid(productId)) {
+    return {
+      title: "Product not found | Vendly",
+      description: "Browse independent sellers on Vendly.",
+      robots: { index: false, follow: false },
+    };
+  }
 
   const store = await marketplaceService.getStoreDetails(storeSlug);
   const product = await marketplaceService.getStoreProductById(storeSlug, productId);
@@ -53,9 +65,16 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 export default async function ProductPage({ params }: PageProps) {
   const { s: storeSlug, productId, productSlug } = await params;
 
+  if (!isUuid(productId)) {
+    notFound();
+  }
+
   const store = await marketplaceService.getStoreDetails(storeSlug);
   const product = await marketplaceService.getStoreProductById(storeSlug, productId);
-  const products = await marketplaceService.getStoreProducts(storeSlug);
+  const products = (await marketplaceService.getStoreProducts(storeSlug)).map((p) => ({
+    ...p,
+    rating: 0,
+  }));
 
   if (!store || !product) {
     notFound();
