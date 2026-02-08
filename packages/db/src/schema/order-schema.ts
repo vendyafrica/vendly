@@ -39,6 +39,7 @@ export const orders = pgTable(
         currency: text("currency").notNull().default("UGX"),
 
         notes: text("notes"),
+        deliveryAddress: text("delivery_address"),
 
         createdAt: timestamp("created_at").defaultNow().notNull(),
         updatedAt: timestamp("updated_at").defaultNow().$onUpdate(() => new Date()).notNull(),
@@ -118,6 +119,6 @@ export type NewOrder = typeof orders.$inferInsert;
 export type OrderItem = typeof orderItems.$inferSelect;
 export type NewOrderItem = typeof orderItems.$inferInsert;
 
-export type OrderStatus = "pending" | "processing" | "completed" | "cancelled" | "refunded";
+export type OrderStatus = "pending" | "processing" | "ready" | "out_for_delivery" | "completed" | "cancelled" | "refunded";
 export type PaymentMethod = "card" | "mpesa" | "mtn_momo" | "cash_on_delivery";
 export type PaymentStatus = "pending" | "paid" | "failed" | "refunded";

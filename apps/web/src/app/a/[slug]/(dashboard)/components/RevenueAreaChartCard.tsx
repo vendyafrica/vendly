@@ -26,10 +26,6 @@ export function RevenueAreaChartCard({
   data: RevenuePoint[];
   className?: string;
 }) {
-  const hasData = data.length > 0;
-  const safeData = hasData ? data : [{ date: "—", total: 0 }];
-  const maxTotal = Math.max(...safeData.map((p) => p.total));
-  const yDomain: [number, number] = maxTotal === 0 ? [0, 1] : [0, maxTotal];
   const chartConfig = {
     total: {
       label: "Revenue",
@@ -44,10 +40,10 @@ export function RevenueAreaChartCard({
         <div className="text-3xl font-bold text-foreground">{totalLabel}</div>
       </CardHeader>
       <CardContent className="px-3 pb-4 md:px-5">
-        <ChartContainer config={chartConfig} className="aspect-auto h-[260px] min-h-[220px] w-full md:h-[320px]">
+        <ChartContainer config={chartConfig} className="aspect-auto h-[260px] w-full md:h-[320px]">
           <AreaChart
             accessibilityLayer
-            data={safeData}
+            data={data}
             margin={{
               left: 18,
               right: 18,
@@ -67,7 +63,6 @@ export function RevenueAreaChartCard({
               axisLine={false}
               width={42}
               tickMargin={10}
-              domain={yDomain}
               padding={{ top: 8, bottom: 8 }}
             />
             <ChartTooltip cursor={false} content={<ChartTooltipContent hideLabel />} />
@@ -87,9 +82,6 @@ export function RevenueAreaChartCard({
             />
           </AreaChart>
         </ChartContainer>
-        {!hasData ? (
-          <div className="mt-2 text-xs text-muted-foreground">No revenue data for the selected period.</div>
-        ) : null}
       </CardContent>
     </Card>
   );

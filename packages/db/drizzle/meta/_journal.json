@@ -211,6 +211,20 @@
       "when": 1770445482878,
       "tag": "0029_large_nick_fury",
       "breakpoints": true
+    },
+    {
+      "idx": 30,
+      "version": "7",
+      "when": 1770585801154,
+      "tag": "0030_breezy_warbound",
+      "breakpoints": true
+    },
+    {
+      "idx": 31,
+      "version": "7",
+      "when": 1770588943671,
+      "tag": "0031_quick_cobalt_man",
+      "breakpoints": true
     }
   ]
 }

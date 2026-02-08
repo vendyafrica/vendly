@@ -38,7 +38,7 @@ export const createOrderSchema = z.object({
 export type CreateOrderInput = z.infer<typeof createOrderSchema>;
 
 export const updateOrderStatusSchema = z.object({
-  status: z.enum(["pending", "processing", "completed", "cancelled", "refunded"]).optional(),
+  status: z.enum(["pending", "processing", "ready", "out_for_delivery", "completed", "cancelled", "refunded"]).optional(),
   paymentStatus: z.enum(["pending", "paid", "failed", "refunded"]).optional(),
 });
 
@@ -273,7 +273,7 @@ export const orderService = {
     return order;
   },
 
-  async getLatestOrderForTenantByStatus(tenantId: string, statuses: Array<"pending" | "processing" | "completed" | "cancelled" | "refunded">) {
+  async getLatestOrderForTenantByStatus(tenantId: string, statuses: Array<"pending" | "processing" | "ready" | "out_for_delivery" | "completed" | "cancelled" | "refunded">) {
     const order = await db.query.orders.findFirst({
       where: and(eq(orders.tenantId, tenantId), inArray(orders.status, statuses), isNull(orders.deletedAt)),
       orderBy: (o, { desc }) => [desc(o.createdAt)],
@@ -281,5 +281,45 @@ export const orderService = {
     });
 
     return order;
+  },
+
+  async getLatestOrderByCustomerPhone(phone: string, paymentStatuses: Array<"pending" | "paid" | "failed" | "refunded">) {
+    const variants = new Set<string>();
+    const trimmed = phone.trim();
+    if (trimmed) variants.add(trimmed);
+
+    const normalized = normalizePhoneToE164(trimmed, {
+      defaultCountryCallingCode: process.env.DEFAULT_COUNTRY_CALLING_CODE || "256",
+    });
+    if (normalized) variants.add(normalized);
+    if (normalized?.startsWith("+")) variants.add(normalized.slice(1));
+
+    const list = Array.from(variants);
+    if (!list.length) return null;
+
+    const order = await db.query.orders.findFirst({
+      where: and(
+        inArray(orders.customerPhone, list),
+        inArray(orders.paymentStatus, paymentStatuses),
+        isNull(orders.deletedAt),
+      ),
+      orderBy: (o, { desc }) => [desc(o.createdAt)],
+      with: { items: true, store: true },
+    });
+
+    return order || null;
+  },
+
+  async updateOrderStatusByOrderId(orderId: string, input: UpdateOrderStatusInput) {
+    const [updated] = await db
+      .update(orders)
+      .set({
+        ...input,
+        updatedAt: new Date(),
+      })
+      .where(and(eq(orders.id, orderId), isNull(orders.deletedAt)))
+      .returning();
+
+    return updated;
   },
 };

@@ -4,51 +4,18 @@ import type { Router as ExpressRouter } from "express";
 import type { RawBodyRequest } from "../types/raw-body";
 import { orderService } from "../services/order-service";
 import { whatsappClient } from "../services/whatsapp/whatsapp-client";
-import { notifyCustomerOrderAccepted, notifyCustomerOrderOutForDelivery } from "../services/notifications";
-
-function formatSellerOrderDetails(order: { orderNumber: string; currency?: string | null; items?: Array<{ productName?: string | null; quantity?: number | null; unitPrice?: number | null; totalPrice?: number | null } | null>; customerPhone?: string | null; shippingAddress?: unknown; notes?: string | null }) {
-  const lines: string[] = [];
-  lines.push(`Order ${order.orderNumber} details:`);
-
-  const currency = order.currency || "";
-  const items = (order.items || []).filter(Boolean) as Array<{
-    productName?: string | null;
-    quantity?: number | null;
-    unitPrice?: number | null;
-    totalPrice?: number | null;
-  }>;
-
-  if (items.length) {
-    lines.push("Items:");
-    for (const item of items) {
-      const qty = item.quantity ?? 0;
-      const name = item.productName || "Item";
-      const unit = item.unitPrice != null ? `${currency} ${item.unitPrice}` : undefined;
-      const total = item.totalPrice != null ? `${currency} ${item.totalPrice}` : undefined;
-      const pricePart = unit && total ? ` @ ${unit} = ${total}` : unit ? ` @ ${unit}` : total ? ` (total ${total})` : "";
-      lines.push(`- ${qty}x ${name}${pricePart}`);
-    }
-  }
-
-  if (order.customerPhone) {
-    lines.push(`Customer phone: ${order.customerPhone}`);
-  }
-
-  const addr = asObject(order.shippingAddress);
-  const street = typeof addr?.street === "string" ? addr.street : undefined;
-  const city = typeof addr?.city === "string" ? addr.city : undefined;
-  const country = typeof addr?.country === "string" ? addr.country : undefined;
-  const addressParts = [street, city, country].filter(Boolean);
-  if (addressParts.length) {
-    lines.push(`Delivery address: ${addressParts.join(", ")}`);
-  }
-
-  if (order.notes) {
-    lines.push(`Notes: ${order.notes}`);
-  }
-
-  return lines.join("\n");
-}
+import {
+  notifyCustomerOrderAccepted,
+  notifyCustomerOrderReady,
+  notifyCustomerOutForDelivery,
+  notifyCustomerOrderDelivered,
+  notifyCustomerOrderDeclined,
+  notifySellerCustomerDetails,
+  notifySellerOrderDetails,
+  notifySellerMarkReady,
+  notifySellerOutForDelivery,
+  notifySellerOrderCompleted,
+} from "../services/notifications";
 
 export const whatsappRouter: ExpressRouter = Router();
 
@@ -168,88 +135,108 @@ whatsappRouter.post("/webhooks/whatsapp", async (req, res) => {
 
     console.log("[WhatsAppWebhook] Message", { from, type, raw });
 
-    const normalized = raw.toLowerCase();
+    const normalized = raw.toLowerCase().trim();
 
+    // -----------------------------------------------------------------------
+    // Buyer "I PAID" quick reply — sender is NOT a tenant (seller)
+    // -----------------------------------------------------------------------
+    if (normalized === "i paid") {
+      // Look up the latest pending-payment order for this buyer phone
+      const buyerOrder = await orderService.getLatestOrderByCustomerPhone(from, ["pending"]);
+      if (!buyerOrder) {
+        await whatsappClient.sendTextMessage({
+          to: from,
+          body: "We could not find a pending order for your number. If you have paid, please wait for confirmation.",
+        });
+        return res.sendStatus(200);
+      }
+
+      // Simulated: mark payment as paid
+      await orderService.updateOrderStatusByOrderId(buyerOrder.id, { paymentStatus: "paid" });
+
+      await whatsappClient.sendTextMessage({
+        to: from,
+        body: `Thank you! We have noted your payment for order ${buyerOrder.orderNumber}. The seller will be notified.`,
+      });
+
+      // Notify seller about the paid order
+      try {
+        const full = await orderService.getOrderById(buyerOrder.id);
+        if (full) {
+          const sellerPhone = await orderService.getTenantPhoneByTenantId(full.tenantId);
+          const { notifySellerNewOrder } = await import("../services/notifications");
+          await notifySellerNewOrder({ sellerPhone, order: full });
+        }
+      } catch (err) {
+        console.error("[WhatsAppWebhook] Failed to notify seller after I PAID", err);
+      }
+
+      return res.sendStatus(200);
+    }
+
+    // -----------------------------------------------------------------------
+    // Seller commands: ACCEPT, DECLINE, READY, OUT, DELIVERED
+    // -----------------------------------------------------------------------
     const tenantId = await orderService.getTenantIdByPhoneNumber(from);
     if (!tenantId) {
       console.warn("[WhatsAppWebhook] Could not map sender to tenant", { from, raw });
       return res.sendStatus(200);
     }
 
-    // MVP command parsing:
-    // - "accept" / "decline" / "ready" / "out"
-    // - optionally: "accept ORD-0001"
     const parts = normalized.split(/\s+/).filter(Boolean);
     const action = parts[0];
     const maybeOrderNumber = parts.find((p: string) => p.startsWith("ord-"));
 
     const order = maybeOrderNumber
       ? await orderService.getOrderByOrderNumberForTenant(tenantId, maybeOrderNumber.toUpperCase())
-      : action === "ready" || action === "out"
+      : action === "ready"
         ? await orderService.getLatestOrderForTenantByStatus(tenantId, ["processing"])
-        : await orderService.getLatestOrderForTenantByStatus(tenantId, ["pending"]);
+        : action === "out"
+          ? await orderService.getLatestOrderForTenantByStatus(tenantId, ["ready"])
+          : action === "delivered"
+            ? await orderService.getLatestOrderForTenantByStatus(tenantId, ["out_for_delivery"])
+            : await orderService.getLatestOrderForTenantByStatus(tenantId, ["pending"]);
 
     if (!order) {
       await whatsappClient.sendTextMessage({
         to: from,
-        body: "No matching order found. Reply like: ACCEPT ORD-0001, DECLINE ORD-0001, OUT ORD-0001, or READY ORD-0001.",
+        body: "No matching order found. Reply like: ACCEPT ORD-0001, DECLINE ORD-0001, READY ORD-0001, OUT ORD-0001, or DELIVERED ORD-0001.",
       });
       return res.sendStatus(200);
     }
+
+    const sellerPhone = await orderService.getTenantPhoneByTenantId(tenantId);
 
     if (action === "accept") {
       await orderService.updateOrderStatus(order.id, tenantId, { status: "processing" });
-      await whatsappClient.sendTextMessage({
-        to: from,
-        body: `Accepted ${order.orderNumber}. Reply READY ${order.orderNumber} when it is ready for pickup.`,
-      });
 
-      // Notify customer (best-effort)
+      // Send seller: customer details + order details (with READY button)
       try {
         const full = await orderService.getOrderById(order.id);
         if (full) {
+          await notifySellerCustomerDetails({ sellerPhone, order: full });
+          await notifySellerOrderDetails({ sellerPhone, order: full });
           await notifyCustomerOrderAccepted({ order: full });
         }
       } catch (err) {
-        console.error("[WhatsAppWebhook] Failed to notify customer (accepted)", err);
+        console.error("[WhatsAppWebhook] Failed to send accept notifications", err);
       }
-
-      // Follow-up details message (no template changes required)
-      try {
-        const full = await orderService.getOrderById(order.id);
-        if (full) {
-          await whatsappClient.sendTextMessage({
-            to: from,
-            body: formatSellerOrderDetails(full),
-          });
-        }
-      } catch (err) {
-        console.error("[WhatsAppWebhook] Failed to send order details", err);
-      }
-      return res.sendStatus(200);
-    }
-
-    if (action === "out") {
-      // No DB status change for MVP. We only notify the customer.
-      await whatsappClient.sendTextMessage({
-        to: from,
-        body: `Noted. We will notify the customer that ${order.orderNumber} is out for delivery.`,
-      });
-
-      try {
-        const full = await orderService.getOrderById(order.id);
-        if (full) {
-          await notifyCustomerOrderOutForDelivery({ order: full });
-        }
-      } catch (err) {
-        console.error("[WhatsAppWebhook] Failed to notify customer (out for delivery)", err);
-      }
-
       return res.sendStatus(200);
     }
 
     if (action === "decline") {
       await orderService.updateOrderStatus(order.id, tenantId, { status: "cancelled" });
+
+      // Notify buyer their order was declined
+      try {
+        const full = await orderService.getOrderById(order.id);
+        if (full) {
+          await notifyCustomerOrderDeclined({ order: full });
+        }
+      } catch (err) {
+        console.error("[WhatsAppWebhook] Failed to notify customer (declined)", err);
+      }
+
       await whatsappClient.sendTextMessage({
         to: from,
         body: `Declined ${order.orderNumber}.`,
@@ -258,17 +245,54 @@ whatsappRouter.post("/webhooks/whatsapp", async (req, res) => {
     }
 
     if (action === "ready") {
+      await orderService.updateOrderStatus(order.id, tenantId, { status: "ready" });
+
+      try {
+        const full = await orderService.getOrderById(order.id);
+        if (full) {
+          await notifySellerMarkReady({ sellerPhone, order: full });
+          await notifyCustomerOrderReady({ order: full });
+        }
+      } catch (err) {
+        console.error("[WhatsAppWebhook] Failed to send ready notifications", err);
+      }
+      return res.sendStatus(200);
+    }
+
+    if (action === "out") {
+      await orderService.updateOrderStatus(order.id, tenantId, { status: "out_for_delivery" });
+
+      const riderDetails = "Vendly Rider (+256700000000)";
+      try {
+        const full = await orderService.getOrderById(order.id);
+        if (full) {
+          await notifySellerOutForDelivery({ sellerPhone, order: full, riderDetails });
+          await notifyCustomerOutForDelivery({ order: full, riderDetails });
+        }
+      } catch (err) {
+        console.error("[WhatsAppWebhook] Failed to send out-for-delivery notifications", err);
+      }
+      return res.sendStatus(200);
+    }
+
+    if (action === "delivered") {
       await orderService.updateOrderStatus(order.id, tenantId, { status: "completed" });
-      await whatsappClient.sendTextMessage({
-        to: from,
-        body: `Marked ${order.orderNumber} as ready.`,
-      });
+
+      try {
+        const full = await orderService.getOrderById(order.id);
+        if (full) {
+          await notifySellerOrderCompleted({ sellerPhone, order: full });
+          await notifyCustomerOrderDelivered({ order: full });
+        }
+      } catch (err) {
+        console.error("[WhatsAppWebhook] Failed to send delivered notifications", err);
+      }
       return res.sendStatus(200);
     }
 
     await whatsappClient.sendTextMessage({
       to: from,
-      body: "Unknown command. Reply: ACCEPT, DECLINE, OUT, or READY (optionally with order number).",
+      body: "Unknown command. Reply: ACCEPT, DECLINE, READY, OUT, or DELIVERED (optionally with order number).",
     });
   } catch (err) {
     console.error("[WhatsAppWebhook] Handler error", err);

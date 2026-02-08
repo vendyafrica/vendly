@@ -1,165 +1,310 @@
 import { orders, type OrderItem } from "@vendly/db";
 import { whatsappClient } from "./whatsapp/whatsapp-client";
+import { templateSend } from "./whatsapp/template-registry";
 import { normalizePhoneToE164 } from "../utils/phone";
 import { shouldSendNotificationOnce } from "./notification-dedupe";
+import { buyerPreferenceStore } from "./whatsapp/preference-store";
 
-export async function notifySellerNewOrder(params: {
-  sellerPhone: string | null;
-  order: (typeof orders.$inferSelect) & { items?: Array<OrderItem> };
-}) {
-  // MVP: reuse the existing seller template + have tenant reply with Accept/Decline/Ready.
-  return notifySellerOrderPaid(params);
-}
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
 
-export async function notifySellerOrderPaid(params: {
-  sellerPhone: string | null;
-  order: (typeof orders.$inferSelect) & { items?: Array<OrderItem> };
-}) {
-  const { sellerPhone, order } = params;
-
-  if (!sellerPhone) {
-    console.warn("[NotifySeller] No tenant phoneNumber configured; skipping WhatsApp stub", {
-      orderId: order.id,
-      tenantId: order.tenantId,
-    });
-    return;
-  }
-
-  const to = normalizePhoneToE164(sellerPhone, {
-    defaultCountryCallingCode: process.env.DEFAULT_COUNTRY_CALLING_CODE || "254",
-  });
-
-  if (!to) {
-    console.warn("[NotifySeller] Invalid seller phone; cannot normalize to E.164", {
-      sellerPhone,
-      orderId: order.id,
-      tenantId: order.tenantId,
-    });
-    return;
-  }
-
-  // Meta expects a WhatsApp ID / phone number in international format (digits), typically without '+'.
-  const toWhatsApp = to.replace(/^\+/, "");
-
-  if (!whatsappClient.isConfigured()) {
-    console.log("[NotifySeller] (stub) WhatsApp client not configured", {
-      hasAccessToken: Boolean(process.env.WHATSAPP_ACCESS_TOKEN),
-      hasPhoneNumberId: Boolean(process.env.WHATSAPP_PHONE_NUMBER_ID),
-      phoneNumberId: process.env.WHATSAPP_PHONE_NUMBER_ID || null,
-    });
-
-    console.log("[NotifySeller] (stub) Would send WhatsApp 'new paid order' to seller", {
-      to: toWhatsApp,
-      orderId: order.id,
-      orderNumber: order.orderNumber,
-      totalAmount: order.totalAmount,
-      currency: order.currency,
-      paymentStatus: order.paymentStatus,
-    });
-    return;
-  }
-
-  // Uses a Utility template. Template must be created & approved in Meta before this can send.
-  await whatsappClient.sendTemplateMessage({
-    to: toWhatsApp,
-    templateName: "seller_new_paid_order",
-    languageCode: "en_US",
-    components: [
-      {
-        type: "body",
-        parameters: [
-          { type: "text", parameter_name: "order_number", text: order.orderNumber },
-          { type: "text", parameter_name: "buyer_name", text: order.customerName },
-          { type: "text", parameter_name: "currency", text: order.currency },
-          { type: "text", parameter_name: "total", text: String(order.totalAmount) },
-        ],
-      },
-    ],
-  });
-}
-
-function normalizeCustomerWhatsAppTo(order: { id: string; customerPhone?: string | null; orderNumber: string }) {
-  if (!order.customerPhone) {
-    console.warn("[NotifyCustomer] Missing customerPhone; skipping", { orderId: order.id, orderNumber: order.orderNumber });
+function normalizeToWhatsApp(phone: string | null | undefined, label: string, context: Record<string, unknown>): string | null {
+  if (!phone) {
+    console.warn(`[Notify] Missing ${label} phone; skipping`, context);
     return null;
   }
 
-  const to = normalizePhoneToE164(order.customerPhone, {
-    defaultCountryCallingCode: process.env.DEFAULT_COUNTRY_CALLING_CODE || "254",
+  const to = normalizePhoneToE164(phone, {
+    defaultCountryCallingCode: process.env.DEFAULT_COUNTRY_CALLING_CODE || "256",
   });
 
   if (!to) {
-    console.warn("[NotifyCustomer] Invalid customer phone; cannot normalize to E.164", {
-      customerPhone: order.customerPhone,
-      orderId: order.id,
-      orderNumber: order.orderNumber,
-    });
+    console.warn(`[Notify] Invalid ${label} phone; cannot normalize to E.164`, { phone, ...context });
     return null;
   }
 
   return to.replace(/^\+/, "");
 }
 
-async function sendCustomerTextOnce(params: {
-  orderId: string;
-  event: "received" | "accepted" | "out_for_delivery";
-  toWhatsApp: string;
-  body: string;
-}) {
-  const key = `customer:${params.event}:${params.orderId}:${params.toWhatsApp}`;
-  if (!shouldSendNotificationOnce({ key })) {
-    console.log("[NotifyCustomer] Skipping duplicate", { key });
+export async function notifySellerCswOpener(params: { sellerPhone: string | null; tenantId: string }) {
+  const { sellerPhone, tenantId } = params;
+  const to = normalizeToWhatsApp(sellerPhone, "seller", { tenantId });
+  if (!to) return;
+
+  const dayKey = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+  const key = `seller:csw_opener:${tenantId}:${dayKey}:${to}`;
+  // 24h TTL to avoid multiple sends per day
+  await sendOnce(key, () => whatsappClient.sendTemplateMessage(templateSend.sellerCswOpener(to)), { ttlMs: 24 * 60 * 60 * 1000 });
+}
+
+type OrderLike = (typeof orders.$inferSelect) & {
+  items?: Array<OrderItem> | null;
+  store?: { name?: string | null } | null;
+};
+
+function formatItemsSummary(items: Array<OrderItem> | null | undefined): string {
+  if (!items || items.length === 0) return "See order details";
+  return items
+    .map((i) => `${i.quantity ?? 1}x ${i.productName || "Item"}`)
+    .join(", ");
+}
+
+function formatCustomerDetails(order: OrderLike): string {
+  const parts: string[] = [];
+  parts.push(order.customerName);
+  if (order.customerPhone) parts.push(order.customerPhone);
+  if (order.deliveryAddress) parts.push(`Address: ${order.deliveryAddress}`);
+  if (order.notes) parts.push(`Note: ${order.notes}`);
+  return parts.join(". ");
+}
+
+async function sendOnce(key: string, fn: () => Promise<unknown>, opts?: { ttlMs?: number }) {
+  if (!shouldSendNotificationOnce({ key, ttlMs: opts?.ttlMs })) {
+    console.log("[Notify] Skipping duplicate", { key });
     return;
   }
 
   if (!whatsappClient.isConfigured()) {
-    console.log("[NotifyCustomer] (stub) WhatsApp client not configured", {
-      event: params.event,
-      to: params.toWhatsApp,
-      orderId: params.orderId,
-    });
-    console.log("[NotifyCustomer] (stub) Would send", { body: params.body });
+    console.log("[Notify] (stub) WhatsApp not configured; would send", { key });
     return;
   }
 
-  await whatsappClient.sendTextMessage({
-    to: params.toWhatsApp,
-    body: params.body,
-  });
+  await fn();
 }
 
-export async function notifyCustomerOrderReceived(params: {
-  order: (typeof orders.$inferSelect) & { store?: { name?: string | null } | null };
-}) {
-  const { order } = params;
-  const toWhatsApp = normalizeCustomerWhatsAppTo(order);
-  if (!toWhatsApp) return;
+// ---------------------------------------------------------------------------
+// Seller notifications
+// ---------------------------------------------------------------------------
 
-  const storeName = order.store?.name || "the store";
-  const body = `We received your order ${order.orderNumber} from ${storeName}. We’ll notify you when it’s accepted.`;
-  await sendCustomerTextOnce({ orderId: order.id, event: "received", toWhatsApp, body });
+export async function notifySellerNewOrder(params: {
+  sellerPhone: string | null;
+  order: OrderLike;
+}) {
+  const { sellerPhone, order } = params;
+  const to = normalizeToWhatsApp(sellerPhone, "seller", { orderId: order.id, tenantId: order.tenantId });
+  if (!to) return;
+
+  const key = `seller:new_order:${order.id}:${to}`;
+  await sendOnce(key, () =>
+    whatsappClient.sendTemplateMessage(
+      templateSend.sellerNewOrder(to, {
+        orderId: order.orderNumber,
+        totalAmount: String(order.totalAmount),
+      })
+    )
+  );
 }
 
-export async function notifyCustomerOrderAccepted(params: {
-  order: (typeof orders.$inferSelect) & { store?: { name?: string | null } | null };
+export async function notifySellerOrderDetails(params: {
+  sellerPhone: string | null;
+  order: OrderLike;
 }) {
-  const { order } = params;
-  const toWhatsApp = normalizeCustomerWhatsAppTo(order);
-  if (!toWhatsApp) return;
+  const { sellerPhone, order } = params;
+  const to = normalizeToWhatsApp(sellerPhone, "seller", { orderId: order.id });
+  if (!to) return;
 
-  const storeName = order.store?.name || "the store";
-  const body = `Good news — ${storeName} accepted your order ${order.orderNumber}. We’ll notify you when it’s out for delivery.`;
-  await sendCustomerTextOnce({ orderId: order.id, event: "accepted", toWhatsApp, body });
+  const key = `seller:order_details:${order.id}:${to}`;
+  await sendOnce(key, () =>
+    whatsappClient.sendTemplateMessage(
+      templateSend.sellerOrderDetails(to, {
+        orderId: order.orderNumber,
+        itemsSummary: formatItemsSummary(order.items),
+      })
+    )
+  );
 }
 
-export async function notifyCustomerOrderOutForDelivery(params: {
-  order: (typeof orders.$inferSelect) & { store?: { name?: string | null } | null };
+export async function notifySellerCustomerDetails(params: {
+  sellerPhone: string | null;
+  order: OrderLike;
 }) {
-  const { order } = params;
-  const toWhatsApp = normalizeCustomerWhatsAppTo(order);
-  if (!toWhatsApp) return;
+  const { sellerPhone, order } = params;
+  const to = normalizeToWhatsApp(sellerPhone, "seller", { orderId: order.id });
+  if (!to) return;
 
-  const storeName = order.store?.name || "the store";
-  const body = `Update: ${storeName} says your order ${order.orderNumber} is out for delivery.`;
-  await sendCustomerTextOnce({ orderId: order.id, event: "out_for_delivery", toWhatsApp, body });
+  const key = `seller:customer_details:${order.id}:${to}`;
+  await sendOnce(key, () =>
+    whatsappClient.sendTemplateMessage(
+      templateSend.sellerCustomerDetails(to, {
+        orderId: order.orderNumber,
+        customerDetails: formatCustomerDetails(order),
+      })
+    )
+  );
+}
+
+export async function notifySellerMarkReady(params: {
+  sellerPhone: string | null;
+  order: OrderLike;
+}) {
+  const { sellerPhone, order } = params;
+  const to = normalizeToWhatsApp(sellerPhone, "seller", { orderId: order.id });
+  if (!to) return;
+
+  const key = `seller:mark_ready:${order.id}:${to}`;
+  await sendOnce(key, () =>
+    whatsappClient.sendTemplateMessage(
+      templateSend.sellerMarkReady(to, { orderId: order.orderNumber })
+    )
+  );
+}
+
+export async function notifySellerOutForDelivery(params: {
+  sellerPhone: string | null;
+  order: OrderLike;
+  riderDetails?: string;
+}) {
+  const { sellerPhone, order } = params;
+  const to = normalizeToWhatsApp(sellerPhone, "seller", { orderId: order.id });
+  if (!to) return;
+
+  const key = `seller:out_for_delivery:${order.id}:${to}`;
+  await sendOnce(key, () =>
+    whatsappClient.sendTemplateMessage(
+      templateSend.sellerOutForDelivery(to, {
+        orderId: order.orderNumber,
+        riderDetails: params.riderDetails || "Vendly Rider (+256700000000)",
+      })
+    )
+  );
+}
+
+export async function notifySellerOrderCompleted(params: {
+  sellerPhone: string | null;
+  order: OrderLike;
+}) {
+  const { sellerPhone, order } = params;
+  const to = normalizeToWhatsApp(sellerPhone, "seller", { orderId: order.id });
+  if (!to) return;
+
+  const key = `seller:order_completed:${order.id}:${to}`;
+  await sendOnce(key, () =>
+    whatsappClient.sendTemplateMessage(
+      templateSend.sellerOrderCompleted(to, { orderId: order.orderNumber })
+    )
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Buyer / Customer notifications
+// ---------------------------------------------------------------------------
+
+export async function notifyCustomerOrderReceived(params: { order: OrderLike }) {
+  const { order } = params;
+  const to = normalizeToWhatsApp(order.customerPhone, "customer", { orderId: order.id, orderNumber: order.orderNumber });
+  if (!to) return;
+
+  const key = `customer:received:${order.id}:${to}`;
+  await sendOnce(key, () =>
+    whatsappClient.sendTemplateMessage(
+      templateSend.buyerOrderReceived(to, {
+        customerName: order.customerName,
+        orderId: order.orderNumber,
+        storeName: order.store?.name || "the store",
+      })
+    )
+  );
+}
+
+export async function notifyCustomerPaymentAction(params: { order: OrderLike }) {
+  const { order } = params;
+  const to = normalizeToWhatsApp(order.customerPhone, "customer", { orderId: order.id, orderNumber: order.orderNumber });
+  if (!to) return;
+
+  const key = `customer:payment_action:${order.id}:${to}`;
+  await sendOnce(key, () =>
+    whatsappClient.sendTemplateMessage(
+      templateSend.buyerPaymentAction(to, {
+        customerName: order.customerName,
+        orderId: order.orderNumber,
+        storeName: order.store?.name || "the store",
+        amount: String(order.totalAmount),
+      })
+    )
+  );
+}
+
+export async function notifyCustomerOrderAccepted(params: { order: OrderLike }) {
+  const { order } = params;
+  const to = normalizeToWhatsApp(order.customerPhone, "customer", { orderId: order.id, orderNumber: order.orderNumber });
+  if (!to) return;
+
+  const key = `customer:accepted:${order.id}:${to}`;
+  await sendOnce(key, () =>
+    whatsappClient.sendTemplateMessage(
+      templateSend.buyerOrderReady(to, {
+        customerName: order.customerName,
+        orderId: order.orderNumber,
+      })
+    )
+  );
+}
+
+export async function notifyCustomerOrderReady(params: { order: OrderLike }) {
+  const { order } = params;
+  if (buyerPreferenceStore.isOnce(order.customerPhone)) return;
+  const to = normalizeToWhatsApp(order.customerPhone, "customer", { orderId: order.id, orderNumber: order.orderNumber });
+  if (!to) return;
+
+  const key = `customer:ready:${order.id}:${to}`;
+  await sendOnce(key, () =>
+    whatsappClient.sendTemplateMessage(
+      templateSend.buyerOrderReady(to, {
+        customerName: order.customerName,
+        orderId: order.orderNumber,
+      })
+    )
+  );
+}
+
+export async function notifyCustomerOutForDelivery(params: { order: OrderLike; riderDetails?: string }) {
+  const { order } = params;
+  const to = normalizeToWhatsApp(order.customerPhone, "customer", { orderId: order.id, orderNumber: order.orderNumber });
+  if (!to) return;
+
+  const key = `customer:out_for_delivery:${order.id}:${to}`;
+  await sendOnce(key, () =>
+    whatsappClient.sendTemplateMessage(
+      templateSend.buyerOutForDelivery(to, {
+        customerName: order.customerName,
+        orderId: order.orderNumber,
+        riderDetails: params.riderDetails || "Vendly Rider (+256700000000)",
+      })
+    )
+  );
+}
+
+export async function notifyCustomerOrderDelivered(params: { order: OrderLike }) {
+  const { order } = params;
+  const to = normalizeToWhatsApp(order.customerPhone, "customer", { orderId: order.id, orderNumber: order.orderNumber });
+  if (!to) return;
+
+  const key = `customer:delivered:${order.id}:${to}`;
+  await sendOnce(key, () =>
+    whatsappClient.sendTemplateMessage(
+      templateSend.buyerOrderDelivered(to, {
+        customerName: order.customerName,
+        orderId: order.orderNumber,
+      })
+    )
+  );
+}
+
+export async function notifyCustomerOrderDeclined(params: { order: OrderLike }) {
+  const { order } = params;
+  if (buyerPreferenceStore.isOnce(order.customerPhone)) return;
+  const to = normalizeToWhatsApp(order.customerPhone, "customer", { orderId: order.id, orderNumber: order.orderNumber });
+  if (!to) return;
+
+  const key = `customer:declined:${order.id}:${to}`;
+  await sendOnce(key, () =>
+    whatsappClient.sendTemplateMessage(
+      templateSend.buyerOrderDeclined(to, {
+        customerName: order.customerName,
+        orderId: order.orderNumber,
+        storeName: order.store?.name || "the store",
+      })
+    )
+  );
 }

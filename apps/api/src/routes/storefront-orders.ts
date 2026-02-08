@@ -1,7 +1,6 @@
 import { Router } from "express";
 import { createOrderSchema, orderService } from "../services/order-service";
-import { notifyCustomerOrderReceived, notifySellerNewOrder } from "../services/notifications";
-// MTN MoMo disabled: imports removed
+import { notifyCustomerPaymentAction, notifySellerNewOrder } from "../services/notifications";
 import { capturePosthogEvent } from "../utils/posthog";
 
 export const storefrontOrdersRouter:Router = Router();
@@ -37,14 +36,15 @@ storefrontOrdersRouter.post("/storefront/:slug/orders", async (req, res, next) =
     // Fire-and-forget notification (do not block order creation if WhatsApp fails)
     void (async () => {
       try {
-        console.log("[StorefrontOrders] Sending WhatsApp notification to seller", { slug, orderId: order.id });
         const sellerPhone = await orderService.getTenantPhoneByStoreSlug(slug);
-        await notifySellerNewOrder({ sellerPhone, order });
 
-        console.log("[StorefrontOrders] Sending WhatsApp notification to customer", { slug, orderId: order.id });
-        await notifyCustomerOrderReceived({ order });
+        console.log("[StorefrontOrders] Sending WhatsApp payment action to customer", { slug, orderId: order.id });
+        await notifyCustomerPaymentAction({ order });
+
+        console.log("[StorefrontOrders] Sending WhatsApp new order to seller", { slug, orderId: order.id });
+        await notifySellerNewOrder({ sellerPhone, order });
       } catch (err) {
-        console.error("[StorefrontOrders] Failed to notify seller on WhatsApp", err);
+        console.error("[StorefrontOrders] Failed to send WhatsApp notifications", err);
       }
     })();
 
