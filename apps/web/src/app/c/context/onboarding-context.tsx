@@ -94,7 +94,8 @@ export function OnboardingProvider({ children }: ProviderProps) {
         currentStep: "signup",
         data: {},
         isComplete: false,
-        isLoading: true,
+        // Start false so the personal step isn't blocked on initial render (e.g., after magic link redirect)
+        isLoading: false,
         error: null,
     });
 
@@ -110,14 +111,10 @@ export function OnboardingProvider({ children }: ProviderProps) {
                     ...prev,
                     data: parsedData,
                     currentStep: savedStep || "signup",
-                    isLoading: false,
                 }));
-            } else {
-                setState(prev => ({ ...prev, isLoading: false }));
             }
         } catch (e) {
             console.error("Failed to load onboarding state", e);
-            setState(prev => ({ ...prev, isLoading: false }));
         }
     }, []);
 

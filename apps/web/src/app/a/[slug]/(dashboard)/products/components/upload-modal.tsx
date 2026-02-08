@@ -128,6 +128,8 @@ export function UploadModal({
             const MAX_CONCURRENCY = 5;
             let nextIndex = 0;
 
+            const uploadResults: Record<number, { ok: true } | { ok: false; error: string }> = {};
+
             const workers = Array.from(
                 { length: Math.min(MAX_CONCURRENCY, indicesToUpload.length) },
                 async () => {
@@ -160,6 +162,8 @@ export function UploadModal({
                                 };
                                 return updated;
                             });
+
+                            uploadResults[index] = { ok: true };
                         } catch (err) {
                             const message = err instanceof Error ? err.message : String(err);
                             console.error(`Failed to upload ${file.name}:`, err);
@@ -174,6 +178,8 @@ export function UploadModal({
                                 };
                                 return updated;
                             });
+
+                            uploadResults[index] = { ok: false, error: message };
                         }
                     }
                 }
@@ -181,10 +187,17 @@ export function UploadModal({
 
             await Promise.all(workers);
 
-            const anyFailed = filesRef.current.some((f) => !f.url);
+            const anyFailed = indicesToUpload.some(({ index }) => {
+                const res = uploadResults[index];
+                return !res || res.ok === false;
+            });
+
             if (anyFailed) {
-                const firstFailure = filesRef.current.find((f) => !f.url);
-                const failureMessage = firstFailure?.error
+                const firstFailedIndex = indicesToUpload
+                    .map(({ index }) => index)
+                    .find((idx) => uploadResults[idx]?.ok === false);
+                const firstFailure = firstFailedIndex !== undefined ? uploadResults[firstFailedIndex] : undefined;
+                const failureMessage = firstFailure && firstFailure.ok === false
                     ? `Some uploads failed: ${firstFailure.error}`
                     : "Some uploads failed. Please remove failed items and try again.";
                 throw new Error(failureMessage);

@@ -9,7 +9,7 @@ interface HeroProps {
     };
 }
 
-const FALLBACK_HERO_IMAGE = "https://cdn.cosmos.so/d48eee2c-5cfa-4bb9-a35d-ec78717c2c7e?format=jpeg";
+const FALLBACK_HERO_IMAGE = "https://cdn.cosmos.so/23dcbd2e-147b-4387-8c4e-aa2bbcf22704?format=jpeg";
 
 export function Hero({ store }: HeroProps) {
     const heroMedia = Array.isArray(store.heroMedia) ? store.heroMedia : [];

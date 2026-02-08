@@ -20,6 +20,7 @@ export const authClient = createAuthClient({
       promptOptions: {
         baseDelay: 500,
         maxAttempts: 5,
+        fedCM: false,
       },
     }),
   ],

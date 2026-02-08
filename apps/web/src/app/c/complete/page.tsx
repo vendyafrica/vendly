@@ -1,6 +1,4 @@
 "use client";
-
-import { useState } from "react";
 import { Button } from "@vendly/ui/components/button";
 import {
   Empty,
@@ -16,13 +14,6 @@ import { useOnboarding } from "../context/onboarding-context";
 export default function Complete() {
   const router = useRouter();
   const { data, isLoading } = useOnboarding();
-
-  const [storeSlug] = useState<string | null>(() =>
-    typeof window === "undefined" ? null : localStorage.getItem("vendly_store_slug")
-  );
-  const [tenantSlug] = useState<string | null>(() =>
-    typeof window === "undefined" ? null : localStorage.getItem("vendly_tenant_slug")
-  );
 
   // Show loading state
   if (isLoading) {
@@ -80,6 +71,8 @@ export default function Complete() {
             size="lg"
             className="w-full cursor-pointer"
             onClick={() => {
+              const storeSlug = localStorage.getItem("vendly_store_slug");
+              const tenantSlug = localStorage.getItem("vendly_tenant_slug");
               const targetSlug = storeSlug || tenantSlug;
               if (targetSlug) {
                 window.location.href = `/a/${targetSlug}`;
@@ -95,6 +88,7 @@ export default function Complete() {
             size="lg"
             className="w-full cursor-pointer"
             onClick={() => {
+              const storeSlug = localStorage.getItem("vendly_store_slug");
               const fallbackSlug = data.store?.storeName
                 ?.toLowerCase()
                 .replace(/[^a-z0-9]+/g, "-")

@@ -1,3 +1,4 @@
+import { relations } from "drizzle-orm";
 import { pgTable, uuid, text, timestamp, integer, numeric, index, jsonb } from "drizzle-orm/pg-core";
 import { tenants } from "./tenant-schema";
 import { stores } from "./storefront-schema";
@@ -57,6 +58,13 @@ export const superAdmins = pgTable(
     },
     (table) => [index("super_admins_user_idx").on(table.userId)]
 );
+
+export const superAdminsRelations = relations(superAdmins, ({ one }) => ({
+    user: one(users, {
+        fields: [superAdmins.userId],
+        references: [users.id],
+    }),
+}));
 
 export type Customer = typeof customers.$inferSelect;
 export type NewCustomer = typeof customers.$inferInsert;

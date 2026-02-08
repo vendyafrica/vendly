@@ -1,4 +1,11 @@
-import { db, stores, categories, eq, and, exists, arrayContains, drizzleSql as sql } from "@vendly/db";
+import { db, stores, eq, and, drizzleSql as sql } from "@vendly/db";
+
+function isUndefinedColumnError(error: unknown): boolean {
+    const err = error as { code?: string; cause?: { code?: string }; message?: string };
+    const code = err?.cause?.code || err?.code;
+    if (code === "42703") return true;
+    return typeof err?.message === "string" && err.message.toLowerCase().includes("does not exist");
+}
 
 export const storeRepo = {
     async findById(id: string) {
@@ -8,10 +15,19 @@ export const storeRepo = {
     },
 
     async findActiveStores() {
-        return db
-            .select()
-            .from(stores)
-            .where(eq(stores.status, true));
+        try {
+            return await db
+                .select()
+                .from(stores)
+                .where(eq(stores.status, true));
+        } catch (error) {
+            // Production safety: if app code expects a column that doesn't exist yet in the DB,
+            // avoid crashing the homepage and treat it as "no stores".
+            if (isUndefinedColumnError(error)) {
+                return [];
+            }
+            throw error;
+        }
     },
 
     async findBySlug(slug: string) {
@@ -30,15 +46,22 @@ export const storeRepo = {
     // NOTE: In practice, stores.categories may contain either category slugs (e.g. "women")
     // or category names (e.g. "Women"). Use array overlap to match either.
     async findByCategory(category: { slug: string; name: string }) {
-        return db
-            .select()
-            .from(stores)
-            .where(
-                and(
-                    eq(stores.status, true),
-                    sql`${stores.categories} && ARRAY[${category.slug}, ${category.name}]::text[]`
-                )
-            );
+        try {
+            return await db
+                .select()
+                .from(stores)
+                .where(
+                    and(
+                        eq(stores.status, true),
+                        sql`${stores.categories} && ARRAY[${category.slug}, ${category.name}]::text[]`
+                    )
+                );
+        } catch (error) {
+            if (isUndefinedColumnError(error)) {
+                return [];
+            }
+            throw error;
+        }
     },
 
     async findByTenantId(tenantId: string) {
