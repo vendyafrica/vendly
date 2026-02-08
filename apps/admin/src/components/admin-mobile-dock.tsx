@@ -1,17 +1,19 @@
 "use client";
+
 import * as React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { HugeiconsIcon } from "@hugeicons/react";
 import {
   DashboardCircleIcon,
-  ShoppingBag01Icon,
+  UserMultiple02Icon,
+  Store01Icon,
+  GroupLayersIcon,
+  UserGroupIcon,
+  Payment02Icon,
   PackageOpenIcon,
   Analytics02Icon,
-  Message01Icon,
-  UserGroupIcon,
   Settings01Icon,
-  Store01Icon,
   MenuSquareIcon,
 } from "@hugeicons/core-free-icons";
 import { cn } from "@vendly/ui/lib/utils";
@@ -35,12 +37,6 @@ function normalizePath(path: string) {
   return resolved === "" ? "/" : resolved;
 }
 
-function joinPaths(a: string, b: string) {
-  const left = a.endsWith("/") ? a.slice(0, -1) : a;
-  const right = b.startsWith("/") ? b : `/${b}`;
-  return normalizePath(`${left}${right}`);
-}
-
 function isActivePath(pathname: string, item: DockItem) {
   const itemHref = normalizePath(item.href);
   const current = normalizePath(pathname);
@@ -49,7 +45,7 @@ function isActivePath(pathname: string, item: DockItem) {
   return current === itemHref || current.startsWith(itemHref + "/");
 }
 
-export function AdminMobileDock({ basePath }: { basePath: string }) {
+export function AdminMobileDock() {
   const [mounted, setMounted] = React.useState(false);
   const pathname = usePathname();
 
@@ -60,17 +56,18 @@ export function AdminMobileDock({ basePath }: { basePath: string }) {
   if (!mounted) return null;
 
   const primary: DockItem[] = [
-    { label: "Home", href: joinPaths(basePath, "/"), icon: DashboardCircleIcon, exact: true },
-    { label: "Products", href: joinPaths(basePath, "/products"), icon: ShoppingBag01Icon },
-    { label: "Orders", href: joinPaths(basePath, "/orders"), icon: PackageOpenIcon },
-    { label: "Inbox", href: joinPaths(basePath, "/messages"), icon: Message01Icon },
-    { label: "Studio", href: joinPaths(basePath, "/studio"), icon: Store01Icon },
+    { label: "Home", href: "/", icon: DashboardCircleIcon, exact: true },
+    { label: "Tenants", href: "/tenants", icon: UserMultiple02Icon },
+    { label: "Stores", href: "/stores", icon: Store01Icon },
+    { label: "Categories", href: "/categories", icon: GroupLayersIcon },
+    { label: "Users", href: "/users", icon: UserGroupIcon },
   ];
 
   const more: DockItem[] = [
-    { label: "Analytics", href: joinPaths(basePath, "/analytics"), icon: Analytics02Icon },
-    { label: "Customers", href: joinPaths(basePath, "/customers"), icon: UserGroupIcon },
-    { label: "Settings", href: joinPaths(basePath, "/settings"), icon: Settings01Icon },
+    { label: "Payments", href: "/payments", icon: Payment02Icon },
+    { label: "Orders", href: "/orders", icon: PackageOpenIcon },
+    { label: "Analytics", href: "/analytics", icon: Analytics02Icon },
+    { label: "Settings", href: "/settings", icon: Settings01Icon },
   ];
 
   return (
@@ -89,9 +86,7 @@ export function AdminMobileDock({ basePath }: { basePath: string }) {
               )}
             >
               <HugeiconsIcon icon={item.icon} className={cn("size-6", isActive ? "opacity-100" : "opacity-90")} />
-              {isActive ? (
-                <span className="absolute -top-1 h-1 w-6 rounded-full bg-primary" />
-              ) : null}
+              {isActive ? <span className="absolute -top-1 h-1 w-6 rounded-full bg-primary" /> : null}
             </Link>
           );
         })}

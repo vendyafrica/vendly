@@ -1,4 +1,5 @@
 import { AppSidebar } from "@/components/app-sidebar"
+import { AdminMobileDock } from "@/components/admin-mobile-dock"
 import {
   SidebarInset,
   SidebarProvider,
@@ -28,6 +29,8 @@ export default async function DashboardLayout({
           {children}
         </div>
       </SidebarInset>
+
+      <AdminMobileDock />
     </SidebarProvider>
   )
 }

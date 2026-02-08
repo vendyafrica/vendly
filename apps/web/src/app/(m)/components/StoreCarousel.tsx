@@ -18,7 +18,7 @@ interface StoreCarouselProps {
 export function StoreCarousel({ images, className }: StoreCarouselProps) {
   return (
     <div className={cn("relative group", className)}>
-      <Carousel disableDrag>
+      <Carousel>
         <CarouselContent className="h-full">
           {images.map((image, index) => (
             <CarouselItem key={index}>

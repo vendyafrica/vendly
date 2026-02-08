@@ -8,13 +8,22 @@ import {
 } from "@vendly/ui/components/chart";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@vendly/ui/components/card";
 import { cn } from "@vendly/ui/lib/utils";
-import { Bar, BarChart, XAxis, YAxis } from "recharts";
+import { Bar, BarChart, LabelList, XAxis, YAxis } from "recharts";
+
+function NameLabel({ x, y, value }: { x?: number; y?: number; value?: string }) {
+    if (x == null || y == null || !value) return null;
+    return (
+        <text x={x} y={y - 10} fill="hsl(var(--foreground))" fontSize={12} fontWeight={600}>
+            {value}
+        </text>
+    );
+}
 
 export type StoreData = {
     storeId: string;
-    storeName: string;
-    revenue: number;
-    // Optional: add traffic or other metrics if needed
+    storeName: string | null;
+    revenue?: number;
+    visits?: number;
     orders?: number;
 };
 
@@ -48,43 +57,57 @@ export function TopStoresCard({
 
     return (
         <Card className={cn("w-full border-border/70 shadow-sm", className)}>
-            <CardHeader className="space-y-1 pb-2">
-                <CardTitle className="text-base">{title}</CardTitle>
-                <CardDescription className="text-xs">{description}</CardDescription>
-                <div className="text-3xl font-bold text-foreground">{formattedTotal}</div>
+            <CardHeader className="pb-0">
+                <div className="flex items-center justify-between">
+                    <div>
+                        <CardTitle className="text-base">{title}</CardTitle>
+                        <CardDescription>{description}</CardDescription>
+                    </div>
+                    <div className="text-2xl font-bold">{formattedTotal}</div>
+                </div>
             </CardHeader>
-            <CardContent className="px-3 pb-4 md:px-5">
-                <ChartContainer config={chartConfig} className="aspect-auto h-[260px] w-full md:h-[320px]">
+            <CardContent>
+                <ChartContainer config={chartConfig} className="h-[260px] w-full md:h-[340px]">
                     <BarChart
                         accessibilityLayer
-                        data={stores}
+                        data={stores.map((s) => ({
+                            ...s,
+                            storeName: s.storeName ?? "—",
+                        }))}
                         layout="vertical"
                         margin={{
                             left: 0,
-                            right: 16,
-                            top: 8,
-                            bottom: 8,
+                            right: 32,
+                            top: 16,
+                            bottom: 0,
                         }}
+                        barSize={18}
+                        barGap={12}
+                        barCategoryGap={24}
                     >
-                        <YAxis
-                            dataKey="storeName"
-                            type="category"
-                            tickLine={false}
-                            tickMargin={10}
-                            axisLine={false}
-                            width={120}
-                            tick={{ fontSize: 12 }}
-                        />
                         <XAxis type="number" hide />
-                        <ChartTooltip
-                            cursor={false}
-                            content={<ChartTooltipContent hideLabel />}
-                        />
+                        <YAxis dataKey="storeName" type="category" hide />
+                        <ChartTooltip cursor={false} content={<ChartTooltipContent hideLabel />} />
                         <Bar
                             dataKey={dataKey as string}
-                            fill={`var(--color-${dataKey})`}
-                            radius={4}
-                        />
+                            radius={10}
+                            fill="hsl(var(--primary))"
+                            fillOpacity={0.85}
+                            stroke="hsl(var(--primary))"
+                            strokeWidth={1}
+                        >
+                            <LabelList dataKey="storeName" content={<NameLabel />} />
+                            <LabelList
+                                dataKey={dataKey as string}
+                                position="right"
+                                offset={8}
+                                className="fill-muted-foreground"
+                                fontSize={12}
+                                formatter={(val: unknown) =>
+                                    typeof val === "number" ? val.toLocaleString() : ""
+                                }
+                            />
+                        </Bar>
                     </BarChart>
                 </ChartContainer>
             </CardContent>

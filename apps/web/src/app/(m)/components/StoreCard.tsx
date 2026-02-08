@@ -40,7 +40,7 @@ export function StoreCard({ store }: StoreCardProps) {
       >
         <div className="aspect-4/3 relative overflow-hidden">
           {carouselImages.length > 0 ? (
-            <Carousel className="h-full" disableDrag={true}>
+            <Carousel className="h-full">
               <CarouselContent className="h-full">
                 {carouselImages.map((src, idx) => (
                   <CarouselItem key={`${src}-${idx}`} className="h-full">

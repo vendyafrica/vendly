@@ -5,31 +5,21 @@ import { SegmentedStatsCard } from "./components/SegmentedStatsCard";
 import { RevenueAreaChartCard } from "./components/RevenueAreaChartCard";
 import { TopProductsBarChartCard } from "./components/TopProductsBarChartCard";
 import { TopStoresCard } from "./components/TopStoresCard";
+import { Card, CardContent, CardHeader, CardTitle } from "@vendly/ui/components/card";
 
-// Mock data for revenue chart
-const mockRevenueData = [
-  { date: "Jan", total: 125000 },
-  { date: "Feb", total: 189000 },
-  { date: "Mar", total: 156000 },
-  { date: "Apr", total: 210000 },
-  { date: "May", total: 258000 },
-  { date: "Jun", total: 295000 },
-  { date: "Jul", total: 342000 },
-  { date: "Aug", total: 399520 },
-  { date: "Sep", total: 378000 },
-  { date: "Oct", total: 425000 },
-  { date: "Nov", total: 410000 },
-  { date: "Dec", total: 520000 },
-];
-
-// Mock data for top stores by orders
-const topStoresByOrders = [
-  { product: "Vendly Store A", sales: 1262, fill: "hsl(var(--primary))" },
-  { product: "Vendly Store B", sales: 1062, fill: "hsl(var(--primary))" },
-  { product: "Vendly Store C", sales: 862, fill: "hsl(var(--primary))" },
-  { product: "Vendly Store D", sales: 662, fill: "hsl(var(--primary))" },
-  { product: "Vendly Store E", sales: 420, fill: "hsl(var(--primary))" },
-];
+type RevenueSeriesPoint = { date: string; total: number };
+type TopStoresByOrdersRow = { storeId: string | null; storeName: string | null; orders: number };
+type DashboardApiResponse = {
+  tenants: { total: number; new7d: number; new30d: number };
+  stores: { total: number; active: number; inactive: number };
+  marketplace: { gmv: number; totalOrders: number };
+  revenueSeries?: RevenueSeriesPoint[];
+  topStoresByOrders?: TopStoresByOrdersRow[];
+  topStores: {
+    byRevenue: Array<{ storeId: string; storeName: string | null; revenue: number | null }>;
+    byVisits: Array<{ storeId: string; storeName: string | null; visits: number | null }>;
+  };
+};
 
 function formatCurrency(amount: number) {
   return new Intl.NumberFormat("en-UG", {
@@ -40,7 +30,7 @@ function formatCurrency(amount: number) {
 }
 
 export default function DashboardPage() {
-  const [data, setData] = useState<any>(null);
+  const [data, setData] = useState<DashboardApiResponse | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -73,6 +63,33 @@ export default function DashboardPage() {
   }
 
   const { tenants, stores, marketplace, topStores } = data;
+
+  const revenueSeries = Array.isArray(data?.revenueSeries) ? data.revenueSeries : [];
+  const hasRevenueSeries = revenueSeries.some((p) => Number(p?.total) > 0);
+
+  const topStoresByOrdersRaw = Array.isArray(data?.topStoresByOrders) ? data.topStoresByOrders : [];
+  const topStoresByOrders = topStoresByOrdersRaw
+    .filter((row) => row?.storeName)
+    .map((row) => ({
+      product: String(row.storeName),
+      sales: Number(row.orders ?? 0),
+      fill: "hsl(var(--primary))",
+    }))
+    .filter((row) => row.sales > 0);
+
+  const hasTopStoresByOrders = topStoresByOrders.length > 0;
+
+  const topStoresByRevenue = (topStores?.byRevenue ?? []).map((s) => ({
+    storeId: s.storeId,
+    storeName: s.storeName ?? "—",
+    revenue: Number(s.revenue ?? 0),
+  }));
+
+  const topStoresByVisits = (topStores?.byVisits ?? []).map((s) => ({
+    storeId: s.storeId,
+    storeName: s.storeName ?? "—",
+    visits: Number(s.visits ?? 0),
+  }));
 
   return (
     <div className="flex flex-1 flex-col gap-6 p-4 pt-0">
@@ -116,19 +133,48 @@ export default function DashboardPage() {
 
       {/* Charts Section */}
       <div className="grid gap-5 md:grid-cols-7 lg:grid-cols-7">
-        <RevenueAreaChartCard
-          className="md:col-span-4"
-          title="Platform Revenue"
-          totalLabel={formatCurrency(marketplace.gmv)}
-          data={mockRevenueData}
-        />
-        <TopProductsBarChartCard
-          className="md:col-span-3"
-          title="Top Stores"
-          description="By order volume"
-          totalLabel={stores.total.toString()}
-          data={topStoresByOrders}
-        />
+        {hasRevenueSeries ? (
+          <RevenueAreaChartCard
+            className="md:col-span-4"
+            title="Platform Revenue"
+            totalLabel={formatCurrency(marketplace.gmv)}
+            data={revenueSeries}
+          />
+        ) : (
+          <Card className="w-full border-border/70 shadow-sm md:col-span-4">
+            <CardHeader className="space-y-1 pb-2">
+              <CardTitle className="text-base">Platform Revenue</CardTitle>
+              <div className="text-3xl font-bold text-foreground">{formatCurrency(marketplace.gmv)}</div>
+            </CardHeader>
+            <CardContent className="px-3 pb-4 md:px-5">
+              <div className="flex h-[260px] w-full items-center justify-center rounded-md border border-dashed text-sm text-muted-foreground md:h-[320px]">
+                No data yet
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {hasTopStoresByOrders ? (
+          <TopProductsBarChartCard
+            className="md:col-span-3"
+            title="Top Stores"
+            description="By order volume"
+            totalLabel={topStoresByOrders.reduce((acc, p) => acc + p.sales, 0).toLocaleString()}
+            data={topStoresByOrders}
+          />
+        ) : (
+          <Card className="w-full border-border/70 shadow-sm md:col-span-3">
+            <CardHeader className="space-y-1 pb-2">
+              <CardTitle className="text-base">Top Stores</CardTitle>
+              <div className="text-3xl font-bold text-foreground">0</div>
+            </CardHeader>
+            <CardContent className="px-3 pb-4 md:px-5">
+              <div className="flex h-[260px] w-full items-center justify-center rounded-md border border-dashed text-sm text-muted-foreground md:h-[320px]">
+                No data yet
+              </div>
+            </CardContent>
+          </Card>
+        )}
       </div>
 
       {/* Top Stores Grid */}
@@ -136,14 +182,16 @@ export default function DashboardPage() {
         <TopStoresCard
           title="Top Stores by Revenue"
           description="Stores generating the most paid revenue"
-          stores={topStores.byRevenue}
-          formatValue={(store) => formatCurrency(store.revenue)}
+          stores={topStoresByRevenue}
+          dataKey="revenue"
+          formatValue={(store) => formatCurrency(Number(store.revenue ?? 0))}
         />
         <TopStoresCard
           title="Top Stores by Traffic"
           description="Most visited stores (sessions)"
-          stores={topStores.byVisits}
-          formatValue={(store) => `${(store as any).visits} visits`}
+          stores={topStoresByVisits}
+          dataKey="visits"
+          formatValue={(store) => `${Number(store.visits ?? 0).toLocaleString()} visits`}
         />
       </div>
     </div>
