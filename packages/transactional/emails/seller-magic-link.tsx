@@ -45,7 +45,7 @@ export const SellerMagicLinkEmail: React.FC<Readonly<SellerMagicLinkEmailProps>>
                         continue your store setup.
                     </Text>
 
-                    <Button href={url} style={button}>
+                    <Button href={appendDashboardRedirect(url)} style={button}>
                         Continue Seller Setup
                     </Button>
 
@@ -68,6 +68,19 @@ export const SellerMagicLinkEmail: React.FC<Readonly<SellerMagicLinkEmailProps>>
 );
 
 export default SellerMagicLinkEmail;
+
+function appendDashboardRedirect(rawUrl: string) {
+    try {
+        const u = new URL(rawUrl);
+        // Force redirect to dashboard app
+        u.searchParams.set("redirect", "/a");
+        return u.toString();
+    } catch (err) {
+        // Fallback: best-effort append
+        const joiner = rawUrl.includes("?") ? "&" : "?";
+        return `${rawUrl}${joiner}redirect=/a`;
+    }
+}
 
 const main = {
     backgroundColor: "#f9fafb",
