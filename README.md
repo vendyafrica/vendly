@@ -1,40 +1,82 @@
-# Turborepo kitchen sink starter
+# Vendly Monorepo
 
-This Turborepo starter is maintained by the Turborepo core team.
+Modern commerce platform monorepo managed with Turborepo. Apps and packages share a single workspace for frontend, backend, tooling, and shared config.
 
-This example also shows how to use [Workspace Configurations](https://turborepo.com/docs/core-concepts/monorepos/configuring-workspaces).
+## Contents
 
-## Using this example
+### Apps
+- **web**: Storefront (Next.js) for shoppers and sellers.
+- **marketing**: Public marketing site (Next.js on port 5000 in dev).
+- **admin**: Admin dashboard.
+- **api**: REST API (Express).
 
-Run the following command:
+### Packages
+- **@vendly/db**: Drizzle schema and migrations.
+- **@vendly/auth**: Auth helpers.
+- **@vendly/config-eslint**: Shared ESLint config.
+- **@vendly/config-typescript**: Shared TS configs.
+
+## Prerequisites
+- Node.js 20.x (<=22)
+- pnpm 8.x
+
+## Setup
+Install dependencies (monorepo root):
 
 ```sh
-npx create-turbo@latest -e kitchen-sink
+pnpm install
 ```
 
-## What's inside?
+Copy env template and fill values:
 
-This Turborepo includes the following packages and apps:
+```sh
+cp .env.example .env
+```
 
-### Apps and Packages
+## Common Scripts (root)
+- `pnpm dev` — run all dev servers via Turborepo.
+- `pnpm build` — build all apps/packages.
+- `pnpm lint` — lint all workspaces.
+- `pnpm test` — run test suites.
+- `pnpm e2e` — Playwright e2e tests.
+- `pnpm check-types` — type-check.
+- `pnpm format` — format with Prettier.
 
-- `api`: an [Express](https://expressjs.com/) server
-- `web`: a [Next.js](https://nextjs.org/) app
-- `admin`: a [Vite](https://vitejs.dev/) single page app
-- `blog`: a [Remix](https://remix.run/) blog
-- `@vendly/eslint-config`: ESLint configurations used throughout the monorepo
-- `@vendly/jest-presets`: Jest configurations
-- `@vendly/logger`: isomorphic logger (a small wrapper around console.log)
-- `@vendly/ui`: a dummy React UI library (which contains `<CounterButton>` and `<Link>` components)
-- `@vendly/typescript-config`: tsconfig.json's used throughout the monorepo
+## App-specific scripts
+From each app directory (e.g., `apps/marketing`):
+- `pnpm dev` — start the app locally.
+- `pnpm build` / `pnpm start` — production build & serve.
+- `pnpm lint` — lint the app.
+- `pnpm check-types` — generate types and type-check (where applicable).
 
-Each package and app is 100% [TypeScript](https://www.typescriptlang.org/).
+## Development Notes
+- Uses Turborepo pipelines (see `turbo.json`).
+- Playwright config lives at `playwright.config.ts`; e2e specs in `e2e/`.
+- Shared TypeScript settings in `packages/config-typescript`.
+- Shared lint rules in `packages/config-eslint`.
 
-### Utilities
+## Repository Structure
+```
+apps/
+  web/          # Storefront
+  marketing/    # Marketing site
+  admin/        # Admin dashboard
+  api/          # Express API
+packages/
+  db/           # Database schema/migrations
+  auth/         # Auth helpers
+  config-eslint/
+  config-typescript/
+docs/           # Plans and API docs
+```
 
-This Turborepo has some additional tools already setup for you:
+## Testing & QA
+- Unit/integration: `pnpm test`
+- E2E: `pnpm e2e` (UI: `pnpm e2e:ui`, headed: `pnpm e2e:headed`, report: `pnpm e2e:report`)
 
-- [TypeScript](https://www.typescriptlang.org/) for static type checking
-- [ESLint](https://eslint.org/) for code linting
-- [Jest](https://jestjs.io) test runner for all things JavaScript
-- [Prettier](https://prettier.io) for code formatting
+## Linting & Formatting
+- Lint: `pnpm lint`
+- Format: `pnpm format`
+
+## Deployment
+Build artifacts are produced per app (`pnpm build`). Deploy each app according to its target environment; API and frontend apps output standard Node/Next/Vite builds.
