@@ -12,7 +12,19 @@ import Footer from "../components/footer";
 import RecentlyViewed from "../components/RecentlyViewed";
 
 export default function CartPage() {
-    const { itemsByStore, updateQuantity, removeItem, itemCount } = useCart();
+    const { itemsByStore, updateQuantity, removeItem, itemCount, isLoaded } = useCart();
+
+    // Check if loaded first
+    if (!isLoaded) {
+        return (
+            <main className="min-h-screen">
+                <Header hideSearch />
+                <div className="flex h-[calc(100vh-64px)] items-center justify-center">
+                    <div className="h-8 w-8 animate-spin rounded-full border-4 border-neutral-200 border-t-neutral-800" />
+                </div>
+            </main>
+        );
+    }
 
     const FALLBACK_PRODUCT_IMAGE = "https://cdn.cosmos.so/25e7ef9d-3d95-486d-b7db-f0d19c1992d7?format=jpeg";
 
