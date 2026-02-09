@@ -7,7 +7,14 @@
       "@/components/*": ["./components/*"],
       "@/lib/*": ["./lib/*"],
       "@/app/*": ["./app/*"],
-      "@/*": ["./*"]
+      "@/*": ["./*"],
+      "@vendly/ui/*": ["../../packages/ui/src/*"],
+      "@vendly/auth": ["../../packages/auth/src/index.ts"],
+      "@vendly/auth/auth-client": ["../../packages/auth/src/auth-client.ts"],
+      "@vendly/auth/react": ["../../packages/auth/src/auth-client.ts"],
+      "@vendly/db": ["../../packages/db/src/index.ts"],
+      "@vendly/db/db": ["../../packages/db/src/db.ts"],
+      "@vendly/db/schema": ["../../packages/db/src/schema/index.ts"]
     },
     "plugins": [
       {
@@ -19,6 +26,7 @@
   "include": [
     "app",
     "components",
+    "contexts",
     "lib",
     "components.json",
     "next-env.d.ts",

@@ -2,6 +2,7 @@
 
 import { Button } from "./ui/button";
 import dynamic from "next/dynamic";
+import Link from "next/link";
 
 const Typewriter = dynamic(
   () => import("@/components/ui/typewriter").then((m) => m.Typewriter),
@@ -32,12 +33,16 @@ export function Hero() {
         </p>
       </div>
       <div className="mt-10 flex flex-wrap gap-3 sm:gap-4 justify-center">
-        <Button size="lg" className="min-w-36">
-          Start Selling
-        </Button>
-        <Button variant="outline" size="lg" className="min-w-36">
-          Contact Us
-        </Button>
+        <Link href="/c">
+          <Button size="lg" className="min-w-36">
+            Start Selling
+          </Button>
+        </Link>
+        <Link href="/contact">
+          <Button variant="outline" size="lg" className="min-w-36">
+            Contact Us
+          </Button>
+        </Link>
       </div>
 
       <div className="mt-16 sm:mt-20 overflow-hidden rounded-2xl border bg-muted/70 shadow-xl">
