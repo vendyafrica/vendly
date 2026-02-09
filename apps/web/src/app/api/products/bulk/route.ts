@@ -1,8 +1,9 @@
 import { auth } from "@vendly/auth";
 import { headers } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
+import { getTenantMembership } from "@/lib/services/tenant-membership";
 import { db } from "@vendly/db/db";
-import { products, tenantMemberships } from "@vendly/db/schema";
+import { products } from "@vendly/db/schema";
 import { eq, inArray, and } from "@vendly/db";
 import { z } from "zod";
 
@@ -21,9 +22,7 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
 
-        const membership = await db.query.tenantMemberships.findFirst({
-            where: eq(tenantMemberships.userId, session.user.id),
-        });
+        const membership = await getTenantMembership(session.user.id);
 
         if (!membership) {
             return NextResponse.json({ error: "No tenant found" }, { status: 404 });
@@ -36,9 +35,8 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ count: 0 });
         }
 
-        let result;
         if (action === "publish") {
-            result = await db.update(products)
+            await db.update(products)
                 .set({ status: "active", updatedAt: new Date() })
                 .where(and(
                     inArray(products.id, ids),
@@ -52,7 +50,7 @@ export async function POST(request: NextRequest) {
             // For now only publish is requested.
             return NextResponse.json({ error: "Action not implemented" }, { status: 400 });
         } else if (action === "delete") {
-            result = await db.update(products)
+            await db.update(products)
                 .set({ deletedAt: new Date(), updatedAt: new Date() })
                 .where(and(
                     inArray(products.id, ids),

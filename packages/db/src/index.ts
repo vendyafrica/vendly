@@ -1,4 +1,4 @@
-export { db, dbWs, neonClient } from "./db";
+export { db, neonClient } from "./db";
 export * from "./schema";
 export * from "./cache";
 export * from "drizzle-orm";

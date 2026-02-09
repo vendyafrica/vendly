@@ -2,9 +2,7 @@ import { handleUpload, type HandleUploadBody } from "@vercel/blob/client";
 import { NextResponse } from "next/server";
 import { auth } from "@vendly/auth";
 import { headers } from "next/headers";
-import { db } from "@vendly/db/db";
-import { tenantMemberships } from "@vendly/db/schema";
-import { eq, and } from "@vendly/db";
+import { getTenantMembership } from "@/lib/services/tenant-membership";
 
 export async function POST(request: Request): Promise<NextResponse> {
     try {
@@ -30,8 +28,7 @@ export async function POST(request: Request): Promise<NextResponse> {
         const jsonResponse = await handleUpload({
             body,
             request,
-            onBeforeGenerateToken: async (pathname, _clientPayload) => {
-                // Parse tenantId from pathname: tenants/{tenantId}/...
+            onBeforeGenerateToken: async (pathname) => {
                 const match = pathname.match(/^tenants\/([^/]+)\//);
                 if (!match) {
                     throw new Error("Invalid path format. Must be tenants/{tenantId}/...");
@@ -40,11 +37,8 @@ export async function POST(request: Request): Promise<NextResponse> {
                 const requestedTenantId = match[1];
 
                 // Verify membership
-                const membership = await db.query.tenantMemberships.findFirst({
-                    where: and(
-                        eq(tenantMemberships.userId, session.user.id),
-                        eq(tenantMemberships.tenantId, requestedTenantId)
-                    ),
+                const membership = await getTenantMembership(session.user.id, {
+                    tenantId: requestedTenantId,
                 });
 
                 if (!membership) {
@@ -69,7 +63,7 @@ export async function POST(request: Request): Promise<NextResponse> {
                     callbackUrl,
                 };
             },
-            onUploadCompleted: async ({ blob, tokenPayload: _tokenPayload }) => {
+            onUploadCompleted: async ({ blob }) => {
                 console.log("Upload completed:", blob.url);
                 // We could log to DB here if we parse tokenPayload
             },

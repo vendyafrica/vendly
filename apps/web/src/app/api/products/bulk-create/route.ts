@@ -2,8 +2,9 @@ import { auth } from "@vendly/auth";
 import { headers } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 import { productService } from "@/lib/services/product-service";
+import { getTenantMembership } from "@/lib/services/tenant-membership";
 import { db } from "@vendly/db/db";
-import { stores, tenantMemberships } from "@vendly/db/schema";
+import { stores } from "@vendly/db/schema";
 import { eq, and, isNull } from "@vendly/db";
 import { z } from "zod";
 
@@ -27,20 +28,20 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
 
-        const membership = await db.query.tenantMemberships.findFirst({
-            where: eq(tenantMemberships.userId, session.user.id),
-            with: { tenant: true }
-        });
+        const membership = await getTenantMembership(session.user.id, { includeTenant: true });
 
         if (!membership || !membership.tenant) {
             return NextResponse.json({ error: "No tenant found" }, { status: 404 });
         }
 
+        const { tenantId, tenant } = membership;
+        const tenantSlug = tenant.slug; // safe after guard above
+
         const body = await request.json();
         const { storeId, items } = bulkCreateSchema.parse(body);
 
         const store = await db.query.stores.findFirst({
-            where: and(eq(stores.id, storeId), eq(stores.tenantId, membership.tenantId), isNull(stores.deletedAt)),
+            where: and(eq(stores.id, storeId), eq(stores.tenantId, tenantId), isNull(stores.deletedAt)),
             columns: { defaultCurrency: true },
         });
 
@@ -61,8 +62,8 @@ export async function POST(request: NextRequest) {
             const title = "Draft";
 
             return productService.createProduct(
-                membership.tenantId,
-                membership.tenant.slug,
+                tenantId,
+                tenantSlug,
                 {
                     storeId,
                     title,

@@ -100,12 +100,21 @@ export function UploadModal({
         });
     };
 
-    const uploadFilesIfNeeded = async () => {
+    const uploadFilesIfNeeded = async (): Promise<Array<{ url: string; pathname: string; contentType: string }>> => {
         const indicesToUpload = files
             .map((f, index) => ({ f, index }))
             .filter(({ f }) => !f.url);
 
-        if (indicesToUpload.length === 0) return;
+        if (indicesToUpload.length === 0) {
+            // Return already uploaded files
+            return files
+                .filter((f) => f.url && f.pathname)
+                .map((f) => ({
+                    url: f.url as string,
+                    pathname: f.pathname as string,
+                    contentType: f.file.type || "application/octet-stream",
+                }));
+        }
 
         // Validate required context
         if (!storeId || !tenantId) {
@@ -115,12 +124,14 @@ export function UploadModal({
         setIsUploading(true);
         setError(null);
 
-        setFiles((prev) =>
-            prev.map((f) => ({
+        setFiles((prev) => {
+            const updated = prev.map((f) => ({
                 ...f,
                 isUploading: !f.url,
-            }))
-        );
+            }));
+            filesRef.current = updated;
+            return updated;
+        });
 
         try {
             const { upload } = await import("@vercel/blob/client");
@@ -128,7 +139,7 @@ export function UploadModal({
             const MAX_CONCURRENCY = 5;
             let nextIndex = 0;
 
-            const uploadResults: Record<number, { ok: true } | { ok: false; error: string }> = {};
+            const uploadResults: Record<number, { ok: true; url: string; pathname: string } | { ok: false; error: string }> = {};
 
             const workers = Array.from(
                 { length: Math.min(MAX_CONCURRENCY, indicesToUpload.length) },
@@ -160,10 +171,11 @@ export function UploadModal({
                                     isUploading: false,
                                     error: undefined,
                                 };
+                                filesRef.current = updated;
                                 return updated;
                             });
 
-                            uploadResults[index] = { ok: true };
+                            uploadResults[index] = { ok: true, url: blob.url, pathname: blob.pathname };
                         } catch (err) {
                             const message = err instanceof Error ? err.message : String(err);
                             console.error(`Failed to upload ${file.name}:`, err);
@@ -176,6 +188,7 @@ export function UploadModal({
                                     isUploading: false,
                                     error: message,
                                 };
+                                filesRef.current = updated;
                                 return updated;
                             });
 
@@ -202,6 +215,30 @@ export function UploadModal({
                     : "Some uploads failed. Please remove failed items and try again.";
                 throw new Error(failureMessage);
             }
+
+            // Build final media array from all files (already uploaded + newly uploaded)
+            const allMedia: Array<{ url: string; pathname: string; contentType: string }> = [];
+            
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                const uploadResult = uploadResults[i];
+                
+                if (uploadResult && uploadResult.ok) {
+                    allMedia.push({
+                        url: uploadResult.url,
+                        pathname: uploadResult.pathname,
+                        contentType: file.file.type || "application/octet-stream",
+                    });
+                } else if (file.url && file.pathname) {
+                    allMedia.push({
+                        url: file.url,
+                        pathname: file.pathname,
+                        contentType: file.file.type || "application/octet-stream",
+                    });
+                }
+            }
+
+            return allMedia;
         } finally {
             setIsUploading(false);
         }
@@ -234,15 +271,8 @@ export function UploadModal({
         }
 
         try {
-            await uploadFilesIfNeeded();
-
-            const media = files
-                .filter((f) => f.url && f.pathname)
-                .map((f) => ({
-                    url: f.url as string,
-                    pathname: f.pathname as string,
-                    contentType: f.file.type || "application/octet-stream",
-                }));
+            // Upload files and get media array directly
+            const media = await uploadFilesIfNeeded();
 
             if (media.length === 0) {
                 throw new Error("No uploaded media found. Please try again.");
@@ -268,7 +298,8 @@ export function UploadModal({
 
             if (!response.ok) {
                 const errorData = await response.json().catch(() => null);
-                throw new Error(errorData?.error || "Failed to create product");
+                const message = errorData?.error || `Failed to create product (${response.status})`;
+                throw new Error(message);
             }
 
             // Clear and close

@@ -82,6 +82,8 @@ export const cacheKeys = {
     // Tenant-related keys
     tenant: {
         bootstrap: (tenantId: string) => `tenant:${tenantId}:bootstrap`,
+        membership: (userId: string, tenantId?: string) =>
+            `tenant:membership:${userId}:${tenantId ?? "any"}`,
     },
 
     // Marketplace keys

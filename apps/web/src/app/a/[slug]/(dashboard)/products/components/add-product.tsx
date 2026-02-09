@@ -34,6 +34,7 @@ interface UploadedFile {
 export function AddProduct({ storeId, onProductCreated }: AddProductProps) {
     const { bootstrap } = useTenant();
     const currency = bootstrap?.defaultCurrency || "UGX";
+    const tenantId = bootstrap?.tenantId;
 
     const [open, setOpen] = React.useState(false);
     const [files, setFiles] = React.useState<UploadedFile[]>([]);
@@ -65,7 +66,7 @@ export function AddProduct({ storeId, onProductCreated }: AddProductProps) {
             // Construct path: tenants/{tenantId}/products/{filename}
             const timestamp = Date.now();
             const cleanName = file.name.replace(/[^a-zA-Z0-9.-]/g, "_");
-            const path = `tenants/${storeId}/products/${cleanName}-${timestamp}`;
+            const path = `tenants/${tenantId || ""}/products/${cleanName}-${timestamp}`;
 
             try {
                 const blob = await upload(path, file, {

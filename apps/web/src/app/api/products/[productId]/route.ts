@@ -2,10 +2,8 @@ import { auth } from "@vendly/auth";
 import { headers } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 import { productService } from "@/lib/services/product-service";
+import { getTenantMembership } from "@/lib/services/tenant-membership";
 import { updateProductSchema } from "@/lib/services/product-models";
-import { db } from "@vendly/db/db";
-import { tenants, tenantMemberships } from "@vendly/db/schema";
-import { eq } from "@vendly/db";
 
 type RouteParams = {
     params: Promise<{ productId: string }>;
@@ -25,9 +23,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
 
-        const membership = await db.query.tenantMemberships.findFirst({
-            where: eq(tenantMemberships.userId, session.user.id),
-        });
+        const membership = await getTenantMembership(session.user.id);
 
         if (!membership) {
             return NextResponse.json({ error: "No tenant found" }, { status: 404 });
@@ -62,9 +58,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
 
-        const membership = await db.query.tenantMemberships.findFirst({
-            where: eq(tenantMemberships.userId, session.user.id),
-        });
+        const membership = await getTenantMembership(session.user.id);
 
         if (!membership) {
             return NextResponse.json({ error: "No tenant found" }, { status: 404 });
@@ -108,17 +102,14 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
 
-        const membership = await db.query.tenantMemberships.findFirst({
-            where: eq(tenantMemberships.userId, session.user.id),
-            with: { tenant: true }
-        });
+        const membership = await getTenantMembership(session.user.id, { includeTenant: true });
 
         if (!membership || !membership.tenant) {
             return NextResponse.json({ error: "No tenant found" }, { status: 404 });
         }
 
         const { productId } = await params;
-        await productService.deleteProduct(productId, membership.tenantId, membership.tenant.slug);
+        await productService.deleteProduct(productId, membership.tenantId);
 
         return NextResponse.json({ success: true });
     } catch (error) {

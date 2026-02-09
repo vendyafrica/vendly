@@ -3,7 +3,6 @@ import {
   and,
   cacheKeys,
   db,
-  dbWs,
   eq,
   inArray,
   invalidateCache,
@@ -108,36 +107,32 @@ export const orderService = {
 
     const totalAmount = subtotal;
 
-    const order = await dbWs.transaction(async (tx) => {
-      const [newOrder] = await tx
-        .insert(orders)
-        .values({
-          tenantId: store.tenantId,
-          storeId: store.id,
-          orderNumber,
-          customerName: input.customerName,
-          customerEmail: input.customerEmail,
-          customerPhone: input.customerPhone,
-          paymentMethod: input.paymentMethod,
-          paymentStatus: "pending",
-          status: "pending",
-          notes: input.notes,
-          subtotal,
-          totalAmount,
-          currency,
-        })
-        .returning();
+    const [order] = await db
+      .insert(orders)
+      .values({
+        tenantId: store.tenantId,
+        storeId: store.id,
+        orderNumber,
+        customerName: input.customerName,
+        customerEmail: input.customerEmail,
+        customerPhone: input.customerPhone,
+        paymentMethod: input.paymentMethod,
+        paymentStatus: "pending",
+        status: "pending",
+        notes: input.notes,
+        subtotal,
+        totalAmount,
+        currency,
+      })
+      .returning();
 
-      await tx.insert(orderItems).values(
-        orderItemsData.map((i) => ({
-          tenantId: store.tenantId,
-          orderId: newOrder.id,
-          ...i,
-        }))
-      );
-
-      return newOrder;
-    });
+    await db.insert(orderItems).values(
+      orderItemsData.map((i) => ({
+        tenantId: store.tenantId,
+        orderId: order.id,
+        ...i,
+      }))
+    );
 
     const completeOrder = await db.query.orders.findFirst({
       where: eq(orders.id, order.id),

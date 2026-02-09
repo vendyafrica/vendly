@@ -1,4 +1,4 @@
-import { db, dbWs } from "@vendly/db/db";
+import { db } from "@vendly/db/db";
 import { orders, orderItems, products, stores } from "@vendly/db/schema";
 import { eq, and, isNull, desc, sql, like, or, inArray } from "@vendly/db";
 import type { CreateOrderInput, UpdateOrderStatusInput, OrderFilters, OrderWithItems, OrderStats } from "./order-models";
@@ -82,36 +82,32 @@ export const orderService = {
 
         const totalAmount = subtotal;
 
-        // Create order with transaction
-        const order = await dbWs.transaction(async (tx) => {
-            const [newOrder] = await tx
-                .insert(orders)
-                .values({
-                    tenantId: store.tenantId,
-                    storeId: store.id,
-                    orderNumber,
-                    customerName: input.customerName,
-                    customerEmail: input.customerEmail,
-                    customerPhone: input.customerPhone,
-                    paymentMethod: input.paymentMethod,
-                    paymentStatus: "pending",
-                    status: "pending",
-                    notes: input.notes,
-                    subtotal,
-                    totalAmount,
-                    currency,
-                })
-                .returning();
-
-            const items = orderItemsData.map((item) => ({
+        const [order] = await db
+            .insert(orders)
+            .values({
                 tenantId: store.tenantId,
-                orderId: newOrder.id,
-                ...item,
-            }));
+                storeId: store.id,
+                orderNumber,
+                customerName: input.customerName,
+                customerEmail: input.customerEmail,
+                customerPhone: input.customerPhone,
+                paymentMethod: input.paymentMethod,
+                paymentStatus: "pending",
+                status: "pending",
+                notes: input.notes,
+                subtotal,
+                totalAmount,
+                currency,
+            })
+            .returning();
 
-            await tx.insert(orderItems).values(items);
-            return newOrder;
-        });
+        const items = orderItemsData.map((item) => ({
+            tenantId: store.tenantId,
+            orderId: order.id,
+            ...item,
+        }));
+
+        await db.insert(orderItems).values(items);
 
         // Fetch complete order with items
         const completeOrder = await db.query.orders.findFirst({

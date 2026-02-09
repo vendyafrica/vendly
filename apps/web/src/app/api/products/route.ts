@@ -3,10 +3,8 @@ import { headers } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { productService } from "@/lib/services/product-service";
+import { getTenantMembership } from "@/lib/services/tenant-membership";
 import { productQuerySchema, createProductSchema } from "@/lib/services/product-models";
-import { db } from "@vendly/db/db";
-import { tenantMemberships } from "@vendly/db/schema";
-import { eq } from "@vendly/db";
 
 /**
  * GET /api/products
@@ -22,9 +20,7 @@ export async function GET(request: NextRequest) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
 
-        const membership = await db.query.tenantMemberships.findFirst({
-            where: eq(tenantMemberships.userId, session.user.id),
-        });
+        const membership = await getTenantMembership(session.user.id);
 
         if (!membership) {
             return NextResponse.json({ error: "No tenant found" }, { status: 404 });
@@ -61,10 +57,7 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
 
-        const membership = await db.query.tenantMemberships.findFirst({
-            where: eq(tenantMemberships.userId, session.user.id),
-            with: { tenant: true }
-        });
+        const membership = await getTenantMembership(session.user.id, { includeTenant: true });
 
         if (!membership || !membership.tenant) {
             return NextResponse.json({ error: "No tenant found" }, { status: 404 });
