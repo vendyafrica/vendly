@@ -18,15 +18,15 @@ export function HeroSection() {
   const [searchQuery, setSearchQuery] = useState("");
   const [mode] = useState<HeroMode>(() => {
     const storageKey = "vendly-hero-mode";
-    if (typeof window === "undefined") return "aspirational";
+    if (typeof window === "undefined") return "discovery";
 
     const stored = window.sessionStorage.getItem(storageKey);
-    if (stored === "aspirational" || stored === "scale") {
+    if (stored === "discovery" || stored === "shopping") {
       return stored;
     }
 
-    window.sessionStorage.setItem(storageKey, "aspirational");
-    return "aspirational";
+    window.sessionStorage.setItem(storageKey, "discovery");
+    return "discovery";
   });
 
   const copy = useMemo(() => heroCopy[mode], [mode]);
