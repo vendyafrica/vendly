@@ -5,6 +5,8 @@ import { useSearchParams } from "next/navigation";
 import { useTenant } from "../tenant-context";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@vendly/ui/components/card";
 import { Button } from "@vendly/ui/components/button";
+import { Loading03Icon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
 
 export default function IntegrationsPage() {
   const params = useSearchParams();
@@ -16,6 +18,7 @@ export default function IntegrationsPage() {
   const [isConnecting, setIsConnecting] = React.useState(false);
   const [isImporting, setIsImporting] = React.useState(false);
   const [importError, setImportError] = React.useState<string | null>(null);
+  const [importSuccess, setImportSuccess] = React.useState(false); // Added state
   const [syncError, setSyncError] = React.useState<string | null>(null);
   const [isConnectedFromApi, setIsConnectedFromApi] = React.useState(false);
   const [isDeleting, setIsDeleting] = React.useState(false);
@@ -23,14 +26,18 @@ export default function IntegrationsPage() {
   const [deleteSuccess, setDeleteSuccess] = React.useState(false);
 
   // Check status on mount
+  // Check status on mount
   React.useEffect(() => {
-    fetch("/api/integrations/instagram/status")
+    if (!storeId) return;
+
+    fetch(`/api/integrations/instagram/status?storeId=${storeId}`)
       .then((res) => res.json())
       .then((data) => {
         if (data.connected) setIsConnectedFromApi(true);
+        if (data.imported) setImportSuccess(true);
       })
       .catch((e) => console.error("Failed to check instagram status", e));
-  }, []);
+  }, [storeId]);
 
   const connected = paramConnected || isConnectedFromApi;
 
@@ -91,6 +98,7 @@ export default function IntegrationsPage() {
 
     setIsImporting(true);
     setImportError(null);
+    setImportSuccess(false); // Reset success state
 
     try {
       const res = await fetch("/api/integrations/instagram/import", {
@@ -103,6 +111,7 @@ export default function IntegrationsPage() {
         const text = await res.text();
         throw new Error(text || "Import failed");
       }
+      setImportSuccess(true); // Set success state
     } catch (e) {
       setImportError(e instanceof Error ? e.message : "Import failed");
     } finally {
@@ -147,7 +156,12 @@ export default function IntegrationsPage() {
         </CardHeader>
         <CardContent className="space-y-3">
           <Button onClick={handleConnect} disabled={isConnecting || !bootstrap?.storeSlug}>
-            {isConnecting ? "Connecting..." : connected ? "Reconnect Instagram" : "Connect Instagram"}
+            {isConnecting ? (
+              <>
+                <HugeiconsIcon icon={Loading03Icon} className="mr-2 h-4 w-4 animate-spin" />
+                Connecting...
+              </>
+            ) : connected ? "Reconnect Instagram" : "Connect Instagram"}
           </Button>
 
           <div className="text-sm text-muted-foreground">
@@ -156,9 +170,21 @@ export default function IntegrationsPage() {
 
           {syncError && <div className="bg-destructive/10 text-destructive p-3 rounded-md text-sm">{syncError}</div>}
 
-          <Button onClick={handleImport} disabled={!connected || isImporting || !bootstrap?.storeId} variant="outline">
-            {isImporting ? "Importing..." : "Import products"}
+          <Button onClick={handleImport} disabled={!connected || isImporting || !bootstrap?.storeId || importSuccess} variant="outline">
+            {isImporting ? (
+              <>
+                <HugeiconsIcon icon={Loading03Icon} className="mr-2 h-4 w-4 animate-spin" />
+                Importing...
+              </>
+            ) : importSuccess ? "Imported" : "Import products"}
           </Button>
+
+          {importSuccess && (
+            <div className="bg-emerald-50 text-emerald-700 p-3 rounded-md text-sm">
+              <p className="font-medium mb-1">Import initiated!</p>
+              Your products are being imported. Ongoing sync is now active via webhooks for any new Instagram posts.
+            </div>
+          )}
 
           {importError && (
             <div className="bg-destructive/10 text-destructive p-3 rounded-md text-sm">{importError}</div>

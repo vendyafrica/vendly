@@ -96,6 +96,35 @@ export async function notifySellerNewOrder(params: {
   );
 }
 
+export async function notifyCustomerPaymentLink(params: { order: OrderLike }) {
+  const { order } = params;
+  const to = normalizeToWhatsApp(order.customerPhone, "customer", { orderId: order.id, orderNumber: order.orderNumber });
+  if (!to) return;
+
+  const link = buildPaymentLink(order);
+  const key = `customer:payment_link:${order.id}:${to}`;
+  await sendOnce(key, () =>
+    whatsappClient.sendTextMessage({
+      to,
+      body: `Your order ${order.orderNumber} was accepted. Pay here to continue: ${link}`,
+    })
+  );
+}
+
+export async function notifyCustomerPreparing(params: { order: OrderLike }) {
+  const { order } = params;
+  const to = normalizeToWhatsApp(order.customerPhone, "customer", { orderId: order.id, orderNumber: order.orderNumber });
+  if (!to) return;
+
+  const key = `customer:preparing:${order.id}:${to}`;
+  await sendOnce(key, () =>
+    whatsappClient.sendTextMessage({
+      to,
+      body: `Payment received for order ${order.orderNumber}. The seller is preparing your order now.`,
+    })
+  );
+}
+
 export async function notifySellerOrderDetails(params: {
   sellerPhone: string | null;
   order: OrderLike;
@@ -189,6 +218,16 @@ export async function notifySellerOrderCompleted(params: {
 // ---------------------------------------------------------------------------
 // Buyer / Customer notifications
 // ---------------------------------------------------------------------------
+
+function buildPaymentLink(order: OrderLike): string {
+  const base = (process.env.WEB_URL || "https://duuka.store").replace(/\/$/, "");
+  const params = new URLSearchParams({
+    amount: String(order.totalAmount),
+    currency: order.currency || "UGX",
+    orderNumber: order.orderNumber,
+  });
+  return `${base}/pay/${order.id}?${params.toString()}`;
+}
 
 export async function notifyCustomerOrderReceived(params: { order: OrderLike }) {
   const { order } = params;

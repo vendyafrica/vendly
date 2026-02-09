@@ -5,7 +5,8 @@ import type { RawBodyRequest } from "../types/raw-body";
 import { orderService } from "../services/order-service";
 import { whatsappClient } from "../services/whatsapp/whatsapp-client";
 import {
-  notifyCustomerOrderAccepted,
+  notifyCustomerPaymentLink,
+  notifyCustomerPreparing,
   notifyCustomerOrderReady,
   notifyCustomerOutForDelivery,
   notifyCustomerOrderDelivered,
@@ -160,11 +161,11 @@ whatsappRouter.post("/webhooks/whatsapp", async (req, res) => {
       }
 
       // Simulated: mark payment as paid
-      await orderService.updateOrderStatusByOrderId(buyerOrder.id, { paymentStatus: "paid" });
+      await orderService.updateOrderStatusByOrderId(buyerOrder.id, { paymentStatus: "paid", status: "processing" });
 
       await whatsappClient.sendTextMessage({
         to: from,
-        body: `Thank you! We have noted your payment for order ${buyerOrder.orderNumber}. The seller will be notified.`,
+        body: `Thank you! We have received payment for order ${buyerOrder.orderNumber}. The seller is preparing it now.`,
       });
 
       // Notify seller about the paid order
@@ -172,8 +173,9 @@ whatsappRouter.post("/webhooks/whatsapp", async (req, res) => {
         const full = await orderService.getOrderById(buyerOrder.id);
         if (full) {
           const sellerPhone = await orderService.getTenantPhoneByTenantId(full.tenantId);
-          const { notifySellerNewOrder } = await import("../services/notifications");
-          await notifySellerNewOrder({ sellerPhone, order: full });
+          await notifySellerCustomerDetails({ sellerPhone, order: full });
+          await notifySellerOrderDetails({ sellerPhone, order: full });
+          await notifyCustomerPreparing({ order: full });
         }
       } catch (err) {
         console.error("[WhatsAppWebhook] Failed to notify seller after I PAID", err);
@@ -195,7 +197,7 @@ whatsappRouter.post("/webhooks/whatsapp", async (req, res) => {
 
       await whatsappClient.sendTextMessage({
         to: from,
-        body: `Thanks for your order ${buyerOrder.orderNumber}! Payments are manual for now. Please pay the store directly, then reply "I PAID" once done.`,
+        body: `Thanks for your order ${buyerOrder.orderNumber}! We are waiting for the seller to accept it. You will receive a payment link once accepted.`,
       });
       return res.sendStatus(200);
     }
@@ -225,36 +227,14 @@ whatsappRouter.post("/webhooks/whatsapp", async (req, res) => {
     const sellerPhone = await orderService.getTenantPhoneByTenantId(tenantId);
 
     if (action === "accept") {
-      await orderService.updateOrderStatus(order.id, tenantId, { status: "processing" });
-
-      // Send seller: customer details + order details (with READY button)
+      // Seller accepted: send buyer payment link (do not send seller details until paid)
       try {
         const full = await orderService.getOrderById(order.id);
         if (full) {
-          const sellerPhone = await orderService.getTenantPhoneByTenantId(full.tenantId);
-          console.log("[WhatsAppWebhook] ACCEPT sending seller customer details", {
-            orderId: full.id,
-            orderNumber: full.orderNumber,
-            sellerPhone,
-          });
-          await notifySellerCustomerDetails({ sellerPhone, order: full });
-
-          console.log("[WhatsAppWebhook] ACCEPT sending seller order details", {
-            orderId: full.id,
-            orderNumber: full.orderNumber,
-            sellerPhone,
-          });
-          await notifySellerOrderDetails({ sellerPhone, order: full });
-
-          console.log("[WhatsAppWebhook] ACCEPT sending customer ready/accepted", {
-            orderId: full.id,
-            orderNumber: full.orderNumber,
-            customerPhone: full.customerPhone,
-          });
-          await notifyCustomerOrderAccepted({ order: full });
+          await notifyCustomerPaymentLink({ order: full });
         }
       } catch (err) {
-        console.error("[WhatsAppWebhook] Failed to send accept notifications", err);
+        console.error("[WhatsAppWebhook] Failed to send payment link", err);
       }
       return res.sendStatus(200);
     }

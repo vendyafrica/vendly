@@ -12,7 +12,7 @@ import {
 import { Input } from "@vendly/ui/components/input"
 import { signInWithGoogle, signInWithMagicLink } from "@vendly/auth/react"
 import { HugeiconsIcon } from "@hugeicons/react"
-import { MailReceive02Icon } from "@hugeicons/core-free-icons"
+import { MailReceive02Icon, Loading03Icon } from "@hugeicons/core-free-icons"
 import { GoogleIcon } from "@vendly/ui/components/svgs/google"
 
 type FormState = "idle" | "loading" | "sent"
@@ -127,7 +127,14 @@ export function LoginForm({
                         className="h-11 sm:h-9 w-full text-sm sm:text-base"
                         disabled={formState === "loading"}
                     >
-                        {formState === "loading" ? "Sending..." : "Continue with Email"}
+                        {formState === "loading" ? (
+                            <>
+                                <HugeiconsIcon icon={Loading03Icon} className="mr-2 h-4 w-4 animate-spin" />
+                                Sending...
+                            </>
+                        ) : (
+                            "Continue with Email"
+                        )}
                     </Button>
 
                     <FieldSeparator>Or</FieldSeparator>
@@ -139,8 +146,17 @@ export function LoginForm({
                         className="h-11 sm:h-9"
                         disabled={formState === "loading"}
                     >
-                        <GoogleIcon />
-                        {formState === "loading" ? "Connecting..." : "Continue with Google"}
+                        {formState === "loading" ? (
+                            <>
+                                <HugeiconsIcon icon={Loading03Icon} className="mr-2 h-4 w-4 animate-spin" />
+                                Connecting...
+                            </>
+                        ) : (
+                            <>
+                                <GoogleIcon />
+                                Continue with Google
+                            </>
+                        )}
                     </Button>
                 </FieldGroup>
             </form>
