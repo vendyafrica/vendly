@@ -40,6 +40,8 @@ const trustedOrigins = [
   "https://vendly-web.vercel.app",
   "https://www.vendlyafrica.store",
   "https://vendlyafrica.store",
+  "https://www.duuka.store",
+  "https://duuka.store",
   "https://*.ngrok-free.dev",
   "https://harmonically-carpetless-janna.ngrok-free.dev",
   baseURL,

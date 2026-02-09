@@ -31,9 +31,18 @@ export default function Welcome() {
       navigateToStep("personal");
     }
   }, [appSession, navigateToStep]);
+  const getOnboardingRedirect = () => {
+    if (typeof window === "undefined") {
+      return "/c/personal?entry=seller_google";
+    }
+    return `${window.location.origin}/c/personal?entry=seller_google`;
+  };
+
   const handleGoogleSignIn = async () => {
     try {
-      await signInWithGoogle();
+      await signInWithGoogle({
+        callbackURL: getOnboardingRedirect(),
+      });
     } catch (error) {
       console.error("Google sign-in failed:", error);
     }
@@ -79,7 +88,7 @@ export default function Welcome() {
 
       // New seller: proceed to seller onboarding
       await signInWithSellerMagicLink(email, {
-        callbackURL: "/c/personal?entry=seller_magic",
+        callbackURL: getOnboardingRedirect(),
       });
       setFormState("sent");
     } catch {

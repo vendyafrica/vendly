@@ -8,7 +8,7 @@ export function Navbar() {
       <nav className="h-20 flex items-center justify-between w-full">
         <Logo />
         <Button asChild>
-          <Link href="/c">Start selling</Link>
+          <Link href="https://www.duuka.store/c">Start selling</Link>
         </Button>
       </nav>
     </div>

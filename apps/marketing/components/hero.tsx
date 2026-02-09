@@ -33,7 +33,7 @@ export function Hero() {
         </p>
       </div>
       <div className="mt-10 flex flex-wrap gap-3 sm:gap-4 justify-center">
-        <Link href="/c">
+        <Link href="https://www.duuka.store/c">
           <Button size="lg" className="min-w-36">
             Start Selling
           </Button>
