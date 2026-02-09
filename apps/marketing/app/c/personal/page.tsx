@@ -4,49 +4,13 @@ import { useState } from "react";
 import { Button } from "@vendly/ui/components/button";
 import { Field, FieldGroup, FieldLabel } from "@vendly/ui/components/field";
 import { Input } from "@vendly/ui/components/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@vendly/ui/components/select";
+import { PhoneInput, phoneSchema } from "@/components/ui/phone-input";
 import { useOnboarding } from "../context/onboarding-context";
 
-const COUNTRY_OPTIONS = [
-  { code: "256", label: "Uganda", flag: "🇺🇬" },
-  { code: "254", label: "Kenya", flag: "🇰🇪" },
-];
-
-function extractNationalNumber(
-  phoneNumber: string | undefined,
-  countryCode: string
-): string {
-  if (!phoneNumber) return "";
-  
-  const digits = phoneNumber.replace(/\D/g, "");
-  
-  if (digits.startsWith(countryCode)) {
-    const national = digits.slice(countryCode.length);
-    return national.startsWith("0") ? national.slice(1) : national;
-  }
-  
-  return digits.startsWith("0") ? digits.slice(1) : digits;
-}
-
-function inferCountryCode(raw: string | undefined): string {
-  if (!raw) return "256";
-  if (raw.startsWith("+254") || raw.startsWith("254")) return "254";
-  return "256";
-}
-
-function formatPhoneNumber(value: string): string {
-  const digits = value.replace(/\D/g, "");
-  
-  // Format as: XXX XXX XXX
-  if (digits.length <= 3) return digits;
-  if (digits.length <= 6) return `${digits.slice(0, 3)} ${digits.slice(3)}`;
-  return `${digits.slice(0, 3)} ${digits.slice(3, 6)} ${digits.slice(6, 9)}`;
+function inferDefaultCountry(raw: string | undefined): string {
+  if (!raw) return "UG";
+  if (raw.startsWith("+254") || raw.startsWith("254")) return "KE";
+  return "UG";
 }
 
 export default function PersonalInfo() {
@@ -54,39 +18,29 @@ export default function PersonalInfo() {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [fullName, setFullName] = useState(data.personal?.fullName ?? "");
-  
-  const initialCountryCode = inferCountryCode(data.personal?.phoneNumber);
-  const [countryCode, setCountryCode] = useState(initialCountryCode);
-  
-  const [nationalNumber, setNationalNumber] = useState(
-    extractNationalNumber(data.personal?.phoneNumber, initialCountryCode)
+  const [phoneNumber, setPhoneNumber] = useState(
+    data.personal?.phoneNumber ?? ""
   );
+  const [phoneError, setPhoneError] = useState<string | null>(null);
 
-  const selectedCountry = COUNTRY_OPTIONS.find(
-    (opt) => opt.code === countryCode,
-  );
+  const defaultCountry = inferDefaultCountry(data.personal?.phoneNumber);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const digits = nationalNumber.replace(/\D/g, "");
-    if (!digits) return;
-
-    const internationalNumber = `+${countryCode}${digits}`;
+    const parsed = phoneSchema.safeParse(phoneNumber);
+    if (!parsed.success) {
+      setPhoneError("Please enter a valid phone number");
+      return;
+    }
 
     setIsSubmitting(true);
     try {
-      await savePersonal({ fullName, phoneNumber: internationalNumber });
+      setPhoneError(null);
+      await savePersonal({ fullName, phoneNumber });
     } finally {
       setIsSubmitting(false);
     }
-  };
-
-  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    // Allow only digits and spaces
-    const cleaned = value.replace(/[^\d\s]/g, "");
-    setNationalNumber(cleaned);
   };
 
   return (
@@ -120,7 +74,7 @@ export default function PersonalInfo() {
               required
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
-              className="mt-1.5 h-12 px-4 text-base"
+              className="mt-1.5 h-10 px-3 text-sm"
             />
           </Field>
 
@@ -128,54 +82,20 @@ export default function PersonalInfo() {
             <FieldLabel htmlFor="phoneNumber" className="text-base font-medium">
               Phone Number
             </FieldLabel>
-            <div className="mt-1.5 flex h-14 overflow-hidden rounded-lg border border-input bg-background shadow-sm transition-all focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20">
-              {/* Country Selector */}
-              <Select value={countryCode} onValueChange={setCountryCode}>
-                <SelectTrigger className="h-full w-auto min-w-[160px] gap-2 border-0 border-r bg-muted/30 pl-4 pr-3 shadow-none hover:bg-muted/50 focus:ring-0">
-                  <SelectValue>
-                    <div className="flex items-center gap-2.5">
-                      <span className="text-xl leading-none">
-                        {selectedCountry?.flag}
-                      </span>
-                      <span className="text-sm font-medium">
-                        {selectedCountry?.label}
-                      </span>
-                      <span className="text-sm text-muted-foreground">
-                        +{countryCode}
-                      </span>
-                    </div>
-                  </SelectValue>
-                </SelectTrigger>
-                <SelectContent className="min-w-[220px]">
-                  {COUNTRY_OPTIONS.map((opt) => (
-                    <SelectItem 
-                      key={opt.code} 
-                      value={opt.code}
-                      className="cursor-pointer"
-                    >
-                      <div className="flex items-center gap-3">
-                        <span className="text-lg">{opt.flag}</span>
-                        <span className="flex-1 font-medium">{opt.label}</span>
-                        <span className="text-sm text-muted-foreground">
-                          +{opt.code}
-                        </span>
-                      </div>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-
-              {/* Phone Input */}
-              <Input
+            <div className="mt-1.5">
+              <PhoneInput
                 id="phoneNumber"
-                placeholder="700 000 000"
-                type="tel"
+                value={phoneNumber}
+                onChange={(e) => setPhoneNumber(e.target.value)}
+                placeholder="Enter your phone number"
+                defaultCountry={defaultCountry}
+                allowedCountries={["UG", "KE"]}
+                className="h-10"
                 required
-                value={formatPhoneNumber(nationalNumber)}
-                onChange={handlePhoneChange}
-                maxLength={11} // "XXX XXX XXX" = 11 chars with spaces
-                className="h-full flex-1 border-0 bg-transparent px-4 text-base shadow-none focus-visible:ring-0"
               />
+              {phoneError && (
+                <p className="mt-1 text-sm text-destructive">{phoneError}</p>
+              )}
             </div>
           </Field>
         </FieldGroup>
