@@ -76,9 +76,9 @@ export default function PersonalInfo() {
   };
 
   return (
-    <div className="mx-auto w-full max-w-lg rounded-xl p-6 md:p-8 ">
+    <div className="mx-auto w-full max-w-lg rounded-xl p-0 md:p-8 ">
       <form
-        className="space-y-6 rounded-md p-8 shadow-md bg-background"
+        className="space-y-6 rounded-md p-6 md:p-8 shadow-md bg-background"
         onSubmit={handleSubmit}
       >
         {/* Header */}
@@ -116,11 +116,11 @@ export default function PersonalInfo() {
                 value={countryCode}
                 onValueChange={(val) => setCountryCode(val ?? countryCode)}
               >
-                <SelectTrigger className="h-10 w-[170px] border-0 bg-transparent px-3 shadow-none focus-visible:ring-0">
+                <SelectTrigger className="h-10 w-[80px] md:w-[170px] border-0 bg-transparent px-2 md:px-3 shadow-none focus-visible:ring-0">
                   <SelectValue>
                     <span className="flex items-center gap-2 text-sm font-medium">
                       <span>{selectedCountry?.flag}</span>
-                      <span className="text-muted-foreground">{selectedCountry?.label}</span>
+                      <span className="text-muted-foreground hidden md:inline">{selectedCountry?.label}</span>
                     </span>
                   </SelectValue>
                 </SelectTrigger>
