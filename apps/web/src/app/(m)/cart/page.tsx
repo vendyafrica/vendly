@@ -98,13 +98,24 @@ export default function CartPage() {
                                     {storeItems.map((item) => (
                                         <div key={item.id} className="p-6 flex gap-5">
                                             <div className="relative h-24 w-24 bg-neutral-50 rounded-xl overflow-hidden shrink-0 border border-neutral-100">
-                                                <Image
-                                                    src={item.product.image || FALLBACK_PRODUCT_IMAGE}
-                                                    alt={item.product.name}
-                                                    fill
-                                                    className="object-cover"
-                                                    unoptimized={(item.product.image || "").includes("blob.vercel-storage.com")}
-                                                />
+                                                {item.product.contentType?.startsWith("video/") || item.product.image?.match(/\.(mp4|webm|mov|ogg)$/i) || ((item.product.image || "").includes("blob.vercel-storage.com") && !(item.product.image || "").match(/\.(jpg|jpeg|png|webp|gif)$/i) && !item.product.contentType?.startsWith("image/")) ? (
+                                                    <video
+                                                        src={item.product.image || ""}
+                                                        className="h-full w-full object-cover"
+                                                        muted
+                                                        playsInline
+                                                        loop
+                                                        autoPlay
+                                                    />
+                                                ) : (
+                                                    <Image
+                                                        src={item.product.image || FALLBACK_PRODUCT_IMAGE}
+                                                        alt={item.product.name}
+                                                        fill
+                                                        className="object-cover"
+                                                        unoptimized={(item.product.image || "").includes("blob.vercel-storage.com")}
+                                                    />
+                                                )}
                                             </div>
 
                                             <div className="flex-1 flex flex-col justify-between py-0.5">

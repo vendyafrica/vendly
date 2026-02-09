@@ -1,9 +1,9 @@
 import type { SendTemplateMessageInput } from "./whatsapp-client";
 
 export const TEMPLATE_NAMES = {
-  SELLER_NEW_ORDER: "seller_new_order_action_v3",
+  SELLER_NEW_ORDER: "seller_new_order_action_v5",
   SELLER_ORDER_DETAILS: "seller_order_details_v2",
-  SELLER_CUSTOMER_DETAILS: "seller_order_customer_details_v2",
+  SELLER_CUSTOMER_DETAILS: "seller_order_customer_details_v4",
   SELLER_MARK_READY: "seller_mark_ready_v1",
   SELLER_OUT_FOR_DELIVERY: "seller_out_for_delivery_v1",
   SELLER_ORDER_COMPLETED: "seller_order_completed_v1",
@@ -13,7 +13,7 @@ export const TEMPLATE_NAMES = {
   BUYER_OUT_FOR_DELIVERY: "buyer_out_for_delivery_v1",
   BUYER_ORDER_DELIVERED: "buyer_order_delivered_v1",
   BUYER_ORDER_DECLINED: "buyer_order_declined_v1",
-  BUYER_PAYMENT_ACTION: "buyer_payment_action_v2",
+  BUYER_PAYMENT_ACTION: "buyer_payment_action_v4",
   BUYER_PREF_OPENER: "buyer_pref_opener_v1",
 } as const;
 

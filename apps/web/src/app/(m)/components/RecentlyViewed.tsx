@@ -30,6 +30,7 @@ export default function RecentlyViewed() {
                         storeSlug={item.store.slug}
                         price={formatPrice(item.price, item.currency)}
                         image={item.image}
+                        contentType={item.contentType}
                     />
                 ))}
             </div>

@@ -53,7 +53,13 @@ function timingSafeEqual(a: string, b: string) {
   return crypto.timingSafeEqual(aBuf, bBuf);
 }
 
+const BYPASS_SIGNATURE = process.env.WHATSAPP_BYPASS_SIGNATURE === "true" || process.env.NODE_ENV === "development";
+
 function verifySignature(req: RawBodyRequest): boolean {
+  if (BYPASS_SIGNATURE) {
+    return true;
+  }
+
   const appSecret = process.env.WHATSAPP_APP_SECRET;
   if (!appSecret) return false;
 
@@ -89,9 +95,11 @@ whatsappRouter.post("/webhooks/whatsapp", async (req, res) => {
     rawLen,
     hasAppSecret,
     signatureOk: ok,
+    bypassSignature: BYPASS_SIGNATURE,
   });
 
   if (!ok) {
+    console.warn("[WhatsAppWebhook] Signature failed; returning 403", { hasSignatureHeader: Boolean(signatureHeader), hasRawBody, rawLen });
     return res.sendStatus(403);
   }
 
@@ -223,8 +231,26 @@ whatsappRouter.post("/webhooks/whatsapp", async (req, res) => {
       try {
         const full = await orderService.getOrderById(order.id);
         if (full) {
+          const sellerPhone = await orderService.getTenantPhoneByTenantId(full.tenantId);
+          console.log("[WhatsAppWebhook] ACCEPT sending seller customer details", {
+            orderId: full.id,
+            orderNumber: full.orderNumber,
+            sellerPhone,
+          });
           await notifySellerCustomerDetails({ sellerPhone, order: full });
+
+          console.log("[WhatsAppWebhook] ACCEPT sending seller order details", {
+            orderId: full.id,
+            orderNumber: full.orderNumber,
+            sellerPhone,
+          });
           await notifySellerOrderDetails({ sellerPhone, order: full });
+
+          console.log("[WhatsAppWebhook] ACCEPT sending customer ready/accepted", {
+            orderId: full.id,
+            orderNumber: full.orderNumber,
+            customerPhone: full.customerPhone,
+          });
           await notifyCustomerOrderAccepted({ order: full });
         }
       } catch (err) {

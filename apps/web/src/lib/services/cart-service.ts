@@ -26,7 +26,12 @@ export const cartService = {
                     with: {
                         media: {
                             with: {
-                                media: true
+                                media: {
+                                    columns: {
+                                        blobUrl: true,
+                                        contentType: true,
+                                    }
+                                }
                             }
                         },
                         store: true,

@@ -70,13 +70,25 @@ export default function WishlistAllPage() {
                             >
                                 <div className="p-5 flex gap-5 items-start">
                                     <div className="relative h-24 w-24 bg-neutral-50 rounded-2xl overflow-hidden shrink-0 border border-neutral-100">
-                                        <Image
-                                            src={item.image || FALLBACK_PRODUCT_IMAGE}
-                                            alt={item.name}
-                                            fill
-                                            className="object-cover"
-                                            sizes="120px"
-                                        />
+                                        {item.contentType?.startsWith("video/") || item.image?.match(/\.(mp4|webm|mov|ogg)$/i) || ((item.image || "").includes("blob.vercel-storage.com") && !(item.image || "").match(/\.(jpg|jpeg|png|webp|gif)$/i) && !item.contentType?.startsWith("image/")) ? (
+                                            <video
+                                                src={item.image || ""}
+                                                className="h-full w-full object-cover"
+                                                muted
+                                                playsInline
+                                                loop
+                                                autoPlay
+                                            />
+                                        ) : (
+                                            <Image
+                                                src={item.image || FALLBACK_PRODUCT_IMAGE}
+                                                alt={item.name}
+                                                fill
+                                                className="object-cover"
+                                                sizes="120px"
+                                                unoptimized={item.image?.includes("blob.vercel-storage.com")}
+                                            />
+                                        )}
                                     </div>
 
                                     <div className="flex-1 flex flex-col justify-between py-0.5">

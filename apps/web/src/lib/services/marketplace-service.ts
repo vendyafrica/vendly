@@ -18,7 +18,7 @@ function slugifyName(name: string): string {
     return name.toLowerCase().trim().replace(/[^a-z0-9\s-]/g, "").replace(/\s+/g, "-").replace(/-+/g, "-");
 }
 
-type ProductMediaRow = { media?: { url?: string | null; blobUrl?: string | null } | null };
+type ProductMediaRow = { media?: { url?: string | null; blobUrl?: string | null; contentType?: string | null } | null };
 type ProductRecordForMarketplace = {
     id: string;
     slug: string | null;
@@ -47,6 +47,13 @@ function mapProductRecord(product: ProductRecordForMarketplace, store: { id: str
         .map((m) => m?.media?.url || m?.media?.blobUrl)
         .filter(Boolean) as string[];
 
+    const mediaItems = mediaList
+        .map((m) => ({
+            url: m?.media?.url || m?.media?.blobUrl,
+            contentType: m?.media?.contentType || null,
+        }))
+        .filter((m) => m.url) as { url: string; contentType: string | null }[];
+
     return {
         id: product.id,
         slug,
@@ -55,6 +62,7 @@ function mapProductRecord(product: ProductRecordForMarketplace, store: { id: str
         price: priceAmount,
         currency: product.currency,
         images,
+        mediaItems,
         store: {
             id: store.id,
             name: store.name,
@@ -101,7 +109,7 @@ async function batchFetchStoreProductImages(storeIds: string[]): Promise<Map<str
                 limit: 5,
                 with: {
                     media: {
-                        columns: { blobUrl: true }
+                        columns: { blobUrl: true, contentType: true }
                     }
                 }
             }
@@ -114,7 +122,7 @@ async function batchFetchStoreProductImages(storeIds: string[]): Promise<Map<str
         const existingImages = storeImages.get(product.storeId) || [];
         const productImages = (product.media ?? [])
             .map((m) => m?.media?.blobUrl)
-            .filter(Boolean);
+            .filter(Boolean); // Note: we are currently only returning strings here for StoreCard compatibility. StoreCard needs update if we want video on store cards.
 
         // Limit to 5 images per store
         const combined = [...existingImages, ...productImages].slice(0, 5);
@@ -311,6 +319,7 @@ export const marketplaceService = {
                     currency: p.currency,
                     // Extract first image from media relation if available
                     image: p.media?.[0]?.media?.blobUrl || null,
+                    contentType: p.media?.[0]?.media?.contentType || null,
                 }));
             },
             TTL.SHORT
@@ -365,6 +374,7 @@ export const marketplaceService = {
                     price: Number(p.priceAmount || 0),
                     currency: p.currency,
                     image: p.media?.[0]?.media?.blobUrl || null,
+                    contentType: p.media?.[0]?.media?.contentType || null,
                 }));
             },
             TTL.SHORT
@@ -486,6 +496,7 @@ export const marketplaceService = {
                 price: Number(p.priceAmount ?? 0),
                 currency: p.currency,
                 image: p.media?.[0]?.media?.blobUrl || null,
+                contentType: p.media?.[0]?.media?.contentType || null,
                 store: p.store ? { slug: p.store.slug, name: p.store.name } : null,
             })),
         };

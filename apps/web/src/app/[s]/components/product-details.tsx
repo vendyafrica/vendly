@@ -28,6 +28,7 @@ interface ProductDetailsProps {
         price: number;
         currency: string;
         images: string[];
+        mediaItems?: { url: string; contentType?: string | null }[];
         videos?: string[];
         rating?: number;
         store: {
@@ -64,6 +65,7 @@ export function ProductDetails({ product }: ProductDetailsProps) {
                 price: product.price,
                 currency: product.currency,
                 image: product.images[0] || "",
+                contentType: product.mediaItems?.[0]?.contentType || undefined,
                 store: {
                     name: product.store.name,
                     slug: product.store.slug,
@@ -96,6 +98,9 @@ export function ProductDetails({ product }: ProductDetailsProps) {
                 price: product.price,
                 currency: product.currency,
                 image: product.images[0],
+                currency: product.currency,
+                image: product.images[0],
+                contentType: product.mediaItems?.[0]?.contentType || undefined,
                 slug: product.slug,
             },
             store: {
@@ -321,7 +326,10 @@ export function ProductDetails({ product }: ProductDetailsProps) {
                                     name: product.name,
                                     price: product.price,
                                     currency: product.currency,
+                                    currency: product.currency,
                                     image: product.images?.[0],
+                                    contentType: product.mediaItems?.[0]?.contentType || undefined,
+                                    slug: product.slug,
                                     slug: product.slug,
                                     store: {
                                         id: product.store.id,

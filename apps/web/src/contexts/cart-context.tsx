@@ -16,6 +16,7 @@ export interface CartItem {
         price: number;
         currency: string;
         image?: string;
+        contentType?: string;
         slug: string;
     };
     store: {

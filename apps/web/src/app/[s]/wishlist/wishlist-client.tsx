@@ -50,7 +50,7 @@ export default function WishlistClient() {
             </main>
         );
     }
-    
+
     return (
         <main className="min-h-screen">
             <div className="max-w-4xl mx-auto px-4 md:px-6 lg:px-8 py-10 space-y-6">
@@ -73,13 +73,25 @@ export default function WishlistClient() {
                             >
                                 <div className="p-5 flex gap-5 items-start">
                                     <div className="relative h-24 w-24 bg-neutral-50 rounded-2xl overflow-hidden shrink-0 border border-neutral-100">
-                                        <Image
-                                            src={item.image || FALLBACK_PRODUCT_IMAGE}
-                                            alt={item.name}
-                                            fill
-                                            className="object-cover"
-                                            sizes="120px"
-                                        />
+                                        {item.contentType?.startsWith("video/") || item.image?.match(/\.(mp4|webm|mov|ogg)$/i) || ((item.image || "").includes("blob.vercel-storage.com") && !(item.image || "").match(/\.(jpg|jpeg|png|webp|gif)$/i) && !item.contentType?.startsWith("image/")) ? (
+                                            <video
+                                                src={item.image || ""}
+                                                className="h-full w-full object-cover"
+                                                muted
+                                                playsInline
+                                                loop
+                                                autoPlay
+                                            />
+                                        ) : (
+                                            <Image
+                                                src={item.image || FALLBACK_PRODUCT_IMAGE}
+                                                alt={item.name}
+                                                fill
+                                                className="object-cover"
+                                                sizes="120px"
+                                                unoptimized={item.image?.includes("blob.vercel-storage.com")}
+                                            />
+                                        )}
                                     </div>
 
                                     <div className="flex-1 flex flex-col justify-between py-0.5">
