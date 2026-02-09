@@ -43,8 +43,8 @@ export default function BusinessInfo() {
   };
 
   return (
-    <div className="mx-auto w-full max-w-lg rounded-xl p-6 md:p-8">
-      <form className="space-y-6 rounded-md p-8 shadow-md bg-background" onSubmit={handleSubmit}>
+    <div className="mx-auto w-full max-w-lg rounded-xl p-0 md:p-8">
+      <form className="space-y-7 rounded-md bg-background p-6 shadow-md md:p-8" onSubmit={handleSubmit}>
         {error && (
           <p className="text-sm text-destructive bg-destructive/10 p-3 rounded-md">
             {error}
@@ -65,13 +65,13 @@ export default function BusinessInfo() {
           <p className="text-sm text-muted-foreground">Please select at least one category</p>
         )}
 
-        <div className="flex items-center justify-between pt-2">
+        <div className="flex flex-col-reverse gap-3 pt-2 sm:flex-row sm:items-center sm:justify-between">
           <Button
             type="button"
             variant="outline"
             onClick={goBack}
             disabled={isLoading}
-            className="bg-muted hover:bg-red-400 hover:text-white border-0"
+            className="h-11 w-full border-0 bg-muted px-4 hover:bg-red-400 hover:text-white sm:w-auto"
           >
             Back
           </Button>
@@ -79,7 +79,7 @@ export default function BusinessInfo() {
           <Button
             type="submit"
             disabled={isLoading || categories.length === 0}
-            className="bg-primary hover:bg-primary/90 hover:text-white"
+            className="h-11 w-full bg-primary px-4 hover:bg-primary/90 hover:text-white sm:w-auto"
           >
             {isLoading ? "Creating store..." : "Create Store"}
           </Button>

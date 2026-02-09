@@ -22,9 +22,9 @@ export default function StoreInfo() {
   };
 
   return (
-    <div className="mx-auto w-full max-w-lg rounded-xl p-6 md:p-8 ">
+    <div className="mx-auto w-full max-w-lg rounded-xl p-0 md:p-8">
       <form
-        className="space-y-6 rounded-md p-8 shadow-md bg-background"
+        className="space-y-7 rounded-md bg-background p-6 shadow-md md:p-8"
         onSubmit={handleSubmit}
       >
         <div className="space-y-1">
@@ -50,7 +50,7 @@ export default function StoreInfo() {
               required
               value={storeName}
               onChange={(e) => setStoreName(e.target.value)}
-              className="focus-visible:border-primary/50 focus-visible:ring-primary/10"
+              className="h-11 px-3 focus-visible:border-primary/50 focus-visible:ring-primary/10"
             />
           </Field>
 
@@ -62,7 +62,7 @@ export default function StoreInfo() {
               rows={3}
               value={storeDescription}
               onChange={(e) => setStoreDescription(e.target.value)}
-              className="focus-visible:border-primary/50 focus-visible:ring-primary/10"
+              className="min-h-[96px] px-3 py-2.5 focus-visible:border-primary/50 focus-visible:ring-primary/10"
             />
           </Field>
 
@@ -73,18 +73,18 @@ export default function StoreInfo() {
               placeholder="Location"
               value={storeLocation}
               onChange={(e) => setStoreLocation(e.target.value)}
-              className="focus-visible:border-primary/50 focus-visible:ring-primary/10"
+              className="h-11 px-3 focus-visible:border-primary/50 focus-visible:ring-primary/10"
             />
           </Field>
         </FieldGroup>
 
-        <div className="flex items-center justify-between pt-2">
+        <div className="flex flex-col-reverse gap-3 pt-2 sm:flex-row sm:items-center sm:justify-between">
           <Button
             type="button"
             variant="outline"
             onClick={goBack}
             disabled={isLoading}
-            className="bg-muted hover:bg-red-400 hover:text-white border-0"
+            className="h-11 w-full border-0 bg-muted px-4 hover:bg-red-400 hover:text-white sm:w-auto"
           >
             Back
           </Button>
@@ -92,7 +92,7 @@ export default function StoreInfo() {
           <Button
             type="submit"
             disabled={isLoading}
-            className="bg-primary hover:bg-primary/90 hover:text-white"
+            className="h-11 w-full bg-primary px-4 hover:bg-primary/90 hover:text-white sm:w-auto"
           >
             {isLoading ? "Saving..." : "Continue"}
           </Button>
