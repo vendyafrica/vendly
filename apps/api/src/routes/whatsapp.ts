@@ -179,7 +179,16 @@ whatsappRouter.post("/webhooks/whatsapp", async (req, res) => {
     // -----------------------------------------------------------------------
     const tenantId = await orderService.getTenantIdByPhoneNumber(from);
     if (!tenantId) {
-      console.warn("[WhatsAppWebhook] Could not map sender to tenant", { from, raw });
+      const buyerOrder = await orderService.getLatestOrderByCustomerPhone(from, ["pending"]);
+      if (!buyerOrder) {
+        console.warn("[WhatsAppWebhook] Could not map sender to tenant or buyer order", { from, raw });
+        return res.sendStatus(200);
+      }
+
+      await whatsappClient.sendTextMessage({
+        to: from,
+        body: `Thanks for your order ${buyerOrder.orderNumber}! Payments are manual for now. Please pay the store directly, then reply "I PAID" once done.`,
+      });
       return res.sendStatus(200);
     }
 

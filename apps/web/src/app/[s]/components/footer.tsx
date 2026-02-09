@@ -48,14 +48,6 @@ export function StorefrontFooter({ store }: StorefrontFooterProps) {
                         <ul className="space-y-3">
                             <li>
                                 <Link
-                                    href="#products"
-                                    className="text-sm transition-colors duration-200 text-foreground hover:text-muted-foreground"
-                                >
-                                    All Products
-                                </Link>
-                            </li>
-                            <li>
-                                <Link
                                     href="#"
                                     className="text-sm transition-colors duration-200 text-foreground hover:text-muted-foreground"
                                 >
@@ -92,15 +84,7 @@ export function StorefrontFooter({ store }: StorefrontFooterProps) {
                                     href="#"
                                     className="text-sm transition-colors duration-200 text-foreground hover:text-muted-foreground"
                                 >
-                                    Shipping
-                                </Link>
-                            </li>
-                            <li>
-                                <Link
-                                    href="#"
-                                    className="text-sm transition-colors duration-200 text-foreground hover:text-muted-foreground"
-                                >
-                                    Returns
+                                    Policies
                                 </Link>
                             </li>
                         </ul>

@@ -4,6 +4,8 @@ import * as React from "react";
 import { SegmentedStatsCard } from "../components/SegmentedStatsCard";
 import { DataTable } from "../components/DataTable";
 import type { ColumnDef } from "@tanstack/react-table";
+import { useQueryClient } from "@tanstack/react-query";
+import { queryKeys } from "@/lib/query-keys";
 import { AddProductButton } from "./components/add-product-button";
 import { useTenant } from "../tenant-context";
 import Image from "next/image";
@@ -40,12 +42,14 @@ function formatMoney(amount: number, currency: string) {
 
 export default function ProductsPage() {
   const { bootstrap, error: bootstrapError } = useTenant();
+  const queryClient = useQueryClient();
 
   // Use React Query for products with optimistic updates
   const {
     data: rows = [],
     isLoading,
     error: queryError,
+    refetch,
   } = useProducts(bootstrap?.storeId);
 
   const deleteProduct = useDeleteProduct(bootstrap?.storeId ?? "");
@@ -107,16 +111,132 @@ export default function ProductsPage() {
     }
   };
 
-  const handleUploadComplete = () => {
-    // Invalidate and refetch products after upload
-    if (bootstrap?.storeId) {
+  const updateProductCache = React.useCallback(
+    (storeId: string, product: ProductApiRow) => {
+      const newRow: ProductTableRow = {
+        id: product.id,
+        name: product.productName,
+        slug: product.slug,
+        description: product.description,
+        priceAmount: product.priceAmount,
+        currency: product.currency,
+        quantity: product.quantity,
+        status: product.status,
+        thumbnailUrl: product.media?.[0]?.blobUrl,
+        thumbnailType: product.media?.[0]?.contentType || undefined,
+        salesAmount: product.salesAmount ?? 0,
+      };
+
+      // Updates cache if it exists, otherwise we'll rely on invalidate
+      queryClient.setQueryData<ProductTableRow[]>(
+        queryKeys.products.list(storeId),
+        (old) => {
+          if (!old) return [newRow];
+          const exists = old.find((p) => p.id === newRow.id);
+          if (exists) {
+            return old.map((p) => (p.id === newRow.id ? newRow : p));
+          }
+          return [newRow, ...old];
+        }
+      );
+    },
+    [queryClient]
+  );
+
+  const handleCreateProduct = async (
+    data: {
+      productName: string;
+      description: string;
+      priceAmount: number;
+      currency: string;
+      quantity: number;
+    },
+    media: { url: string; pathname: string; contentType: string }[]
+  ) => {
+    if (!bootstrap?.storeId) return;
+
+    // 1. Optimistic Update
+    const tempId = `temp-${Date.now()}`;
+    const optimisticProduct: ProductApiRow = {
+      id: tempId,
+      storeId: bootstrap.storeId,
+      productName: data.productName,
+      slug: data.productName.toLowerCase().replace(/\s+/g, "-"),
+      description: data.description,
+      priceAmount: data.priceAmount,
+      currency: data.currency,
+      quantity: data.quantity,
+      status: "draft",
+      media: media.map((m) => ({ ...m, blobUrl: m.url, blobPathname: m.pathname })),
+      salesAmount: 0,
+    };
+
+    updateProductCache(bootstrap.storeId, optimisticProduct);
+
+    // 2. API Call in Background
+    try {
+      const response = await fetch("/api/products", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          storeId: bootstrap.storeId,
+          title: data.productName,
+          description: data.description,
+          priceAmount: data.priceAmount,
+          currency: data.currency,
+          quantity: data.quantity,
+          source: "manual",
+          status: "draft",
+          media,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to create product");
+      }
+
+      const newProduct = (await response.json()) as ProductApiRow;
+
+      // 3. Replace Optimistic with Real
+      queryClient.setQueryData<ProductTableRow[]>(
+        queryKeys.products.list(bootstrap.storeId),
+        (old) => {
+          if (!old) return [];
+          return old.map((p) => (p.id === tempId ? {
+            id: newProduct.id,
+            name: newProduct.productName,
+            slug: newProduct.slug,
+            description: newProduct.description,
+            priceAmount: newProduct.priceAmount,
+            currency: newProduct.currency,
+            quantity: newProduct.quantity,
+            status: newProduct.status,
+            thumbnailUrl: newProduct.media?.[0]?.blobUrl,
+            thumbnailType: newProduct.media?.[0]?.contentType || undefined,
+            salesAmount: newProduct.salesAmount ?? 0,
+          } : p));
+        }
+      );
+
+      // Force sync to be safe
       invalidate(bootstrap.storeId);
+    } catch (error) {
+      console.error(error);
+      alert("Failed to create product in background. Please refresh.");
+      // Rollback
+      queryClient.setQueryData<ProductTableRow[]>(
+        queryKeys.products.list(bootstrap.storeId),
+        (old) => old?.filter((p) => p.id !== tempId) ?? []
+      );
     }
   };
 
-  const handleProductUpdated = () => {
-    // Invalidate and refetch products after edit
+  const handleProductUpdated = async (product?: ProductApiRow) => {
     if (bootstrap?.storeId) {
+      if (product) {
+        updateProductCache(bootstrap.storeId, product);
+      }
+      await refetch();
       invalidate(bootstrap.storeId);
     }
   };
@@ -217,13 +337,24 @@ export default function ProductsPage() {
         <div className="flex items-center gap-3 min-w-0">
           <div className="relative size-10 overflow-hidden rounded-md bg-muted shrink-0">
             {row.original.thumbnailUrl ? (
-              <Image
-                src={row.original.thumbnailUrl}
-                alt={row.original.name}
-                fill
-                className="object-cover"
-                unoptimized={row.original.thumbnailUrl.includes("blob.vercel-storage.com")}
-              />
+              row.original.thumbnailType?.startsWith("video/") ? (
+                <video
+                  src={row.original.thumbnailUrl}
+                  className="h-full w-full object-cover"
+                  muted
+                  playsInline
+                  loop
+                  autoPlay
+                />
+              ) : (
+                <Image
+                  src={row.original.thumbnailUrl}
+                  alt={row.original.name}
+                  fill
+                  className="object-cover"
+                  unoptimized={row.original.thumbnailUrl.includes("blob.vercel-storage.com")}
+                />
+              )
             ) : (
               <div className="flex size-full items-center justify-center text-xs text-muted-foreground">N/A</div>
             )}
@@ -422,7 +553,7 @@ export default function ProductsPage() {
         onOpenChange={setUploadModalOpen}
         storeId={bootstrap?.storeId || ""}
         tenantId={bootstrap?.tenantId || ""}
-        onUploadComplete={handleUploadComplete}
+        onCreate={handleCreateProduct}
       />
 
       <EditProductModal

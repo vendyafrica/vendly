@@ -4,14 +4,11 @@ import { useState, useEffect, useRef } from "react";
 import { useParams, usePathname } from "next/navigation";
 import Link from "next/link";
 import { HugeiconsIcon } from "@hugeicons/react";
-import { Tangerine } from "next/font/google";
 
 import { ShoppingBag02Icon, UserIcon, FavouriteIcon, Search01Icon } from "@hugeicons/core-free-icons";
 import { HeaderSkeleton } from "./skeletons";
 import { useCart } from "@/contexts/cart-context";
 import { StorefrontSearch } from "./storefront-search";
-
-const tangerine = Tangerine({ subsets: ["latin"], weight: ["400", "700"] });
 
 interface StoreData {
     name: string;
@@ -123,7 +120,7 @@ export function StorefrontHeader() {
                         <div className="min-w-[120px] sm:min-w-[160px] flex items-center gap-3">
                             <Link
                                 href={`/${store.slug}`}
-                                className={`${tangerine.className} ${textColorClass} font-bold text-3xl sm:text-4xl tracking-tight transition-colors`}
+                                className={`${textColorClass} font-semibold text-xl sm:text-2xl tracking-tight transition-colors`}
                             >
                                 {store.name}
                             </Link>

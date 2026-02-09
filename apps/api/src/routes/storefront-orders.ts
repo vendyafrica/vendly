@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { createOrderSchema, orderService } from "../services/order-service";
-import { notifyCustomerPaymentAction, notifySellerNewOrder } from "../services/notifications";
+import { notifyCustomerOrderReceived, notifySellerNewOrder } from "../services/notifications";
 import { capturePosthogEvent } from "../utils/posthog";
 
 export const storefrontOrdersRouter:Router = Router();
@@ -38,8 +38,8 @@ storefrontOrdersRouter.post("/storefront/:slug/orders", async (req, res, next) =
       try {
         const sellerPhone = await orderService.getTenantPhoneByStoreSlug(slug);
 
-        console.log("[StorefrontOrders] Sending WhatsApp payment action to customer", { slug, orderId: order.id });
-        await notifyCustomerPaymentAction({ order });
+        console.log("[StorefrontOrders] Sending WhatsApp order received to customer", { slug, orderId: order.id });
+        await notifyCustomerOrderReceived({ order });
 
         console.log("[StorefrontOrders] Sending WhatsApp new order to seller", { slug, orderId: order.id });
         await notifySellerNewOrder({ sellerPhone, order });

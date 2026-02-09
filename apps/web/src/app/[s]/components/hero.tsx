@@ -9,13 +9,13 @@ interface HeroProps {
     };
 }
 
-const FALLBACK_HERO_IMAGE = "https://cdn.cosmos.so/23dcbd2e-147b-4387-8c4e-aa2bbcf22704?format=jpeg";
+const FALLBACK_HERO_MEDIA = "https://cdn.cosmos.so/c1a24f82-42e5-43b4-a1c5-2da242f3ae3b.mp4";
 
 export function Hero({ store }: HeroProps) {
     const heroMedia = Array.isArray(store.heroMedia) ? store.heroMedia : [];
-    const mediaUrl = heroMedia[0] || FALLBACK_HERO_IMAGE;
+    const mediaUrl = heroMedia[0] || FALLBACK_HERO_MEDIA;
     const isVideo = typeof mediaUrl === "string" && !!mediaUrl.match(/\.(mp4|webm|ogg)$/i);
-    const posterUrl = FALLBACK_HERO_IMAGE;
+    const posterUrl = FALLBACK_HERO_MEDIA;
 
     const isBlobUrl = typeof mediaUrl === "string" && mediaUrl.includes("blob.vercel-storage.com");
 

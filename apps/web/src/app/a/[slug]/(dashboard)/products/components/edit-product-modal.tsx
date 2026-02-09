@@ -17,6 +17,7 @@ import { Textarea } from "@vendly/ui/components/textarea";
 import Image from "next/image";
 import { upload } from "@vercel/blob/client";
 import { useTenant } from "../../tenant-context";
+import type { ProductApiRow } from "@/hooks/use-products";
 
 interface Product {
     id: string;
@@ -41,7 +42,7 @@ interface EditProductModalProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
     tenantId: string;
-    onProductUpdated?: () => void;
+    onProductUpdated?: (product?: ProductApiRow) => void;
 }
 
 interface UploadedFile {
@@ -259,8 +260,10 @@ export function EditProductModal({
                 throw new Error(errorData.error || "Failed to update product");
             }
 
+            const updatedProduct = (await response.json()) as ProductApiRow;
+
             onOpenChange(false);
-            onProductUpdated?.();
+            onProductUpdated?.(updatedProduct);
         } catch (err) {
             setError(err instanceof Error ? err.message : "Update failed");
         } finally {
