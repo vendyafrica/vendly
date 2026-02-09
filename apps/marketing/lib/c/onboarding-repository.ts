@@ -1,4 +1,4 @@
-import { db, dbWs } from "@vendly/db/db";
+import { db } from "@vendly/db/db";
 import { tenants, tenantMemberships, stores } from "@vendly/db/schema";
 import { eq } from "@vendly/db";
 import type { OnboardingData, CreateTenantResult } from "./models";
@@ -12,50 +12,48 @@ class OnboardingRepository {
     const tenantSlug = this.generateSlug(email);
     const storeSlug = await this.ensureUniqueStoreSlug(data.store.storeName);
 
-    return await dbWs.transaction(async (tx) => {
-      const [tenant] = await tx
-        .insert(tenants)
-        .values({
-          fullName: data.personal.fullName,
-          slug: tenantSlug,
-          phoneNumber: data.personal.phoneNumber,
-          billingEmail: email,
-          onboardingStep: "complete",
-          onboardingData: data,
-          status: "active",
-        })
-        .returning();
+    const [tenant] = await db
+      .insert(tenants)
+      .values({
+        fullName: data.personal.fullName,
+        slug: tenantSlug,
+        phoneNumber: data.personal.phoneNumber,
+        billingEmail: email,
+        onboardingStep: "complete",
+        onboardingData: data,
+        status: "active",
+      })
+      .returning();
 
-      const [membership] = await tx
-        .insert(tenantMemberships)
-        .values({
-          tenantId: tenant.id,
-          userId,
-          role: "owner",
-        })
-        .returning();
+    const [membership] = await db
+      .insert(tenantMemberships)
+      .values({
+        tenantId: tenant.id,
+        userId,
+        role: "owner",
+      })
+      .returning();
 
-      const [store] = await tx
-        .insert(stores)
-        .values({
-          tenantId: tenant.id,
-          name: data.store.storeName,
-          slug: storeSlug,
-          description: data.store.storeDescription,
-          categories: data.business.categories,
-          storeContactEmail: email,
-          storeContactPhone: data.personal.phoneNumber,
-          storeAddress: data.store.storeLocation ?? null,
-          status: true,
-        })
-        .returning();
+    const [store] = await db
+      .insert(stores)
+      .values({
+        tenantId: tenant.id,
+        name: data.store.storeName,
+        slug: storeSlug,
+        description: data.store.storeDescription,
+        categories: data.business.categories,
+        storeContactEmail: email,
+        storeContactPhone: data.personal.phoneNumber,
+        storeAddress: data.store.storeLocation ?? null,
+        status: true,
+      })
+      .returning();
 
-      return {
-        tenant,
-        store,
-        membership,
-      };
-    });
+    return {
+      tenant,
+      store,
+      membership,
+    };
   }
 
   async isSlugTaken(slug: string): Promise<boolean> {
