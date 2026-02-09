@@ -235,6 +235,8 @@ export function OnboardingProvider({ children }: ProviderProps) {
             localStorage.setItem("vendly_tenant_slug", result.tenantSlug);
             localStorage.setItem("vendly_store_id", result.storeId);
             localStorage.setItem("vendly_store_slug", result.storeSlug);
+            localStorage.setItem("vendly_seller_name", payloadData.personal?.fullName || "");
+            localStorage.setItem("vendly_store_name", payloadData.store?.storeName || "");
 
             localStorage.removeItem("vendly_onboarding_data");
             localStorage.removeItem("vendly_onboarding_step");
@@ -246,7 +248,7 @@ export function OnboardingProvider({ children }: ProviderProps) {
             currentStep: "complete",
             isComplete: true,
             isLoading: false,
-            data: {},
+            data: payloadData,
           }));
 
           navigateToStep("complete");
@@ -262,7 +264,7 @@ export function OnboardingProvider({ children }: ProviderProps) {
         return false;
       }
     },
-    [state.data, navigateToStep]
+    [state.data, state.sellerIdentity, navigateToStep]
   );
 
   const goBack = useCallback(async () => {

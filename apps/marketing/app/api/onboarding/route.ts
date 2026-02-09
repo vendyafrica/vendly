@@ -1,31 +1,53 @@
-import { auth } from "@vendly/auth";
-import { headers } from "next/headers";
 import { NextResponse } from "next/server";
 import { onboardingService } from "@/lib/c/onboarding-service";
 import type { OnboardingData } from "@/lib/c/models";
+import { sendSellerMagicLinkEmail } from "@vendly/transactional";
+import { db } from "@vendly/db/db";
+import { verification, users } from "@vendly/db/schema";
+import { eq } from "@vendly/db";
+import crypto from "crypto";
 
 export async function POST(req: Request) {
   try {
-    const session = await auth.api.getSession({
-      headers: await headers(),
-    });
-
-    if (!session?.user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
     const body = await req.json();
-    const { data } = body as { data: OnboardingData };
+    const { data, email, userId } = body as {
+      data: OnboardingData;
+      email?: string;
+      userId?: string;
+    };
 
-    if (!data) {
+    if (!data || !email || !userId) {
       return NextResponse.json({ error: "Missing onboarding data" }, { status: 400 });
     }
 
     const result = await onboardingService.createFullTenant(
-      session.user.id,
-      session.user.email ?? "",
+      userId,
+      email,
       data
     );
+
+    const existing = await db.query.users.findFirst({
+      where: eq(users.id, userId),
+      columns: { emailVerified: true },
+    });
+
+    if (existing && !existing.emailVerified) {
+      const token = crypto.randomBytes(32).toString("hex");
+      const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
+
+      await db.delete(verification).where(eq(verification.identifier, email));
+
+      await db.insert(verification).values({
+        id: crypto.randomUUID(),
+        identifier: email,
+        value: token,
+        expiresAt,
+      });
+
+      const webBaseUrl = process.env.NEXT_PUBLIC_WEB_URL || "https://duuka.store";
+      const verifyUrl = `${webBaseUrl}/api/auth/verify-seller?token=${token}&email=${encodeURIComponent(email)}`;
+      await sendSellerMagicLinkEmail({ to: email, url: verifyUrl });
+    }
 
     return NextResponse.json(result);
   } catch (error) {

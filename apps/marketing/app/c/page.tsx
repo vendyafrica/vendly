@@ -5,7 +5,6 @@ import {
   Field,
   FieldGroup,
   FieldLabel,
-  FieldSeparator,
 } from "@vendly/ui/components/field";
 import { Input } from "@vendly/ui/components/input";
 import { useState } from "react";
@@ -34,7 +33,7 @@ export default function Welcome() {
     setFormState("loading");
 
     try {
-      const res = await fetch("/api/seller/precheck/start", {
+      const res = await fetch("/api/seller/precheck", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email }),
@@ -71,7 +70,7 @@ export default function Welcome() {
       navigateToStep("personal");
       router.push("/c/personal");
     } catch {
-      setError("Failed to send magic link. Please try again.");
+      setError("Failed to check email. Please try again.");
       setFormState("idle");
     }
   };

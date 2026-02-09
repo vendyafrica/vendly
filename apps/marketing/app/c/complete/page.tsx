@@ -17,6 +17,15 @@ export default function Complete() {
   const router = useRouter();
   const { data, isLoading } = useOnboarding();
 
+  const sellerName =
+    data.personal?.fullName ||
+    (typeof window !== "undefined" ? localStorage.getItem("vendly_seller_name") : null) ||
+    "";
+  const storeName =
+    data.store?.storeName ||
+    (typeof window !== "undefined" ? localStorage.getItem("vendly_store_name") : null) ||
+    "";
+
   if (isLoading) {
     return (
       <div className="mx-auto w-full max-w-lg rounded-xl p-6 md:p-8 shadow-sm bg-background">
@@ -58,8 +67,9 @@ export default function Complete() {
           </EmptyMedia>
           <EmptyTitle className="text-lg font-semibold">🎉 Your store is ready!</EmptyTitle>
           <EmptyDescription className="text-sm text-muted-foreground">
-            Congratulations {data.personal?.fullName?.split(" ")[0] || "there"}!
-            Your store {data.store?.storeName ? `"${data.store?.storeName}" ` : ""}has been created successfully.
+            Congratulations {sellerName?.split(" ")[0] || "there"}!
+            Your store {storeName ? `"${storeName}" ` : ""}has been created successfully.
+            Check your email to verify your account and access your dashboard.
           </EmptyDescription>
         </EmptyHeader>
         <EmptyContent className="space-y-3">
