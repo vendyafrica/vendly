@@ -30,6 +30,7 @@ export async function generateMetadata({ params }: StorefrontPageProps): Promise
 
   const title = `${store.name} | Shop on Vendly`;
   const description = store.description || `Shop ${store.name} with trusted payments and delivery on Vendly.`;
+  const ogImage = store.heroMedia?.[0] || store.logoUrl || "/og-image.png";
 
   return {
     title,
@@ -41,10 +42,14 @@ export async function generateMetadata({ params }: StorefrontPageProps): Promise
       title,
       description,
       url: `/${store.slug}`,
+      siteName: "Vendly",
+      images: [{ url: ogImage }],
     },
     twitter: {
+      card: "summary_large_image",
       title,
       description,
+      images: [ogImage],
     },
   };
 }

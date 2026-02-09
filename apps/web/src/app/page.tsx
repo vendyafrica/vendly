@@ -17,6 +17,7 @@ export const dynamic = "force-dynamic";
 const homeTitle = "Vendly | Shop African Creators & Social Sellers";
 const homeDescription =
   "Discover and shop from African creators, brands, and small sellers. Secure mobile money payments, integrated delivery, and trusted independent stores all in one marketplace.";
+const homeImage = "/og-image.png";
 
 export const metadata: Metadata = {
   title: homeTitle,
@@ -28,10 +29,14 @@ export const metadata: Metadata = {
     title: homeTitle,
     description: homeDescription,
     url: "/",
+    siteName: "Vendly",
+    images: [{ url: homeImage }],
   },
   twitter: {
+    card: "summary_large_image",
     title: homeTitle,
     description: homeDescription,
+    images: [homeImage],
   },
 };
 

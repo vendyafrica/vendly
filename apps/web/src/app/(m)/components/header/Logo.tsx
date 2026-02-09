@@ -14,7 +14,7 @@ export function Logo({ className = "" }: { className?: string }) {
                 />
             </div>
             <span className="text-lg font-semibold tracking-tight">
-                vendly
+                duuka
             </span>
         </Link>
     );
@@ -28,7 +28,7 @@ export function MobileLogo() {
         >
             <Image src="/vendly.png" alt="Vendly" width={28} height={28} />
             <span className="text-base font-semibold tracking-tight">
-                vendly
+              duuka
             </span>
         </Link>
     );

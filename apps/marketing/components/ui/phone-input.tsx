@@ -150,9 +150,11 @@ export const PhoneInput = forwardRef<HTMLInputElement, PhoneInputProps>(
 
       const callingCode = countryInfo.countryCallingCodes?.[0];
       if (callingCode) {
+        // Normalize calling code to always start with +
+        let normalizedCallingCode = callingCode.startsWith('+') ? callingCode : `+${callingCode}`;
         const syntheticEvent = {
           target: {
-            value: callingCode,
+            value: normalizedCallingCode,
           },
         } as React.ChangeEvent<HTMLInputElement>;
         onChange?.(syntheticEvent);
@@ -164,15 +166,39 @@ export const PhoneInput = forwardRef<HTMLInputElement, PhoneInputProps>(
     const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       let newValue = e.target.value;
 
+      const rawDialCode = countryData?.countryCallingCodes?.[0] || "";
+      const dialCode = rawDialCode.startsWith('+') ? rawDialCode : (rawDialCode ? `+${rawDialCode}` : "");
+
+      if (dialCode && !newValue.startsWith(dialCode)) {
+        // Prevent deletion of country code
+        if (newValue.length < dialCode.length) {
+          newValue = dialCode;
+        } else {
+          // If user modified prefix, Restore it.
+          const rawInput = newValue.replace(/[^0-9]/g, '');
+          const rawDial = dialCode.replace(/[^0-9]/g, '');
+
+          if (rawInput.startsWith(rawDial)) {
+            // Reconstruct: + + digits
+            newValue = '+' + rawInput;
+          } else {
+            newValue = dialCode;
+          }
+        }
+      }
+
       // Ensure the value starts with "+"
       if (!newValue.startsWith("+")) {
-        // Replace "00" at the start with "+" if present
         if (newValue.startsWith("00")) {
           newValue = "+" + newValue.slice(2);
         } else {
-          // Otherwise just add "+" at the start
           newValue = "+" + newValue;
         }
+      }
+
+      // Cleanup any double pluses just in case
+      if (newValue.startsWith("++")) {
+        newValue = '+' + newValue.replace(/^\++/, '');
       }
 
       const asYouType = new AsYouType();
@@ -183,10 +209,22 @@ export const PhoneInput = forwardRef<HTMLInputElement, PhoneInputProps>(
         ? parsedCountry && allowedCountries.map((c) => c.toUpperCase()).includes(parsedCountry)
         : true;
 
+      // Only switch country if it's different AND valid AND allowed.
+      // But if we enforce dialCode, we might prevent valid switches by typing?
+      // User said "once we set the country code ... uneditable". 
+      // This implies locking the country unless they use the dropdown.
+
+      // However, if they clear everything and type +1, should it switch?
+      // Our logic above prevents clearing dialCode if it exists!
+      // So they MUST use dropdown to switch country. This aligns with "uneditable".
+
       if (parsedCountry && isAllowed) {
         const countryCode = parsedCountry;
-        setDisplayFlag(countryCode.toLowerCase());
 
+        // Update internal state but maybe don't trigger onChange if we want strict locking?
+        // Actually we should keep internal state consistent.
+
+        setDisplayFlag(countryCode.toLowerCase());
         const countryInfo = lookup.countries({ alpha2: countryCode })[0];
         setCountryData(countryInfo);
         setSelectedCountry(countryCode);
@@ -203,6 +241,7 @@ export const PhoneInput = forwardRef<HTMLInputElement, PhoneInputProps>(
 
       onChange?.(syntheticEvent);
     };
+
 
     const inputClasses = cn(
       "group flex items-center gap-3 relative bg-background transition-colors text-sm rounded-lg border border-input pl-2 pr-3 h-10 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed focus-within:border-primary/60 focus-within:ring-2 focus-within:ring-primary/15 [interpolate-size:allow-keywords]",

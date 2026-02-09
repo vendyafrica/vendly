@@ -24,6 +24,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
     const title = `${product.name} by ${store.name} | Vendly`;
     const description = product.description || `Shop ${product.name} from ${store.name} with trusted payments and delivery on Vendly.`;
+    const ogImage = product.images?.[0] || store.logoUrl || "/og-image.png";
 
     // Legacy route; point canonical to new structure
     const canonical = `/${store.slug}/${product.id}/${product.slug}`;
@@ -38,10 +39,14 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
             title,
             description,
             url: canonical,
+            siteName: "Vendly",
+            images: [{ url: ogImage }],
         },
         twitter: {
+            card: "summary_large_image",
             title,
             description,
+            images: [ogImage],
         },
     };
 }

@@ -42,7 +42,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const products = await marketplaceService.getStoreProducts(store.slug);
     products.forEach((product) => {
       urls.push({
-        url: `${siteUrl}/${store.slug}/products/${product.slug}`,
+        url: `${siteUrl}/${store.slug}/${product.id}/${product.slug}`,
         lastModified: new Date(),
         changeFrequency: "weekly",
         priority: 0.6,

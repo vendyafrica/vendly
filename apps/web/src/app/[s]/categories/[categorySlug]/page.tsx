@@ -23,15 +23,27 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   }
 
   const title = `${categorySlug} | ${store.name} | Vendly`;
+  const description = `Shop ${categorySlug} from ${store.name} on Vendly. Discover top picks, trusted sellers, and fast delivery.`;
+  const ogImage = store.heroMedia?.[0] || store.logoUrl || "/og-image.png";
 
   return {
     title,
+    description,
     alternates: {
       canonical: `/${store.slug}/categories/${categorySlug}`,
     },
     openGraph: {
       title,
+      description,
       url: `/${store.slug}/categories/${categorySlug}`,
+      siteName: "Vendly",
+      images: [{ url: ogImage }],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: [ogImage],
     },
   };
 }

@@ -2,7 +2,6 @@ import Header from "@/app/(m)/components/header";
 import Footer from "@/app/(m)/components/footer";
 import { MarketplaceGrid } from "@/app/(m)/components/MarketplaceGrid";
 import type { MarketplaceStore } from "@/types/marketplace";
-import { Button } from "@vendly/ui/components/button";
 import Link from "next/link";
 import type { Metadata } from "next";
 import { marketplaceService } from "@/lib/services/marketplace-service";
@@ -25,6 +24,7 @@ const formatCategoryName = (slug: string) =>
 export async function generateMetadata({ params }: CategoryPageProps): Promise<Metadata> {
     const { category: categorySlug } = await params;
     const categoryName = formatCategoryName(categorySlug);
+    const ogImage = "/og-image.png";
 
     const title = `${categoryName} | Shop ${categoryName} on Vendly`;
     const description = `Discover ${categoryName} stores and products. Browse curated selections and shop ${categoryName.toLowerCase()} on Vendly.`;
@@ -39,10 +39,14 @@ export async function generateMetadata({ params }: CategoryPageProps): Promise<M
             title,
             description,
             url: `/category/${categorySlug}`,
+            siteName: "Vendly",
+            images: [{ url: ogImage }],
         },
         twitter: {
+            card: "summary_large_image",
             title,
             description,
+            images: [ogImage],
         },
     };
 }

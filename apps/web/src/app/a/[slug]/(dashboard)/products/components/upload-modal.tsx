@@ -308,251 +308,257 @@ export function UploadModal({
 
     return (
         <Dialog open={open} onOpenChange={handleDialogOpenChange}>
-            <DialogContent className="sm:max-w-3xl" showCloseButton={false}>
-                <DialogHeader>
-                    <DialogTitle>Add Product</DialogTitle>
-                </DialogHeader>
+            <DialogContent className="flex max-h-[90svh] w-[95vw] flex-col gap-0 overflow-hidden p-0 sm:max-h-[85vh] sm:max-w-3xl sm:top-1/2 sm:-translate-y-1/2 top-[5svh] translate-y-0" showCloseButton={false}>
+                <div className="border-b px-6 py-4">
+                    <DialogHeader>
+                        <DialogTitle>Add Product</DialogTitle>
+                    </DialogHeader>
+                </div>
 
-                <div className="space-y-4">
-                    <p className="text-sm text-muted-foreground">
-                        Upload images or videos for one product. Each file is a variant media item. Finish details before adding another product.
-                    </p>
-
-                    {error && (
-                        <p className="text-sm text-destructive bg-destructive/10 p-3 rounded-md">
-                            {error}
+                <div className="flex-1 overflow-y-auto p-6">
+                    <div className="space-y-4">
+                        <p className="text-sm text-muted-foreground">
+                            Upload images or videos for one product. Each file is a variant media item. Finish details before adding another product.
                         </p>
-                    )}
 
-                    <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-                        {/* Gallery / drop zone */}
-                        <div
-                            className="border-2 border-dashed border-border/70 rounded-lg p-4 md:p-5 lg:p-6 cursor-pointer hover:bg-muted/50 transition-colors"
-                            onClick={() => !isUploading && fileInputRef.current?.click()}
-                            onDragOver={(e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-                            }}
-                            onDrop={(e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-                                if (!isUploading && e.dataTransfer.files?.length) {
-                                    addSelectedFiles(Array.from(e.dataTransfer.files));
-                                }
-                            }}
-                        >
-                            {files.length === 0 ? (
-                                <div className="text-center py-10">
-                                    <HugeiconsIcon
-                                        icon={ImageUpload01Icon}
-                                        className="size-14 mx-auto text-muted-foreground"
-                                    />
-                                    <p className="text-sm text-muted-foreground mt-3 font-medium">
-                                        Drag & drop product media here
-                                    </p>
-                                    <p className="text-xs text-muted-foreground mt-1">
-                                        Images or videos up to 10MB each
-                                    </p>
-                                    <Button
-                                        type="button"
-                                        variant="outline"
-                                        className="mt-4"
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            fileInputRef.current?.click();
-                                        }}
-                                        disabled={isUploading}
-                                    >
-                                        Upload media
-                                    </Button>
-                                </div>
-                            ) : (
-                                <div className="space-y-4">
-                                    {/* Featured image */}
-                                    <div className="relative aspect-square max-h-80 mx-auto">
-                                        {files[0].file.type.startsWith("video/") ? (
-                                            <video
-                                                src={files[0].previewUrl}
-                                                className={`h-full w-full rounded-md object-cover transition-opacity ${files[0].isUploading ? "opacity-60" : "opacity-100"}`}
-                                                muted
-                                                playsInline
-                                                controls
-                                            />
-                                        ) : (
-                                            <div className="relative h-full w-full">
-                                                <Image
-                                                    src={files[0].previewUrl}
-                                                    alt="Featured preview"
-                                                    fill
-                                                    className={`object-contain rounded-md transition-opacity ${files[0].isUploading ? "opacity-60" : "opacity-100"}`}
-                                                />
-                                            </div>
-                                        )}
-                                        {files[0].isUploading && (
-                                            <div className="absolute inset-0 flex items-center justify-center">
-                                                <div className="size-10 rounded-full bg-background/80 flex items-center justify-center">
-                                                    <div className="size-7 rounded-full border-2 border-primary/60 border-t-primary animate-spin" />
-                                                </div>
-                                            </div>
-                                        )}
-                                    </div>
+                        {error && (
+                            <p className="text-sm text-destructive bg-destructive/10 p-3 rounded-md">
+                                {error}
+                            </p>
+                        )}
 
-                                    {/* Thumbnail strip */}
-                                    <div className="grid grid-cols-5 gap-2 sm:grid-cols-6">
-                                        {files.map((f, i) => (
-                                            <div
-                                                key={i}
-                                                className={`relative aspect-square cursor-pointer border-2 rounded-md ${i === 0 ? "border-primary" : "border-transparent hover:border-border"}`}
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    if (i !== 0) moveFile(i, 0);
-                                                }}
-                                            >
-                                                {f.file.type.startsWith("video/") ? (
-                                                    <video
-                                                        src={f.previewUrl}
-                                                        className={`h-full w-full rounded-md object-cover transition-opacity ${f.isUploading ? "opacity-60" : "opacity-100"}`}
-                                                        muted
-                                                        playsInline
-                                                    />
-                                                ) : (
-                                                    <Image
-                                                        src={f.previewUrl}
-                                                        alt="Preview"
-                                                        fill
-                                                        className={`object-cover rounded-md transition-opacity ${f.isUploading ? "opacity-60" : "opacity-100"}`}
-                                                    />
-                                                )}
-                                                {f.isUploading && (
-                                                    <div className="absolute inset-0 flex items-center justify-center">
-                                                        <div className="size-5 rounded-full border-2 border-white/60 border-t-white animate-spin" />
-                                                    </div>
-                                                )}
-
-                                                {!isUploading && (
-                                                    <button
-                                                        type="button"
-                                                        onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            removeFile(i);
-                                                        }}
-                                                        className="absolute -top-1 -right-1 bg-destructive text-destructive-foreground rounded-full p-0.5 shadow-sm"
-                                                    >
-                                                        <HugeiconsIcon icon={Cancel01Icon} className="size-3" />
-                                                    </button>
-                                                )}
-                                            </div>
-                                        ))}
-
-                                        {/* Add more tile */}
-                                        <button
+                        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                            {/* Gallery / drop zone */}
+                            <div
+                                className="border-2 border-dashed border-border/70 rounded-lg p-4 md:p-5 lg:p-6 cursor-pointer hover:bg-muted/50 transition-colors"
+                                onClick={() => !isUploading && fileInputRef.current?.click()}
+                                onDragOver={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                }}
+                                onDrop={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    if (!isUploading && e.dataTransfer.files?.length) {
+                                        addSelectedFiles(Array.from(e.dataTransfer.files));
+                                    }
+                                }}
+                            >
+                                {files.length === 0 ? (
+                                    <div className="text-center py-10">
+                                        <HugeiconsIcon
+                                            icon={ImageUpload01Icon}
+                                            className="size-14 mx-auto text-muted-foreground"
+                                        />
+                                        <p className="text-sm text-muted-foreground mt-3 font-medium">
+                                            Drag & drop product media here
+                                        </p>
+                                        <p className="text-xs text-muted-foreground mt-1">
+                                            Images or videos up to 10MB each
+                                        </p>
+                                        <Button
                                             type="button"
-                                            className="relative aspect-square border-2 border-dashed border-border/70 rounded-md flex items-center justify-center hover:bg-muted/10"
+                                            variant="outline"
+                                            className="mt-4"
                                             onClick={(e) => {
                                                 e.stopPropagation();
                                                 fileInputRef.current?.click();
                                             }}
                                             disabled={isUploading}
                                         >
-                                            <HugeiconsIcon icon={ImageUpload01Icon} className="size-5 text-muted-foreground" />
-                                            <span className="sr-only">Add more media</span>
-                                        </button>
+                                            Upload media
+                                        </Button>
+                                    </div>
+                                ) : (
+                                    <div className="space-y-4">
+                                        {/* Featured image */}
+                                        <div className="relative aspect-square max-h-80 mx-auto">
+                                            {files[0].file.type.startsWith("video/") ? (
+                                                <video
+                                                    src={files[0].previewUrl}
+                                                    className={`h-full w-full rounded-md object-cover transition-opacity ${files[0].isUploading ? "opacity-60" : "opacity-100"}`}
+                                                    muted
+                                                    playsInline
+                                                    controls
+                                                />
+                                            ) : (
+                                                <div className="relative h-full w-full">
+                                                    <Image
+                                                        src={files[0].previewUrl}
+                                                        alt="Featured preview"
+                                                        fill
+                                                        className={`object-contain rounded-md transition-opacity ${files[0].isUploading ? "opacity-60" : "opacity-100"}`}
+                                                    />
+                                                </div>
+                                            )}
+                                            {files[0].isUploading && (
+                                                <div className="absolute inset-0 flex items-center justify-center">
+                                                    <div className="size-10 rounded-full bg-background/80 flex items-center justify-center">
+                                                        <div className="size-7 rounded-full border-2 border-primary/60 border-t-primary animate-spin" />
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        {/* Thumbnail strip */}
+                                        <div className="grid grid-cols-5 gap-2 sm:grid-cols-6">
+                                            {files.map((f, i) => (
+                                                <div
+                                                    key={i}
+                                                    className={`relative aspect-square cursor-pointer border-2 rounded-md ${i === 0 ? "border-primary" : "border-transparent hover:border-border"}`}
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        if (i !== 0) moveFile(i, 0);
+                                                    }}
+                                                >
+                                                    {f.file.type.startsWith("video/") ? (
+                                                        <video
+                                                            src={f.previewUrl}
+                                                            className={`h-full w-full rounded-md object-cover transition-opacity ${f.isUploading ? "opacity-60" : "opacity-100"}`}
+                                                            muted
+                                                            playsInline
+                                                        />
+                                                    ) : (
+                                                        <Image
+                                                            src={f.previewUrl}
+                                                            alt="Preview"
+                                                            fill
+                                                            className={`object-cover rounded-md transition-opacity ${f.isUploading ? "opacity-60" : "opacity-100"}`}
+                                                        />
+                                                    )}
+                                                    {f.isUploading && (
+                                                        <div className="absolute inset-0 flex items-center justify-center">
+                                                            <div className="size-5 rounded-full border-2 border-white/60 border-t-white animate-spin" />
+                                                        </div>
+                                                    )}
+
+                                                    {!isUploading && (
+                                                        <button
+                                                            type="button"
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                removeFile(i);
+                                                            }}
+                                                            className="absolute -top-1 -right-1 bg-destructive text-destructive-foreground rounded-full p-0.5 shadow-sm"
+                                                        >
+                                                            <HugeiconsIcon icon={Cancel01Icon} className="size-3" />
+                                                        </button>
+                                                    )}
+                                                </div>
+                                            ))}
+
+                                            {/* Add more tile */}
+                                            <button
+                                                type="button"
+                                                className="relative aspect-square border-2 border-dashed border-border/70 rounded-md flex items-center justify-center hover:bg-muted/10"
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    fileInputRef.current?.click();
+                                                }}
+                                                disabled={isUploading}
+                                            >
+                                                <HugeiconsIcon icon={ImageUpload01Icon} className="size-5 text-muted-foreground" />
+                                                <span className="sr-only">Add more media</span>
+                                            </button>
+                                        </div>
+                                    </div>
+                                )}
+
+                                <input
+                                    ref={fileInputRef}
+                                    type="file"
+                                    accept="image/*,video/*"
+                                    multiple
+                                    className="hidden"
+                                    onChange={handleFileChange}
+                                    disabled={isUploading}
+                                />
+                            </div>
+
+                            {/* Details */}
+                            <div className="space-y-4">
+                                <div className="space-y-2">
+                                    <Label htmlFor="productName">Product Name</Label>
+                                    <Input
+                                        id="productName"
+                                        value={productName}
+                                        onChange={(e) => setProductName(e.target.value)}
+                                        placeholder="e.g. Black Hoodie"
+                                        disabled={isUploading}
+                                    />
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-3">
+                                    <div className="space-y-2">
+                                        <Label htmlFor="priceAmount">Price ({currency})</Label>
+                                        <Input
+                                            id="priceAmount"
+                                            value={priceAmount}
+                                            onChange={(e) => setPriceAmount(e.target.value)}
+                                            placeholder="0"
+                                            type="number"
+                                            min="0"
+                                            disabled={isUploading}
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="quantity">Quantity</Label>
+                                        <Input
+                                            id="quantity"
+                                            value={quantity}
+                                            onChange={(e) => setQuantity(e.target.value)}
+                                            placeholder="0"
+                                            type="number"
+                                            min="0"
+                                            disabled={isUploading}
+                                        />
                                     </div>
                                 </div>
-                            )}
 
-                            <input
-                                ref={fileInputRef}
-                                type="file"
-                                accept="image/*,video/*"
-                                multiple
-                                className="hidden"
-                                onChange={handleFileChange}
-                                disabled={isUploading}
-                            />
-                        </div>
-
-                        {/* Details */}
-                        <div className="space-y-4">
-                            <div className="space-y-2">
-                                <Label htmlFor="productName">Product Name</Label>
-                                <Input
-                                    id="productName"
-                                    value={productName}
-                                    onChange={(e) => setProductName(e.target.value)}
-                                    placeholder="e.g. Black Hoodie"
-                                    disabled={isUploading}
-                                />
-                            </div>
-
-                            <div className="grid grid-cols-2 gap-3">
                                 <div className="space-y-2">
-                                    <Label htmlFor="priceAmount">Price ({currency})</Label>
-                                    <Input
-                                        id="priceAmount"
-                                        value={priceAmount}
-                                        onChange={(e) => setPriceAmount(e.target.value)}
-                                        placeholder="0"
-                                        type="number"
-                                        min="0"
+                                    <Label htmlFor="description">Description</Label>
+                                    <Textarea
+                                        id="description"
+                                        value={description}
+                                        onChange={(e) => setDescription(e.target.value)}
+                                        placeholder="Describe the product..."
+                                        rows={5}
                                         disabled={isUploading}
                                     />
                                 </div>
-                                <div className="space-y-2">
-                                    <Label htmlFor="quantity">Quantity</Label>
-                                    <Input
-                                        id="quantity"
-                                        value={quantity}
-                                        onChange={(e) => setQuantity(e.target.value)}
-                                        placeholder="0"
-                                        type="number"
-                                        min="0"
-                                        disabled={isUploading}
-                                    />
-                                </div>
-                            </div>
-
-                            <div className="space-y-2">
-                                <Label htmlFor="description">Description</Label>
-                                <Textarea
-                                    id="description"
-                                    value={description}
-                                    onChange={(e) => setDescription(e.target.value)}
-                                    placeholder="Describe the product..."
-                                    rows={5}
-                                    disabled={isUploading}
-                                />
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <DialogFooter className="flex gap-2">
-                    <Button
-                        type="button"
-                        variant="outline"
-                        onClick={handleClose}
-                        disabled={isUploading}
-                    >
-                        Cancel
-                    </Button>
-                    <Button
-                        onClick={handleSaveProduct}
-                        disabled={isUploading || files.length === 0}
-                    >
-                        {isUploading ? (
-                            <>
-                                <HugeiconsIcon
-                                    icon={Loading03Icon}
-                                    className="size-4 mr-2 animate-spin"
-                                />
-                                Uploading...
-                            </>
-                        ) : (
-                            "Save Product"
-                        )}
-                    </Button>
-                </DialogFooter>
+                <div className="border-t bg-background px-6 py-4">
+                    <DialogFooter className="flex gap-2">
+                        <Button
+                            type="button"
+                            variant="outline"
+                            onClick={handleClose}
+                            disabled={isUploading}
+                        >
+                            Cancel
+                        </Button>
+                        <Button
+                            onClick={handleSaveProduct}
+                            disabled={isUploading || files.length === 0}
+                        >
+                            {isUploading ? (
+                                <>
+                                    <HugeiconsIcon
+                                        icon={Loading03Icon}
+                                        className="size-4 mr-2 animate-spin"
+                                    />
+                                    Uploading...
+                                </>
+                            ) : (
+                                "Save Product"
+                            )}
+                        </Button>
+                    </DialogFooter>
+                </div>
             </DialogContent>
         </Dialog>
     );
