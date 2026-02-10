@@ -82,7 +82,6 @@ export function AdminMobileDock({ basePath }: { basePath: string }) {
               <HugeiconsIcon
                 icon={item.icon}
                 className={cn("size-6", isActive && "text-primary")}
-                variant={isActive ? "solid" : "stroke"}
               />
               <span className={cn("text-[10px] font-medium leading-none", isActive && "font-semibold")}>
                 {item.label}

@@ -220,7 +220,7 @@ export async function notifySellerOrderCompleted(params: {
 // ---------------------------------------------------------------------------
 
 function buildPaymentLink(order: OrderLike): string {
-  const base = (process.env.WEB_URL || "https://duuka.store").replace(/\/$/, "");
+  const base = (process.env.PAYMENT_WEB_URL || process.env.WEB_URL || "https://duuka.store").replace(/\/$/, "");
   const params = new URLSearchParams({
     amount: String(order.totalAmount),
     currency: order.currency || "UGX",
