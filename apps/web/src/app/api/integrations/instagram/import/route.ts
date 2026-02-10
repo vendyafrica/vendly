@@ -89,6 +89,8 @@ export async function POST(request: NextRequest) {
     }
 
     const mediaItems: InstagramMediaItem[] = Array.isArray(mediaData?.data) ? mediaData.data : [];
+    // Cap imports to first 50 items to avoid overloading the store
+    const limitedMediaItems = mediaItems.slice(0, 50);
 
     // 3. Update Account with Profile Picture
     const existing = await db.query.instagramAccounts.findFirst({
@@ -123,7 +125,7 @@ export async function POST(request: NextRequest) {
         tenantId: membership.tenantId,
         accountId: igAccount.id,
         status: "processing",
-        mediaFetched: mediaItems.length,
+        mediaFetched: limitedMediaItems.length,
         startedAt: new Date(),
       })
       .returning();
@@ -133,7 +135,7 @@ export async function POST(request: NextRequest) {
 
     const { products, mediaObjects, productMedia } = await import("@vendly/db/schema");
 
-    for (const item of mediaItems) {
+    for (const item of limitedMediaItems) {
       const caption = (item.caption as string | null | undefined) || "";
       const parsed = parseInstagramCaption(caption, store.defaultCurrency);
       const slug = slugify(parsed.productName);
