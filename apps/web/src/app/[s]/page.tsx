@@ -55,14 +55,14 @@ export async function generateMetadata({ params }: StorefrontPageProps): Promise
 }
 
 export default async function StorefrontHomePage({ params, searchParams }: StorefrontPageProps) {
-  const { s: storeSlug } = await params;
+  const { s } = await params;
   const resolvedSearchParams = await searchParams;
   const search = resolvedSearchParams?.q;
   const query = Array.isArray(search) ? search[0] : search;
 
   const [store, products] = await Promise.all([
-    getStoreDetailsCached(storeSlug),
-    marketplaceService.getStoreProducts(storeSlug, query),
+    getStoreDetailsCached(s),
+    marketplaceService.getStoreProducts(s, query),
   ]);
 
   if (!store) {
@@ -71,7 +71,7 @@ export default async function StorefrontHomePage({ params, searchParams }: Store
 
   return (
     <div className="min-h-screen">
-      <StorefrontViewTracker storeSlug={storeSlug} />
+      <StorefrontViewTracker storeSlug={s} />
       <Hero store={store} />
       <div className="w-full">
         <Categories />

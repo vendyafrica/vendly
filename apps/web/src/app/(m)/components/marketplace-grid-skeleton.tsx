@@ -1,6 +1,6 @@
 "use client";
 
-import { StoreCardSkeleton } from "./StoreCardSkeleton";
+import { StoreCardSkeleton } from "./store-card-skeleton";
 
 interface MarketplaceGridSkeletonProps {
   mobileCount?: number;

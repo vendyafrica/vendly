@@ -1,24 +1,24 @@
-"use client"
+"use client";
 
-import React, { useRef } from "react"
+import React, { useRef } from "react";
 import {
   motion,
   useScroll,
   useTransform,
-} from "framer-motion"
-import { cn } from "@vendly/ui/lib/utils"
-import Image from "next/image"
+} from "framer-motion";
+import { cn } from "@vendly/ui/lib/utils";
+import Image from "next/image";
 
 type ImageItem = {
-  id: number | string
-  title: string
-  desc: string
-  url: string
-  span: string
-}
+  id: number | string;
+  title: string;
+  desc: string;
+  url: string;
+  span: string;
+};
 
 interface InteractiveImageBentoGalleryProps {
-  imageItems: ImageItem[]
+  imageItems: ImageItem[];
 }
 
 const containerVariants = {
@@ -28,19 +28,19 @@ const containerVariants = {
       staggerChildren: 0.1,
     },
   },
-}
+};
 
 const InteractiveImageBentoGallery: React.FC<
   InteractiveImageBentoGalleryProps
 > = ({ imageItems }) => {
-  const targetRef = useRef<HTMLDivElement>(null)
+  const targetRef = useRef<HTMLDivElement>(null);
 
   const { scrollYProgress } = useScroll({
     target: targetRef,
     offset: ["start end", "end start"],
-  })
-  const opacity = useTransform(scrollYProgress, [0, 0.2, 0.8, 1], [0, 1, 1, 0])
-  const y = useTransform(scrollYProgress, [0, 0.2], [30, 0])
+  });
+  const opacity = useTransform(scrollYProgress, [0, 0.2, 0.8, 1], [0, 1, 1, 0]);
+  const y = useTransform(scrollYProgress, [0, 0.2], [30, 0]);
 
   return (
     <section
@@ -88,7 +88,7 @@ const InteractiveImageBentoGallery: React.FC<
                   item.span,
                 )}
                 whileHover={{ scale: 1.02 }}
-                transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+                transition={{ type: "spring", stiffness: 300, damping: 20 }}
                 tabIndex={0}
                 aria-label={`View ${item.title}`}
               >
@@ -116,8 +116,8 @@ const InteractiveImageBentoGallery: React.FC<
         </div>
       </div>
     </section>
-  )
+  );
 
-}
+};
 
-export default InteractiveImageBentoGallery
+export default InteractiveImageBentoGallery;

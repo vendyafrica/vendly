@@ -1,6 +1,6 @@
 import Header from "@/app/(m)/components/header";
 import Footer from "@/app/(m)/components/footer";
-import { MarketplaceGrid } from "@/app/(m)/components/MarketplaceGrid";
+import { MarketplaceGrid } from "@/app/(m)/components/marketplace-grid";
 import type { MarketplaceStore } from "@/types/marketplace";
 import Link from "next/link";
 import type { Metadata } from "next";

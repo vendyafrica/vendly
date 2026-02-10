@@ -20,7 +20,7 @@ interface PageProps {
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-  const { s: storeSlug, productId } = await params;
+  const { s, productId } = await params;
 
   if (!isUuid(productId)) {
     return {
@@ -30,8 +30,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     };
   }
 
-  const store = await marketplaceService.getStoreDetails(storeSlug);
-  const product = await marketplaceService.getStoreProductById(storeSlug, productId);
+  const store = await marketplaceService.getStoreDetails(s);
+  const product = await marketplaceService.getStoreProductById(s, productId);
 
   if (!store || !product) {
     return {
@@ -70,15 +70,15 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 }
 
 export default async function ProductPage({ params }: PageProps) {
-  const { s: storeSlug, productId, productSlug } = await params;
+  const { s, productId, productSlug } = await params;
 
   if (!isUuid(productId)) {
     notFound();
   }
 
-  const store = await marketplaceService.getStoreDetails(storeSlug);
-  const product = await marketplaceService.getStoreProductById(storeSlug, productId);
-  const products = (await marketplaceService.getStoreProducts(storeSlug)).map((p) => ({
+  const store = await marketplaceService.getStoreDetails(s);
+  const product = await marketplaceService.getStoreProductById(s, productId);
+  const products = (await marketplaceService.getStoreProducts(s)).map((p) => ({
     ...p,
     rating: 0,
   }));
@@ -88,7 +88,7 @@ export default async function ProductPage({ params }: PageProps) {
   }
 
   const canonicalPath = `/${store.slug}/${product.id}/${product.slug}`;
-  const currentPath = `/${storeSlug}/${productId}/${productSlug}`;
+  const currentPath = `/${s}/${productId}/${productSlug}`;
 
   if (currentPath !== canonicalPath) {
     redirect(canonicalPath);

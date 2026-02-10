@@ -1,7 +1,7 @@
 import { db } from "@vendly/db/db";
 import { orders, orderItems, products, stores } from "@vendly/db/schema";
 import { eq, and, isNull, desc, sql, like, or, inArray } from "@vendly/db";
-import type { CreateOrderInput, UpdateOrderStatusInput, OrderFilters, OrderWithItems, OrderStats } from "./order-models";
+import type { CreateOrderInput, UpdateOrderStatusInput, OrderFilters, OrderWithItems, OrderStats } from "../models/order-models";
 
 type ProductWithMedia = (typeof products.$inferSelect) & {
     media?: Array<{ media?: { blobUrl?: string | null } | null; sortOrder?: number | null } | null>;

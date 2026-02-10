@@ -10,9 +10,9 @@ interface PageProps {
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-  const { s: storeSlug, categorySlug } = await params;
+  const { s, categorySlug } = await params;
 
-  const store = await marketplaceService.getStoreDetails(storeSlug);
+  const store = await marketplaceService.getStoreDetails(s);
 
   if (!store) {
     return {
@@ -49,15 +49,15 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 }
 
 export default async function StorefrontCategoryPage({ params, searchParams }: PageProps) {
-  const { s: storeSlug, categorySlug } = await params;
+  const { s, categorySlug } = await params;
   const resolvedSearchParams = await searchParams;
   const search = resolvedSearchParams?.q;
   const query = Array.isArray(search) ? search[0] : search;
 
-  const store = await marketplaceService.getStoreDetails(storeSlug);
+  const store = await marketplaceService.getStoreDetails(s);
   if (!store) notFound();
 
-  const products = await marketplaceService.getStoreProductsByCategorySlug(storeSlug, categorySlug, query);
+  const products = await marketplaceService.getStoreProductsByCategorySlug(s, categorySlug, query);
 
   return (
     <div className="min-h-screen">

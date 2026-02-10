@@ -2,9 +2,9 @@ import { auth } from "@vendly/auth";
 import { headers } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 import { orderService } from "@/lib/services/order-service";
-import { updateOrderStatusSchema } from "@/lib/services/order-models";
+import { updateOrderStatusSchema } from "@/lib/models/order-models";
 import { db } from "@vendly/db/db";
-import { tenants, tenantMemberships } from "@vendly/db/schema";
+import { tenantMemberships } from "@vendly/db/schema";
 import { eq } from "@vendly/db";
 
 type RouteParams = {

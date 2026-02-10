@@ -15,4 +15,3 @@ export const heroCopy: Record<
     subhead: "Explore real stores, chat with sellers, and checkout seamlessly.",
   },
 };
-

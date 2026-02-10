@@ -1,8 +1,8 @@
 import { auth } from "@vendly/auth";
 import { headers } from "next/headers";
 import { NextResponse } from "next/server";
-import { onboardingService } from "@/lib/c/onboarding-service";
-import type { OnboardingData } from "@/lib/c/models";
+import { onboardingService } from "@/app/c/lib/onboarding-service";
+import type { OnboardingData } from "@/app/c/lib/models";
 
 export async function POST(req: Request) {
     try {

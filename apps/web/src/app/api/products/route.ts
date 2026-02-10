@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { productService } from "@/lib/services/product-service";
 import { getTenantMembership } from "@/lib/services/tenant-membership";
-import { productQuerySchema, createProductSchema } from "@/lib/services/product-models";
+import { productQuerySchema, createProductSchema } from "@/lib/models/product-models";
 
 /**
  * GET /api/products

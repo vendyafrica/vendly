@@ -10,9 +10,9 @@ interface PageProps {
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-    const { s: storeSlug, slug } = await params;
-    const store = await marketplaceService.getStoreDetails(storeSlug);
-    const product = await marketplaceService.getStoreProduct(storeSlug, slug);
+    const { s, slug } = await params;
+    const store = await marketplaceService.getStoreDetails(s);
+    const product = await marketplaceService.getStoreProduct(s, slug);
 
     if (!store || !product) {
         return {
@@ -52,10 +52,10 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 }
 
 export default async function ProductPage({ params }: PageProps) {
-    const { s: storeSlug, slug } = await params;
+    const { s, slug } = await params;
 
-    const store = await marketplaceService.getStoreDetails(storeSlug);
-    const product = await marketplaceService.getStoreProduct(storeSlug, slug);
+    const store = await marketplaceService.getStoreDetails(s);
+    const product = await marketplaceService.getStoreProduct(s, slug);
 
     if (!store || !product) {
         notFound();

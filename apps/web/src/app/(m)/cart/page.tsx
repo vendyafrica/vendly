@@ -9,7 +9,7 @@ import { useCart } from "../../../contexts/cart-context";
 import { Avatar, AvatarFallback, AvatarImage } from "@vendly/ui/components/avatar";
 import Header from "../components/header";
 import Footer from "../components/footer";
-import RecentlyViewed from "../components/RecentlyViewed";
+import RecentlyViewed from "../components/recently-viewed";
 
 export default function CartPage() {
     const { itemsByStore, updateQuantity, removeItem, itemCount, isLoaded } = useCart();

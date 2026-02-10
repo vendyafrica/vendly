@@ -1,6 +1,6 @@
 "use client";
-import { MarketplaceGridSkeleton } from "./MarketplaceGridSkeleton";
-import { StoreCard } from "./StoreCard";
+import { MarketplaceGridSkeleton } from "./marketplace-grid-skeleton";
+import { StoreCard } from "./store-card";
 import type { MarketplaceStore } from "@/types/marketplace";
 interface MarketplaceGridProps {
   stores: MarketplaceStore[];

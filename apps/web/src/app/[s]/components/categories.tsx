@@ -21,6 +21,7 @@ export function Categories() {
     useEffect(() => {
         const fetchCategories = async () => {
             const slug = params?.s as string;
+
             if (!slug) {
                 setLoading(false);
                 return;

@@ -5,7 +5,7 @@ import Link from "next/link";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { ArrowRight01Icon } from "@hugeicons/core-free-icons";
 import type { MarketplaceStore } from "@/types/marketplace";
-import { StoreCarousel } from "@/app/(m)/components/StoreCarousel";
+import { StoreCarousel } from "@/app/(m)/components/store-carousel";
 import {
     Carousel,
     CarouselContent,

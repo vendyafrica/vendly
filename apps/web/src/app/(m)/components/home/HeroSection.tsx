@@ -7,7 +7,7 @@ import { Input } from "@vendly/ui/components/input";
 import { useMemo, useState } from "react";
 import dynamic from "next/dynamic";
 
-import { heroCopy, type HeroMode } from "@/content/heroCopy";
+import { heroCopy, type HeroMode } from "@/lib/constants/hero-copy";
 
 const Typewriter = dynamic(
   () => import("@/components/ui/typewriter").then((m) => m.Typewriter),

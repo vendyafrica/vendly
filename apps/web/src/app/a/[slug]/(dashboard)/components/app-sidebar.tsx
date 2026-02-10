@@ -235,7 +235,7 @@ export function AppSidebar({
                   : pathname === fullUrl || pathname.startsWith(fullUrl + "/");
 
                 return (
-                  <SidebarMenuItem key={item.title} >
+                  <SidebarMenuItem key={item.title}>
                     <SidebarMenuButton
                       className="cursor-pointer"
                       isActive={isActive}

@@ -3,7 +3,7 @@ import { headers } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 import { productService } from "@/lib/services/product-service";
 import { getTenantMembership } from "@/lib/services/tenant-membership";
-import { updateProductSchema } from "@/lib/services/product-models";
+import { updateProductSchema } from "@/lib/models/product-models";
 
 type RouteParams = {
     params: Promise<{ productId: string }>;

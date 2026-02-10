@@ -2,7 +2,7 @@ import { db } from "@vendly/db/db";
 import { products, productMedia, mediaObjects, orderItems, orders } from "@vendly/db/schema";
 import { eq, and, isNull, desc, sql, like, withCache, cacheKeys, TTL } from "@vendly/db";
 import { mediaService, type UploadFile } from "./media-service";
-import type { CreateProductInput, ProductFilters, ProductWithMedia, UpdateProductInput } from "./product-models";
+import type { CreateProductInput, ProductFilters, ProductWithMedia, UpdateProductInput } from "../models/product-models";
 
 function slugifyName(name: string) {
     return name

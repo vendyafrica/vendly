@@ -25,7 +25,7 @@ function LoginInner({ storeSlug }: { storeSlug: string }) {
 
 export default function StoreAdminLoginPage() {
   const params = useParams();
-  const storeSlug = params?.s as string;
+  const storeSlug = params?.storeSlug as string;
 
   return (
     <div className="relative min-h-screen bg-gray-50 p-4 flex items-center justify-center">
