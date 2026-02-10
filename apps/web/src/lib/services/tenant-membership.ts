@@ -30,23 +30,16 @@ export async function getTenantMembership(
     options: MembershipOptions | MembershipOptionsWithTenant = {}
 ): Promise<BaseMembership | MembershipWithTenant | null> {
     const { includeTenant = false, tenantId } = options;
-    const cacheKey = `${cacheKeys.tenant.membership(userId, tenantId)}:${includeTenant ? "withTenant" : "base"}`;
 
-    return withCache(
-        cacheKey,
-        async () => {
-            const conditions = [eq(tenantMemberships.userId, userId)];
-            if (tenantId) {
-                conditions.push(eq(tenantMemberships.tenantId, tenantId));
-            }
+    const conditions = [eq(tenantMemberships.userId, userId)];
+    if (tenantId) {
+        conditions.push(eq(tenantMemberships.tenantId, tenantId));
+    }
 
-            const membership = await db.query.tenantMemberships.findFirst({
-                where: and(...conditions),
-                with: includeTenant ? { tenant: true } : undefined,
-            });
+    const membership = await db.query.tenantMemberships.findFirst({
+        where: and(...conditions),
+        with: includeTenant ? { tenant: true } : undefined,
+    });
 
-            return membership as BaseMembership | MembershipWithTenant | null;
-        },
-        TTL.SHORT
-    );
+    return membership as BaseMembership | MembershipWithTenant | null;
 }

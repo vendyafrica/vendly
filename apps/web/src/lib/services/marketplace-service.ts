@@ -190,7 +190,7 @@ export const marketplaceService = {
                     };
                 });
             },
-            TTL.MEDIUM // 5 minutes
+            TTL.SHORT // 1 minute
         );
     },
 
@@ -288,7 +288,7 @@ export const marketplaceService = {
                     heroMedia: (store as { heroMedia?: string[] }).heroMedia ?? [],
                 };
             },
-            TTL.MEDIUM
+            TTL.SHORT
         );
     },
 
