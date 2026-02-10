@@ -98,8 +98,6 @@ export function ProductDetails({ product }: ProductDetailsProps) {
                 price: product.price,
                 currency: product.currency,
                 image: product.images[0],
-                currency: product.currency,
-                image: product.images[0],
                 contentType: product.mediaItems?.[0]?.contentType || undefined,
                 slug: product.slug,
             },
@@ -117,32 +115,23 @@ export function ProductDetails({ product }: ProductDetailsProps) {
 
     const wishlisted = isInWishlist(product.id);
 
-    // Data is ensured by parent component
-    if (!product) return null;
-
     const ratingValue = typeof product.rating === "number" && Number.isFinite(product.rating)
         ? product.rating
         : 0;
 
-    const storeAvatarUrl = product.store.logoUrl
-        || `https://avatar.vercel.sh/${encodeURIComponent(product.store.slug || product.store.id)}.svg?text=${encodeURIComponent(product.store.name.charAt(0) || "S")}`;
+    const storeAvatarUrl = product.store.logoUrl || undefined;
 
     const FALLBACK_PRODUCT_IMAGE = "https://cdn.cosmos.so/25e7ef9d-3d95-486d-b7db-f0d19c1992d7?format=jpeg";
 
     const validImages = product.images && product.images.length > 0
-        ? product.images
+        ? product.images.filter(Boolean)
         : [FALLBACK_PRODUCT_IMAGE];
 
-    // Ensure we always have 5 images for the gallery layout
-    // If we have fewer than 5, we repeat the existing images to fill the slots
-    const galleryImages = [...validImages];
-    while (galleryImages.length < 5) {
-        galleryImages.push(...validImages);
-    }
-    // Take exactly the first 5
-    const displayImages = galleryImages.slice(0, 5);
+    // Only show the real images/variants without padding or duplication
+    const displayImages = Array.from(new Set(validImages));
 
-    const currentImage = displayImages[selectedMediaIndex];
+    const safeSelectedIndex = Math.min(selectedMediaIndex, displayImages.length - 1);
+    const currentImage = displayImages[safeSelectedIndex] ?? displayImages[0];
 
     return (
         <div className="min-h-screen bg-white pb-20" suppressHydrationWarning>
@@ -177,7 +166,7 @@ export function ProductDetails({ product }: ProductDetailsProps) {
                                     onMouseEnter={() => setSelectedMediaIndex(index)}
                                     className={`
                                         relative w-full h-24 overflow-hidden border transition-all duration-300 rounded-md
-                                        ${selectedMediaIndex === index
+                                        ${safeSelectedIndex === index
                                             ? "border-neutral-900 opacity-100"
                                             : "border-transparent opacity-70 hover:opacity-100 hover:border-neutral-200"
                                         }
@@ -219,8 +208,9 @@ export function ProductDetails({ product }: ProductDetailsProps) {
                                 src={storeAvatarUrl}
                                 alt={product.store.name}
                             />
-                            <AvatarFallback>{product.store.name?.[0] || "S"}</AvatarFallback>
+                            <AvatarFallback className="text-base">🏬</AvatarFallback>
                         </Avatar>
+
                         <div>
                             <p className="text-sm font-medium text-neutral-900">{product.store.name}</p>
                             <div className="flex items-center gap-1">
@@ -326,11 +316,8 @@ export function ProductDetails({ product }: ProductDetailsProps) {
                                     name: product.name,
                                     price: product.price,
                                     currency: product.currency,
-                                    currency: product.currency,
                                     image: product.images?.[0],
                                     contentType: product.mediaItems?.[0]?.contentType || undefined,
-                                    slug: product.slug,
-                                    slug: product.slug,
                                     store: {
                                         id: product.store.id,
                                         name: product.store.name,

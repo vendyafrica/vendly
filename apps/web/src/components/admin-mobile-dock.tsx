@@ -13,16 +13,8 @@ import {
   ConnectIcon,
   Settings01Icon,
   Store01Icon,
-  MenuSquareIcon,
 } from "@hugeicons/core-free-icons";
 import { cn } from "@vendly/ui/lib/utils";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@vendly/ui/components/sheet";
 
 type DockItem = {
   label: string;
@@ -60,15 +52,12 @@ export function AdminMobileDock({ basePath }: { basePath: string }) {
 
   if (!mounted) return null;
 
-  const primary: DockItem[] = [
+  const items: DockItem[] = [
     { label: "Home", href: joinPaths(basePath, "/"), icon: DashboardCircleIcon, exact: true },
     { label: "Products", href: joinPaths(basePath, "/products"), icon: ShoppingBag01Icon },
     { label: "Transactions", href: joinPaths(basePath, "/transactions"), icon: PackageOpenIcon },
     { label: "Notifications", href: joinPaths(basePath, "/notifications"), icon: Message01Icon },
     { label: "Studio", href: joinPaths(basePath, "/studio"), icon: Store01Icon },
-  ];
-
-  const more: DockItem[] = [
     { label: "Analytics", href: joinPaths(basePath, "/analytics"), icon: Analytics02Icon },
     { label: "Customers", href: joinPaths(basePath, "/customers"), icon: CustomerServiceIcon },
     { label: "Integrations", href: joinPaths(basePath, "/integrations"), icon: ConnectIcon },
@@ -77,8 +66,8 @@ export function AdminMobileDock({ basePath }: { basePath: string }) {
 
   return (
     <div className="fixed inset-x-0 bottom-0 z-50 border-t bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/80 md:hidden">
-      <nav className="flex items-center justify-around px-2 pt-2 pb-[max(env(safe-area-inset-bottom),0.5rem)]">
-        {primary.map((item) => {
+      <nav className="flex items-center gap-1 overflow-x-auto px-4 py-2 no-scrollbar">
+        {items.map((item) => {
           const isActive = isActivePath(pathname, item);
           return (
             <Link
@@ -86,51 +75,24 @@ export function AdminMobileDock({ basePath }: { basePath: string }) {
               href={item.href}
               aria-label={item.label}
               className={cn(
-                "relative flex h-11 w-14 items-center justify-center rounded-full transition-colors",
-                isActive ? "text-foreground bg-muted" : "text-muted-foreground"
+                "relative flex min-w-[4.5rem] flex-shrink-0 flex-col items-center justify-center gap-1 rounded-xl py-2 transition-colors hover:bg-muted/50",
+                isActive ? "text-primary" : "text-muted-foreground"
               )}
             >
-              <HugeiconsIcon icon={item.icon} className={cn("size-6", isActive ? "opacity-100" : "opacity-90")} />
+              <HugeiconsIcon
+                icon={item.icon}
+                className={cn("size-6", isActive && "text-primary")}
+                variant={isActive ? "solid" : "stroke"}
+              />
+              <span className={cn("text-[10px] font-medium leading-none", isActive && "font-semibold")}>
+                {item.label}
+              </span>
               {isActive ? (
-                <span className="absolute -top-1 h-1 w-6 rounded-full bg-primary" />
+                <span className="absolute inset-x-0 -bottom-[1px] mx-auto h-1 w-8 rounded-t-full bg-primary/20" />
               ) : null}
             </Link>
           );
         })}
-
-        <Sheet>
-          <SheetTrigger
-            aria-label="More"
-            className={cn(
-              "relative flex h-11 w-14 items-center justify-center rounded-full text-muted-foreground transition-colors"
-            )}
-          >
-            <HugeiconsIcon icon={MenuSquareIcon} className="size-6" />
-          </SheetTrigger>
-          <SheetContent side="bottom" className="rounded-t-2xl">
-            <SheetHeader>
-              <SheetTitle>More</SheetTitle>
-            </SheetHeader>
-            <div className="grid gap-2 px-4 pb-4">
-              {more.map((item) => {
-                const isActive = isActivePath(pathname, item);
-                return (
-                  <Link
-                    key={item.label}
-                    href={item.href}
-                    className={cn(
-                      "flex items-center gap-3 rounded-lg border border-border/70 bg-card px-3 py-3 text-sm",
-                      isActive ? "text-foreground" : "text-muted-foreground"
-                    )}
-                  >
-                    <HugeiconsIcon icon={item.icon} className="size-5" />
-                    <span className="font-medium">{item.label}</span>
-                  </Link>
-                );
-              })}
-            </div>
-          </SheetContent>
-        </Sheet>
       </nav>
     </div>
   );
