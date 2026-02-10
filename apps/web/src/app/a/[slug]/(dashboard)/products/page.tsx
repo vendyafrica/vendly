@@ -166,7 +166,7 @@ export default function ProductsPage() {
       priceAmount: data.priceAmount,
       currency: data.currency,
       quantity: data.quantity,
-      status: "draft",
+      status: "ready",
       media: media.map((m) => ({ ...m, blobUrl: m.url, blobPathname: m.pathname })),
       salesAmount: 0,
     };
@@ -186,7 +186,7 @@ export default function ProductsPage() {
           currency: data.currency,
           quantity: data.quantity,
           source: "manual",
-          status: "draft",
+          status: "ready",
           media,
         }),
       });
@@ -245,8 +245,23 @@ export default function ProductsPage() {
 
   const handlePublishSelected = React.useCallback(async () => {
     if (selectedIds.length === 0) return;
+
+    // Optimistic Update
+    const previousProducts = queryClient.getQueryData<ProductTableRow[]>(
+      queryKeys.products.list(bootstrap?.storeId || "")
+    );
+
+    queryClient.setQueryData<ProductTableRow[]>(
+      queryKeys.products.list(bootstrap?.storeId || ""),
+      (old) =>
+        old?.map((p) =>
+          selectedIds.includes(p.id) ? { ...p, status: "active" } : p
+        ) ?? []
+    );
+
+    setIsPublishing(true);
+
     try {
-      setIsPublishing(true);
       const res = await fetch("/api/products/bulk", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -261,11 +276,18 @@ export default function ProductsPage() {
       }
       setRowSelection({});
     } catch (err) {
+      // Revert optimistic update
+      if (bootstrap?.storeId) {
+        queryClient.setQueryData(
+          queryKeys.products.list(bootstrap.storeId),
+          previousProducts
+        );
+      }
       alert(err instanceof Error ? err.message : "Publish failed");
     } finally {
       setIsPublishing(false);
     }
-  }, [bootstrap?.storeId, invalidate, selectedIds]);
+  }, [bootstrap?.storeId, invalidate, selectedIds, queryClient]);
 
   React.useEffect(() => {
     // Clear selections for rows that no longer exist
