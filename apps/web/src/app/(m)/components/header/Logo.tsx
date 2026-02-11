@@ -1,5 +1,11 @@
 import Image from "next/image";
 import Link from "next/link";
+import { Bricolage_Grotesque } from "next/font/google";
+
+const geistSans = Bricolage_Grotesque({
+  variable: "--font-bricolage-grotesque",
+  subsets: ["latin"],
+});
 
 export function Logo({ className = "" }: { className?: string }) {
     return (
@@ -13,7 +19,7 @@ export function Logo({ className = "" }: { className?: string }) {
                     className="object-contain"
                 />
             </div>
-            <span className="text-lg font-semibold tracking-tight">
+            <span className={`${geistSans.className} text-lg font-semibold tracking-tight`}>
                 duuka
             </span>
         </Link>

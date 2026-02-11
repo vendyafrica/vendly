@@ -16,16 +16,16 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-const siteUrl = "https://vendlyafrica.store";
-const defaultTitle = "Vendly";
-const defaultDescription = "Vendly helps African creators and small sellers turn social audiences into storefronts with built-in payments, delivery, and marketplace discovery.";
+const siteUrl = "https://duuka.store";
+const defaultTitle = "Duuka";
+const defaultDescription = "Duuka helps African creators and small sellers turn social audiences into storefronts with built-in payments, delivery, and marketplace discovery.";
 const defaultImage = `${siteUrl}/og-image.png`;
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
     default: defaultTitle,
-    template: "%s | Vendly",
+    template: "%s | Duuka",
   },
   description: defaultDescription,
   alternates: {
@@ -35,8 +35,8 @@ export const metadata: Metadata = {
     title: defaultTitle,
     description: defaultDescription,
     url: siteUrl,
-    siteName: "Vendly",
-    images: [{ url: defaultImage, width: 1200, height: 630, alt: "Vendly" }],
+    siteName: "Duuka",
+    images: [{ url: defaultImage, width: 1200, height: 630, alt: "Duuka" }],
     locale: "en_US",
     type: "website",
   },
@@ -65,12 +65,12 @@ export default async function RootLayout({
             __html: JSON.stringify({
               "@context": "https://schema.org",
               "@type": "Organization",
-              name: "Vendly",
+              name: "Duuka",
               url: siteUrl,
-              logo: `${siteUrl}/vendly.png`,
+              logo: `${siteUrl}/duuka.png`,
               sameAs: [
-                "https://www.facebook.com/vendlyafrica",
-                "https://www.instagram.com/vendlyafrica",
+                "https://www.facebook.com/duuka",
+                "https://www.instagram.com/duuka",
                 "https://twitter.com/vendlyafrica",
                 "https://www.linkedin.com/company/vendlyafrica",
               ],
@@ -84,7 +84,7 @@ export default async function RootLayout({
             __html: JSON.stringify({
               "@context": "https://schema.org",
               "@type": "WebSite",
-              name: "Vendly",
+              name: "Duuka",
               url: siteUrl,
               potentialAction: {
                 "@type": "SearchAction",

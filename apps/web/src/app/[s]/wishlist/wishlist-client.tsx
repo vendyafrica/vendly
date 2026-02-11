@@ -65,7 +65,7 @@ export default function WishlistClient() {
 
                 <div className="space-y-4">
                     {items.map((item) => {
-                        const href = item.slug ? `/${storeSlug}/products/${item.slug}` : `/${storeSlug}`;
+                        const href = item.slug ? `/${storeSlug}/${item.id}/${item.slug}` : `/${storeSlug}`;
                         return (
                             <div
                                 key={item.id}

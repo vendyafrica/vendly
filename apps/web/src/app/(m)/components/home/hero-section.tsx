@@ -7,6 +7,13 @@ import { Input } from "@vendly/ui/components/input";
 import { useMemo, useState } from "react";
 import dynamic from "next/dynamic";
 
+import { Bricolage_Grotesque } from "next/font/google";
+
+const geistSans = Bricolage_Grotesque({
+  variable: "--font-bricolage-grotesque",
+  subsets: ["latin"],
+});
+
 import { heroCopy, type HeroMode } from "@/lib/constants/hero-copy";
 
 const Typewriter = dynamic(
@@ -39,7 +46,7 @@ export function HeroSection() {
   return (
     <div className="relative bg-white pt-12 pb-10 md:pt-16 md:pb-14 px-4">
       <div className="container mx-auto max-w-4xl text-center">
-        <h1 className="text-xl md:text-3xl font-medium tracking-tight mb-2 text-foreground">
+        <h1 className={`${geistSans.className} text-xl md:text-3xl font-medium tracking-tight mb-2 text-foreground`}>
           <span>{copy.prefix} </span>
           <Typewriter
             text={copy.variants}
@@ -52,12 +59,10 @@ export function HeroSection() {
           />
         </h1>
 
-        {/* Subheadline */}
         <p className="text-muted-foreground text-md md:text-md mb-4 max-w-2xl mx-auto">
           {copy.subhead}
         </p>
 
-        {/* Search / CTA */}
         <form onSubmit={handleSearch} className="relative max-w-2xl mx-auto mb-2">
           <div className="relative">
             <HugeiconsIcon

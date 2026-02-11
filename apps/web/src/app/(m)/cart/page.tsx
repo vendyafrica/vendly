@@ -6,7 +6,7 @@ import { HugeiconsIcon } from "@hugeicons/react";
 import { Delete02Icon, MinusSignIcon, PlusSignIcon, ArrowLeft01Icon } from "@hugeicons/core-free-icons";
 import { Button } from "@vendly/ui/components/button";
 import { useCart } from "../../../contexts/cart-context";
-import { Avatar, AvatarFallback, AvatarImage } from "@vendly/ui/components/avatar";
+import { StoreAvatar } from "@/components/store-avatar";
 import Header from "../components/header";
 import Footer from "../components/footer";
 import RecentlyViewed from "../components/recently-viewed";
@@ -88,13 +88,12 @@ export default function CartPage() {
                             <div key={storeId} className="bg-white rounded-3xl border border-neutral-200 overflow-hidden shadow-sm">
                                 <div className="p-6 pb-4 flex items-center justify-between border-b border-neutral-50">
                                     <div className="flex items-center gap-3">
-                                        <Avatar className="h-10 w-10 border border-neutral-100">
-                                            <AvatarImage
-                                                src={store.logoUrl || undefined}
-                                                alt={store.name}
-                                            />
-                                            <AvatarFallback>{store.name.charAt(0)}</AvatarFallback>
-                                        </Avatar>
+                                        <StoreAvatar
+                                            storeName={store.name}
+                                            logoUrl={store.logoUrl}
+                                            size="lg"
+                                            className="border border-neutral-100"
+                                        />
                                         <div>
                                             <Link href={`/${store.slug}`}>
                                                 <h2 className="font-semibold text-base hover:text-primary transition-colors">{store.name}</h2>

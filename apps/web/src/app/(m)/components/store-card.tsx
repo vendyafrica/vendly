@@ -11,6 +11,15 @@ import {
   CarouselItem,
   CarouselNavigation,
 } from "@vendly/ui/components/carousel";
+import { StoreAvatarSimple } from "@/components/store-avatar";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { StarIcon } from "@hugeicons/core-free-icons";
+import { Bricolage_Grotesque } from "next/font/google";
+
+const bricolageGrotesque = Bricolage_Grotesque({
+  variable: "--font-bricolage-grotesque",
+  subsets: ["latin"],
+});
 
 interface StoreCardProps {
   store: MarketplaceStore;
@@ -18,16 +27,25 @@ interface StoreCardProps {
 
 const FALLBACK_STORE_IMAGE = "https://cdn.cosmos.so/64986e58-da40-41e5-b0e2-1d041230c287?format=jpeg";
 
+// Helper function to capitalize only the first letter
+const capitalizeFirstLetter = (str: string) => {
+  if (!str) return "";
+  return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+};
+
 export function StoreCard({ store }: StoreCardProps) {
   const router = useRouter();
   const carouselImages = store.images && store.images.length > 0 ? store.images : [FALLBACK_STORE_IMAGE];
+
+  // Mock rating - you can replace this with actual rating from store data
+  const rating = 4.8;
 
   return (
     <div className="group">
       <div
         role="link"
         tabIndex={0}
-        className="block rounded-3xl overflow-hidden bg-card text-card-foreground shadow-sm hover:shadow-2xl transition-all duration-300 active:scale-[0.98] cursor-pointer"
+        className="block rounded-2xl overflow-hidden bg-card text-card-foreground shadow-sm hover:shadow-lg transition-all duration-300 active:scale-[0.98] cursor-pointer"
         onClick={() => {
           router.push(`/${store.slug}`);
         }}
@@ -38,7 +56,7 @@ export function StoreCard({ store }: StoreCardProps) {
           }
         }}
       >
-        <div className="aspect-4/3 relative overflow-hidden">
+        <div className="aspect-square relative overflow-hidden">
           {carouselImages.length > 0 ? (
             <Carousel className="h-full">
               <CarouselContent className="h-full">
@@ -50,7 +68,7 @@ export function StoreCard({ store }: StoreCardProps) {
                         alt={`${store.name} hero ${idx + 1}`}
                         fill
                         className="object-cover"
-                        sizes="(max-width: 768px) 100vw, 50vw"
+                        sizes="(max-width: 768px) 50vw, 33vw"
                         priority={idx === 0}
                         unoptimized={src.includes("blob.vercel-storage.com")}
                       />
@@ -62,7 +80,7 @@ export function StoreCard({ store }: StoreCardProps) {
                 className="opacity-0 transition-opacity duration-200 group-hover:opacity-100"
                 classNameButton="bg-background/90 hover:bg-background shadow-sm pointer-events-auto"
               />
-              <CarouselIndicator className="pb-4" />
+              <CarouselIndicator className="pb-3" />
             </Carousel>
           ) : (
             <div className="flex h-full items-center justify-center bg-muted text-muted-foreground">
@@ -72,31 +90,26 @@ export function StoreCard({ store }: StoreCardProps) {
         </div>
       </div>
 
-      <div className="flex items-center justify-between mt-4 px-1">
-        <div className="flex items-center gap-2">
-          <div className="relative w-6 h-6 rounded-full overflow-hidden bg-muted">
-            {store.instagramAvatarUrl || store.logoUrl ? (
-              <Image
-                src={(store.instagramAvatarUrl || store.logoUrl)!}
-                alt={`${store.name} logo`}
-                fill
-                sizes="24px"
-                className="object-cover"
-                unoptimized={(store.instagramAvatarUrl || store.logoUrl)!.includes("blob.vercel-storage.com")}
-              />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center text-[10px] font-semibold text-muted-foreground">
-                {store.name?.slice(0, 1) || "S"}
-              </div>
-            )}
-          </div>
+      <div className="flex items-center justify-between mt-3 px-0.5">
+        <div className="flex items-center gap-2.5">
+          <StoreAvatarSimple
+            storeName={store.name}
+            logoUrl={store.logoUrl}
+            instagramAvatarUrl={store.instagramAvatarUrl}
+            size={32}
+          />
           <Link
             href={`/${store.slug}`}
-            className="font-bold text-sm text-foreground leading-tight hover:text-foreground/80 transition-colors"
+            className={`${bricolageGrotesque.className} text-base font-normal text-foreground leading-tight hover:text-foreground/80 transition-colors`}
             onClick={(e) => e.stopPropagation()}
           >
-            {store.name}
+            {capitalizeFirstLetter(store.name)}
           </Link>
+        </div>
+
+        <div className="flex items-center gap-1">
+          <span className="text-sm font-medium text-foreground">{rating}</span>
+          <HugeiconsIcon icon={StarIcon} size={16} className="text-foreground fill-foreground" />
         </div>
       </div>
     </div>

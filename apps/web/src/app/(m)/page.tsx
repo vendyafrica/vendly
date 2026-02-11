@@ -6,14 +6,14 @@ import { marketplaceService } from "@/lib/services/marketplace-service";
 import type { MarketplaceStore } from "@/types/marketplace";
 import type { StoreWithCategory } from "@/lib/services/marketplace-service";
 import { OneTapLogin } from "@/app/(m)/components/one-tap-login";
-import { HeroSection } from "@/app/(m)/components/home/HeroSection";
-import { CollectionsRail } from "@/app/(m)/components/home/CollectionsRail";
-import { CategoryShelf } from "@/app/(m)/components/home/CategoryShelf";
+import { HeroSection } from "@/app/(m)/components/home/hero-section";
+import { CollectionsRail } from "@/app/(m)/components/home/collections-rail";
+import { StoreShelf } from "@/app/(m)/components/home/store-shelf";
 import type { Metadata } from "next";
 
 export const dynamic = "force-dynamic";
 
-const homeTitle = "Vendly | Shop African Creators & Social Sellers";
+const homeTitle = "Duuka | Shop Your Favorite Online Stores";
 const homeDescription =
   "Discover and shop from African creators, brands, and small sellers. Secure mobile money payments, integrated delivery, and trusted independent stores all in one marketplace.";
 const homeImage = "/og-image.png";
@@ -28,7 +28,7 @@ export const metadata: Metadata = {
     title: homeTitle,
     description: homeDescription,
     url: "/",
-    siteName: "Vendly",
+    siteName: "Duuka",
     images: [{ url: homeImage }],
   },
   twitter: {
@@ -86,17 +86,17 @@ export default async function HomePage() {
           <h3 className="text-2xl font-semibold mb-4">No stores yet</h3>
           <p className="text-muted-foreground mb-8">Be the first to create a store on Vendly!</p>
           <Link href="/c">
-            <Button size="lg">Create Your Store</Button>
+            <Button size="lg" className="cursor-pointer">Create Your Store</Button>
           </Link>
         </div>
       ) : (
         <div className="space-y-4 pb-12">
           {sortedCategories.map(([categoryName, categoryStores]) => (
-            <CategoryShelf
+            <StoreShelf
               key={categoryName}
               title={categoryName}
               categorySlug={categoryName.toLowerCase().replace(/\s+/g, "-")}
-              stores={categoryStores.slice(0, 12)}
+              stores={categoryStores}
             />
           ))}
         </div>

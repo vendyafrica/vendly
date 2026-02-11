@@ -89,6 +89,7 @@ export default async function ProductPage({ params }: PageProps) {
 
   const canonicalPath = `/${store.slug}/${product.id}/${product.slug}`;
   const currentPath = `/${s}/${productId}/${productSlug}`;
+  const storeCategories = (store as { categories?: string[] }).categories ?? [];
 
   if (currentPath !== canonicalPath) {
     redirect(canonicalPath);
@@ -152,7 +153,7 @@ export default async function ProductPage({ params }: PageProps) {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
       />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-28 pb-12 md:pt-32 md:pb-20">
-        <ProductDetails product={product} />
+        <ProductDetails product={product} storeCategories={storeCategories} />
       </div>
       <ProductGridReveal products={products} />
       <StorefrontFooter store={store} />

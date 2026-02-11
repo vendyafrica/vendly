@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import { Button } from "@vendly/ui/components/button";
 import { HugeiconsIcon } from "@hugeicons/react";
+
 import {
     StarIcon,
     MinusSignIcon,
@@ -11,9 +12,8 @@ import {
     Tick02Icon,
     FlashIcon,
     FavouriteIcon,
-    ArrowDown01Icon,
 } from "@hugeicons/core-free-icons";
-import { Avatar, AvatarImage, AvatarFallback } from "@vendly/ui/components/avatar";
+import { StoreAvatar } from "@/components/store-avatar";
 import { useCart } from "../../../contexts/cart-context";
 import { useRecentlyViewed } from "@/hooks/use-recently-viewed";
 import { useWishlist } from "@/hooks/use-wishlist";
@@ -38,9 +38,10 @@ interface ProductDetailsProps {
             logoUrl?: string | null;
         };
     };
+    storeCategories?: string[];
 }
 
-export function ProductDetails({ product }: ProductDetailsProps) {
+export function ProductDetails({ product, storeCategories = [] }: ProductDetailsProps) {
 
     const { addItem } = useCart();
     const { addToRecentlyViewed } = useRecentlyViewed();
@@ -81,7 +82,16 @@ export function ProductDetails({ product }: ProductDetailsProps) {
     const [isAdded, setIsAdded] = useState(false);
 
     const [selectedSize, setSelectedSize] = useState<string>("");
-    const sizes = ["XS", "S", "M", "L", "XL", "1X", "2X", "3X"];
+    const sizes = ["0/24", "1/25", "3/26", "5/27", "7/28", "9/29", "11/30", "13/31", "15/32", "1XL", "2XL", "3XL"];
+    const inseams = ["30\"", "32\"", "34\""];
+    const [selectedInseam, setSelectedInseam] = useState<string>("");
+
+    const normalizedCategories = (storeCategories || []).map((c) => c.toLowerCase());
+    const styleGuideAudience: "men" | "women" | null = normalizedCategories.includes("women")
+        ? "women"
+        : normalizedCategories.includes("men")
+            ? "men"
+            : null;
 
     const handleQuantityChange = (delta: number) => {
         setQuantity(prev => Math.max(1, prev + delta));
@@ -118,8 +128,6 @@ export function ProductDetails({ product }: ProductDetailsProps) {
     const ratingValue = typeof product.rating === "number" && Number.isFinite(product.rating)
         ? product.rating
         : 0;
-
-    const storeAvatarUrl = product.store.logoUrl || undefined;
 
     const FALLBACK_PRODUCT_IMAGE = "https://cdn.cosmos.so/25e7ef9d-3d95-486d-b7db-f0d19c1992d7?format=jpeg";
 
@@ -203,13 +211,11 @@ export function ProductDetails({ product }: ProductDetailsProps) {
 
                     {/* Store Info */}
                     <div className="flex items-center gap-3 mb-8">
-                        <Avatar className="h-8 w-8">
-                            <AvatarImage
-                                src={storeAvatarUrl}
-                                alt={product.store.name}
-                            />
-                            <AvatarFallback className="text-base">🏬</AvatarFallback>
-                        </Avatar>
+                        <StoreAvatar
+                            storeName={product.store.name}
+                            logoUrl={product.store.logoUrl}
+                            size="md"
+                        />
 
                         <div>
                             <p className="text-sm font-medium text-neutral-900">{product.store.name}</p>
@@ -242,9 +248,11 @@ export function ProductDetails({ product }: ProductDetailsProps) {
                         <div className="flex items-center gap-2 mb-3">
                             <span className="text-sm font-medium text-neutral-900">Size</span>
                             <span className="text-sm text-neutral-300">|</span>
-                            <button className="text-sm text-neutral-600 underline decoration-neutral-300 underline-offset-4 hover:text-neutral-900 transition-colors">
-                                View Size Guide
-                            </button>
+                            {styleGuideAudience && (
+                                <button className="text-sm text-neutral-600 underline decoration-neutral-300 underline-offset-4 hover:text-neutral-900 transition-colors">
+                                    View Size Guide
+                                </button>
+                            )}
                         </div>
                         <div className="flex flex-wrap gap-2">
                             {sizes.map((size) => (
@@ -253,6 +261,7 @@ export function ProductDetails({ product }: ProductDetailsProps) {
                                     onClick={() => setSelectedSize(size)}
                                     className={`
                                         h-10 px-4 min-w-12 border flex items-center justify-center text-sm font-medium transition-all duration-200
+
                                         ${selectedSize === size
                                             ? "border-neutral-900 bg-neutral-900 text-white"
                                             : "border-neutral-200 text-neutral-600 hover:border-neutral-900 hover:text-neutral-900"
@@ -269,6 +278,26 @@ export function ProductDetails({ product }: ProductDetailsProps) {
                                     {size}
                                 </button>
                             ))}
+                        </div>
+                        <div className="mt-3">
+                            <div className="text-sm font-medium text-neutral-900 mb-2">Inseam</div>
+                            <div className="flex flex-wrap gap-2">
+                                {inseams.map((inseam) => (
+                                    <button
+                                        key={inseam}
+                                        onClick={() => setSelectedInseam(inseam)}
+                                        className={`
+                                            h-10 px-4 min-w-12 border flex items-center justify-center text-sm font-medium transition-all duration-200
+                                            ${selectedInseam === inseam
+                                                ? "border-neutral-900 bg-neutral-900 text-white"
+                                                : "border-neutral-200 text-neutral-600 hover:border-neutral-900 hover:text-neutral-900"
+                                            }
+                                        `}
+                                    >
+                                        {inseam}
+                                    </button>
+                                ))}
+                            </div>
                         </div>
                     </div>
 
@@ -334,38 +363,6 @@ export function ProductDetails({ product }: ProductDetailsProps) {
                                 {wishlisted ? "Saved to Wishlist" : "Save to Wishlist"}
                             </button>
                         </div>
-                    </div>
-
-                    {/* Info Accordions */}
-                    <div className="mt-10 space-y-3">
-                        {[
-                            {
-                                title: "Product Details",
-                                content: product.description || "Premium quality fabric with a tailored fit.",
-                            },
-                            {
-                                title: "Shipping",
-                                content: "Ships in 3-7 business days. Free shipping on orders over $75.",
-                            },
-                            {
-                                title: "Returns",
-                                content: "30-day returns for store credit. Items must be unworn and in original packaging.",
-                            },
-                        ].map((section, idx) => (
-                            <details key={idx} className="group border border-neutral-200 rounded-lg px-4 py-3">
-                                <summary className="flex items-center justify-between cursor-pointer text-sm font-medium text-neutral-900">
-                                    {section.title}
-                                    <HugeiconsIcon
-                                        icon={ArrowDown01Icon}
-                                        size={16}
-                                        className="text-neutral-500 transition-transform group-open:rotate-180"
-                                    />
-                                </summary>
-                                <div className="mt-2 text-sm text-neutral-600 leading-relaxed">
-                                    {section.content}
-                                </div>
-                            </details>
-                        ))}
                     </div>
                 </div>
             </div>

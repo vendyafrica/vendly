@@ -19,17 +19,15 @@ export function MarketplaceGrid({ stores, loading }: MarketplaceGridProps) {
   }
   return (
     <div className="px-4 sm:px-6 lg:px-8 py-6">
-      {/* Mobile: 2 columns */}
+      
       <div className="grid grid-cols-2 gap-4 md:hidden">
         {stores.map((store) => (
           <StoreCard key={store.id} store={store} />
         ))}
       </div>
 
-      {/* Desktop/Tablet: Regular grid layout */}
       <div className="hidden md:block">
         <div className="max-w-7xl mx-auto">
-          {/* 5 columns grid */}
           <div className="grid md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-x-8 gap-y-12">
             {stores.map((store) => (
               <StoreCard key={store.id} store={store} />
