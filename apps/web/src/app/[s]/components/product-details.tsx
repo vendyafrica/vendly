@@ -2,22 +2,23 @@
 
 import { useState, useEffect } from "react";
 import Image from "next/image";
-import { Button } from "@vendly/ui/components/button";
 import { HugeiconsIcon } from "@hugeicons/react";
 
 import {
     StarIcon,
-    MinusSignIcon,
-    PlusSignIcon,
-    Tick02Icon,
     FlashIcon,
-    FavouriteIcon,
 } from "@hugeicons/core-free-icons";
 import { StoreAvatar } from "@/components/store-avatar";
-import { useCart } from "../../../contexts/cart-context";
 import { useRecentlyViewed } from "@/hooks/use-recently-viewed";
-import { useWishlist } from "@/hooks/use-wishlist";
 import { trackStorefrontEvents } from "@/lib/storefront-tracking";
+import { ProductActions } from "./product-actions";
+import { Bricolage_Grotesque } from "next/font/google";
+
+const geistSans = Bricolage_Grotesque({
+  variable: "--font-bricolage-grotesque",
+  subsets: ["latin"],
+});
+
 
 interface ProductDetailsProps {
     product: {
@@ -43,9 +44,7 @@ interface ProductDetailsProps {
 
 export function ProductDetails({ product, storeCategories = [] }: ProductDetailsProps) {
 
-    const { addItem } = useCart();
     const { addToRecentlyViewed } = useRecentlyViewed();
-    const { toggleWishlist, isInWishlist } = useWishlist();
 
     useEffect(() => {
         if (!product?.store?.slug || !product?.id) return;
@@ -76,10 +75,7 @@ export function ProductDetails({ product, storeCategories = [] }: ProductDetails
         }
     }, [product, addToRecentlyViewed]);
 
-    const [quantity, setQuantity] = useState(1);
     const [selectedMediaIndex, setSelectedMediaIndex] = useState(0);
-
-    const [isAdded, setIsAdded] = useState(false);
 
     const [selectedSize, setSelectedSize] = useState<string>("");
     const sizes = ["0/24", "1/25", "3/26", "5/27", "7/28", "9/29", "11/30", "13/31", "15/32", "1XL", "2XL", "3XL"];
@@ -90,38 +86,6 @@ export function ProductDetails({ product, storeCategories = [] }: ProductDetails
         : normalizedCategories.includes("men")
             ? "men"
             : null;
-
-    const handleQuantityChange = (delta: number) => {
-        setQuantity(prev => Math.max(1, prev + delta));
-    };
-
-    const handleAddToCart = () => {
-        if (!product) return;
-
-        addItem({
-            id: product.id,
-            product: {
-                id: product.id,
-                name: product.name,
-                price: product.price,
-                currency: product.currency,
-                image: product.images[0],
-                contentType: product.mediaItems?.[0]?.contentType || undefined,
-                slug: product.slug,
-            },
-            store: {
-                id: product.store.id,
-                name: product.store.name,
-                slug: product.store.slug,
-                logoUrl: product.store.logoUrl,
-            },
-        }, quantity);
-
-        setIsAdded(true);
-        setTimeout(() => setIsAdded(false), 2000);
-    };
-
-    const wishlisted = isInWishlist(product.id);
 
     const ratingValue = typeof product.rating === "number" && Number.isFinite(product.rating)
         ? product.rating
@@ -141,7 +105,7 @@ export function ProductDetails({ product, storeCategories = [] }: ProductDetails
 
     return (
         <div className="min-h-screen bg-white pb-20" suppressHydrationWarning>
-            <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-[1.5fr_1fr] gap-10 lg:gap-16 px-4 lg:px-8">
+            <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-[1.5fr_1fr] gap-10 lg:gap-16 px-2 sm:px-4 lg:px-8">
                 {/* Left: Gallery */}
                 <div className="flex flex-col gap-4">
                     {/* Mobile carousel */}
@@ -208,33 +172,26 @@ export function ProductDetails({ product, storeCategories = [] }: ProductDetails
                 <div className="flex flex-col pt-2 lg:pt-0 lg:pl-6">
 
                     {/* Store Info - Header */}
-                    <div className="flex items-center justify-between mb-6">
-                        <div className="flex items-center gap-3">
+                    <div className="flex items-start justify-between mb-6 gap-4">
+                        <div className="flex items-start gap-3">
                             <StoreAvatar
                                 storeName={product.store.name}
                                 logoUrl={product.store.logoUrl}
                                 size="md"
                             />
                             <div>
-                                <p className="text-base font-semibold text-neutral-900">{product.store.name}</p>
-                                <div className="flex items-center gap-1">
-                                    <HugeiconsIcon icon={StarIcon} size={14} className="fill-neutral-900 text-neutral-900" />
-                                    <span className="text-sm font-medium text-neutral-900">
-                                        {ratingValue.toFixed(1) !== "NaN" ? ratingValue.toFixed(1) : "0.0"}
-                                    </span>
-                                    <span className="text-sm text-neutral-500">
-                                        ({ratingValue > 0 ? "429.2K" : "0"})
-                                    </span>
-                                </div>
+                                <p className={` ${geistSans.className} text-md font-semibold text-neutral-900 capitalize`}>{product.store.name}</p>
                             </div>
                         </div>
-                        <button className="p-2 hover:bg-neutral-100 rounded-full transition-colors">
-                            <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
-                                <circle cx="10" cy="4" r="1.5" />
-                                <circle cx="10" cy="10" r="1.5" />
-                                <circle cx="10" cy="16" r="1.5" />
-                            </svg>
-                        </button>
+                        <div className="flex items-center gap-1 mt-1">
+                            <HugeiconsIcon icon={StarIcon} size={14} className="fill-neutral-900 text-neutral-900" />
+                            <span className="text-sm font-medium text-neutral-900">
+                                {ratingValue.toFixed(1) !== "NaN" ? ratingValue.toFixed(1) : "0.0"}
+                            </span>
+                            <span className="text-sm text-neutral-500">
+                                ({ratingValue > 0 ? "429.2K" : "0"})
+                            </span>
+                        </div>
                     </div>
 
                     {/* Product Name */}
@@ -242,37 +199,20 @@ export function ProductDetails({ product, storeCategories = [] }: ProductDetails
                         {product.name}
                     </h1>
 
-                    {/* Star Rating */}
-                    <div className="flex items-center gap-2 mb-4">
-                        <div className="flex items-center gap-0.5">
-                            {[1, 2, 3, 4, 5].map((star) => (
-                                <HugeiconsIcon
-                                    key={star}
-                                    icon={StarIcon}
-                                    size={18}
-                                    className={star <= Math.floor(ratingValue) ? "fill-yellow-400 text-yellow-400" : "fill-neutral-200 text-neutral-200"}
-                                />
-                            ))}
-                        </div>
-                        <span className="text-sm font-medium text-neutral-900 underline">
-                            {ratingValue > 0 ? "244 ratings" : "No ratings yet"}
-                        </span>
-                    </div>
-
                     {/* Price */}
                     <div className="flex items-center gap-3 mb-6">
-                        <span className="text-lg lg:text-xl font-bold text-neutral-900">
+                        <span className="text-md lg:text-lg font-bold text-neutral-900">
                             {product.currency} {product.price.toLocaleString()}
                         </span>
                         {/* Optional: Add strikethrough price if you have original price */}
-                        {/* <span className="text-xl text-neutral-400 line-through">
+                        {/* <span className="text-sm text-neutral-400 line-through">
                             {product.currency} {(product.price * 2).toLocaleString()}
                         </span>
                         <span className="px-2.5 py-1 bg-neutral-900 text-white text-sm font-semibold rounded-full">
                             50% off
                         </span> */}
                     </div>
-                    <h2 className="text-xl font-semibold mb-1">Description</h2>
+                    <h2 className="text-md font-semibold mb-1">Description</h2>
                     {/* Description */}
                     {product.description && (
                         <div className="mb-8 text-base leading-relaxed text-neutral-600 max-w-lg">
@@ -321,68 +261,7 @@ export function ProductDetails({ product, storeCategories = [] }: ProductDetails
                     </div>
 
                     {/* Actions */}
-                    <div className="max-w-sm mt-1">
-                        {/* Quantity */}
-                        <div className="flex items-center justify-between border-b border-neutral-100 pb-5 mb-5">
-                            <span className="text-xs font-semibold uppercase tracking-wider text-neutral-500">Quantity</span>
-                            <div className="flex items-center gap-5">
-                                <button
-                                    onClick={() => handleQuantityChange(-1)}
-                                    className="p-1.5 hover:bg-neutral-100 rounded-md text-neutral-600 hover:text-neutral-900 transition-all"
-                                >
-                                    <HugeiconsIcon icon={MinusSignIcon} size={18} />
-                                </button>
-                                <span className="text-base font-semibold w-6 text-center tabular-nums">{quantity}</span>
-                                <button
-                                    onClick={() => handleQuantityChange(1)}
-                                    className="p-1.5 hover:bg-neutral-100 rounded-md text-neutral-600 hover:text-neutral-900 transition-all"
-                                >
-                                    <HugeiconsIcon icon={PlusSignIcon} size={18} />
-                                </button>
-                            </div>
-                        </div>
-
-                        {/* Buttons */}
-                        <div className="grid gap-3 pt-4">
-                            <Button
-                                onClick={handleAddToCart}
-                                className="w-full h-12 rounded-md bg-primary text-white hover:bg-primary/80 uppercase text-xs tracking-wider"
-                                disabled={isAdded}
-                            >
-                                {isAdded ? (
-                                    <span className="flex items-center gap-2">
-                                        <HugeiconsIcon icon={Tick02Icon} size={16} />
-                                        Added to Bag
-                                    </span>
-                                ) : (
-                                    "Add to Bag"
-                                )}
-                            </Button>
-                            <button
-                                onClick={() => toggleWishlist({
-                                    id: product.id,
-                                    name: product.name,
-                                    price: product.price,
-                                    currency: product.currency,
-                                    image: product.images?.[0],
-                                    contentType: product.mediaItems?.[0]?.contentType || undefined,
-                                    store: {
-                                        id: product.store.id,
-                                        name: product.store.name,
-                                        slug: product.store.slug,
-                                    },
-                                })}
-                                className={`h-12 rounded-md border text-sm font-medium transition-all flex items-center justify-center gap-2 ${wishlisted
-                                    ? "border-neutral-900 text-neutral-900 bg-neutral-50"
-                                    : "border-neutral-200 text-neutral-800 hover:border-neutral-900 hover:text-neutral-900"
-                                    }`}
-                                aria-pressed={wishlisted}
-                            >
-                                <HugeiconsIcon icon={FavouriteIcon} size={18} className={wishlisted ? "text-neutral-900" : "text-neutral-600"} />
-                                {wishlisted ? "Saved to Wishlist" : "Save to Wishlist"}
-                            </button>
-                        </div>
-                    </div>
+                    <ProductActions product={product} />
                 </div>
             </div>
         </div>

@@ -87,7 +87,7 @@ export function ProductCard({ title, slug, price, image, contentType, index = 0,
       </div>
 
       {/* Product Info - Clean and minimal */}
-      <div className="mt-2 px-0.5">
+      <div className="mt-2 px-0.5 sm:px-0.5">
         <h3 className="text-[13px] sm:text-sm font-normal text-foreground leading-tight line-clamp-2 mb-1">
           {title}
         </h3>
