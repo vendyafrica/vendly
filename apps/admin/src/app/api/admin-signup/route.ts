@@ -1,5 +1,5 @@
 import { db } from "@vendly/db/db";
-import { users, verification, superAdmins } from "@vendly/db/schema";
+import { users, verification } from "@vendly/db/schema";
 import { NextResponse } from "next/server";
 import { sendAdminVerificationEmail } from "@vendly/transactional";
 import { eq } from "@vendly/db";
@@ -16,6 +16,8 @@ export async function POST(req: Request) {
                 { status: 400 }
             );
         }
+
+        const origin = new URL(req.url).origin;
 
         // Check if user already exists
         const existingUser = await db.query.users.findFirst({
@@ -43,8 +45,7 @@ export async function POST(req: Request) {
                 });
 
                 // Create verification URL - use our custom verification endpoint
-                const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:4000";
-                const verificationUrl = `${baseUrl}/api/verify-email?token=${token}&email=${encodeURIComponent(email)}`;
+                const verificationUrl = `${origin}/api/verify-email?token=${token}&email=${encodeURIComponent(email)}`;
 
                 await sendAdminVerificationEmail({
                     to: email,
@@ -65,8 +66,7 @@ export async function POST(req: Request) {
         }
 
         // Delegate creation to Better Auth signup endpoint to ensure credential account is stored
-        const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:4000";
-        const signupRes = await fetch(`${baseUrl}/api/auth/sign-up/email`, {
+        const signupRes = await fetch(`${origin}/api/auth/sign-up/email`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -75,7 +75,7 @@ export async function POST(req: Request) {
                 email,
                 password,
                 name,
-                callbackURL: `${baseUrl}/login`,
+                callbackURL: `${origin}/login`,
             }),
         });
 
@@ -114,7 +114,7 @@ export async function POST(req: Request) {
         });
 
         // Create verification URL - use our custom verification endpoint
-        const verificationUrl = `${baseUrl}/api/verify-email?token=${token}&email=${encodeURIComponent(email)}`;
+        const verificationUrl = `${origin}/api/verify-email?token=${token}&email=${encodeURIComponent(email)}`;
 
         // Send admin verification email
         await sendAdminVerificationEmail({

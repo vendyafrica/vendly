@@ -10,6 +10,13 @@ import { StoreAvatar } from "@/components/store-avatar";
 import Header from "../components/header";
 import Footer from "../components/footer";
 import RecentlyViewed from "../components/recently-viewed";
+import { Bricolage_Grotesque } from "next/font/google";
+
+const geistSans = Bricolage_Grotesque({
+  variable: "--font-bricolage-grotesque",
+  subsets: ["latin"],
+});
+
 
 export default function CartPage() {
     const { itemsByStore, updateQuantity, removeItem, itemCount, isLoaded } = useCart();
@@ -91,12 +98,12 @@ export default function CartPage() {
                                         <StoreAvatar
                                             storeName={store.name}
                                             logoUrl={store.logoUrl}
-                                            size="lg"
+                                            size="md"
                                             className="border border-neutral-100"
                                         />
                                         <div>
                                             <Link href={`/${store.slug}`}>
-                                                <h2 className="font-semibold text-base hover:text-primary transition-colors">{store.name}</h2>
+                                                <h2 className={`${geistSans.className} font-semibold text-base hover:text-primary transition-colors capitalize`}>{store.name}</h2>
                                             </Link>
                                             <p className="text-xs text-neutral-500">{storeItems.length} items</p>
                                         </div>

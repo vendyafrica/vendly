@@ -7,6 +7,8 @@ import {
   inArray,
   invalidateCache,
   isNull,
+  like,
+  or,
   sql,
   withCache,
 } from "@vendly/db";
@@ -229,31 +231,34 @@ export const orderService = {
     if (trimmed) variants.add(trimmed);
 
     const normalized = normalizePhoneToE164(trimmed, {
-      defaultCountryCallingCode: process.env.DEFAULT_COUNTRY_CALLING_CODE || "254",
+      defaultCountryCallingCode: process.env.DEFAULT_COUNTRY_CALLING_CODE || "256",
     });
-    if (normalized) variants.add(normalized);
+    if (normalized) {
+      variants.add(normalized);
+      if (normalized.startsWith("+")) variants.add(normalized.slice(1));
+    }
 
-    // Sometimes WhatsApp "from" arrives without '+'
-    if (normalized?.startsWith("+")) variants.add(normalized.slice(1));
-
-    // Local format with leading 0 (e.g. 256780... -> 0780...)
-    if (normalized?.startsWith("+")) {
-      const withoutPlus = normalized.slice(1);
-      const defaultCode = process.env.DEFAULT_COUNTRY_CALLING_CODE || "254";
-      if (withoutPlus.startsWith(defaultCode)) {
-        const national = withoutPlus.slice(defaultCode.length);
-        if (national) {
-          const withZero = `0${national}`;
-          variants.add(withZero);
-        }
+    const digitsOnly = trimmed.replace(/\D/g, "");
+    if (digitsOnly) {
+      variants.add(digitsOnly);
+      variants.add(`+${digitsOnly}`);
+      if (digitsOnly.startsWith("0") && digitsOnly.length > 1) {
+        variants.add(digitsOnly.slice(1));
       }
     }
 
-    const list = Array.from(variants);
+    const list = Array.from(variants).filter(Boolean);
     if (!list.length) return null;
 
+    const suffixes = new Set<string>();
+    if (digitsOnly.length >= 9) suffixes.add(digitsOnly.slice(-9));
+    if (digitsOnly.length >= 10) suffixes.add(digitsOnly.slice(-10));
+    if (digitsOnly.startsWith("0") && digitsOnly.length > 1) suffixes.add(digitsOnly.slice(1));
+
+    const conditions = [inArray(tenants.phoneNumber, list), ...Array.from(suffixes).map((suffix) => like(tenants.phoneNumber, `%${suffix}`))];
+
     const tenant = await db.query.tenants.findFirst({
-      where: and(inArray(tenants.phoneNumber, list), isNull(tenants.deletedAt)),
+      where: and(conditions.length > 1 ? or(...conditions) : conditions[0], isNull(tenants.deletedAt)),
       columns: { id: true },
     });
 
