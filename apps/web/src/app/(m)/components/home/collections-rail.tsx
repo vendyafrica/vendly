@@ -2,6 +2,12 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { Bricolage_Grotesque } from "next/font/google";
+
+const bricolageGrotesque = Bricolage_Grotesque({
+  variable: "--font-bricolage-grotesque",
+  subsets: ["latin"],
+});
 
 type Collection = {
     id: string;
@@ -28,7 +34,7 @@ export function CollectionsRail({
         <section className="py-6 md:py-8 bg-background">
             <div className="container mx-auto px-4">
                 <div className="flex items-center justify-between mb-5 md:mb-6">
-                    <h2 className="text-xl md:text-2xl font-bold tracking-tight">Curated Collections</h2>
+                    <h3 className={`text-xl md:text-2xl font-semibold tracking-tight ${bricolageGrotesque.className}`}>Curated Collections</h3>
                 </div>
 
                 <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
@@ -53,8 +59,7 @@ export function CollectionsRail({
 
                             <div className="absolute inset-0 flex items-end">
                                 <div className="px-4 md:px-5 pb-4 space-y-1">
-                                    <p className="text-[11px] sm:text-xs uppercase tracking-wide text-white/90 drop-shadow-sm">Category</p>
-                                    <h3 className="text-sm sm:text-lg md:text-xl font-semibold text-white drop-shadow-sm">
+                                    <h3 className={`text-sm sm:text-lg md:text-xl font-semibold text-white drop-shadow-sm ${bricolageGrotesque.className}`}>
                                         {collection.title}
                                     </h3>
                                 </div>

@@ -7,7 +7,7 @@ export const heroCopy: Record<
   discovery: {
     prefix: "Discover",
     variants: ["brands.", "creators.", "local stores.", "hidden gems."],
-    subhead: "Shop directly from creators and businesses — all in one place.",
+    subhead: "Shop directly from creators and businesses all in one place.",
   },
   shopping: {
     prefix: "Buy",
