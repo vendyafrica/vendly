@@ -10,11 +10,23 @@ interface HeroProps {
 }
 
 const FALLBACK_HERO_MEDIA = "https://cdn.cosmos.so/c1a24f82-42e5-43b4-a1c5-2da242f3ae3b.mp4";
+const VIDEO_EXTENSIONS = [".mp4", ".webm", ".ogg"];
+
+function isVideoUrl(url: string) {
+    try {
+        const parsed = new URL(url);
+        return VIDEO_EXTENSIONS.some((ext) => parsed.pathname.toLowerCase().endsWith(ext));
+    } catch {
+        const cleanUrl = url.split("?")[0]?.split("#")[0] ?? url;
+        return VIDEO_EXTENSIONS.some((ext) => cleanUrl.toLowerCase().endsWith(ext));
+    }
+}
 
 export function Hero({ store }: HeroProps) {
     const heroMedia = Array.isArray(store.heroMedia) ? store.heroMedia : [];
     const mediaUrl = heroMedia[0] || FALLBACK_HERO_MEDIA;
-    const isVideo = typeof mediaUrl === "string" && !!mediaUrl.match(/\.(mp4|webm|ogg)$/i);
+    const isVideo = typeof mediaUrl === "string" && isVideoUrl(mediaUrl);
+
     const posterUrl = FALLBACK_HERO_MEDIA;
 
     const isBlobUrl = typeof mediaUrl === "string" && mediaUrl.includes("blob.vercel-storage.com");

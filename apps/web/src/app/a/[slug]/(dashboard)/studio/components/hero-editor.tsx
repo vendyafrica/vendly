@@ -17,6 +17,18 @@ interface HeroEditorProps {
     onUpdate: (urls: string[]) => void;
 }
 
+const VIDEO_EXTENSIONS = [".mp4", ".webm", ".ogg"];
+
+function isVideoUrl(url: string) {
+    try {
+        const parsed = new URL(url);
+        return VIDEO_EXTENSIONS.some((ext) => parsed.pathname.toLowerCase().endsWith(ext));
+    } catch {
+        const cleanUrl = url.split("?")[0]?.split("#")[0] ?? url;
+        return VIDEO_EXTENSIONS.some((ext) => cleanUrl.toLowerCase().endsWith(ext));
+    }
+}
+
 export function HeroEditor({ 
     storeSlug, 
     tenantId,
@@ -97,7 +109,7 @@ export function HeroEditor({
 
     const hasHeroMedia = heroMedia.length > 0;
     const firstUrl = heroMedia[0];
-    const isFirstVideo = typeof firstUrl === "string" && !!firstUrl.match(/\.(mp4|webm|ogg)$/i);
+    const isFirstVideo = typeof firstUrl === "string" && isVideoUrl(firstUrl);
 
     return (
         <div className="relative group">
@@ -166,7 +178,7 @@ export function HeroEditor({
                                     disabled={isSaving}
                                     className="relative aspect-square overflow-hidden rounded-md border border-border/60"
                                 >
-                                    {url.match(/\.(mp4|webm|ogg)$/i) ? (
+                                    {isVideoUrl(url) ? (
                                         <div className="w-full h-full bg-neutral-100 flex items-center justify-center">
                                             <HugeiconsIcon icon={PlayIcon} size={18} className="text-neutral-500" />
                                         </div>

@@ -83,8 +83,6 @@ export function ProductDetails({ product, storeCategories = [] }: ProductDetails
 
     const [selectedSize, setSelectedSize] = useState<string>("");
     const sizes = ["0/24", "1/25", "3/26", "5/27", "7/28", "9/29", "11/30", "13/31", "15/32", "1XL", "2XL", "3XL"];
-    const inseams = ["30\"", "32\"", "34\""];
-    const [selectedInseam, setSelectedInseam] = useState<string>("");
 
     const normalizedCategories = (storeCategories || []).map((c) => c.toLowerCase());
     const styleGuideAudience: "men" | "women" | null = normalizedCategories.includes("women")
