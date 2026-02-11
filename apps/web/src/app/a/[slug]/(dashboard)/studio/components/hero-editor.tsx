@@ -37,7 +37,8 @@ export function HeroEditor({
 }: HeroEditorProps) {
     const [isSaving, setIsSaving] = useState(false);
     const { uploadFile, isUploading } = useUpload();
-
+    console.log("heroMedia", heroMedia);
+///hey ...
     const handleCoverSelected = async (file: File | null) => {
         if (!file) return;
 
