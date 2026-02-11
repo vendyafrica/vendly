@@ -9,11 +9,9 @@ import {
   ShoppingBag02Icon,
   UserIcon,
   FavouriteIcon,
-  Search01Icon,
 } from "@hugeicons/core-free-icons";
 import { HeaderSkeleton } from "./skeletons";
 import { useCart } from "@/contexts/cart-context";
-import { StorefrontSearch } from "./storefront-search";
 import { Bricolage_Grotesque } from "next/font/google";
 
 const geistSans = Bricolage_Grotesque({
@@ -35,8 +33,6 @@ export function StorefrontHeader() {
 
   const [loading, setLoading] = useState(true);
   const [isVisible, setIsVisible] = useState(true);
-  const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const searchContainerRef = useRef<HTMLDivElement | null>(null);
   const lastScrollYRef = useRef(0);
 
   useEffect(() => {
@@ -97,17 +93,6 @@ export function StorefrontHeader() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  useEffect(() => {
-    if (!isSearchOpen) return;
-
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setIsSearchOpen(false);
-    };
-
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isSearchOpen]);
-
   if (loading) return <HeaderSkeleton />;
   if (!store) return null;
 
@@ -139,35 +124,8 @@ export function StorefrontHeader() {
               </Link>
             </div>
 
-            <div className="flex-1 flex items-center justify-end sm:justify-start">
-              <div
-                ref={searchContainerRef}
-                className={`hidden sm:block overflow-hidden transition-all duration-200 ease-out ${isSearchOpen ? "max-w-[520px] opacity-100" : "max-w-0 opacity-0"}`}
-              >
-                <div className="w-[min(520px,70vw)] pr-2">
-                  <StorefrontSearch
-                    storeSlug={store.slug}
-                    isHomePage={isHomePage}
-                    onSubmitted={() => setIsSearchOpen(false)}
-                  />
-                </div>
-              </div>
-            </div>
-
             {/* Right: Icons */}
-            <div className="flex items-center gap-1 sm:gap-1">
-              <button
-                onClick={() => setIsSearchOpen((v) => !v)}
-                className={`inline-flex h-10 w-10 items-center cursor-pointer justify-center transition-colors ${isHomePage ? "hover:opacity-80" : "hover:bg-muted/70 rounded-full"}`}
-                aria-label="Search"
-              >
-                <HugeiconsIcon
-                  icon={Search01Icon}
-                  size={18}
-                  className={iconColor}
-                />
-              </button>
-
+            <div className="flex items-center gap-1 sm:gap-1 ml-auto">
               <Link
                 href="/cart"
                 className={`relative inline-flex h-10 w-10 items-center cursor-pointer justify-center transition-colors ${isHomePage ? "hover:opacity-80" : "hover:bg-muted/70 rounded-full"}`}
@@ -215,17 +173,6 @@ export function StorefrontHeader() {
         </div>
       </div>
 
-      {isSearchOpen && (
-        <div
-          className={`sm:hidden px-4 pb-3 ${isHomePage ? "bg-transparent" : "bg-background border-b border-border"}`}
-        >
-          <StorefrontSearch
-            storeSlug={store.slug}
-            isHomePage={isHomePage}
-            onSubmitted={() => setIsSearchOpen(false)}
-          />
-        </div>
-      )}
     </header>
   );
 }
