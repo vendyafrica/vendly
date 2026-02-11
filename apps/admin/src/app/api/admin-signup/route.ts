@@ -88,41 +88,6 @@ export async function POST(req: Request) {
             );
         }
 
-        // Fetch newly created user to use in our custom verification mail
-        const newUser = await db.query.users.findFirst({
-            where: eq(users.email, email),
-        });
-
-        if (!newUser) {
-            return NextResponse.json(
-                { error: "User creation failed" },
-                { status: 500 }
-            );
-        }
-
-        // Create verification token
-        const token = crypto.randomBytes(32).toString("hex");
-        const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
-
-        await db.delete(verification).where(eq(verification.identifier, email));
-
-        await db.insert(verification).values({
-            id: crypto.randomUUID(),
-            identifier: email,
-            value: token,
-            expiresAt,
-        });
-
-        // Create verification URL - use our custom verification endpoint
-        const verificationUrl = `${origin}/api/verify-email?token=${token}&email=${encodeURIComponent(email)}`;
-
-        // Send admin verification email
-        await sendAdminVerificationEmail({
-            to: email,
-            name,
-            verificationUrl,
-        });
-
         return NextResponse.json({
             success: true,
             message: "Account created! Please check your email to verify your account.",
