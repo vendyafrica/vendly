@@ -55,6 +55,9 @@ importers:
       '@vendly/db':
         specifier: workspace:*
         version: link:../../packages/db
+      '@vendly/transactional':
+        specifier: workspace:*
+        version: link:../../packages/transactional
       '@vendly/ui':
         specifier: workspace:*
         version: link:../../packages/ui
