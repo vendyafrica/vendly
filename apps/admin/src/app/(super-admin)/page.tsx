@@ -32,6 +32,8 @@ function formatCurrency(amount: number) {
 export default function DashboardPage() {
   const [data, setData] = useState<DashboardApiResponse | null>(null);
   const [loading, setLoading] = useState(true);
+  console.log("data", data);
+  ///hey....
 
   useEffect(() => {
     fetch("/api/dashboard")
@@ -50,6 +52,7 @@ export default function DashboardPage() {
     return (
       <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
         <div className="text-sm text-muted-foreground">Loading dashboard...</div>
+      
       </div>
     );
   }
