@@ -13,6 +13,7 @@ import { useRecentlyViewed } from "@/hooks/use-recently-viewed";
 import { trackStorefrontEvents } from "@/lib/storefront-tracking";
 import { ProductActions } from "./product-actions";
 import { Bricolage_Grotesque } from "next/font/google";
+import { getStyleGuideAudience } from "@/lib/constants/style-guide";
 
 const geistSans = Bricolage_Grotesque({
   variable: "--font-bricolage-grotesque",
@@ -80,12 +81,7 @@ export function ProductDetails({ product, storeCategories = [] }: ProductDetails
     const [selectedSize, setSelectedSize] = useState<string>("");
     const sizes = ["0/24", "1/25", "3/26", "5/27", "7/28", "9/29", "11/30", "13/31", "15/32", "1XL", "2XL", "3XL"];
 
-    const normalizedCategories = (storeCategories || []).map((c) => c.toLowerCase());
-    const styleGuideAudience: "men" | "women" | null = normalizedCategories.includes("women")
-        ? "women"
-        : normalizedCategories.includes("men")
-            ? "men"
-            : null;
+    const styleGuideAudience = getStyleGuideAudience(storeCategories);
 
     const ratingValue = typeof product.rating === "number" && Number.isFinite(product.rating)
         ? product.rating
@@ -202,7 +198,10 @@ export function ProductDetails({ product, storeCategories = [] }: ProductDetails
                     {/* Price */}
                     <div className="flex items-center gap-3 mb-6">
                         <span className="text-md lg:text-lg font-bold text-neutral-900">
-                            {product.currency} {product.price.toLocaleString()}
+                            {product.currency} {product.price.toLocaleString(undefined, {
+                                minimumFractionDigits: product.currency === "USD" ? 2 : 0,
+                                maximumFractionDigits: product.currency === "USD" ? 2 : 0,
+                            })}
                         </span>
                         {/* Optional: Add strikethrough price if you have original price */}
                         {/* <span className="text-sm text-neutral-400 line-through">
@@ -221,44 +220,44 @@ export function ProductDetails({ product, storeCategories = [] }: ProductDetails
                     )}
 
                     {/* Style Section */}
-                    <div className="mb-8">
-                        {/* Size */}
-                        <div className="mb-2">
-                            <div className="flex items-center justify-between mb-3">
-                                <span className="text-sm font-medium text-neutral-900">Size {selectedSize && <span className="text-neutral-500">{selectedSize}</span>}</span>
-                                {styleGuideAudience && (
+                    {styleGuideAudience && (
+                        <div className="mb-8">
+                            {/* Size */}
+                            <div className="mb-2">
+                                <div className="flex items-center justify-between mb-3">
+                                    <span className="text-sm font-medium text-neutral-900">Size {selectedSize && <span className="text-neutral-500">{selectedSize}</span>}</span>
                                     <button className="text-sm text-neutral-600 underline hover:text-neutral-900 transition-colors">
                                         Size Guide
                                     </button>
-                                )}
-                            </div>
-                            <div className="flex flex-wrap gap-2">
-                                {sizes.map((size) => (
-                                    <button
-                                        key={size}
-                                        onClick={() => setSelectedSize(size)}
-                                        className={`
-                                            h-9 px-2 min-w-[3.5rem] cursor-pointer border-1 rounded-full flex items-center justify-center text-sm font-semibold transition-all duration-200
+                                </div>
+                                <div className="flex flex-wrap gap-2">
+                                    {sizes.map((size) => (
+                                        <button
+                                            key={size}
+                                            onClick={() => setSelectedSize(size)}
+                                            className={`
+                                                h-9 px-2 min-w-[3.5rem] cursor-pointer border-1 rounded-full flex items-center justify-center text-sm font-semibold transition-all duration-200
 
-                                            ${selectedSize === size
-                                                ? "border-neutral-900 bg-neutral-900 text-white"
-                                                : "border-neutral-200 text-neutral-900 hover:border-neutral-400"
-                                            }
-                                        `}
-                                    >
-                                        {size === "2X" && (
-                                            <HugeiconsIcon
-                                                icon={FlashIcon}
-                                                size={12}
-                                                className={`mr-1.5 ${selectedSize === size ? "text-yellow-400" : "text-yellow-500"}`}
-                                            />
-                                        )}
-                                        {size}
-                                    </button>
-                                ))}
+                                                ${selectedSize === size
+                                                    ? "border-neutral-900 bg-neutral-900 text-white"
+                                                    : "border-neutral-200 text-neutral-900 hover:border-neutral-400"
+                                                }
+                                            `}
+                                        >
+                                            {size === "2X" && (
+                                                <HugeiconsIcon
+                                                    icon={FlashIcon}
+                                                    size={12}
+                                                    className={`mr-1.5 ${selectedSize === size ? "text-yellow-400" : "text-yellow-500"}`}
+                                                />
+                                            )}
+                                            {size}
+                                        </button>
+                                    ))}
+                                </div>
                             </div>
                         </div>
-                    </div>
+                    )}
 
                     {/* Actions */}
                     <ProductActions product={product} />

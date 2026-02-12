@@ -21,10 +21,12 @@ type DashboardApiResponse = {
   };
 };
 
+const ADMIN_CURRENCY = process.env.NEXT_PUBLIC_ADMIN_CURRENCY || "UGX";
+
 function formatCurrency(amount: number) {
   return new Intl.NumberFormat("en-UG", {
     style: "currency",
-    currency: "UGX",
+    currency: ADMIN_CURRENCY,
     minimumFractionDigits: 0,
   }).format(amount);
 }

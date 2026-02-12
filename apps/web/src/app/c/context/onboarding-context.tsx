@@ -8,6 +8,7 @@ export type OnboardingStep = "signup" | "personal" | "store" | "business" | "com
 export interface PersonalInfo {
     fullName: string;
     phoneNumber: string;
+    countryCode: string;
 }
 
 export interface StoreInfo {

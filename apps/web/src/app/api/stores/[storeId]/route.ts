@@ -3,8 +3,8 @@ import { headers } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 import { storeService } from "@/lib/services/store-service";
 import { db } from "@vendly/db/db";
-import { tenantMemberships } from "@vendly/db/schema";
-import { eq } from "@vendly/db";
+import { products, tenantMemberships } from "@vendly/db/schema";
+import { eq, and, isNull } from "@vendly/db";
 import { z } from "zod";
 
 type RouteParams = {
@@ -80,6 +80,19 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
 
         if (!updated) {
             return NextResponse.json({ error: "Store not found" }, { status: 404 });
+        }
+
+        if (input.defaultCurrency) {
+            await db
+                .update(products)
+                .set({ currency: input.defaultCurrency, updatedAt: new Date() })
+                .where(
+                    and(
+                        eq(products.storeId, storeId),
+                        eq(products.tenantId, membership.tenantId),
+                        isNull(products.deletedAt)
+                    )
+                );
         }
 
         return NextResponse.json(updated);

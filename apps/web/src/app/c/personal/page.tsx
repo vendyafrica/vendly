@@ -69,7 +69,7 @@ export default function PersonalInfo() {
 
     setIsSubmitting(true);
     try {
-      await savePersonal({ fullName, phoneNumber: normalized });
+      await savePersonal({ fullName, phoneNumber: normalized, countryCode });
     } finally {
       setIsSubmitting(false);
     }

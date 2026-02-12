@@ -12,7 +12,11 @@ export default function RecentlyViewed() {
   const formatPrice = (amount: number | undefined, currency: string | undefined) => {
     if (amount === undefined || amount === null || Number.isNaN(amount)) return "—";
     const c = currency || "";
-    return `${c} ${amount.toLocaleString()}`.trim();
+    const showDecimals = c === "USD";
+    return `${c} ${amount.toLocaleString(undefined, {
+      minimumFractionDigits: showDecimals ? 2 : 0,
+      maximumFractionDigits: showDecimals ? 2 : 0,
+    })}`.trim();
   };
 
   return (

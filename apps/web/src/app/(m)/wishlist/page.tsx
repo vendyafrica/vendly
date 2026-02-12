@@ -12,7 +12,11 @@ const FALLBACK_PRODUCT_IMAGE = "https://cdn.cosmos.so/25e7ef9d-3d95-486d-b7db-f0
 const formatPrice = (amount: number | undefined, currency: string | undefined) => {
     if (amount === undefined || amount === null || Number.isNaN(amount)) return "—";
     const c = currency || "";
-    return `${c} ${amount.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 })}`.trim();
+    const showDecimals = c === "USD";
+    return `${c} ${amount.toLocaleString(undefined, {
+        minimumFractionDigits: showDecimals ? 2 : 0,
+        maximumFractionDigits: showDecimals ? 2 : 0,
+    })}`.trim();
 };
 
 export default function WishlistAllPage() {
