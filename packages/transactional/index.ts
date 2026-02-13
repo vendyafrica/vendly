@@ -1,4 +1,2 @@
-import { SellerWelcomeEmail } from './emails/welcome';
-import sendWelcomeEmail, { sendAdminVerificationEmail, sendSuperAdminInviteEmail } from './email';
-
-export { SellerWelcomeEmail, sendWelcomeEmail, sendAdminVerificationEmail, sendSuperAdminInviteEmail };
+export { default as SellerWelcomeEmail } from './emails/welcome';
+export { default as sendWelcomeEmail, sendAdminVerificationEmail, sendSuperAdminInviteEmail } from './email';
