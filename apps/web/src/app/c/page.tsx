@@ -100,6 +100,7 @@ export default function Welcome() {
         return;
       }
 
+      setPersonalDraft({ fullName: name.trim() });
       navigateToStep("personal");
     } catch {
       setError("Something went wrong. Please try again.");

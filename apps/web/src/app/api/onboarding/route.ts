@@ -52,6 +52,8 @@ export async function POST(req: Request) {
         const storefrontUrl = `${origin}/${storeSlug}`;
 
         // Send seller welcome email
+        let emailSent = false;
+        let emailError: string | null = null;
         try {
             await sendWelcomeEmail({
                 to: session.user.email,
@@ -60,11 +62,13 @@ export async function POST(req: Request) {
                 dashboardUrl,
                 connectInstagramUrl,
             });
-        } catch (emailError) {
-            console.error("Failed to send welcome email:", emailError);
+            emailSent = true;
+        } catch (err) {
+            emailError = err instanceof Error ? err.message : "Unknown email error";
+            console.error("Failed to send welcome email:", err);
         }
 
-        return NextResponse.json({ ...result, emailSent: true });
+        return NextResponse.json({ ...result, emailSent, emailError });
     } catch (error) {
         console.error("Onboarding error:", error);
         return NextResponse.json(

@@ -49,6 +49,7 @@ export default function PersonalInfo() {
   const { session: appSession } = useAppSession();
 
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   // Pre-fill name from session (Google OAuth) or onboarding context
   const sessionName = appSession?.user?.name ?? "";
@@ -66,15 +67,23 @@ export default function PersonalInfo() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setSubmitError(null);
+
+    const resolvedFullName = fullName.trim();
+    if (!resolvedFullName) {
+      setSubmitError("Missing full name. Please go back and complete step 1.");
+      return;
+    }
 
     const normalized = normalizePhone(countryCode, phoneNumber);
     if (!normalized) {
+      setSubmitError("Please enter a valid phone number.");
       return;
     }
 
     setIsSubmitting(true);
     try {
-      await savePersonal({ fullName, phoneNumber: normalized, countryCode });
+      await savePersonal({ fullName: resolvedFullName, phoneNumber: normalized, countryCode });
     } finally {
       setIsSubmitting(false);
     }
@@ -97,6 +106,12 @@ export default function PersonalInfo() {
         {error && (
           <p className="text-sm text-destructive bg-destructive/10 p-3 rounded-md">
             {error}
+          </p>
+        )}
+
+        {submitError && (
+          <p className="text-sm text-destructive bg-destructive/10 p-3 rounded-md">
+            {submitError}
           </p>
         )}
 

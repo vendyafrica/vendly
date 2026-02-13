@@ -36,6 +36,7 @@ export const sendWelcomeEmail = async ({
 
   if (data.error) {
     console.error("Welcome email failed", data.error);
+    throw new Error(`Welcome email failed: ${data.error.message || JSON.stringify(data.error)}`);
   }
 
   return data;
