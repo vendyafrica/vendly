@@ -3,6 +3,10 @@ import { headers } from "next/headers";
 import { NextResponse } from "next/server";
 import { onboardingService } from "@/app/c/lib/onboarding-service";
 import type { OnboardingData } from "@/app/c/lib/models";
+import { db } from "@vendly/db/db";
+import { verification } from "@vendly/db/schema";
+import { sendWelcomeEmail } from "@vendly/transactional";
+import crypto from "crypto";
 
 export async function POST(req: Request) {
     try {
@@ -27,7 +31,40 @@ export async function POST(req: Request) {
             data
         );
 
-        return NextResponse.json(result);
+        // Generate a single-use verification token for the welcome email (24h expiry)
+        const token = crypto.randomBytes(32).toString("hex");
+        const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
+
+        await db.insert(verification).values({
+            id: crypto.randomBytes(16).toString("hex"),
+            identifier: session.user.email,
+            value: token,
+            expiresAt,
+        });
+
+        // Build URLs with embedded verification token
+        const origin = req.headers.get("origin") || process.env.NEXT_PUBLIC_APP_URL || "";
+        const storeSlug = result.storeSlug;
+        const verifyBase = `${origin}/api/auth/verify-seller?token=${token}&email=${encodeURIComponent(session.user.email)}`;
+
+        const dashboardUrl = `${verifyBase}&redirect=${encodeURIComponent(`/a/${storeSlug}`)}`;
+        const connectInstagramUrl = `${verifyBase}&redirect=${encodeURIComponent(`/a/${storeSlug}/integrations`)}`;
+        const storefrontUrl = `${origin}/${storeSlug}`;
+
+        // Send seller welcome email
+        try {
+            await sendWelcomeEmail({
+                to: session.user.email,
+                name: session.user.name || data.personal?.fullName || "there",
+                storefrontUrl,
+                dashboardUrl,
+                connectInstagramUrl,
+            });
+        } catch (emailError) {
+            console.error("Failed to send welcome email:", emailError);
+        }
+
+        return NextResponse.json({ ...result, emailSent: true });
     } catch (error) {
         console.error("Onboarding error:", error);
         return NextResponse.json(

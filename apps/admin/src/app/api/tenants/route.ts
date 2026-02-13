@@ -4,7 +4,7 @@ import { desc, eq } from "@vendly/db";
 import { NextResponse } from "next/server";
 import { checkSuperAdminApi } from "@/lib/auth-guard";
 import crypto from "crypto";
-import { sendSellerMagicLinkEmail } from "@vendly/transactional";
+import { sendWelcomeEmail } from "@vendly/transactional";
 
 const VERIFICATION_TTL_MS = 24 * 60 * 60 * 1000;
 
@@ -145,9 +145,19 @@ export async function POST(req: Request) {
             process.env.WEB_URL ||
             process.env.NEXT_PUBLIC_WEB_URL ||
             "http://localhost:3000";
-        const verifyUrl = `${webBaseUrl}/api/auth/verify-seller?token=${token}&email=${encodeURIComponent(email)}`;
+        const verifyBase = `${webBaseUrl}/api/auth/verify-seller?token=${token}&email=${encodeURIComponent(email)}`;
 
-        await sendSellerMagicLinkEmail({ to: email, url: verifyUrl });
+        const dashboardUrl = `${verifyBase}&redirect=${encodeURIComponent(`/a/${storeSlug}`)}`;
+        const connectInstagramUrl = `${verifyBase}&redirect=${encodeURIComponent(`/a/${storeSlug}/integrations`)}`;
+        const storefrontUrl = `${webBaseUrl}/${storeSlug}`;
+
+        await sendWelcomeEmail({
+            to: email,
+            name: fullName,
+            storefrontUrl,
+            dashboardUrl,
+            connectInstagramUrl,
+        });
 
         return NextResponse.json({
             success: true,

@@ -14,23 +14,31 @@ import {
   Payment01FreeIcons,
   Analytics01FreeIcons,
 } from "@hugeicons/core-free-icons";
-import { signInWithGoogle, signInWithMagicLink, signInWithSellerMagicLink } from "@vendly/auth/react";
+import { signInWithGoogle, signUp } from "@vendly/auth/react";
 import { useEffect, useState } from "react";
 import { useOnboarding } from "./context/onboarding-context";
 import { GoogleIcon } from "@vendly/ui/components/svgs/google";
 import { useAppSession } from "@/contexts/app-session-context";
 
-type FormState = "idle" | "loading" | "sent";
+type FormState = "idle" | "loading";
 
 export default function Welcome() {
   const { session: appSession } = useAppSession();
-  const { navigateToStep } = useOnboarding();
+  const { navigateToStep, setPersonalDraft } = useOnboarding();
+
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [formState, setFormState] = useState<FormState>("idle");
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (appSession) {
+      setPersonalDraft({ fullName: appSession.user?.name ?? "" });
       navigateToStep("personal");
     }
-  }, [appSession, navigateToStep]);
+  }, [appSession, navigateToStep, setPersonalDraft]);
+
   const getOnboardingRedirect = () => {
     if (typeof window === "undefined") {
       return "/c/personal?entry=seller_google";
@@ -48,51 +56,53 @@ export default function Welcome() {
     }
   };
 
-  const [email, setEmail] = useState("");
-  const [formState, setFormState] = useState<FormState>("idle");
-  const [error, setError] = useState<string | null>(null);
-
-  const handleMagicLinkSubmit = async (e: React.FormEvent) => {
+  const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
 
+    if (!name.trim()) {
+      setError("Please enter your full name");
+      return;
+    }
     if (!email || !email.includes("@")) {
       setError("Please enter a valid email address");
+      return;
+    }
+    if (password.length < 8) {
+      setError("Password must be at least 8 characters");
       return;
     }
 
     setFormState("loading");
 
     try {
-      // Precheck if this email already belongs to a seller (tenant.billingEmail)
+      // Precheck if this email already belongs to a seller
       const res = await fetch(`/api/seller/precheck?email=${encodeURIComponent(email)}`);
-      if (!res.ok) {
-        throw new Error("Failed to check seller status");
-      }
-      const data = await res.json() as { isSeller: boolean; adminStoreSlug?: string | null; tenantSlug?: string | null };
-
-      if (data.isSeller) {
-        // Existing seller: send login magic link to admin login page
-        const adminSlug = data.adminStoreSlug || data.tenantSlug;
-        if (!adminSlug) {
-          throw new Error("Seller account found but store slug missing");
+      if (res.ok) {
+        const precheck = await res.json() as { isSeller: boolean; adminStoreSlug?: string | null; tenantSlug?: string | null };
+        if (precheck.isSeller) {
+          const adminSlug = precheck.adminStoreSlug || precheck.tenantSlug;
+          setError(`An account with this email already exists. Please sign in at /a/${adminSlug}/login`);
+          setFormState("idle");
+          return;
         }
+      }
 
-        await signInWithMagicLink(email, {
-          callbackURL: `/a/${adminSlug}/login`,
-        });
-        setFormState("sent");
-        setError("We found an existing seller account. Check your email to sign in.");
+      const { error: signUpError } = await signUp(email, password, name);
+
+      if (signUpError) {
+        if (signUpError.message?.toLowerCase().includes("already")) {
+          setError("An account with this email already exists. Please sign in instead.");
+        } else {
+          setError(signUpError.message || "Sign up failed. Please try again.");
+        }
+        setFormState("idle");
         return;
       }
 
-      // New seller: proceed to seller onboarding
-      await signInWithSellerMagicLink(email, {
-        callbackURL: getOnboardingRedirect(),
-      });
-      setFormState("sent");
+      navigateToStep("personal");
     } catch {
-      setError("Failed to send magic link. Please try again.");
+      setError("Something went wrong. Please try again.");
       setFormState("idle");
     }
   };
@@ -161,91 +171,96 @@ export default function Welcome() {
           </div>
         </div>
 
-        {/* RIGHT — Sign In Form */}
-        {formState === "sent" ? (
-          <div className="flex flex-col items-center justify-center gap-3 text-center">
-            <h2 className="text-lg font-semibold">Check your email</h2>
-            <p className="text-sm text-muted-foreground max-w-sm">
-              We&apos;ve sent you a secure sign-in link. Click it to continue to
-              Vendly.
-            </p>
-          </div>
-        ) : (
-          <form className="p-6 md:p-8" onSubmit={handleMagicLinkSubmit}>
-            <FieldGroup>
-              <div className="flex flex-col items-center gap-2">
-                <h1 className="text-black-50 text-balance text-xl font-semibold ">
-                  Welcome
-                </h1>
-                <p className="text-muted-foreground text-sm">
-                  Create your free account
-                </p>
+        {/* RIGHT — Sign Up Form */}
+        <form className="p-6 md:p-8" onSubmit={handleSignUp}>
+          <FieldGroup>
+            <div className="flex flex-col items-center gap-2">
+              <h1 className="text-black-50 text-balance text-xl font-semibold ">
+                Welcome
+              </h1>
+              <p className="text-muted-foreground text-sm">
+                Create your free account
+              </p>
+            </div>
+
+            {error && (
+              <div className="rounded-lg border border-destructive/50 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+                {error}
               </div>
+            )}
 
-              <Field>
-                <FieldLabel htmlFor="email">Email</FieldLabel>
-                <Input
-                  id="email"
-                  type="email"
-                  inputMode="email"
-                  autoComplete="email"
-                  placeholder="m@example.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                  className="focus-visible:border-primary/50 focus-visible:ring-primary/10 h-11"
-                />
-                {error && (
-                  <p className="text-sm text-destructive mt-1">{error}</p>
-                )}
-              </Field>
-              {/* 
-                        <Field>
-                            <div className="flex items-center">
-                                <FieldLabel htmlFor="password">Password</FieldLabel>
-                                <a
-                                    href="#"
-                                    className="ml-auto text-sm underline-offset-2 hover:underline"
-                                >
-                                    Forgot your password?
-                                </a>
-                            </div>
-                            <Input
-                             id="password"
-                              type="password" 
-                              required 
-                              className="focus-visible:border-primary/50 focus-visible:ring-primary/10" 
-                              value={formData.password}
-                              onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                              />
-                        </Field> */}
+            <Field>
+              <FieldLabel htmlFor="name">Full Name</FieldLabel>
+              <Input
+                id="name"
+                type="text"
+                autoComplete="name"
+                placeholder="Jane Doe"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                required
+                disabled={formState === "loading"}
+                className="focus-visible:border-primary/50 focus-visible:ring-primary/10 h-11"
+              />
+            </Field>
 
-              <Field>
-                <Button
-                  type="submit"
-                  className="w-full h-11"
-                  disabled={formState === "loading"}
-                >
-                  {formState === "loading" ? "Sending magic link…" : "Sign Up"}
-                </Button>
-              </Field>
+            <Field>
+              <FieldLabel htmlFor="email">Email</FieldLabel>
+              <Input
+                id="email"
+                type="email"
+                inputMode="email"
+                autoComplete="email"
+                placeholder="m@example.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                disabled={formState === "loading"}
+                className="focus-visible:border-primary/50 focus-visible:ring-primary/10 h-11"
+              />
+            </Field>
 
-              <FieldSeparator>continue with</FieldSeparator>
+            <Field>
+              <FieldLabel htmlFor="password">Password</FieldLabel>
+              <Input
+                id="password"
+                type="password"
+                autoComplete="new-password"
+                placeholder="At least 8 characters"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                disabled={formState === "loading"}
+                className="focus-visible:border-primary/50 focus-visible:ring-primary/10 h-11"
+              />
+            </Field>
 
-              <Field>
-                <Button
-                  variant="outline"
-                  type="button"
-                  className="h-11"
-                  onClick={handleGoogleSignIn}
-                >
-                  <GoogleIcon />
-                  Continue with Google
-                </Button>
-              </Field>
-            </FieldGroup>
-          </form>
-        )}
+            <Field>
+              <Button
+                type="submit"
+                className="w-full h-11"
+                disabled={formState === "loading"}
+              >
+                {formState === "loading" ? "Creating account…" : "Sign Up"}
+              </Button>
+            </Field>
+
+            <FieldSeparator>or continue with</FieldSeparator>
+
+            <Field>
+              <Button
+                variant="outline"
+                type="button"
+                className="h-11"
+                onClick={handleGoogleSignIn}
+                disabled={formState === "loading"}
+              >
+                <GoogleIcon />
+                Continue with Google
+              </Button>
+            </Field>
+          </FieldGroup>
+        </form>
       </div>
     </div>
   );

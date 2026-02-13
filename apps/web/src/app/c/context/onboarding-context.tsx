@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from "react";
+import { createContext, useContext, useState, useEffect, useCallback, useRef, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 
 export type OnboardingStep = "signup" | "personal" | "store" | "business" | "complete";
@@ -36,6 +36,7 @@ interface OnboardingState {
 }
 
 interface OnboardingContextValue extends OnboardingState {
+    setPersonalDraft: (data: Pick<PersonalInfo, "fullName">) => void;
     savePersonal: (data: PersonalInfo) => Promise<boolean>;
     saveStore: (data: StoreInfo) => Promise<boolean>;
     saveBusiness: (data: BusinessInfo) => Promise<boolean>;
@@ -95,7 +96,7 @@ export function OnboardingProvider({ children }: ProviderProps) {
         currentStep: "signup",
         data: {},
         isComplete: false,
-        // Start false so the personal step isn't blocked on initial render (e.g., after magic link redirect)
+        // Start false so the personal step isn't blocked on initial render
         isLoading: false,
         error: null,
     });
@@ -132,59 +133,90 @@ export function OnboardingProvider({ children }: ProviderProps) {
         router.push(route);
     }, [router]);
 
+    // Keep a ref that always points to the latest data so callbacks never read stale closures
+    const dataRef = useRef<OnboardingData>(state.data);
+    useEffect(() => { dataRef.current = state.data; }, [state.data]);
+
     const refreshStatus = useCallback(async () => {
         // Local storage source of truth. No API check needed.
         setState(prev => ({ ...prev, isLoading: false }));
     }, []);
 
+    const setPersonalDraft = useCallback((data: Pick<PersonalInfo, "fullName">) => {
+        setState(prev => {
+            const updatedData = {
+                ...prev.data,
+                personal: {
+                    fullName: data.fullName,
+                    phoneNumber: prev.data.personal?.phoneNumber ?? "",
+                    countryCode: prev.data.personal?.countryCode ?? "256",
+                },
+            };
+            localStorage.setItem("vendly_onboarding_data", JSON.stringify(updatedData));
+            return { ...prev, data: updatedData };
+        });
+    }, []);
+
     const savePersonal = useCallback(async (data: PersonalInfo): Promise<boolean> => {
-        const updatedData = { ...state.data, personal: data };
         const nextStep: OnboardingStep = "store";
 
-        setState(prev => ({
-            ...prev,
-            data: updatedData,
-            currentStep: nextStep,
-        }));
+        setState(prev => {
+            const updatedData = { ...prev.data, personal: data };
+            // Persist synchronously so data survives page navigation
+            localStorage.setItem("vendly_onboarding_data", JSON.stringify(updatedData));
+            localStorage.setItem("vendly_onboarding_step", nextStep);
+            return { ...prev, data: updatedData, currentStep: nextStep };
+        });
 
         navigateToStep(nextStep);
         return true;
-    }, [state.data, navigateToStep]);
+    }, [navigateToStep]);
 
     const saveStore = useCallback(async (data: StoreInfo): Promise<boolean> => {
-        const updatedData = { ...state.data, store: data };
         const nextStep: OnboardingStep = "business";
 
-        setState(prev => ({
-            ...prev,
-            data: updatedData,
-            currentStep: nextStep,
-        }));
+        setState(prev => {
+            const updatedData = { ...prev.data, store: data };
+            // Persist synchronously so data survives page navigation
+            localStorage.setItem("vendly_onboarding_data", JSON.stringify(updatedData));
+            localStorage.setItem("vendly_onboarding_step", nextStep);
+            return { ...prev, data: updatedData, currentStep: nextStep };
+        });
 
         navigateToStep(nextStep);
         return true;
-    }, [state.data, navigateToStep]);
+    }, [navigateToStep]);
 
     const saveBusiness = useCallback(async (data: BusinessInfo): Promise<boolean> => {
-        const updatedData = { ...state.data, business: data };
-        // Determine next step
-        const nextStep: OnboardingStep = "complete";
-
         setState(prev => ({
             ...prev,
-            data: updatedData,
-            currentStep: nextStep
+            data: { ...prev.data, business: data },
         }));
-
-        navigateToStep(nextStep);
+        // Don't navigate — completeOnboarding handles the API call + navigation
         return true;
-    }, [state.data, navigateToStep]);
+    }, []);
 
     const completeOnboarding = useCallback(async (dataOverride?: Partial<OnboardingData>): Promise<boolean> => {
         try {
-            setState(prev => ({ ...prev, isLoading: true, error: null }));
+            // Extract the absolute latest state.data using setState updater,
+            // which always receives the most recent state (no stale closures).
+            let latestData: OnboardingData = {};
+            setState(prev => {
+                latestData = prev.data;
+                return { ...prev, isLoading: true, error: null };
+            });
 
-            const payloadData = { ...state.data, ...dataOverride };
+            // Also read from localStorage as a fallback for data persisted across page navigations
+            let lsData: OnboardingData = {};
+            try {
+                const saved = localStorage.getItem("vendly_onboarding_data");
+                if (saved) lsData = JSON.parse(saved);
+            } catch { /* ignore */ }
+
+            // Merge: localStorage (broadest) < react state (latest in-memory) < explicit override
+            const payloadData = { ...lsData, ...latestData, ...dataOverride };
+
+            console.log("[completeOnboarding] payload:", JSON.stringify(payloadData));
 
             const result = await apiCall<{
                 success: boolean;
@@ -230,7 +262,7 @@ export function OnboardingProvider({ children }: ProviderProps) {
             }));
             return false;
         }
-    }, [state.data, navigateToStep]);
+    }, [navigateToStep]);
 
     const goBack = useCallback(async () => {
         // Determine previous step based on current step
@@ -252,6 +284,7 @@ export function OnboardingProvider({ children }: ProviderProps) {
 
     const value: OnboardingContextValue = {
         ...state,
+        setPersonalDraft,
         savePersonal,
         saveStore,
         saveBusiness,

@@ -14,7 +14,7 @@ interface BusinessFormProps {
 }
 
 export default function BusinessForm({ initialCategories }: BusinessFormProps) {
-    const { data, saveBusiness, completeOnboarding, goBack, isLoading, error } = useOnboarding();
+    const { data, completeOnboarding, goBack, isLoading, error } = useOnboarding();
 
     const [categories, setCategories] = useState<string[]>(data.business?.categories ?? []);
     const [availableCategories, setAvailableCategories] = useState<Category[]>(initialCategories);
@@ -38,11 +38,7 @@ export default function BusinessForm({ initialCategories }: BusinessFormProps) {
             return;
         }
 
-        const saved = await saveBusiness({ categories });
-
-        if (saved) {
-            await completeOnboarding({ business: { categories } });
-        }
+        await completeOnboarding({ business: { categories } });
     };
 
     return (

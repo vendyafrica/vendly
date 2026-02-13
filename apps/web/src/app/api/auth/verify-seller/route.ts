@@ -1,20 +1,24 @@
 import { NextResponse } from "next/server";
 import { db } from "@vendly/db/db";
-import { users, verification, stores, tenantMemberships } from "@vendly/db/schema";
+import { users, session as sessionTable, verification } from "@vendly/db/schema";
 import { eq, and } from "@vendly/db";
+import crypto from "crypto";
 
 /**
- * GET /api/auth/verify-seller?token=xxx&email=xxx
+ * GET /api/auth/verify-seller?token=xxx&email=xxx&redirect=/a/store-slug
  *
- * Called when a new seller clicks the verification link in their email.
- * Validates the token, marks the user's email as verified, and redirects
- * to their store admin login page.
+ * Called when a new seller clicks a CTA in their welcome email.
+ * - Validates the token (time-bound 24h, single-use)
+ * - Marks the user's email as verified
+ * - Creates a session (auto-login)
+ * - Redirects to the requested destination (dashboard or integrations)
  */
 export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
     const token = searchParams.get("token");
     const email = searchParams.get("email")?.toLowerCase();
+    const redirectTo = searchParams.get("redirect") || "/";
 
     if (!token || !email) {
       return NextResponse.redirect(
@@ -43,51 +47,65 @@ export async function GET(req: Request) {
       );
     }
 
-    // Mark user email as verified
+    // Find the user
     const user = await db.query.users.findFirst({
       where: eq(users.email, email),
-      columns: { id: true },
     });
 
-    if (user) {
+    if (!user) {
+      await db.delete(verification).where(eq(verification.id, record.id));
+      return NextResponse.redirect(
+        new URL("/login?error=user-not-found", req.url)
+      );
+    }
+
+    // Mark email as verified
+    if (!user.emailVerified) {
       await db
         .update(users)
         .set({ emailVerified: true })
         .where(eq(users.id, user.id));
     }
 
-    // Clean up the verification token
+    // Delete the verification token (single-use)
     await db.delete(verification).where(eq(verification.id, record.id));
 
-    // Find the user's store slug so we can redirect to their dashboard login
-    let storeSlug: string | null = null;
+    // Create a session manually to auto-login the seller
+    const sessionToken = crypto.randomBytes(32).toString("hex");
+    const sessionId = crypto.randomBytes(16).toString("hex");
+    const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
 
-    if (user) {
-      const membership = await db.query.tenantMemberships.findFirst({
-        where: eq(tenantMemberships.userId, user.id),
-        columns: { tenantId: true },
-      });
+    await db.insert(sessionTable).values({
+      id: sessionId,
+      token: sessionToken,
+      userId: user.id,
+      expiresAt,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      ipAddress: req.headers.get("x-forwarded-for") || null,
+      userAgent: req.headers.get("user-agent") || null,
+    });
 
-      if (membership) {
-        const store = await db.query.stores.findFirst({
-          where: eq(stores.tenantId, membership.tenantId),
-          columns: { slug: true },
-        });
-        storeSlug = store?.slug ?? null;
-      }
-    }
+    // Build redirect response with session cookie
+    const redirectUrl = new URL(redirectTo, req.url);
+    const response = NextResponse.redirect(redirectUrl);
 
-    // Redirect to the store admin login with a verified flag
-    if (storeSlug) {
-      return NextResponse.redirect(
-        new URL(`/a/${storeSlug}/login?verified=true`, req.url)
-      );
-    }
+    // Set session cookie matching Better Auth's cookie format
+    const isProd = process.env.NODE_ENV === "production";
+    const isSecure = isProd || new URL(req.url).protocol === "https:";
+    const cookieName = isSecure
+      ? "__Secure-vendly.session_token"
+      : "vendly.session_token";
 
-    // Fallback: redirect to generic login
-    return NextResponse.redirect(
-      new URL("/login?verified=true", req.url)
-    );
+    response.cookies.set(cookieName, sessionToken, {
+      httpOnly: true,
+      secure: isSecure,
+      sameSite: isSecure ? "none" : "lax",
+      path: "/",
+      maxAge: 7 * 24 * 60 * 60, // 7 days
+    });
+
+    return response;
   } catch (error) {
     console.error("Seller verification error:", error);
     return NextResponse.redirect(

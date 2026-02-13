@@ -11,76 +11,172 @@ import {
     Text,
 } from "@react-email/components";
 
-interface WelcomeEmailProps {
+interface SellerWelcomeEmailProps {
     name: string;
+    storefrontUrl: string;
     dashboardUrl: string;
+    connectInstagramUrl: string;
 }
 
-export const WelcomeEmail = ({
+export const SellerWelcomeEmail = ({
     name,
+    storefrontUrl,
     dashboardUrl,
-}: WelcomeEmailProps) => (
+    connectInstagramUrl,
+}: SellerWelcomeEmailProps) => (
     <Html>
         <Head />
-        <Preview>Welcome to Vendly!</Preview>
+        <Preview>Welcome to Vendly — your store is ready</Preview>
         <Body style={main}>
             <Container style={container}>
-                <Heading style={h1}>Welcome to Vendly ,{name}</Heading>
+                <Section style={logoRow}>
+                    <Img
+                        src="https://vendlyafrica.store/vendly.png"
+                        width="36"
+                        height="36"
+                        alt="Vendly"
+                        style={logo}
+                    />
+                    <Text style={brandName}>vendly</Text>
+                </Section>
+                <Heading style={h1}>Welcome, {name}</Heading>
                 <Text style={text}>
-                    We're excited to have you on board. Your store is set up and ready to go.
+                    Your store is ready. Verify your email and choose your next step below.
                 </Text>
-                <Section style={btnContainer}>
-                    <Link style={button} href={dashboardUrl}>
+                <Section style={card}>
+                    <Text style={label}>Storefront</Text>
+                    <Link style={link} href={storefrontUrl}>
+                        {storefrontUrl}
+                    </Link>
+                    <Text style={label}>Dashboard</Text>
+                    <Link style={link} href={dashboardUrl}>
+                        {dashboardUrl}
+                    </Link>
+                </Section>
+                <Section style={buttonRow}>
+                    <Link style={primaryButton} href={connectInstagramUrl}>
+                        Connect Instagram
+                    </Link>
+                    <Link style={secondaryButton} href={dashboardUrl}>
                         Go to Dashboard
                     </Link>
                 </Section>
-                <Text style={text}>
-                    If you have any questions, feel free to reply to this email.
+                <Text style={footnote}>
+                    This email verifies your account. The links expire in 24 hours and can only be used once.
                 </Text>
             </Container>
         </Body>
     </Html>
 );
 
-export default WelcomeEmail;
+export default SellerWelcomeEmail;
 
 const main = {
-    backgroundColor: "#ffffff",
+    backgroundColor: "#F7F7FB",
     fontFamily:
         '-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Oxygen-Sans,Ubuntu,Cantarell,"Helvetica Neue",sans-serif',
 };
 
 const container = {
-    margin: "0 auto",
-    padding: "20px 0 48px",
+    margin: "32px auto",
+    backgroundColor: "#FFFFFF",
+    borderRadius: "16px",
+    padding: "32px",
+    maxWidth: "560px",
+    boxShadow: "0 10px 30px rgba(24, 24, 27, 0.08)",
+};
+
+const logoRow = {
+    display: "flex",
+    alignItems: "center",
+    gap: "10px",
+    marginBottom: "20px",
+};
+
+const logo = {
+    borderRadius: "8px",
+};
+
+const brandName = {
+    fontWeight: "700",
+    fontSize: "18px",
+    color: "#2B2B33",
+    margin: 0,
 };
 
 const h1 = {
-    fontSize: "24px",
-    fontWeight: "400",
-    lineHeight: "1.1",
-    margin: "0 0 15px",
+    fontSize: "26px",
+    fontWeight: "700",
+    lineHeight: "1.2",
+    color: "#1F1F26",
+    margin: "0 0 12px",
 };
 
 const text = {
-    fontSize: "16px",
-    lineHeight: "1.4",
-    color: "#484848",
+    fontSize: "15px",
+    lineHeight: "1.6",
+    color: "#51515E",
+    margin: "0 0 20px",
 };
 
-const btnContainer = {
-    textAlign: "center" as const,
-    margin: "24px 0",
+const card = {
+    backgroundColor: "#F4F1FF",
+    borderRadius: "12px",
+    padding: "16px",
+    marginBottom: "22px",
 };
 
-const button = {
-    backgroundColor: '#9336ea',
-    borderRadius: "6px",
-    color: "#fff",
+const label = {
+    fontSize: "12px",
+    letterSpacing: "0.08em",
+    textTransform: "uppercase" as const,
+    color: "#6C6C7A",
+    margin: "0 0 4px",
+};
+
+const link = {
+    display: "block",
+    color: "#6D28D9",
+    fontWeight: "600",
     fontSize: "14px",
-    fontWeight: "400",
+    marginBottom: "12px",
+    textDecoration: "none",
+};
+
+const buttonRow = {
+    display: "flex",
+    gap: "12px",
+    flexWrap: "wrap" as const,
+    marginBottom: "16px",
+};
+
+const primaryButton = {
+    backgroundColor: "#6D28D9",
+    borderRadius: "10px",
+    color: "#FFFFFF",
+    fontSize: "14px",
+    fontWeight: "600",
     textDecoration: "none",
     textAlign: "center" as const,
-    display: "block",
-    padding: "8px 12px",
+    display: "inline-block",
+    padding: "12px 18px",
+};
+
+const secondaryButton = {
+    backgroundColor: "#FFFFFF",
+    borderRadius: "10px",
+    color: "#6D28D9",
+    fontSize: "14px",
+    fontWeight: "600",
+    textDecoration: "none",
+    textAlign: "center" as const,
+    display: "inline-block",
+    padding: "12px 18px",
+    border: "1px solid #D6CCFF",
+};
+
+const footnote = {
+    fontSize: "12px",
+    color: "#7B7B86",
+    margin: 0,
 };

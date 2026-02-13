@@ -12,6 +12,7 @@ import {
   SelectValue,
 } from "@vendly/ui/components/select";
 import { useOnboarding } from "../context/onboarding-context";
+import { useAppSession } from "@/contexts/app-session-context";
 
 const COUNTRY_OPTIONS = [
   { code: "256", label: "Uganda", flag: "🇺🇬" },
@@ -45,10 +46,14 @@ function inferCountryCode(raw: string | undefined): string {
 
 export default function PersonalInfo() {
   const { data, savePersonal, goBack, isLoading, error } = useOnboarding();
+  const { session: appSession } = useAppSession();
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const [fullName, setFullName] = useState(data.personal?.fullName ?? "");
+  // Pre-fill name from session (Google OAuth) or onboarding context
+  const sessionName = appSession?.user?.name ?? "";
+  const fullName = data.personal?.fullName || sessionName;
+
   const [phoneNumber, setPhoneNumber] = useState(
     data.personal?.phoneNumber ?? "",
   );
@@ -83,7 +88,7 @@ export default function PersonalInfo() {
       >
         {/* Header */}
         <div className="space-y-1">
-          <h1 className="text-xl font-semibold">Tell us about you</h1>
+          <h1 className="text-xl font-semibold">Your phone number</h1>
           <p className="text-sm text-muted-foreground">
             This helps your customers reach you
           </p>
@@ -96,19 +101,6 @@ export default function PersonalInfo() {
         )}
 
         <FieldGroup>
-          <Field>
-            <FieldLabel htmlFor="fullName">Full Name</FieldLabel>
-            <Input
-              id="fullName"
-              type="text"
-              placeholder="Steve McQueen"
-              required
-              value={fullName}
-              onChange={(e) => setFullName(e.target.value)}
-              className="focus-visible:border-primary/50 focus-visible:ring-primary/10"
-            />
-          </Field>
-
           <Field>
             <FieldLabel htmlFor="phoneNumber">Phone Number</FieldLabel>
             <div className="flex h-10 items-center gap-1 rounded-md border border-input bg-background px-2 focus-within:ring-2 focus-within:ring-primary/20">
