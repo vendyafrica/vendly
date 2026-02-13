@@ -10,7 +10,6 @@ interface HeroProps {
 }
 
 const FALLBACK_HERO_MEDIA = "https://cdn.cosmos.so/c1a24f82-42e5-43b4-a1c5-2da242f3ae3b.mp4";
-const FALLBACK_POSTER_IMAGE = "https://cdn.cosmos.so/25e7ef9d-3d95-486d-b7db-f0d19c1992d7?format=jpeg";
 const VIDEO_EXTENSIONS = [".mp4", ".webm", ".ogg"];
 
 function isVideoUrl(url: string) {
@@ -23,23 +22,10 @@ function isVideoUrl(url: string) {
     }
 }
 
-function isImageUrl(url: string) {
-    try {
-        const parsed = new URL(url);
-        return /\.(jpg|jpeg|png|webp|gif|avif)$/i.test(parsed.pathname);
-    } catch {
-        const cleanUrl = url.split("?")[0]?.split("#")[0] ?? url;
-        return /\.(jpg|jpeg|png|webp|gif|avif)$/i.test(cleanUrl);
-    }
-}
-
 export function Hero({ store }: HeroProps) {
     const heroMedia = Array.isArray(store.heroMedia) ? store.heroMedia : [];
     const mediaUrl = heroMedia[0] || FALLBACK_HERO_MEDIA;
     const isVideo = typeof mediaUrl === "string" && isVideoUrl(mediaUrl);
-
-    const fallbackPoster = heroMedia.find((item) => !isVideoUrl(item) && isImageUrl(item)) || FALLBACK_POSTER_IMAGE;
-    const posterUrl = isVideo ? fallbackPoster : mediaUrl;
 
     const isBlobUrl = typeof mediaUrl === "string" && mediaUrl.includes("blob.vercel-storage.com");
 
@@ -48,20 +34,10 @@ export function Hero({ store }: HeroProps) {
             <div className="relative h-full w-full overflow-hidden rounded-none sm:rounded-b-3xl md:rounded-b-[40px]">
                 {/* Media - Video or Image */}
                 {isVideo ? (
-                    <>
-                        <Image
-                            src={posterUrl}
-                            alt={`${store.name} hero`}
-                            fill
-                            priority
-                            className="object-cover"
-                            sizes="100vw"
-                        />
-                        <DeferredHeroVideo
-                            src={mediaUrl}
-                            className="absolute inset-0 w-full h-full object-cover"
-                        />
-                    </>
+                    <DeferredHeroVideo
+                        src={mediaUrl}
+                        className="absolute inset-0 w-full h-full object-cover"
+                    />
                 ) : (
                     <Image
                         src={mediaUrl}

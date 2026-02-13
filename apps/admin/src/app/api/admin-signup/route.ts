@@ -1,9 +1,25 @@
 import { db } from "@vendly/db/db";
-import { users, verification } from "@vendly/db/schema";
+import { users, verification, account } from "@vendly/db/schema";
 import { NextResponse } from "next/server";
 import { sendAdminVerificationEmail } from "@vendly/transactional";
-import { eq } from "@vendly/db";
+import { auth } from "@vendly/auth/server";
+import { eq, and } from "@vendly/db";
 import crypto from "crypto";
+import { scryptAsync } from "@noble/hashes/scrypt";
+
+const SCRYPT_CONFIG = { N: 16384, r: 16, p: 1, dkLen: 64 };
+
+async function hashPassword(password: string): Promise<string> {
+    const salt = crypto.randomBytes(16).toString("hex");
+    const key = await scryptAsync(password.normalize("NFKC"), salt, {
+        N: SCRYPT_CONFIG.N,
+        r: SCRYPT_CONFIG.r,
+        p: SCRYPT_CONFIG.p,
+        dkLen: SCRYPT_CONFIG.dkLen,
+        maxmem: 128 * SCRYPT_CONFIG.N * SCRYPT_CONFIG.r * 2,
+    });
+    return `${salt}:${Buffer.from(key).toString("hex")}`;
+}
 
 export async function POST(req: Request) {
     try {
@@ -25,15 +41,51 @@ export async function POST(req: Request) {
         });
 
         if (existingUser) {
+            // Check if user already has a credential account
+            const existingCredential = await db.query.account.findFirst({
+                where: and(
+                    eq(account.userId, existingUser.id),
+                    eq(account.providerId, "credential"),
+                ),
+            });
+
+            if (existingCredential) {
+                return NextResponse.json(
+                    { error: "User with this email already exists" },
+                    { status: 422 }
+                );
+            }
+
+            // User exists (e.g. from Google OAuth) but has no credential account.
+            // Create the credential account row with hashed password so email/password sign-in works.
+            const hashedPassword = await hashPassword(password);
+
+            await db.insert(account).values({
+                id: crypto.randomUUID(),
+                accountId: existingUser.id,
+                providerId: "credential",
+                userId: existingUser.id,
+                password: hashedPassword,
+                createdAt: new Date(),
+                updatedAt: new Date(),
+            });
+
+            // Mark email as verified if not already (user already proved ownership via OAuth)
+            if (!existingUser.emailVerified) {
+                await db
+                    .update(users)
+                    .set({ emailVerified: true })
+                    .where(eq(users.id, existingUser.id));
+            }
+
+            // Send verification email for super_admin bootstrap
             const existingSuperAdmin = await db.query.superAdmins.findFirst({
                 columns: { id: true },
             });
 
-            // Bootstrap-only: if there is no super admin yet, allow existing user to receive a verification
-            // email to activate/verify and become the first super admin.
             if (!existingSuperAdmin) {
                 const token = crypto.randomBytes(32).toString("hex");
-                const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+                const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
 
                 await db.delete(verification).where(eq(verification.identifier, email));
 
@@ -44,7 +96,6 @@ export async function POST(req: Request) {
                     expiresAt,
                 });
 
-                // Create verification URL - use our custom verification endpoint
                 const verificationUrl = `${origin}/api/verify-email?token=${token}&email=${encodeURIComponent(email)}`;
 
                 await sendAdminVerificationEmail({
@@ -52,39 +103,29 @@ export async function POST(req: Request) {
                     name: existingUser.name,
                     verificationUrl,
                 });
-
-                return NextResponse.json({
-                    success: true,
-                    message: "Account already exists. Please check your email to verify your account.",
-                });
             }
 
-            return NextResponse.json(
-                { error: "User with this email already exists" },
-                { status: 422 }
-            );
+            return NextResponse.json({
+                success: true,
+                message: "Credential account created! Please check your email to verify.",
+            });
         }
 
-        // Delegate creation to Better Auth signup endpoint to ensure credential account is stored
-        const signupRes = await fetch(`${origin}/api/auth/sign-up/email`, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-                email,
-                password,
-                name,
-                callbackURL: `${origin}/login`,
-            }),
-        });
-
-        const signupData = await signupRes.json().catch(() => null);
-
-        if (!signupRes.ok) {
+        // New user: use Better Auth server API (creates user + credential account + sends verification)
+        try {
+            await auth.api.signUpEmail({
+                body: {
+                    email,
+                    password,
+                    name,
+                    callbackURL: `${origin}/login?message=email-verified`,
+                },
+            });
+        } catch (signupError) {
+            console.error("Better Auth signUpEmail error:", signupError);
             return NextResponse.json(
-                { error: signupData?.message || "Failed to create account" },
-                { status: signupRes.status || 500 }
+                { error: "Failed to create account. Please try again." },
+                { status: 500 }
             );
         }
 

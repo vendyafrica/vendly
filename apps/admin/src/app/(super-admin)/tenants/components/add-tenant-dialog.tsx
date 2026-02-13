@@ -117,7 +117,7 @@ export function AddTenantDialog({ open, onOpenChange, onCreated }: AddTenantDial
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="sm:max-w-2xl">
+            <DialogContent className="sm:max-w-2xl max-h-[85vh] overflow-y-auto">
                 <DialogHeader>
                     <DialogTitle>Add tenant</DialogTitle>
                     <DialogDescription>
