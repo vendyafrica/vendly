@@ -1,7 +1,10 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { ThemeProvider } from "next-themes";
 import { Bricolage_Grotesque, Geist_Mono } from "next/font/google";
+import Script from "next/script";
 import "./globals.css";
+
+const GA_ID = "G-JWNNZYPEX5";
 
 const geistSans = Bricolage_Grotesque({
   variable: "--font-bricolage-grotesque",
@@ -14,10 +17,17 @@ const geistMono = Geist_Mono({
 });
 
 const siteUrl = "https://vendlyafrica.store";
-const defaultTitle = "Vendly | Launch Your Storefront";
+const marketplaceUrl = "https://duuka.store";
+const defaultTitle = "Vendly — Sell via Social, Order via WhatsApp";
 const defaultDescription =
-  "Vendly helps African creators and small sellers launch storefronts with mobile money payments, delivery, and marketplace discovery.";
+  "Turn your Instagram into a visual storefront. Vendly lets African sellers showcase products and take WhatsApp orders — no complex checkout needed.";
 const defaultImage = `${siteUrl}/og-image.png`;
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
+};
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
@@ -26,16 +36,20 @@ export const metadata: Metadata = {
     template: "%s | Vendly",
   },
   description: defaultDescription,
+  robots: { index: true, follow: true },
   alternates: {
     canonical: siteUrl,
+    types: {
+      "text/html": marketplaceUrl,
+    },
   },
   openGraph: {
     title: defaultTitle,
     description: defaultDescription,
     url: siteUrl,
     siteName: "Vendly",
-    images: [{ url: defaultImage, width: 1200, height: 630, alt: "Vendly" }],
-    locale: "en_US",
+    images: [{ url: defaultImage, width: 1200, height: 630, alt: "Vendly — Social Commerce for African Sellers" }],
+    locale: "en_UG",
     type: "website",
   },
   twitter: {
@@ -43,7 +57,113 @@ export const metadata: Metadata = {
     title: defaultTitle,
     description: defaultDescription,
     images: [defaultImage],
+    site: "@vendlyafrica",
+    creator: "@vendlyafrica",
   },
+  other: {
+    "geo.region": "UG",
+    "geo.placename": "Kampala, Uganda",
+    "geo.position": "0.3476;32.5825",
+    ICBM: "0.3476, 32.5825",
+    "content-language": "en",
+  },
+};
+
+const jsonLdGraph = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Organization",
+      "@id": `${siteUrl}/#organization`,
+      name: "Vendly",
+      legalName: "Vendly Africa",
+      url: siteUrl,
+      logo: {
+        "@type": "ImageObject",
+        url: `${siteUrl}/vendly.png`,
+        width: 512,
+        height: 512,
+      },
+      description: defaultDescription,
+      foundingDate: "2025",
+      areaServed: [
+        { "@type": "Country", name: "Uganda" },
+        { "@type": "Place", name: "East Africa" },
+      ],
+      sameAs: [
+        "https://www.instagram.com/vendlyafrica",
+        "https://x.com/vendlyafrica",
+        "https://www.linkedin.com/company/vendlyafrica",
+        "https://www.tiktok.com/@vendlyafrica",
+      ],
+    },
+    {
+      "@type": "WebSite",
+      "@id": `${siteUrl}/#website`,
+      url: siteUrl,
+      name: "Vendly",
+      publisher: { "@id": `${siteUrl}/#organization` },
+      potentialAction: {
+        "@type": "SearchAction",
+        target: {
+          "@type": "EntryPoint",
+          urlTemplate: `${marketplaceUrl}/search?q={search_term_string}`,
+        },
+        "query-input": "required name=search_term_string",
+      },
+    },
+    {
+      "@type": "WebApplication",
+      "@id": `${siteUrl}/#app`,
+      name: "Vendly",
+      url: siteUrl,
+      applicationCategory: "ShoppingApplication",
+      operatingSystem: "Web",
+      browserRequirements: "Requires JavaScript",
+      creator: { "@id": `${siteUrl}/#organization` },
+      featureList: [
+        "Pinterest-style visual storefront builder",
+        "WhatsApp order integration",
+        "Marketplace product discovery",
+        "Mobile-first browsing experience",
+        "Social seller onboarding from Instagram & TikTok",
+        "Centralized African brand discovery",
+      ],
+      offers: {
+        "@type": "Offer",
+        price: "0",
+        priceCurrency: "USD",
+        description: "Free to start — premium features coming soon",
+        availability: "https://schema.org/InStock",
+      },
+      screenshot: `${siteUrl}/og-image.png`,
+    },
+    {
+      "@type": "Service",
+      "@id": `${siteUrl}/#service`,
+      name: "Vendly Social Commerce Platform",
+      serviceType: "Social Commerce Marketplace",
+      provider: { "@id": `${siteUrl}/#organization` },
+      areaServed: [
+        { "@type": "Country", name: "Uganda" },
+        { "@type": "Place", name: "East Africa" },
+      ],
+      audience: [
+        { "@type": "Audience", audienceType: "Social Media Sellers" },
+        { "@type": "Audience", audienceType: "Small and Medium Businesses" },
+        { "@type": "Audience", audienceType: "Online Shoppers" },
+        { "@type": "Audience", audienceType: "Fashion & Lifestyle Store Owners" },
+      ],
+      description:
+        "A social-commerce marketplace platform enabling Instagram and social media sellers to create Pinterest-style storefronts with direct WhatsApp ordering for the African market.",
+      offers: {
+        "@type": "Offer",
+        price: "0",
+        priceCurrency: "USD",
+        description: "Free to start",
+      },
+    },
+  ],
 };
 
 export default function RootLayout({
@@ -56,6 +176,23 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
+        <script
+          type="application/ld+json"
+          suppressHydrationWarning
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdGraph) }}
+        />
+        <Script
+          src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`}
+          strategy="afterInteractive"
+        />
+        <Script id="google-analytics" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', '${GA_ID}');
+          `}
+        </Script>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           {children}
         </ThemeProvider>
@@ -63,3 +200,4 @@ export default function RootLayout({
     </html>
   );
 }
+

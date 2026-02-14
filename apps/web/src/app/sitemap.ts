@@ -1,7 +1,7 @@
 import type { MetadataRoute } from "next";
 import { marketplaceService } from "@/lib/services/marketplace-service";
 
-const siteUrl = "https://vendlyafrica.store";
+const siteUrl = "https://duuka.store";
 
 export const dynamic = "force-dynamic";
 

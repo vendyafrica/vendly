@@ -26,8 +26,8 @@ export async function generateMetadata({ params }: CategoryPageProps): Promise<M
     const categoryName = formatCategoryName(categorySlug);
     const ogImage = "/og-image.png";
 
-    const title = `${categoryName} | Shop ${categoryName} on Vendly`;
-    const description = `Discover ${categoryName} stores and products. Browse curated selections and shop ${categoryName.toLowerCase()} on Vendly.`;
+    const title = `${categoryName} | Shop ${categoryName} on Duuka`;
+    const description = `Discover ${categoryName} stores and products. Browse curated selections and shop ${categoryName.toLowerCase()} on Duuka.`;
 
     return {
         title,
@@ -39,7 +39,7 @@ export async function generateMetadata({ params }: CategoryPageProps): Promise<M
             title,
             description,
             url: `/category/${categorySlug}`,
-            siteName: "Vendly",
+            siteName: "Duuka",
             images: [{ url: ogImage }],
         },
         twitter: {

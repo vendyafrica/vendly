@@ -1,4 +1,11 @@
 import Link from "next/link";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Privacy Policy",
+  description: "How Vendly Africa collects, uses, and protects your personal data.",
+  alternates: { canonical: "/privacy" },
+};
 
 const SUPPORT_EMAIL = "support@vendlyafrica.store";
 const APP_NAME = "Vendly Africa";
