@@ -68,6 +68,11 @@ function parseCaption(caption: string, defaultCurrency: string) {
   };
 }
 
+type FetchResponseLike = {
+  ok: boolean;
+  json: () => Promise<unknown>;
+};
+
 instagramWebhookRouter.get("/webhooks/instagram", (req, res) => {
   const modeRaw = req.query["hub.mode"];
   const tokenRaw = req.query["hub.verify_token"];
@@ -134,9 +139,9 @@ instagramWebhookRouter.post("/webhooks/instagram", async (req, res) => {
       return res.sendStatus(200);
     }
 
-    const mediaRes = await fetch(
+    const mediaRes = (await fetch(
       `https://graph.instagram.com/${mediaId}?fields=id,caption,media_type,media_url,thumbnail_url,permalink,children{id,media_type,media_url,thumbnail_url}&access_token=${accessToken}`
-    );
+    )) as FetchResponseLike;
 
     const mediaJson = (await mediaRes.json()) as unknown;
     const mediaObj = asObject(mediaJson);
