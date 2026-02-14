@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
+import crypto from "crypto";
 import { z } from "zod";
 
 const mtnEnvSchema = z.enum(["sandbox", "production"]);
@@ -111,6 +111,9 @@ async function fetchJson(
   return { ok: res.ok, status: res.status, json, text };
 }
 
+/**
+ * Gets and caches an MTN MoMo collection access token.
+ */
 async function getAccessToken(): Promise<string> {
   const now = Date.now();
   if (tokenCache && now < tokenCache.expiresAtMs) {
@@ -150,7 +153,6 @@ async function getAccessToken(): Promise<string> {
   const accessToken = parsed.success ? parsed.data.access_token : (getStringField(json, "access_token") as string);
   const expiresIn = parsed.success ? parsed.data.expires_in : (getNumberField(json, "expires_in") as number);
 
-  // Refresh 60s early
   tokenCache = {
     accessToken,
     expiresAtMs: Date.now() + expiresIn * 1000 - 60_000,
@@ -163,14 +165,14 @@ export const mtnMomoCollections = {
   getBaseUrl,
   getTargetEnvironmentHeader,
 
-  // MTN MoMo disabled: return stub reference without making external calls
+  // MTN MoMo disabled: return stub reference without making external calls.
   async requestToPay(input: RequestToPayInput): Promise<RequestToPayResult> {
     const parsed = requestToPayInputSchema.parse(input);
     const referenceId = parsed.referenceId || crypto.randomUUID();
     return { referenceId };
   },
 
-  // MTN MoMo disabled: always return pending status
+  // MTN MoMo disabled: always return pending status.
   async getRequestToPayStatus(referenceId: string): Promise<RequestToPayStatus> {
     if (!referenceId) throw new Error("Missing referenceId");
     return {
@@ -181,8 +183,10 @@ export const mtnMomoCollections = {
     };
   },
 
-  // MTN MoMo disabled: skip validation
+  // MTN MoMo disabled: skip validation.
   async validateAccountHolderMsisdn(msisdn: string): Promise<boolean> {
+    void msisdn;
+    void getAccessToken;
     return false;
   },
 };

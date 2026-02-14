@@ -272,6 +272,22 @@ export const marketplaceService = {
         }));
     },
 
+    async getSubcategoriesByParentSlug(parentSlug: string): Promise<Array<{ id: string; name: string; slug: string; image: string | null }> | null> {
+        const parentCategory = await categoryRepo.findBySlug(parentSlug);
+        if (!parentCategory) return null;
+
+        const allCategories = await categoryRepo.findAll();
+
+        return allCategories
+            .filter((category) => category.parentId === parentCategory.id)
+            .map((subcategory) => ({
+                id: subcategory.id,
+                name: subcategory.name,
+                slug: subcategory.slug,
+                image: subcategory.image ?? parentCategory.image ?? null,
+            }));
+    },
+
     async getStoreDetails(slug: string) {
         return withCache(
             cacheKeys.stores.bySlug(slug),

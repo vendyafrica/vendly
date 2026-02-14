@@ -1,7 +1,7 @@
 import { orders, type OrderItem } from "@vendly/db";
 import { enqueueTemplateMessage, enqueueTextMessage } from "./whatsapp/message-queue";
 import { templateSend } from "./whatsapp/template-registry";
-import { normalizePhoneToE164 } from "../utils/phone";
+import { normalizePhoneToE164 } from "../shared/utils/phone";
 import { buyerPreferenceStore } from "./whatsapp/preference-store";
 
 // ---------------------------------------------------------------------------

@@ -9,24 +9,25 @@ function getPosthogClient(): PostHog | null {
   if (!apiKey || !host) return null;
 
   if (!client) {
-    client = new PostHog(apiKey, {
-      host,
-    });
+    client = new PostHog(apiKey, { host });
   }
 
   return client;
 }
 
+/**
+ * Captures a single PostHog event if PostHog is configured.
+ */
 export function capturePosthogEvent(params: {
   distinctId: string;
   event: string;
   properties?: Record<string, unknown>;
 }) {
-  const ph = getPosthogClient();
-  if (!ph) return;
+  const posthog = getPosthogClient();
+  if (!posthog) return;
 
   try {
-    ph.capture({
+    posthog.capture({
       distinctId: params.distinctId,
       event: params.event,
       properties: params.properties,
@@ -36,6 +37,9 @@ export function capturePosthogEvent(params: {
   }
 }
 
+/**
+ * Flushes and disposes the PostHog client during graceful shutdown.
+ */
 export async function shutdownPosthog() {
   if (!client) return;
 

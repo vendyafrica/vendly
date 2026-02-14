@@ -18,8 +18,10 @@ type Collection = {
 
 export function CollectionsRail({
     categories,
+    title = "Curated Collections",
 }: {
     categories: { id: string; name: string; slug: string; image: string | null }[];
+    title?: string;
 }) {
     const collections: Collection[] = categories.slice(0, 8).map((c) => ({
         id: c.id,
@@ -34,7 +36,7 @@ export function CollectionsRail({
         <section className="py-6 md:py-8 bg-background">
             <div className="container mx-auto px-4">
                 <div className="flex items-center justify-between mb-5 md:mb-6">
-                    <h3 className={`text-xl md:text-2xl font-semibold tracking-tight ${bricolageGrotesque.className}`}>Curated Collections</h3>
+                    <h3 className={`text-xl md:text-2xl font-semibold tracking-tight ${bricolageGrotesque.className}`}>{title}</h3>
                 </div>
 
                 <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">

@@ -144,7 +144,8 @@ export async function POST(req: Request) {
         const webBaseUrl =
             process.env.WEB_URL ||
             process.env.NEXT_PUBLIC_WEB_URL ||
-            "http://localhost:3000";
+            process.env.NEXT_PUBLIC_APP_URL ||
+            "https://vendlyafrica.store";
         const verifyBase = `${webBaseUrl}/api/auth/verify-seller?token=${token}&email=${encodeURIComponent(email)}`;
 
         const dashboardUrl = `${verifyBase}&redirect=${encodeURIComponent(`/a/${storeSlug}`)}`;

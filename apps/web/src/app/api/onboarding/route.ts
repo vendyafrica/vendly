@@ -43,13 +43,18 @@ export async function POST(req: Request) {
         });
 
         // Build URLs with embedded verification token
-        const origin = req.headers.get("origin") || process.env.NEXT_PUBLIC_APP_URL || "";
+        const webBaseUrl =
+            process.env.WEB_URL ||
+            process.env.NEXT_PUBLIC_WEB_URL ||
+            process.env.NEXT_PUBLIC_APP_URL ||
+            req.headers.get("origin") ||
+            "https://vendlyafrica.store";
         const storeSlug = result.storeSlug;
-        const verifyBase = `${origin}/api/auth/verify-seller?token=${token}&email=${encodeURIComponent(session.user.email)}`;
+        const verifyBase = `${webBaseUrl}/api/auth/verify-seller?token=${token}&email=${encodeURIComponent(session.user.email)}`;
 
         const dashboardUrl = `${verifyBase}&redirect=${encodeURIComponent(`/a/${storeSlug}`)}`;
         const connectInstagramUrl = `${verifyBase}&redirect=${encodeURIComponent(`/a/${storeSlug}/integrations`)}`;
-        const storefrontUrl = `${origin}/${storeSlug}`;
+        const storefrontUrl = `${webBaseUrl}/${storeSlug}`;
 
         // Send seller welcome email
         let emailSent = false;

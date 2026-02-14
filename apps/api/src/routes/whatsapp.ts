@@ -1,7 +1,7 @@
 import crypto from "crypto";
 import { Router } from "express";
 import type { Router as ExpressRouter } from "express";
-import type { RawBodyRequest } from "../types/raw-body";
+import type { RawBodyRequest } from "../shared/types/raw-body";
 import { orderService } from "../services/order-service";
 import { enqueueInboundMessage, enqueueTextMessage, hasDedupeKey } from "../services/whatsapp/message-queue";
 import {
