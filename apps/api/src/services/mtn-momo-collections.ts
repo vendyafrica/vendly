@@ -5,6 +5,12 @@ const mtnEnvSchema = z.enum(["sandbox", "production"]);
 
 type JsonValue = null | boolean | number | string | JsonValue[] | { [key: string]: JsonValue };
 
+type FetchResponseLike = {
+  ok: boolean;
+  status: number;
+  text: () => Promise<string>;
+};
+
 function asRecord(v: unknown): Record<string, unknown> | null {
   if (typeof v !== "object" || v === null) return null;
   return v as Record<string, unknown>;
@@ -94,7 +100,7 @@ async function fetchJson(
   url: string,
   init: RequestInit
 ): Promise<{ ok: boolean; status: number; json: unknown; text: string }> {
-  const res = await fetch(url, init);
+  const res = (await fetch(url, init)) as FetchResponseLike;
   const text = await res.text();
   let json: unknown = null;
   try {

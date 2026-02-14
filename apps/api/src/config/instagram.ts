@@ -23,6 +23,12 @@ interface UserProfile {
     emailVerified: boolean;
 }
 
+type FetchResponseLike = {
+    ok: boolean;
+    status: number;
+    text: () => Promise<string>;
+};
+
 /**
  * Exchange authorization code for access token
  */
@@ -41,13 +47,13 @@ export async function getInstagramToken({
     });
 
     // Exchange for short-lived token
-    const response = await fetch("https://api.instagram.com/oauth/access_token", {
+    const response = (await fetch("https://api.instagram.com/oauth/access_token", {
         method: "POST",
         headers: {
             "Content-Type": "application/x-www-form-urlencoded",
         },
         body: params.toString(),
-    });
+    })) as FetchResponseLike;
 
     const responseText = await response.text();
     console.log("[Instagram OAuth] Token exchange status:", response.status);
@@ -62,9 +68,9 @@ export async function getInstagramToken({
     // Exchange for long-lived token
     console.log("[Instagram OAuth] Exchanging for long-lived token...");
 
-    const longLivedResponse = await fetch(
+    const longLivedResponse = (await fetch(
         `https://graph.instagram.com/access_token?grant_type=ig_exchange_token&client_secret=${process.env.INSTAGRAM_CLIENT_SECRET}&access_token=${data.access_token}`
-    );
+    )) as FetchResponseLike;
 
     const longLivedText = await longLivedResponse.text();
     const longLivedData = JSON.parse(longLivedText);
@@ -108,9 +114,9 @@ export async function getInstagramUserInfo(tokens: {
     const userId = tokens.raw?.user_id as string | undefined;
 
     // Fetch user profile from Instagram Business API
-    const response = await fetch(
+    const response = (await fetch(
         `https://graph.instagram.com/v18.0/me?fields=id,username,account_type,profile_picture_url&access_token=${accessToken}`
-    );
+    )) as FetchResponseLike;
 
     const responseText = await response.text();
     console.log("[Instagram OAuth] User info status:", response.status);
