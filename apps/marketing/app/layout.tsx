@@ -18,9 +18,9 @@ const geistMono = Geist_Mono({
 
 const siteUrl = "https://vendlyafrica.store";
 const marketplaceUrl = "https://duuka.store";
-const defaultTitle = "Vendly — Sell via Social, Order via WhatsApp";
+const defaultTitle = "Vendly | Build Your Online Shop from Social Media Posts";
 const defaultDescription =
-  "Turn your Instagram into a visual storefront. Vendly lets African sellers showcase products and take WhatsApp orders — no complex checkout needed.";
+  "Turn your Instagram and TikTok into an online store. Vendly gives African creators instant storefronts, seamless payments, delivery logistics, and marketplace visibility — scale your social commerce business in minutes.";
 const defaultImage = `${siteUrl}/og-image.png`;
 
 export const viewport: Viewport = {
@@ -44,17 +44,24 @@ export const metadata: Metadata = {
     },
   },
   openGraph: {
-    title: defaultTitle,
+    title: "Vendly | Turn Your Social Media into an Online Store",
     description: defaultDescription,
     url: siteUrl,
     siteName: "Vendly",
-    images: [{ url: defaultImage, width: 1200, height: 630, alt: "Vendly — Social Commerce for African Sellers" }],
+    images: [
+      {
+        url: defaultImage,
+        width: 1200,
+        height: 630,
+        alt: "Vendly – Online storefronts for African sellers on Instagram & TikTok",
+      },
+    ],
     locale: "en_UG",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: defaultTitle,
+    title: "Vendly | Online Store for Instagram & TikTok Sellers in Uganda",
     description: defaultDescription,
     images: [defaultImage],
     site: "@vendlyafrica",

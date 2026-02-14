@@ -18,9 +18,9 @@ const geistMono = Geist_Mono({
 
 const siteUrl = "https://duuka.store";
 const vendlyUrl = "https://vendlyafrica.store";
-const defaultTitle = "Duuka — Shop African Brands & Creators";
+const defaultTitle = "Duuka | Marketplace for your favorite social media stores";
 const defaultDescription =
-  "Discover and shop from African creators and small businesses. Browse visual storefronts, order via WhatsApp, and support independent brands — all on Duuka.";
+  "Discover and shop from instagram and tiktok stores. Browse visual storefronts, order via WhatsApp, and support independent brands — all on Duuka.";
 const defaultImage = `${siteUrl}/og-image.png`;
 
 export const viewport: Viewport = {
@@ -44,17 +44,24 @@ export const metadata: Metadata = {
     },
   },
   openGraph: {
-    title: defaultTitle,
+    title: "Duuka | Discover & Shop from your favorite social media stores",
     description: defaultDescription,
     url: siteUrl,
     siteName: "Duuka",
-    images: [{ url: defaultImage, width: 1200, height: 630, alt: "Duuka — African Marketplace" }],
+    images: [
+      {
+        url: defaultImage,
+        width: 1200,
+        height: 630,
+        alt: "Duuka — Marketplace for your favorite social media stores",
+      },
+    ],
     locale: "en_UG",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: defaultTitle,
+    title: "Duuka | Discover & Shop from your favorite social media stores",
     description: defaultDescription,
     images: [defaultImage],
     site: "@vendlyafrica",
