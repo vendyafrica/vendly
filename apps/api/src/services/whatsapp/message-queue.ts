@@ -119,5 +119,14 @@ async function publishMessage(payload: QueuePayload) {
     body: payload,
   });
 
+  console.log("[QStash] Queued WhatsApp message", {
+    type: payload.type,
+    to: payload.to,
+    template: payload.templateName,
+    orderId: payload.orderId,
+    tenantId: payload.tenantId,
+    dedupeKey: payload.dedupeKey,
+  });
+
   return { queued: true };
 }
