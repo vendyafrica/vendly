@@ -5,7 +5,7 @@ import type { RawBodyRequest } from "../shared/types/raw-body";
 import { orderService } from "../services/order-service";
 import { enqueueInboundMessage, enqueueTextMessage, hasDedupeKey } from "../services/whatsapp/message-queue";
 import {
-  notifyCustomerPaymentLink,
+  notifyCustomerPaymentAction,
   notifyCustomerPreparing,
   notifyCustomerOrderReady,
   notifyCustomerOutForDelivery,
@@ -293,7 +293,7 @@ whatsappRouter.post("/webhooks/whatsapp", async (req, res) => {
       try {
         const full = await orderService.getOrderById(order.id);
         if (full) {
-          await notifyCustomerPaymentLink({ order: full });
+          await notifyCustomerPaymentAction({ order: full });
         }
       } catch (err) {
         console.error("[WhatsAppWebhook] Failed to send payment link", err);

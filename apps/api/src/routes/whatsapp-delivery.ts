@@ -38,23 +38,42 @@ whatsappDeliveryRouter.post("/webhooks/qstash/whatsapp", async (req, res) => {
 
   const payload = req.body as QueuePayload;
   try {
+    let result: unknown;
     if (payload.type === "template") {
-      await whatsappClient.sendTemplateMessage({
+      result = await whatsappClient.sendTemplateMessage({
         to: payload.to,
         templateName: payload.templateName || "",
         languageCode: payload.languageCode || "en_US",
         components: payload.components ?? undefined,
       });
     } else {
-      await whatsappClient.sendTextMessage({
+      result = await whatsappClient.sendTextMessage({
         to: payload.to,
         body: payload.body || "",
       });
     }
 
+    console.log("[QStash] Delivery success", {
+      type: payload.type,
+      to: payload.to,
+      template: payload.templateName,
+      orderId: payload.orderId,
+      tenantId: payload.tenantId,
+      dedupeKey: payload.dedupeKey,
+      result,
+    });
+
     return res.sendStatus(200);
   } catch (error) {
-    console.error("[QStash] Delivery failed", error);
+    console.error("[QStash] Delivery failed", {
+      error,
+      type: payload.type,
+      to: payload.to,
+      template: payload.templateName,
+      orderId: payload.orderId,
+      tenantId: payload.tenantId,
+      dedupeKey: payload.dedupeKey,
+    });
     return res.sendStatus(500);
   }
 });
