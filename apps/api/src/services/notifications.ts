@@ -96,24 +96,6 @@ export async function notifySellerNewOrder(params: {
   );
 }
 
-export async function notifyCustomerPaymentLink(params: { order: OrderLike }) {
-  const { order } = params;
-  const to = normalizeToWhatsApp(order.customerPhone, "customer", { orderId: order.id, orderNumber: order.orderNumber });
-  if (!to) return;
-
-  const link = buildPaymentLink(order);
-  const key = `customer:payment_link:${order.id}:${to}`;
-  await sendOnce(key, () =>
-    enqueueTextMessage({
-      to,
-      body: `💳 Payment required for order ${order.orderNumber}. Pay here: ${link}`,
-      tenantId: order.tenantId,
-      orderId: order.id,
-      dedupeKey: key,
-    })
-  );
-}
-
 export async function notifyCustomerPreparing(params: { order: OrderLike }) {
   const { order } = params;
   const to = normalizeToWhatsApp(order.customerPhone, "customer", { orderId: order.id, orderNumber: order.orderNumber });
@@ -240,16 +222,6 @@ export async function notifySellerOrderCompleted(params: {
 // Buyer / Customer notifications
 // ---------------------------------------------------------------------------
 
-function buildPaymentLink(order: OrderLike): string {
-  const base = (process.env.PAYMENT_WEB_URL || process.env.WEB_URL || "https://duuka.store").replace(/\/$/, "");
-  const params = new URLSearchParams({
-    amount: String(order.totalAmount),
-    currency: order.currency || "UGX",
-    orderNumber: order.orderNumber,
-  });
-  return `${base}/pay/${order.id}?${params.toString()}`;
-}
-
 export async function notifyCustomerOrderReceived(params: { order: OrderLike }) {
   const { order } = params;
   const to = normalizeToWhatsApp(order.customerPhone, "customer", { orderId: order.id, orderNumber: order.orderNumber });
@@ -262,27 +234,6 @@ export async function notifyCustomerOrderReceived(params: { order: OrderLike }) 
         customerName: order.customerName,
         orderId: order.orderNumber,
         storeName: order.store?.name || "the store",
-      }),
-      tenantId: order.tenantId,
-      orderId: order.id,
-      dedupeKey: key,
-    })
-  );
-}
-
-export async function notifyCustomerPaymentAction(params: { order: OrderLike }) {
-  const { order } = params;
-  const to = normalizeToWhatsApp(order.customerPhone, "customer", { orderId: order.id, orderNumber: order.orderNumber });
-  if (!to) return;
-
-  const key = `customer:payment_action:${order.id}:${to}`;
-  await sendOnce(key, () =>
-    enqueueTemplateMessage({
-      input: templateSend.buyerPaymentAction(to, {
-        customerName: order.customerName,
-        orderId: order.orderNumber,
-        storeName: order.store?.name || "the store",
-        amount: String(order.totalAmount),
       }),
       tenantId: order.tenantId,
       orderId: order.id,

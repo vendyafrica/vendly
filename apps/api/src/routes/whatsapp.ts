@@ -5,7 +5,7 @@ import type { RawBodyRequest } from "../shared/types/raw-body";
 import { orderService } from "../services/order-service";
 import { enqueueInboundMessage, enqueueTextMessage, hasDedupeKey } from "../services/whatsapp/message-queue";
 import {
-  notifyCustomerPaymentAction,
+  notifyCustomerOrderAccepted,
   notifyCustomerPreparing,
   notifyCustomerOrderReady,
   notifyCustomerOutForDelivery,
@@ -238,7 +238,7 @@ whatsappRouter.post("/webhooks/whatsapp", async (req, res) => {
       });
       await enqueueTextMessage({
         to: from,
-        body: `📌 Thanks for your order ${buyerOrder.orderNumber}! We are waiting for the seller to accept it. You will receive a payment link once accepted.`,
+        body: `📌 Thanks for your order ${buyerOrder.orderNumber}! We are waiting for the seller to accept it. You will receive delivery updates once accepted.`,
         tenantId: buyerOrder.tenantId,
         orderId: buyerOrder.id,
         dedupeKey: `customer:pending:status:${buyerOrder.id}:${from}`,
@@ -289,14 +289,16 @@ whatsappRouter.post("/webhooks/whatsapp", async (req, res) => {
     const sellerPhone = await orderService.getTenantPhoneByTenantId(tenantId);
 
     if (action === "accept") {
-      // Seller accepted: send buyer payment link (do not send seller details until paid)
+      await orderService.updateOrderStatus(order.id, tenantId, { status: "processing" });
+
+      // Seller accepted: notify buyer that order has been accepted.
       try {
         const full = await orderService.getOrderById(order.id);
         if (full) {
-          await notifyCustomerPaymentAction({ order: full });
+          await notifyCustomerOrderAccepted({ order: full });
         }
       } catch (err) {
-        console.error("[WhatsAppWebhook] Failed to send payment link", err);
+        console.error("[WhatsAppWebhook] Failed to notify customer (accepted)", err);
       }
       return res.sendStatus(200);
     }
@@ -356,7 +358,7 @@ whatsappRouter.post("/webhooks/whatsapp", async (req, res) => {
     }
 
     if (action === "delivered") {
-      await orderService.updateOrderStatus(order.id, tenantId, { status: "completed" });
+      await orderService.updateOrderStatus(order.id, tenantId, { status: "completed", paymentStatus: "paid" });
 
       try {
         const full = await orderService.getOrderById(order.id);
