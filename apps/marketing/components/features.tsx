@@ -1,37 +1,36 @@
-import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { cn } from '@/lib/utils'
 import { Shield } from 'lucide-react'
-import Image from 'next/image'
-import Link from 'next/link'
 import React from 'react'
 
 
 export function Features() {
     return (
         <section className="bg-background @container py-24">
-            <div className="mx-auto max-w-2xl px-6">
-                <div>
-                    <h2 className="text-balance font-serif text-4xl font-medium">Powerful Features for Modern Teams</h2>
-                    <p className="text-muted-foreground mt-4 text-balance">Everything you need to build, connect, and scale your integrations effortlessly.</p>
+            <div className="mx-auto max-w-6xl px-6">
+                <div className="max-w-2xl">
+                    <h2 className="text-balance text-4xl font-medium">Everything you need to sell Online</h2>
                 </div>
-                <div className="@xl:grid-cols-2 mt-12 grid gap-3 *:p-6">
-                    <Card className="group row-span-2 grid grid-rows-subgrid overflow-hidden">
+                <div className="@xl:grid-cols-2 mt-12 grid gap-3">
+
+                    <Card className="group row-span-2 grid grid-rows-subgrid gap-4 overflow-hidden p-6">
                         <div className="space-y-2">
                             <h3 className="text-foreground font-medium">Integrate with your favorite tools</h3>
                             <p className="text-muted-foreground text-sm">
-                                Connect seamlessly with popular platforms and services to enhance your workflow.
+                                Connect seamlessly with popular platforms to seamlessly reach your customers.
                             </p>
                         </div>
-                        <div className="aspect-16/10 relative mx-auto flex w-full max-w-[28rem] items-center justify-between">
+                        <div className="relative mx-auto flex aspect-16/10 w-full max-w-64 items-center justify-between sm:max-w-72 lg:max-w-80">
+
                             <div
                                 role="presentation"
                                 className="bg-linear-to-b border-foreground/5 absolute inset-0 z-10 aspect-square animate-spin items-center justify-center rounded-full border-t from-lime-500/15 to-transparent to-25% opacity-0 duration-[3.5s] group-hover:opacity-100 dark:from-white/5"
                             ></div>
                             <div
                                 role="presentation"
-                                className="bg-linear-to-b border-foreground/5 absolute inset-16 z-10 aspect-square scale-90 animate-spin items-center justify-center rounded-full border-t from-blue-500/15 to-transparent to-25% opacity-0 duration-[3.5s] group-hover:opacity-100"
+                                className="bg-linear-to-b border-foreground/5 absolute inset-8 z-10 aspect-square scale-90 animate-spin items-center justify-center rounded-full border-t from-blue-500/15 to-transparent to-25% opacity-0 duration-[3.5s] group-hover:opacity-100 sm:inset-10 lg:inset-12"
                             ></div>
+
                             <div className="bg-linear-to-b from-muted-foreground/15 absolute inset-0 flex aspect-square items-center justify-center rounded-full border-t to-transparent to-25%">
                                 <IntegrationCard className="-translate-x-1/6 absolute left-0 top-1/4 -translate-y-1/4">
                                     <Gemini />
@@ -43,10 +42,12 @@ export function Features() {
                                     <MagicUI />
                                 </IntegrationCard>
                             </div>
-                            <div className="bg-linear-to-b from-muted-foreground/15 absolute inset-16 flex aspect-square scale-90 items-center justify-center rounded-full border-t to-transparent to-25%">
+                            <div className="bg-linear-to-b from-muted-foreground/15 absolute inset-8 flex aspect-square scale-90 items-center justify-center rounded-full border-t to-transparent to-25% sm:inset-10 lg:inset-12">
+
                                 <IntegrationCard className="absolute top-0 -translate-y-1/2">
                                     <VSCodium />
                                 </IntegrationCard>
+
                                 <IntegrationCard className="absolute left-0 top-1/4 -translate-x-1/4 -translate-y-1/4">
                                     <MediaWiki />
                                 </IntegrationCard>
@@ -54,20 +55,23 @@ export function Features() {
                                     <GooglePaLM />
                                 </IntegrationCard>
                             </div>
-                            <div className="absolute inset-x-0 bottom-0 mx-auto my-2 flex w-fit justify-center gap-2">
+
+                            <div className="absolute inset-x-0 bottom-3 mx-auto flex w-fit justify-center gap-2 sm:bottom-2">
                                 <div className="bg-muted relative z-20 rounded-full border p-1">
                                     <IntegrationCard
-                                        className="shadow-black-950/10 dark:bg-background size-24 border-black/20 shadow-xl dark:border-white/25 dark:shadow-white/15"
+                                        className="shadow-black-950/10 dark:bg-background size-16 border-black/20 shadow-xl dark:border-white/25 dark:shadow-white/15 sm:size-18 lg:size-20"
                                         isCenter={true}
                                     >
                                         <LogoIcon className="text-blue-500" />
+
                                     </IntegrationCard>
                                 </div>
                             </div>
                         </div>
                     </Card>
+
                     <Card
-                        className="row-span-2 grid grid-rows-subgrid overflow-hidden">
+                        className="row-span-2 grid grid-rows-subgrid gap-4 overflow-hidden p-6">
                         <div className="space-y-2">
                             <h3 className="text-foreground font-medium">Real-time Sync</h3>
                             <p className="text-muted-foreground text-sm">Keep your data synchronized across all platforms automatically.</p>
@@ -82,10 +86,11 @@ export function Features() {
                             <div className="mask-r-from-50% mask-r-to-90% mask-l-from-50% mask-l-to-50% absolute -inset-x-8 top-24 aspect-square rounded-full border border-lime-500"></div>
                         </div>
                     </Card>
+
                     <Card
-                        className="row-span-2 grid grid-rows-subgrid overflow-hidden">
+                        className="row-span-2 grid grid-rows-subgrid gap-4 p-6">
                         <div className="space-y-2">
-                            <h3 className="text-foreground font-medium">Developer First</h3>
+                            <h3 className="font-medium">Developer First</h3>
                             <p className="text-muted-foreground mt-2 text-sm">Built with developers in mind, featuring comprehensive APIs and SDKs.</p>
                         </div>
                         <div
@@ -113,20 +118,11 @@ export function Features() {
                             <div></div>
                             <div></div>
                             <div></div>
-                            <div></div>
-                            <div className="bg-primary!"></div>
-                            <div></div>
-                            <div></div>
-                            <div></div>
-                            <div></div>
-                            <div></div>
-                            <div></div>
-                            <div></div>
                             <div className="bg-primary!"></div>
                         </div>
                     </Card>
                     <Card
-                        className="row-span-2 grid grid-rows-subgrid">
+                        className="row-span-2 grid grid-rows-subgrid gap-4 p-6">
                         <div className="space-y-2">
                             <h3 className="font-medium">Enterprise Ready</h3>
                             <p className="text-muted-foreground text-sm">Scale confidently with enterprise-grade security and reliability.</p>
@@ -147,6 +143,7 @@ const IntegrationCard = ({
     children,
     className,
     isCenter = false,
+
 }: {
     children: React.ReactNode
     className?: string
@@ -155,11 +152,11 @@ const IntegrationCard = ({
     return (
         <div
             className={cn(
-                'relative z-30 flex size-16 rounded-full border bg-white shadow-sm shadow-black/5 dark:bg-white/5 dark:backdrop-blur-md',
+                'relative z-30 flex size-10 rounded-full border bg-white shadow-sm shadow-black/5 dark:bg-white/5 dark:backdrop-blur-md sm:size-12 lg:size-14',
                 className
             )}
         >
-            <div className={cn('m-auto size-fit *:size-8', isCenter && '*:size-12')}>{children}</div>
+            <div className={cn('m-auto size-fit *:size-5 sm:*:size-6 lg:*:size-7', isCenter && '*:size-8 sm:*:size-9 lg:*:size-10')}>{children}</div>
         </div>
     )
 }
