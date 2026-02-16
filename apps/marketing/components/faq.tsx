@@ -7,31 +7,33 @@ import Link from "next/link";
 const faqItems = [
   {
     id: "item-1",
-    question: "How does the free trial work?",
+    question: "How can I sell on Instagram without a website?",
     answer:
-      "Start with a 14-day free trial with full access to all features. No credit card required. You can upgrade to a paid plan at any time during or after the trial.",
+      "Vendly gives you a storefront link you can place in your Instagram bio. You can list products, organize your catalog, and start receiving WhatsApp orders without building a full ecommerce website.",
   },
   {
     id: "item-2",
-    question: "Can I change my plan later?",
+    question: "Can customers place orders through WhatsApp?",
     answer:
-      "Yes, you can upgrade or downgrade your plan at any time. Changes take effect immediately, and we'll prorate the difference.",
+      "Yes. Buyers can browse your storefront and place orders directly through WhatsApp, making it easy to close sales through chat.",
   },
   {
     id: "item-3",
-    question: "What payment methods do you accept?",
+    question: "How do I create an Instagram storefront link?",
     answer:
-      "We accept all major credit cards, PayPal, and bank transfers for annual plans. Enterprise customers can also pay via invoice.",
+      "After you set up your products in Vendly, you get one storefront link. Add that link to your Instagram bio, stories, and DMs so customers can browse and order quickly.",
   },
   {
     id: "item-4",
-    question: "Is there a setup fee?",
-    answer: "No, there are no setup fees or hidden costs. You only pay for your subscription plan.",
+    question: "Is Vendly built for African sellers?",
+    answer:
+      "Yes. Vendly is designed for African social sellers and small businesses that rely on Instagram and WhatsApp to manage orders and customer conversations.",
   },
   {
     id: "item-5",
-    question: "Do you offer refunds?",
-    answer: "We offer a 30-day money-back guarantee. If you're not satisfied, contact us within 30 days for a full refund.",
+    question: "Can I share my store on TikTok and Facebook too?",
+    answer:
+      "Yes. Your storefront link works across social channels, including TikTok, Facebook, and WhatsApp, so you can drive sales from anywhere you have an audience.",
   },
 ];
 
@@ -44,7 +46,7 @@ export function FAQ() {
             Frequently asked questions
           </h2>
           <p className="text-muted-foreground mx-auto mt-4 max-w-xl text-base sm:text-lg text-balance">
-            Find answers to common questions about our platform.
+            Everything you need to know about selling on Instagram with Vendly.
           </p>
         </div>
         <Card className="mt-12 p-2">

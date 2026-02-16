@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { onboardingService } from "@/lib/c/onboarding-service";
 import type { OnboardingData } from "@/lib/c/models";
-import { sendSellerMagicLinkEmail } from "@vendly/transactional";
+import { sendWelcomeEmail } from "@vendly/transactional";
 import { db } from "@vendly/db/db";
 import { verification, users } from "@vendly/db/schema";
 import { eq } from "@vendly/db";
@@ -45,8 +45,20 @@ export async function POST(req: Request) {
       });
 
       const webBaseUrl = process.env.NEXT_PUBLIC_WEB_URL || "https://duuka.store";
-      const verifyUrl = `${webBaseUrl}/api/auth/verify-seller?token=${token}&email=${encodeURIComponent(email)}`;
-      await sendSellerMagicLinkEmail({ to: email, url: verifyUrl });
+      const verifyBase = `${webBaseUrl}/api/auth/verify-seller?token=${token}&email=${encodeURIComponent(email)}`;
+      const storeSlug = result.storeSlug;
+
+      const dashboardUrl = `${verifyBase}&redirect=${encodeURIComponent(`/a/${storeSlug}`)}`;
+      const connectInstagramUrl = `${verifyBase}&redirect=${encodeURIComponent(`/a/${storeSlug}/integrations`)}`;
+      const storefrontUrl = `${webBaseUrl}/${storeSlug}`;
+
+      await sendWelcomeEmail({
+        to: email,
+        name: data.personal?.fullName || "there",
+        storefrontUrl,
+        dashboardUrl,
+        connectInstagramUrl,
+      });
     }
 
     return NextResponse.json(result);

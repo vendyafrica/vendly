@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { createOrderSchema, orderService } from "../services/order-service";
 import { notifyCustomerOrderReceived, notifySellerNewOrder } from "../services/notifications";
-import { capturePosthogEvent } from "../utils/posthog";
+import { capturePosthogEvent } from "../shared/utils/posthog";
 
 export const storefrontOrdersRouter:Router = Router();
 
@@ -33,20 +33,27 @@ storefrontOrdersRouter.post("/storefront/:slug/orders", async (req, res, next) =
     // MTN MoMo temporarily disabled: skip initiation
     const momo: { referenceId: string } | null = null;
 
-    // Fire-and-forget notification (do not block order creation if WhatsApp fails)
-    void (async () => {
-      try {
-        const sellerPhone = await orderService.getTenantPhoneByStoreSlug(slug);
-
-        console.log("[StorefrontOrders] Sending WhatsApp order received to customer", { slug, orderId: order.id });
-        await notifyCustomerOrderReceived({ order });
-
-        console.log("[StorefrontOrders] Sending WhatsApp new order to seller", { slug, orderId: order.id });
-        await notifySellerNewOrder({ sellerPhone, order });
-      } catch (err) {
-        console.error("[StorefrontOrders] Failed to send WhatsApp notifications", err);
-      }
-    })();
+    // Run notification enqueue within request lifecycle for serverless reliability.
+    // Isolate failures so checkout success is never blocked by WhatsApp issues.
+    await Promise.allSettled([
+      (async () => {
+        try {
+          console.log("[StorefrontOrders] Sending WhatsApp order received to customer", { slug, orderId: order.id });
+          await notifyCustomerOrderReceived({ order });
+        } catch (err) {
+          console.error("[StorefrontOrders] Failed to send customer WhatsApp notification", err);
+        }
+      })(),
+      (async () => {
+        try {
+          const sellerPhone = await orderService.getTenantPhoneByStoreSlug(slug);
+          console.log("[StorefrontOrders] Sending WhatsApp new order to seller", { slug, orderId: order.id });
+          await notifySellerNewOrder({ sellerPhone, order });
+        } catch (err) {
+          console.error("[StorefrontOrders] Failed to send seller WhatsApp notification", err);
+        }
+      })(),
+    ]);
 
     return res.status(201).json({ order, momo });
   } catch (err) {

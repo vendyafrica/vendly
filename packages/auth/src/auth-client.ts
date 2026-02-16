@@ -1,16 +1,16 @@
 import { createAuthClient } from "better-auth/react";
-import { genericOAuthClient, oneTapClient, magicLinkClient } from "better-auth/client/plugins";
+import { genericOAuthClient, oneTapClient } from "better-auth/client/plugins";
 
 const resolvedBaseURL =
-  process.env.NEXT_PUBLIC_APP_URL ||
-  (typeof window !== "undefined" ? window.location.origin : "");
+  typeof window !== "undefined"
+    ? window.location.origin
+    : process.env.NEXT_PUBLIC_APP_URL || "";
 
 export const authClient = createAuthClient({
   baseURL: resolvedBaseURL,
   basePath: "/api/auth",
   plugins: [
     genericOAuthClient(),
-    magicLinkClient(),
     oneTapClient({
       clientId: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID as string,
       autoSelect: true,
@@ -43,21 +43,10 @@ export const signInWithOneTap = async () => {
   await authClient.oneTap();
 };
 
-export const signInWithMagicLink = async (email: string, options?: { callbackURL?: string }) => {
-  const data = await authClient.signIn.magicLink({
+export const signInWithEmail = async (email: string, password: string) => {
+  const data = await authClient.signIn.email({
     email,
-    callbackURL: options?.callbackURL || "/",
-  });
-  return data;
-}
-
-export const signInWithSellerMagicLink = async (
-  email: string,
-  options?: { callbackURL?: string }
-) => {
-  const data = await authClient.signIn.magicLink({
-    email,
-    callbackURL: options?.callbackURL || "/c/personal?entry=seller_magic",
+    password,
   });
   return data;
 };

@@ -1,10 +1,11 @@
-import { authClient } from "./auth-client";
+import { authClient, signInWithGoogle as sharedSignInWithGoogle, signOut as sharedSignOut } from "@vendly/auth/client";
 
 export async function signIn(email: string, password: string) {
     const data = await authClient.signIn.email({
         email,
         password,
     });
+
     return data;
 }
 
@@ -18,16 +19,11 @@ export async function signUp(email: string, password: string, name: string) {
 }
 
 export async function signInWithGoogle() {
-    const data = await authClient.signIn.social({
-        provider: "google",
-        callbackURL: "/",
-    });
-    return data;
+    return await sharedSignInWithGoogle({ callbackURL: "/" });
 }
 
 export async function signOut() {
-    const data = await authClient.signOut();
-    return data;
+    return await sharedSignOut();
 }
 
 export async function getSession() {

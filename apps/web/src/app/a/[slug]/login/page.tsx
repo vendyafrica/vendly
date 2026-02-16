@@ -1,4 +1,4 @@
-import { LoginForm } from "@/app/(auth)/components/login-form";
+import { SellerLoginForm } from "./seller-login-form";
 import { auth } from "@vendly/auth";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
@@ -41,7 +41,7 @@ export default async function TenantAdminLoginPage({
                 : "Something went wrong. Please try again."}
           </div>
         )}
-        <LoginForm title={title} redirectTo={redirectTo} />
+        <SellerLoginForm title={title} redirectTo={redirectTo} />
       </div>
     </div>
   );

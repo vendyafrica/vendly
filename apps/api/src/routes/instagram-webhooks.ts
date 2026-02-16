@@ -1,10 +1,12 @@
 import crypto from "crypto";
 import { Router } from "express";
 import type { Router as ExpressRouter } from "express";
-import type { RawBodyRequest } from "../types/raw-body";
+import type { RawBodyRequest } from "../shared/types/raw-body";
 import { and, db, eq, instagramAccounts, account, stores, products, mediaObjects, productMedia } from "@vendly/db";
 
 export const instagramWebhookRouter: ExpressRouter = Router();
+
+const BYPASS_SIGNATURE = process.env.NODE_ENV === "development";
 
 function timingSafeEqual(a: string, b: string) {
   const aBuf = Buffer.from(a);
@@ -14,6 +16,10 @@ function timingSafeEqual(a: string, b: string) {
 }
 
 function verifySignature(req: RawBodyRequest): boolean {
+  if (BYPASS_SIGNATURE) {
+    return true;
+  }
+
   const appSecret = process.env.INSTAGRAM_APP_SECRET;
   if (!appSecret) return false;
 
@@ -68,6 +74,11 @@ function parseCaption(caption: string, defaultCurrency: string) {
   };
 }
 
+type FetchResponseLike = {
+  ok: boolean;
+  json: () => Promise<unknown>;
+};
+
 instagramWebhookRouter.get("/webhooks/instagram", (req, res) => {
   const modeRaw = req.query["hub.mode"];
   const tokenRaw = req.query["hub.verify_token"];
@@ -89,20 +100,43 @@ instagramWebhookRouter.get("/webhooks/instagram", (req, res) => {
 instagramWebhookRouter.post("/webhooks/instagram", async (req, res) => {
   const rawReq = req as RawBodyRequest;
   const ok = verifySignature(rawReq);
+  console.log("[InstagramWebhook] Incoming", {
+    path: req.path,
+    hasSignatureHeader: Boolean(req.header("x-hub-signature-256")),
+    hasRawBody: Boolean(rawReq.rawBody),
+    rawLen: rawReq.rawBody?.length ?? 0,
+    hasAppSecret: Boolean(process.env.INSTAGRAM_APP_SECRET),
+    signatureOk: ok,
+    bypassSignature: BYPASS_SIGNATURE,
+  });
   if (!ok) {
+    console.warn("[InstagramWebhook] Signature verification failed");
     return res.sendStatus(403);
   }
 
   const payloadObj = asObject(req.body);
   const entry = (payloadObj?.entry as unknown as unknown[] | undefined)?.[0];
   const entryObj = asObject(entry);
-
-  const igUserId = typeof entryObj?.id === "string" ? entryObj.id : undefined;
   const changes = (entryObj?.changes as unknown as unknown[] | undefined)?.[0];
   const changesObj = asObject(changes);
   const value = asObject(changesObj?.value);
 
-  const mediaId = typeof value?.media_id === "string" ? value.media_id : undefined;
+  const igUserId =
+    (typeof entryObj?.id === "string" ? entryObj.id : undefined) ||
+    (typeof asObject(value?.from)?.id === "string" ? (asObject(value?.from)?.id as string) : undefined);
+
+  const mediaId =
+    (typeof value?.media_id === "string" ? value.media_id : undefined) ||
+    (typeof asObject(value?.media)?.id === "string" ? (asObject(value?.media)?.id as string) : undefined) ||
+    (typeof value?.id === "string" ? value.id : undefined);
+
+  console.log("[InstagramWebhook] Parsed payload", {
+    igUserId,
+    mediaId,
+    hasEntry: Boolean(entryObj),
+    hasChanges: Boolean(changesObj),
+    hasValue: Boolean(value),
+  });
 
   if (!igUserId || !mediaId) {
     return res.sendStatus(200);
@@ -134,9 +168,9 @@ instagramWebhookRouter.post("/webhooks/instagram", async (req, res) => {
       return res.sendStatus(200);
     }
 
-    const mediaRes = await fetch(
+    const mediaRes = (await fetch(
       `https://graph.instagram.com/${mediaId}?fields=id,caption,media_type,media_url,thumbnail_url,permalink,children{id,media_type,media_url,thumbnail_url}&access_token=${accessToken}`
-    );
+    )) as FetchResponseLike;
 
     const mediaJson = (await mediaRes.json()) as unknown;
     const mediaObj = asObject(mediaJson);

@@ -1,7 +1,6 @@
 "use client";
 
 import { Button } from "./ui/button";
-import dynamic from "next/dynamic";
 import Link from "next/link";
 import { WordRotate } from "./ui/word-rotate";
 

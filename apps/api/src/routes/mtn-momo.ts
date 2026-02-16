@@ -2,7 +2,7 @@ import type { Request, Response } from "express";
 import { Router } from "express";
 import { z } from "zod";
  import { and, db, eq, isNull, orders, stores } from "@vendly/db";
-import { mtnMomoCollections, requestToPayInputSchema } from "../services/mtn-momo-collections";
+import { mtnMomoCollections, requestToPayInputSchema } from "../modules/payments/mtn-momo-service";
 
 export const mtnMomoRouter: Router = Router();
 

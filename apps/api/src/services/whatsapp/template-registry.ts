@@ -13,7 +13,6 @@ export const TEMPLATE_NAMES = {
   BUYER_OUT_FOR_DELIVERY: "buyer_out_for_delivery_v1",
   BUYER_ORDER_DELIVERED: "buyer_order_delivered_v1",
   BUYER_ORDER_DECLINED: "buyer_order_declined_v1",
-  BUYER_PAYMENT_ACTION: "buyer_payment_action_v4",
   BUYER_PREF_OPENER: "buyer_pref_opener_v1",
 } as const;
 
@@ -166,20 +165,6 @@ export const templateSend = {
         namedParam("customer_name", p.customerName),
         namedParam("order_id", p.orderId),
         namedParam("store_name", p.storeName),
-      ])],
-    };
-  },
-
-  buyerPaymentAction(to: string, p: { customerName: string; orderId: string; storeName: string; amount: string }): SendTemplateMessageInput {
-    return {
-      to,
-      templateName: TEMPLATE_NAMES.BUYER_PAYMENT_ACTION,
-      languageCode: LANG,
-      components: [bodyComponent([
-        namedParam("customer_name", p.customerName),
-        namedParam("order_id", p.orderId),
-        namedParam("store_name", p.storeName),
-        namedParam("amount", p.amount),
       ])],
     };
   },

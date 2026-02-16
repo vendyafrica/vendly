@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { requireAuth, requireTenantRole } from "../middlewares/auth";
+import { requireAuth, requireTenantRole } from "../shared/middleware/auth";
 import { orderService } from "../services/order-service";
 import { notifySellerNewOrder, notifyCustomerOrderReceived } from "../services/notifications";
 

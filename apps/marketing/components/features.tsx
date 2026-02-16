@@ -23,7 +23,7 @@ export function Features() {
                                 Connect seamlessly with popular platforms and services to enhance your workflow.
                             </p>
                         </div>
-                        <div className="aspect-16/10 relative mx-auto flex w-full max-w-22rem items-center justify-between">
+                        <div className="aspect-16/10 relative mx-auto flex w-full max-w-[28rem] items-center justify-between">
                             <div
                                 role="presentation"
                                 className="bg-linear-to-b border-foreground/5 absolute inset-0 z-10 aspect-square animate-spin items-center justify-center rounded-full border-t from-lime-500/15 to-transparent to-25% opacity-0 duration-[3.5s] group-hover:opacity-100 dark:from-white/5"
@@ -57,7 +57,7 @@ export function Features() {
                             <div className="absolute inset-x-0 bottom-0 mx-auto my-2 flex w-fit justify-center gap-2">
                                 <div className="bg-muted relative z-20 rounded-full border p-1">
                                     <IntegrationCard
-                                        className="shadow-black-950/10 dark:bg-background size-16 border-black/20 shadow-xl dark:border-white/25 dark:shadow-white/15"
+                                        className="shadow-black-950/10 dark:bg-background size-24 border-black/20 shadow-xl dark:border-white/25 dark:shadow-white/15"
                                         isCenter={true}
                                     >
                                         <LogoIcon className="text-blue-500" />
@@ -90,7 +90,7 @@ export function Features() {
                         </div>
                         <div
                             aria-hidden
-                            className="*:bg-foreground/15 flex h-44 justify-between pb-6 pt-12 *:h-full *:w-px">
+                            className="**:bg-foreground/15 flex h-44 justify-between pb-6 pt-12 *:h-full *:w-px">
                             <div></div>
                             <div></div>
                             <div></div>
@@ -155,11 +155,11 @@ const IntegrationCard = ({
     return (
         <div
             className={cn(
-                'relative z-30 flex size-14 rounded-full border bg-white shadow-sm shadow-black/5 dark:bg-white/5 dark:backdrop-blur-md',
+                'relative z-30 flex size-16 rounded-full border bg-white shadow-sm shadow-black/5 dark:bg-white/5 dark:backdrop-blur-md',
                 className
             )}
         >
-            <div className={cn('m-auto size-fit *:size-6', isCenter && '*:size-9')}>{children}</div>
+            <div className={cn('m-auto size-fit *:size-8', isCenter && '*:size-12')}>{children}</div>
         </div>
     )
 }

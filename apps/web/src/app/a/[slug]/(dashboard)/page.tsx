@@ -85,10 +85,16 @@ export default async function DashboardPage({
     .groupBy(sql`date_trunc('day', ${orders.createdAt})`)
     .orderBy(sql`date_trunc('day', ${orders.createdAt})`);
 
-  const revenueSeries = revenueSeriesRaw.map((p) => ({
-    date: toChartDateLabel(p.date),
-    total: p.total,
-  }));
+  const revenueTotalsByDate = new Map(revenueSeriesRaw.map((row) => [row.date, row.total]));
+  const revenueSeries = Array.from({ length: 31 }).map((_, index) => {
+    const day = new Date(from.getTime());
+    day.setDate(from.getDate() + index);
+    const isoDate = day.toISOString().slice(0, 10);
+    return {
+      date: toChartDateLabel(isoDate),
+      total: revenueTotalsByDate.get(isoDate) ?? 0,
+    };
+  });
 
   const topProductsRaw = await db
     .select({

@@ -1,6 +1,7 @@
 import Header from "@/app/(m)/components/header";
 import Footer from "@/app/(m)/components/footer";
 import { MarketplaceGrid } from "@/app/(m)/components/marketplace-grid";
+import { CollectionsRail } from "@/app/(m)/components/home/collections-rail";
 import type { MarketplaceStore } from "@/types/marketplace";
 import Link from "next/link";
 import type { Metadata } from "next";
@@ -26,8 +27,8 @@ export async function generateMetadata({ params }: CategoryPageProps): Promise<M
     const categoryName = formatCategoryName(categorySlug);
     const ogImage = "/og-image.png";
 
-    const title = `${categoryName} | Shop ${categoryName} on Vendly`;
-    const description = `Discover ${categoryName} stores and products. Browse curated selections and shop ${categoryName.toLowerCase()} on Vendly.`;
+    const title = `${categoryName} | Shop ${categoryName} on Duuka`;
+    const description = `Discover ${categoryName} stores and products. Browse curated selections and shop ${categoryName.toLowerCase()} on Duuka.`;
 
     return {
         title,
@@ -39,7 +40,7 @@ export async function generateMetadata({ params }: CategoryPageProps): Promise<M
             title,
             description,
             url: `/category/${categorySlug}`,
-            siteName: "Vendly",
+            siteName: "Duuka",
             images: [{ url: ogImage }],
         },
         twitter: {
@@ -53,11 +54,15 @@ export async function generateMetadata({ params }: CategoryPageProps): Promise<M
 
 export default async function CategoryPage({ params }: CategoryPageProps) {
     const { category: categorySlug } = await params;
-    const stores = await marketplaceService.getStoresBySpecificCategory(categorySlug);
+    const [stores, subcategories] = await Promise.all([
+        marketplaceService.getStoresBySpecificCategory(categorySlug),
+        marketplaceService.getSubcategoriesByParentSlug(categorySlug),
+    ]);
 
-    if (!stores.length) {
+    if (!subcategories) {
         notFound();
     }
+
     const uiStores: MarketplaceStore[] = stores.map(store => ({
         id: store.id,
         name: store.name,
@@ -90,7 +95,25 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
                 </div>
             </section>
 
-            <MarketplaceGrid stores={uiStores} loading={false} />
+            {subcategories.length > 0 ? (
+                <CollectionsRail
+                    title="Sub-categories"
+                    categories={subcategories.map((subcategory) => ({
+                        id: subcategory.id,
+                        name: subcategory.name,
+                        slug: subcategory.slug,
+                        image: subcategory.image,
+                    }))}
+                />
+            ) : null}
+
+            {uiStores.length > 0 ? (
+                <MarketplaceGrid stores={uiStores} loading={false} />
+            ) : (
+                <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+                    <p className="text-sm text-muted-foreground">No stores in this category yet.</p>
+                </section>
+            )}
 
             <Footer />
         </main>

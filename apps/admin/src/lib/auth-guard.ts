@@ -21,9 +21,25 @@ export async function requireSuperAdmin(allowedRoles: string[]) {
         redirect("/login");
     }
 
-    const userRole = await db.query.superAdmins.findFirst({
+    let userRole = await db.query.superAdmins.findFirst({
         where: eq(superAdmins.userId, session.user.id),
     });
+
+    if (!userRole) {
+        const existingSuperAdmin = await db.query.superAdmins.findFirst({
+            columns: { id: true },
+        });
+
+        if (!existingSuperAdmin) {
+            await db.insert(superAdmins).values({
+                userId: session.user.id,
+                role: "super_admin",
+            });
+            userRole = await db.query.superAdmins.findFirst({
+                where: eq(superAdmins.userId, session.user.id),
+            });
+        }
+    }
 
     if (!userRole || !allowedRoles.includes(userRole.role)) {
         redirect("/unauthorized");
@@ -42,9 +58,25 @@ export async function checkSuperAdminApi(allowedRoles: string[]) {
         return { error: "Unauthorized", status: 401 };
     }
 
-    const userRole = await db.query.superAdmins.findFirst({
+    let userRole = await db.query.superAdmins.findFirst({
         where: eq(superAdmins.userId, session.user.id),
     });
+
+    if (!userRole) {
+        const existingSuperAdmin = await db.query.superAdmins.findFirst({
+            columns: { id: true },
+        });
+
+        if (!existingSuperAdmin) {
+            await db.insert(superAdmins).values({
+                userId: session.user.id,
+                role: "super_admin",
+            });
+            userRole = await db.query.superAdmins.findFirst({
+                where: eq(superAdmins.userId, session.user.id),
+            });
+        }
+    }
 
     if (!userRole || !allowedRoles.includes(userRole.role)) {
         return { error: "Forbidden", status: 403 };

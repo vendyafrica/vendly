@@ -34,7 +34,7 @@
     "typescript": "^5.2.2"
   },
   "devDependencies": {
-    "@react-email/preview-server": "5.1.1",
+    "@react-email/preview-server": "5.2.7",
     "@vendly/typescript-config": "workspace:*"
   },
   "files": [

@@ -5,6 +5,9 @@ import { z } from "zod";
 import { productService } from "@/lib/services/product-service";
 import { getTenantMembership } from "@/lib/services/tenant-membership";
 import { productQuerySchema, createProductSchema } from "@/lib/models/product-models";
+import { db } from "@vendly/db/db";
+import { stores } from "@vendly/db/schema";
+import { and, eq, isNull } from "@vendly/db";
 
 /**
  * GET /api/products
@@ -77,7 +80,7 @@ export async function POST(request: NextRequest) {
                 title: formData.get("title"),
                 description: formData.get("description") || undefined,
                 priceAmount: Number(formData.get("priceAmount")) || 0,
-                currency: formData.get("currency") || "UGX",
+                currency: formData.get("currency") || undefined,
             });
 
             // Get files
@@ -97,10 +100,19 @@ export async function POST(request: NextRequest) {
             input = createProductSchema.parse(body);
         }
 
+        let currency = input.currency;
+        if (!currency) {
+            const store = await db.query.stores.findFirst({
+                where: and(eq(stores.id, input.storeId), eq(stores.tenantId, membership.tenantId), isNull(stores.deletedAt)),
+                columns: { defaultCurrency: true },
+            });
+            currency = store?.defaultCurrency || "UGX";
+        }
+
         const product = await productService.createProduct(
             membership.tenantId,
             membership.tenant.slug,
-            input as Parameters<typeof productService.createProduct>[2],
+            { ...input, currency } as Parameters<typeof productService.createProduct>[2],
             files
         );
 

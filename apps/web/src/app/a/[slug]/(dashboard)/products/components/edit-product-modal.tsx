@@ -290,7 +290,7 @@ export function EditProductModal({
                             </p>
                         )}
 
-                        <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+                        <div className="grid grid-cols-1 gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)] lg:gap-8">
                             {/* Gallery / drop zone */}
                             <div
                                 className="space-y-2"
@@ -301,7 +301,7 @@ export function EditProductModal({
                                         <HugeiconsIcon icon={ImageUpload01Icon} className="size-8 text-muted-foreground" />
                                         <div className="text-left text-sm text-muted-foreground">
                                             <p className="font-medium">Add product media</p>
-                                            <p className="text-xs text-muted-foreground/70">Images up to 10MB</p>
+                                            <p className="text-xs text-muted-foreground/70">Images or videos up to 10MB</p>
                                         </div>
                                     </div>
                                     <Button
@@ -319,7 +319,7 @@ export function EditProductModal({
                                     <input
                                         ref={fileInputRef}
                                         type="file"
-                                        accept="image/*"
+                                        accept="image/*,video/*"
                                         multiple
                                         className="hidden"
                                         onChange={handleFileChange}
@@ -345,12 +345,22 @@ export function EditProductModal({
                                                     }
                                                 }}
                                             >
-                                                <Image
-                                                    src={f.previewUrl}
-                                                    alt="Preview"
-                                                    fill
-                                                    className={`object-cover transition-opacity ${f.isUploading ? "opacity-60" : "opacity-100"}`}
-                                                />
+                                                {f.contentType.startsWith("video/") ? (
+                                                    <video
+                                                        src={f.previewUrl}
+                                                        className={`h-full w-full object-cover transition-opacity ${f.isUploading ? "opacity-60" : "opacity-100"}`}
+                                                        muted
+                                                        playsInline
+                                                        preload="metadata"
+                                                    />
+                                                ) : (
+                                                    <Image
+                                                        src={f.previewUrl}
+                                                        alt="Preview"
+                                                        fill
+                                                        className={`object-cover transition-opacity ${f.isUploading ? "opacity-60" : "opacity-100"}`}
+                                                    />
+                                                )}
                                                 {f.isUploading && (
                                                     <div className="absolute inset-0 flex items-center justify-center">
                                                         <div className="size-5 animate-spin rounded-full border-2 border-white/60 border-t-white" />

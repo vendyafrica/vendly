@@ -3,6 +3,12 @@ type WhatsAppTemplateComponent = {
   parameters: Array<Record<string, unknown>>;
 };
 
+type FetchResponseLike = {
+  ok: boolean;
+  status: number;
+  json: () => Promise<unknown>;
+};
+
 export type SendTemplateMessageInput = {
   to: string;
   templateName: string;
@@ -38,7 +44,7 @@ export const whatsappClient = {
 
     const url = `https://graph.facebook.com/${graphVersion}/${phoneNumberId}/messages`;
 
-    const res = await fetch(url, {
+    const res = (await fetch(url, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${accessToken}`,
@@ -51,7 +57,7 @@ export const whatsappClient = {
         type: "text",
         text: { body: input.body },
       }),
-    });
+    })) as FetchResponseLike;
 
     const json = (await res.json().catch(() => ({}))) as unknown;
 
@@ -69,7 +75,7 @@ export const whatsappClient = {
 
     const url = `https://graph.facebook.com/${graphVersion}/${phoneNumberId}/messages`;
 
-    const res = await fetch(url, {
+    const res = (await fetch(url, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${accessToken}`,
@@ -86,7 +92,7 @@ export const whatsappClient = {
           ...(input.components ? { components: input.components } : {}),
         },
       }),
-    });
+    })) as FetchResponseLike;
 
     const json = (await res.json().catch(() => ({}))) as unknown;
 
@@ -104,7 +110,7 @@ export const whatsappClient = {
 
     const url = `https://graph.facebook.com/${graphVersion}/${wabaId}/message_templates`;
 
-    const res = await fetch(url, {
+    const res = (await fetch(url, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${accessToken}`,
@@ -117,7 +123,7 @@ export const whatsappClient = {
         ...(input.parameter_format ? { parameter_format: input.parameter_format } : {}),
         components: input.components,
       }),
-    });
+    })) as FetchResponseLike;
 
     const json = (await res.json().catch(() => ({}))) as unknown;
 

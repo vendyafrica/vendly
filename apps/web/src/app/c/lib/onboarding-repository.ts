@@ -28,12 +28,15 @@ class OnboardingRepository {
       role: "owner",
     }).returning();
 
+    const defaultCurrency = data.personal.countryCode === "254" ? "KES" : "UGX";
+
     const [store] = await db.insert(stores).values({
       tenantId: tenant.id,
       name: data.store.storeName,
       slug: storeSlug,
       description: data.store.storeDescription,
       categories: data.business.categories,
+      defaultCurrency,
       storeContactEmail: email,
       storeContactPhone: data.personal.phoneNumber,
       storeAddress: data.store.storeLocation ?? null,

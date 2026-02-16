@@ -5,7 +5,7 @@ import { marketplaceService } from "@/lib/services/marketplace-service";
 import { notFound, redirect } from "next/navigation";
 import type { Metadata } from "next";
 
-const siteUrl = "https://vendlyafrica.store";
+const siteUrl = process.env.WEB_URL || "https://duuka.store";
 
 function isUuid(value: string) {
   return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
@@ -24,8 +24,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   if (!isUuid(productId)) {
     return {
-      title: "Product not found | Vendly",
-      description: "Browse independent sellers on Vendly.",
+      title: "Product not found | Duuka",
+      description: "Browse independent sellers on Duuka.",
       robots: { index: false, follow: false },
     };
   }
@@ -35,8 +35,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   if (!store || !product) {
     return {
-      title: "Product not found | Vendly",
-      description: "Browse independent sellers on Vendly.",
+      title: "Product not found | Duuka",
+      description: "Browse independent sellers on Duuka.",
       robots: { index: false, follow: false },
     };
   }
@@ -44,8 +44,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const canonical = `/${store.slug}/${product.id}/${product.slug}`;
   const ogImage = product.images?.[0] || store.logoUrl || "/og-image.png";
 
-  const title = `${product.name} by ${store.name} | Vendly`;
-  const description = product.description || `Shop ${product.name} from ${store.name} with trusted payments and delivery on Vendly.`;
+  const title = `${product.name} by ${store.name} | Duuka`;
+  const description = product.description || `Shop ${product.name} from ${store.name} with trusted payments and delivery on Duuka.`;
 
   return {
     title,
@@ -57,7 +57,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       title,
       description,
       url: canonical,
-      siteName: "Vendly",
+      siteName: "Duuka",
       images: [{ url: ogImage }],
     },
     twitter: {

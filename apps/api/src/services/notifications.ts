@@ -1,8 +1,7 @@
 import { orders, type OrderItem } from "@vendly/db";
-import { whatsappClient } from "./whatsapp/whatsapp-client";
+import { enqueueTemplateMessage, enqueueTextMessage } from "./whatsapp/message-queue";
 import { templateSend } from "./whatsapp/template-registry";
-import { normalizePhoneToE164 } from "../utils/phone";
-import { shouldSendNotificationOnce } from "./notification-dedupe";
+import { normalizePhoneToE164 } from "../shared/utils/phone";
 import { buyerPreferenceStore } from "./whatsapp/preference-store";
 
 // ---------------------------------------------------------------------------
@@ -34,8 +33,13 @@ export async function notifySellerCswOpener(params: { sellerPhone: string | null
 
   const dayKey = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
   const key = `seller:csw_opener:${tenantId}:${dayKey}:${to}`;
-  // 24h TTL to avoid multiple sends per day
-  await sendOnce(key, () => whatsappClient.sendTemplateMessage(templateSend.sellerCswOpener(to)), { ttlMs: 24 * 60 * 60 * 1000 });
+  await sendOnce(key, () =>
+    enqueueTemplateMessage({
+      input: templateSend.sellerCswOpener(to),
+      tenantId,
+      dedupeKey: key,
+    })
+  );
 }
 
 type OrderLike = (typeof orders.$inferSelect) & {
@@ -59,18 +63,11 @@ function formatCustomerDetails(order: OrderLike): string {
   return parts.join(". ");
 }
 
-async function sendOnce(key: string, fn: () => Promise<unknown>, opts?: { ttlMs?: number }) {
-  if (!shouldSendNotificationOnce({ key, ttlMs: opts?.ttlMs })) {
+async function sendOnce(key: string, fn: () => Promise<unknown>) {
+  const result = await fn();
+  if (!result) {
     console.log("[Notify] Skipping duplicate", { key });
-    return;
   }
-
-  if (!whatsappClient.isConfigured()) {
-    console.log("[Notify] (stub) WhatsApp not configured; would send", { key });
-    return;
-  }
-
-  await fn();
 }
 
 // ---------------------------------------------------------------------------
@@ -87,26 +84,14 @@ export async function notifySellerNewOrder(params: {
 
   const key = `seller:new_order:${order.id}:${to}`;
   await sendOnce(key, () =>
-    whatsappClient.sendTemplateMessage(
-      templateSend.sellerNewOrder(to, {
+    enqueueTemplateMessage({
+      input: templateSend.sellerNewOrder(to, {
         orderId: order.orderNumber,
         totalAmount: String(order.totalAmount),
-      })
-    )
-  );
-}
-
-export async function notifyCustomerPaymentLink(params: { order: OrderLike }) {
-  const { order } = params;
-  const to = normalizeToWhatsApp(order.customerPhone, "customer", { orderId: order.id, orderNumber: order.orderNumber });
-  if (!to) return;
-
-  const link = buildPaymentLink(order);
-  const key = `customer:payment_link:${order.id}:${to}`;
-  await sendOnce(key, () =>
-    whatsappClient.sendTextMessage({
-      to,
-      body: `Your order ${order.orderNumber} was accepted. Pay here to continue: ${link}`,
+      }),
+      tenantId: order.tenantId,
+      orderId: order.id,
+      dedupeKey: key,
     })
   );
 }
@@ -118,9 +103,12 @@ export async function notifyCustomerPreparing(params: { order: OrderLike }) {
 
   const key = `customer:preparing:${order.id}:${to}`;
   await sendOnce(key, () =>
-    whatsappClient.sendTextMessage({
+    enqueueTextMessage({
       to,
-      body: `Payment received for order ${order.orderNumber}. The seller is preparing your order now.`,
+      body: `✅ Payment received for order ${order.orderNumber}. We are preparing your order now.`,
+      tenantId: order.tenantId,
+      orderId: order.id,
+      dedupeKey: key,
     })
   );
 }
@@ -135,12 +123,15 @@ export async function notifySellerOrderDetails(params: {
 
   const key = `seller:order_details:${order.id}:${to}`;
   await sendOnce(key, () =>
-    whatsappClient.sendTemplateMessage(
-      templateSend.sellerOrderDetails(to, {
+    enqueueTemplateMessage({
+      input: templateSend.sellerOrderDetails(to, {
         orderId: order.orderNumber,
         itemsSummary: formatItemsSummary(order.items),
-      })
-    )
+      }),
+      tenantId: order.tenantId,
+      orderId: order.id,
+      dedupeKey: key,
+    })
   );
 }
 
@@ -154,12 +145,15 @@ export async function notifySellerCustomerDetails(params: {
 
   const key = `seller:customer_details:${order.id}:${to}`;
   await sendOnce(key, () =>
-    whatsappClient.sendTemplateMessage(
-      templateSend.sellerCustomerDetails(to, {
+    enqueueTemplateMessage({
+      input: templateSend.sellerCustomerDetails(to, {
         orderId: order.orderNumber,
         customerDetails: formatCustomerDetails(order),
-      })
-    )
+      }),
+      tenantId: order.tenantId,
+      orderId: order.id,
+      dedupeKey: key,
+    })
   );
 }
 
@@ -173,9 +167,12 @@ export async function notifySellerMarkReady(params: {
 
   const key = `seller:mark_ready:${order.id}:${to}`;
   await sendOnce(key, () =>
-    whatsappClient.sendTemplateMessage(
-      templateSend.sellerMarkReady(to, { orderId: order.orderNumber })
-    )
+    enqueueTemplateMessage({
+      input: templateSend.sellerMarkReady(to, { orderId: order.orderNumber }),
+      tenantId: order.tenantId,
+      orderId: order.id,
+      dedupeKey: key,
+    })
   );
 }
 
@@ -190,12 +187,15 @@ export async function notifySellerOutForDelivery(params: {
 
   const key = `seller:out_for_delivery:${order.id}:${to}`;
   await sendOnce(key, () =>
-    whatsappClient.sendTemplateMessage(
-      templateSend.sellerOutForDelivery(to, {
+    enqueueTemplateMessage({
+      input: templateSend.sellerOutForDelivery(to, {
         orderId: order.orderNumber,
         riderDetails: params.riderDetails || "Vendly Rider (+256700000000)",
-      })
-    )
+      }),
+      tenantId: order.tenantId,
+      orderId: order.id,
+      dedupeKey: key,
+    })
   );
 }
 
@@ -209,25 +209,18 @@ export async function notifySellerOrderCompleted(params: {
 
   const key = `seller:order_completed:${order.id}:${to}`;
   await sendOnce(key, () =>
-    whatsappClient.sendTemplateMessage(
-      templateSend.sellerOrderCompleted(to, { orderId: order.orderNumber })
-    )
+    enqueueTemplateMessage({
+      input: templateSend.sellerOrderCompleted(to, { orderId: order.orderNumber }),
+      tenantId: order.tenantId,
+      orderId: order.id,
+      dedupeKey: key,
+    })
   );
 }
 
 // ---------------------------------------------------------------------------
 // Buyer / Customer notifications
 // ---------------------------------------------------------------------------
-
-function buildPaymentLink(order: OrderLike): string {
-  const base = (process.env.PAYMENT_WEB_URL || process.env.WEB_URL || "https://duuka.store").replace(/\/$/, "");
-  const params = new URLSearchParams({
-    amount: String(order.totalAmount),
-    currency: order.currency || "UGX",
-    orderNumber: order.orderNumber,
-  });
-  return `${base}/pay/${order.id}?${params.toString()}`;
-}
 
 export async function notifyCustomerOrderReceived(params: { order: OrderLike }) {
   const { order } = params;
@@ -236,31 +229,16 @@ export async function notifyCustomerOrderReceived(params: { order: OrderLike }) 
 
   const key = `customer:received:${order.id}:${to}`;
   await sendOnce(key, () =>
-    whatsappClient.sendTemplateMessage(
-      templateSend.buyerOrderReceived(to, {
+    enqueueTemplateMessage({
+      input: templateSend.buyerOrderReceived(to, {
         customerName: order.customerName,
         orderId: order.orderNumber,
         storeName: order.store?.name || "the store",
-      })
-    )
-  );
-}
-
-export async function notifyCustomerPaymentAction(params: { order: OrderLike }) {
-  const { order } = params;
-  const to = normalizeToWhatsApp(order.customerPhone, "customer", { orderId: order.id, orderNumber: order.orderNumber });
-  if (!to) return;
-
-  const key = `customer:payment_action:${order.id}:${to}`;
-  await sendOnce(key, () =>
-    whatsappClient.sendTemplateMessage(
-      templateSend.buyerPaymentAction(to, {
-        customerName: order.customerName,
-        orderId: order.orderNumber,
-        storeName: order.store?.name || "the store",
-        amount: String(order.totalAmount),
-      })
-    )
+      }),
+      tenantId: order.tenantId,
+      orderId: order.id,
+      dedupeKey: key,
+    })
   );
 }
 
@@ -271,12 +249,15 @@ export async function notifyCustomerOrderAccepted(params: { order: OrderLike }) 
 
   const key = `customer:accepted:${order.id}:${to}`;
   await sendOnce(key, () =>
-    whatsappClient.sendTemplateMessage(
-      templateSend.buyerOrderReady(to, {
+    enqueueTemplateMessage({
+      input: templateSend.buyerOrderReady(to, {
         customerName: order.customerName,
         orderId: order.orderNumber,
-      })
-    )
+      }),
+      tenantId: order.tenantId,
+      orderId: order.id,
+      dedupeKey: key,
+    })
   );
 }
 
@@ -288,12 +269,15 @@ export async function notifyCustomerOrderReady(params: { order: OrderLike }) {
 
   const key = `customer:ready:${order.id}:${to}`;
   await sendOnce(key, () =>
-    whatsappClient.sendTemplateMessage(
-      templateSend.buyerOrderReady(to, {
+    enqueueTemplateMessage({
+      input: templateSend.buyerOrderReady(to, {
         customerName: order.customerName,
         orderId: order.orderNumber,
-      })
-    )
+      }),
+      tenantId: order.tenantId,
+      orderId: order.id,
+      dedupeKey: key,
+    })
   );
 }
 
@@ -304,13 +288,16 @@ export async function notifyCustomerOutForDelivery(params: { order: OrderLike; r
 
   const key = `customer:out_for_delivery:${order.id}:${to}`;
   await sendOnce(key, () =>
-    whatsappClient.sendTemplateMessage(
-      templateSend.buyerOutForDelivery(to, {
+    enqueueTemplateMessage({
+      input: templateSend.buyerOutForDelivery(to, {
         customerName: order.customerName,
         orderId: order.orderNumber,
         riderDetails: params.riderDetails || "Vendly Rider (+256700000000)",
-      })
-    )
+      }),
+      tenantId: order.tenantId,
+      orderId: order.id,
+      dedupeKey: key,
+    })
   );
 }
 
@@ -321,12 +308,15 @@ export async function notifyCustomerOrderDelivered(params: { order: OrderLike })
 
   const key = `customer:delivered:${order.id}:${to}`;
   await sendOnce(key, () =>
-    whatsappClient.sendTemplateMessage(
-      templateSend.buyerOrderDelivered(to, {
+    enqueueTemplateMessage({
+      input: templateSend.buyerOrderDelivered(to, {
         customerName: order.customerName,
         orderId: order.orderNumber,
-      })
-    )
+      }),
+      tenantId: order.tenantId,
+      orderId: order.id,
+      dedupeKey: key,
+    })
   );
 }
 
@@ -338,12 +328,15 @@ export async function notifyCustomerOrderDeclined(params: { order: OrderLike }) 
 
   const key = `customer:declined:${order.id}:${to}`;
   await sendOnce(key, () =>
-    whatsappClient.sendTemplateMessage(
-      templateSend.buyerOrderDeclined(to, {
+    enqueueTemplateMessage({
+      input: templateSend.buyerOrderDeclined(to, {
         customerName: order.customerName,
         orderId: order.orderNumber,
         storeName: order.store?.name || "the store",
-      })
-    )
+      }),
+      tenantId: order.tenantId,
+      orderId: order.id,
+      dedupeKey: key,
+    })
   );
 }
