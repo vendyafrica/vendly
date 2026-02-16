@@ -21,77 +21,93 @@ function bodyComponent(params: Record<string, unknown>[]): { type: "body"; param
 }
 
 export const templateSend = {
-  sellerNewOrder(to: string, p: { orderId: string; totalAmount: string }): SendTemplateMessageInput {
+  sellerNewOrder(
+    to: string,
+    p: {
+      sellerName: string;
+      orderId: string;
+      orderItems: string;
+      buyerName: string;
+      customerPhone: string;
+      customerLocation: string;
+      total: string;
+    }
+  ): SendTemplateMessageInput {
     return {
       to,
       templateName: TEMPLATE_NAMES.SELLER_NEW_ORDER,
       languageCode: LANG,
       components: [bodyComponent([
+        namedParam("seller_name", p.sellerName),
         namedParam("order_id", p.orderId),
-        namedParam("total_amount", p.totalAmount),
+        namedParam("order_items", p.orderItems),
+        namedParam("buyer_name", p.buyerName),
+        namedParam("customer_phone", p.customerPhone),
+        namedParam("customer_location", p.customerLocation),
+        namedParam("total", p.total),
       ])],
     };
   },
 
-  buyerOrderReceived(to: string, p: { customerName: string; orderId: string; storeName: string }): SendTemplateMessageInput {
+  buyerOrderReceived(to: string, p: { buyerName: string; storeName: string; sellerWhatsappLink: string }): SendTemplateMessageInput {
     return {
       to,
       templateName: TEMPLATE_NAMES.BUYER_ORDER_RECEIVED,
       languageCode: LANG,
       components: [bodyComponent([
-        namedParam("customer_name", p.customerName),
-        namedParam("order_id", p.orderId),
+        namedParam("buyer_name", p.buyerName),
         namedParam("store_name", p.storeName),
+        namedParam("seller_whatsapp_link", p.sellerWhatsappLink),
       ])],
     };
   },
 
-  buyerOrderReady(to: string, p: { customerName: string; orderId: string }): SendTemplateMessageInput {
+  buyerOrderReady(to: string, p: { buyerName: string; storeName: string }): SendTemplateMessageInput {
     return {
       to,
       templateName: TEMPLATE_NAMES.BUYER_ORDER_READY,
       languageCode: LANG,
       components: [bodyComponent([
-        namedParam("customer_name", p.customerName),
-        namedParam("order_id", p.orderId),
+        namedParam("buyer_name", p.buyerName),
+        namedParam("store_name", p.storeName),
       ])],
     };
   },
 
-  buyerOutForDelivery(to: string, p: { customerName: string; orderId: string; riderDetails: string }): SendTemplateMessageInput {
+  buyerOutForDelivery(to: string, p: { buyerName: string; storeName: string; riderDetails: string }): SendTemplateMessageInput {
     return {
       to,
       templateName: TEMPLATE_NAMES.BUYER_OUT_FOR_DELIVERY,
       languageCode: LANG,
       components: [bodyComponent([
-        namedParam("customer_name", p.customerName),
-        namedParam("order_id", p.orderId),
+        namedParam("buyer_name", p.buyerName),
+        namedParam("store_name", p.storeName),
         namedParam("rider_details", p.riderDetails),
       ])],
     };
   },
 
-  buyerOrderDelivered(to: string, p: { customerName: string; orderId: string }): SendTemplateMessageInput {
+  buyerOrderDelivered(to: string, p: { buyerName: string; storeName: string }): SendTemplateMessageInput {
     return {
       to,
       templateName: TEMPLATE_NAMES.BUYER_ORDER_DELIVERED,
       languageCode: LANG,
       components: [bodyComponent([
-        namedParam("customer_name", p.customerName),
-        namedParam("order_id", p.orderId),
+        namedParam("buyer_name", p.buyerName),
+        namedParam("store_name", p.storeName),
       ])],
     };
   },
 
-  buyerOrderDeclined(to: string, p: { customerName: string; orderId: string; storeName: string }): SendTemplateMessageInput {
+  buyerOrderDeclined(to: string, p: { buyerName: string; storeName: string; sellerWhatsappLink: string }): SendTemplateMessageInput {
     return {
       to,
       templateName: TEMPLATE_NAMES.BUYER_ORDER_DECLINED,
       languageCode: LANG,
       components: [bodyComponent([
-        namedParam("customer_name", p.customerName),
-        namedParam("order_id", p.orderId),
+        namedParam("buyer_name", p.buyerName),
         namedParam("store_name", p.storeName),
+        namedParam("seller_whatsapp_link", p.sellerWhatsappLink),
       ])],
     };
   },

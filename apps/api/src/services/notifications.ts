@@ -3,6 +3,7 @@ import { enqueueTemplateMessage, enqueueTextMessage } from "./whatsapp/message-q
 import { templateSend } from "./whatsapp/template-registry";
 import { normalizePhoneToE164 } from "../shared/utils/phone";
 import { buyerPreferenceStore } from "./whatsapp/preference-store";
+import { orderService } from "./order-service";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -34,8 +35,9 @@ export async function notifySellerCswOpener(params: { sellerPhone: string | null
   const dayKey = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
   const key = `seller:csw_opener:${tenantId}:${dayKey}:${to}`;
   await sendOnce(key, () =>
-    enqueueTemplateMessage({
-      input: templateSend.sellerCswOpener(to),
+    enqueueTextMessage({
+      to,
+      body: "Hi! Reply ACCEPT or DECLINE to manage new orders. You can also reply READY, OUT, or DELIVERED to update order status.",
       tenantId,
       dedupeKey: key,
     })
@@ -86,8 +88,13 @@ export async function notifySellerNewOrder(params: {
   await sendOnce(key, () =>
     enqueueTemplateMessage({
       input: templateSend.sellerNewOrder(to, {
+        sellerName: order.store?.name || "Vendly",
         orderId: order.orderNumber,
-        totalAmount: String(order.totalAmount),
+        orderItems: formatItemsSummary(order.items),
+        buyerName: order.customerName,
+        customerPhone: order.customerPhone || "N/A",
+        customerLocation: order.deliveryAddress || "N/A",
+        total: String(order.totalAmount),
       }),
       tenantId: order.tenantId,
       orderId: order.id,
@@ -123,11 +130,9 @@ export async function notifySellerOrderDetails(params: {
 
   const key = `seller:order_details:${order.id}:${to}`;
   await sendOnce(key, () =>
-    enqueueTemplateMessage({
-      input: templateSend.sellerOrderDetails(to, {
-        orderId: order.orderNumber,
-        itemsSummary: formatItemsSummary(order.items),
-      }),
+    enqueueTextMessage({
+      to,
+      body: `Order ${order.orderNumber} details: ${formatItemsSummary(order.items)}`,
       tenantId: order.tenantId,
       orderId: order.id,
       dedupeKey: key,
@@ -145,11 +150,9 @@ export async function notifySellerCustomerDetails(params: {
 
   const key = `seller:customer_details:${order.id}:${to}`;
   await sendOnce(key, () =>
-    enqueueTemplateMessage({
-      input: templateSend.sellerCustomerDetails(to, {
-        orderId: order.orderNumber,
-        customerDetails: formatCustomerDetails(order),
-      }),
+    enqueueTextMessage({
+      to,
+      body: `Customer details for ${order.orderNumber}: ${formatCustomerDetails(order)}`,
       tenantId: order.tenantId,
       orderId: order.id,
       dedupeKey: key,
@@ -167,8 +170,9 @@ export async function notifySellerMarkReady(params: {
 
   const key = `seller:mark_ready:${order.id}:${to}`;
   await sendOnce(key, () =>
-    enqueueTemplateMessage({
-      input: templateSend.sellerMarkReady(to, { orderId: order.orderNumber }),
+    enqueueTextMessage({
+      to,
+      body: `Marked ${order.orderNumber} as READY.`,
       tenantId: order.tenantId,
       orderId: order.id,
       dedupeKey: key,
@@ -187,11 +191,9 @@ export async function notifySellerOutForDelivery(params: {
 
   const key = `seller:out_for_delivery:${order.id}:${to}`;
   await sendOnce(key, () =>
-    enqueueTemplateMessage({
-      input: templateSend.sellerOutForDelivery(to, {
-        orderId: order.orderNumber,
-        riderDetails: params.riderDetails || "Vendly Rider (+256700000000)",
-      }),
+    enqueueTextMessage({
+      to,
+      body: `Order ${order.orderNumber} is OUT FOR DELIVERY. Rider: ${params.riderDetails || "Vendly Rider (+256700000000)"}`,
       tenantId: order.tenantId,
       orderId: order.id,
       dedupeKey: key,
@@ -209,8 +211,9 @@ export async function notifySellerOrderCompleted(params: {
 
   const key = `seller:order_completed:${order.id}:${to}`;
   await sendOnce(key, () =>
-    enqueueTemplateMessage({
-      input: templateSend.sellerOrderCompleted(to, { orderId: order.orderNumber }),
+    enqueueTextMessage({
+      to,
+      body: `Order ${order.orderNumber} marked as DELIVERED/COMPLETED.`,
       tenantId: order.tenantId,
       orderId: order.id,
       dedupeKey: key,
@@ -227,13 +230,17 @@ export async function notifyCustomerOrderReceived(params: { order: OrderLike }) 
   const to = normalizeToWhatsApp(order.customerPhone, "customer", { orderId: order.id, orderNumber: order.orderNumber });
   if (!to) return;
 
+  const sellerPhone = await orderService.getTenantPhoneByTenantId(order.tenantId);
+  const sellerDigits = normalizeToWhatsApp(sellerPhone, "seller", { tenantId: order.tenantId, orderId: order.id });
+  const sellerWhatsappLink = sellerDigits ? `https://wa.me/${sellerDigits}` : "https://wa.me/256700000000";
+
   const key = `customer:received:${order.id}:${to}`;
   await sendOnce(key, () =>
     enqueueTemplateMessage({
       input: templateSend.buyerOrderReceived(to, {
-        customerName: order.customerName,
-        orderId: order.orderNumber,
+        buyerName: order.customerName,
         storeName: order.store?.name || "the store",
+        sellerWhatsappLink,
       }),
       tenantId: order.tenantId,
       orderId: order.id,
@@ -251,8 +258,8 @@ export async function notifyCustomerOrderAccepted(params: { order: OrderLike }) 
   await sendOnce(key, () =>
     enqueueTemplateMessage({
       input: templateSend.buyerOrderReady(to, {
-        customerName: order.customerName,
-        orderId: order.orderNumber,
+        buyerName: order.customerName,
+        storeName: order.store?.name || "the store",
       }),
       tenantId: order.tenantId,
       orderId: order.id,
@@ -271,8 +278,8 @@ export async function notifyCustomerOrderReady(params: { order: OrderLike }) {
   await sendOnce(key, () =>
     enqueueTemplateMessage({
       input: templateSend.buyerOrderReady(to, {
-        customerName: order.customerName,
-        orderId: order.orderNumber,
+        buyerName: order.customerName,
+        storeName: order.store?.name || "the store",
       }),
       tenantId: order.tenantId,
       orderId: order.id,
@@ -290,8 +297,8 @@ export async function notifyCustomerOutForDelivery(params: { order: OrderLike; r
   await sendOnce(key, () =>
     enqueueTemplateMessage({
       input: templateSend.buyerOutForDelivery(to, {
-        customerName: order.customerName,
-        orderId: order.orderNumber,
+        buyerName: order.customerName,
+        storeName: order.store?.name || "the store",
         riderDetails: params.riderDetails || "Vendly Rider (+256700000000)",
       }),
       tenantId: order.tenantId,
@@ -310,8 +317,8 @@ export async function notifyCustomerOrderDelivered(params: { order: OrderLike })
   await sendOnce(key, () =>
     enqueueTemplateMessage({
       input: templateSend.buyerOrderDelivered(to, {
-        customerName: order.customerName,
-        orderId: order.orderNumber,
+        buyerName: order.customerName,
+        storeName: order.store?.name || "the store",
       }),
       tenantId: order.tenantId,
       orderId: order.id,
@@ -326,13 +333,17 @@ export async function notifyCustomerOrderDeclined(params: { order: OrderLike }) 
   const to = normalizeToWhatsApp(order.customerPhone, "customer", { orderId: order.id, orderNumber: order.orderNumber });
   if (!to) return;
 
+  const sellerPhone = await orderService.getTenantPhoneByTenantId(order.tenantId);
+  const sellerDigits = normalizeToWhatsApp(sellerPhone, "seller", { tenantId: order.tenantId, orderId: order.id });
+  const sellerWhatsappLink = sellerDigits ? `https://wa.me/${sellerDigits}` : "https://wa.me/256700000000";
+
   const key = `customer:declined:${order.id}:${to}`;
   await sendOnce(key, () =>
     enqueueTemplateMessage({
       input: templateSend.buyerOrderDeclined(to, {
-        customerName: order.customerName,
-        orderId: order.orderNumber,
+        buyerName: order.customerName,
         storeName: order.store?.name || "the store",
+        sellerWhatsappLink,
       }),
       tenantId: order.tenantId,
       orderId: order.id,
