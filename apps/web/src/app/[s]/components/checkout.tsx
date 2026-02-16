@@ -39,7 +39,7 @@ interface CheckoutProps {
     quantity: number;
 }
 
-type PaymentMethod = "cash_on_delivery" | "mpesa" | "card";
+type PaymentMethod = "cash_on_delivery" | "mpesa" | "card" | "mtn_momo";
 
 export function Checkout({ open, onOpenChange, storeSlug, product, quantity }: CheckoutProps) {
     const [customerName, setCustomerName] = useState("");
@@ -53,6 +53,8 @@ export function Checkout({ open, onOpenChange, storeSlug, product, quantity }: C
     const [error, setError] = useState<string | null>(null);
 
     const totalAmount = product.price * quantity;
+
+    const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
     const resetState = () => {
         setCustomerName("");
@@ -78,7 +80,7 @@ export function Checkout({ open, onOpenChange, storeSlug, product, quantity }: C
                 body: JSON.stringify({
                     customerName,
                     customerEmail,
-                    customerPhone,
+                    customerPhone: customerPhone || undefined,
                     paymentMethod,
                     notes: notes || undefined,
                     items: [
@@ -95,11 +97,52 @@ export function Checkout({ open, onOpenChange, storeSlug, product, quantity }: C
                 throw new Error(data.error || "Failed to place order");
             }
 
-            await response.json();
+            const data = await response.json();
 
-            setIsSuccess(true);
-            setSuccessStage("paid");
-            setTimeout(() => setSuccessStage("processing"), 1500);
+            if (paymentMethod === "mtn_momo") {
+                if (data?.momo?.status === "failed") {
+                    throw new Error(data?.momo?.error || "MTN MoMo payment request failed");
+                }
+
+                const referenceId = data?.momo?.referenceId;
+                if (!referenceId) {
+                    throw new Error("MTN MoMo reference ID was not returned");
+                }
+
+                setIsSuccess(true);
+                setSuccessStage("processing");
+
+                void (async () => {
+                    for (let attempt = 0; attempt < 10; attempt++) {
+                        await wait(4000);
+                        const statusRes = await fetch(
+                            `${API_BASE}/api/storefront/${storeSlug}/payments/mtn-momo/request-to-pay/${referenceId}`
+                        );
+
+                        if (!statusRes.ok) {
+                            continue;
+                        }
+
+                        const statusJson = await statusRes.json().catch(() => ({}));
+                        const normalized = statusJson?.normalizedPaymentStatus;
+
+                        if (normalized === "paid") {
+                            setSuccessStage("paid");
+                            return;
+                        }
+
+                        if (normalized === "failed") {
+                            setIsSuccess(false);
+                            setError("MTN MoMo payment was not approved. Please try again.");
+                            return;
+                        }
+                    }
+                })();
+            } else {
+                setIsSuccess(true);
+                setSuccessStage("paid");
+                setTimeout(() => setSuccessStage("processing"), 1500);
+            }
         } catch (err) {
             setError(err instanceof Error ? err.message : "Failed to place order");
         } finally {
@@ -125,12 +168,22 @@ export function Checkout({ open, onOpenChange, storeSlug, product, quantity }: C
                             <HugeiconsIcon icon={CheckmarkCircle02Icon} className="h-12 w-12 text-green-600" />
                         </div>
                         <h2 className="text-2xl font-semibold mb-2">
-                            {successStage === "paid" ? "Order Placed!" : "Processing Order"}
+                            {paymentMethod === "mtn_momo"
+                                ? successStage === "paid"
+                                    ? "Payment Confirmed!"
+                                    : "Approve Payment on Phone"
+                                : successStage === "paid"
+                                    ? "Order Placed!"
+                                    : "Processing Order"}
                         </h2>
                         <p className="text-muted-foreground mb-6">
-                            {successStage === "paid"
-                                ? "Check your WhatsApp for payment instructions and order updates."
-                                : "Your order is now being processed by the seller."}
+                            {paymentMethod === "mtn_momo"
+                                ? successStage === "paid"
+                                    ? "Your MoMo payment succeeded and the seller is now processing your order."
+                                    : "We sent a MoMo prompt to your phone. Enter your PIN to approve payment."
+                                : successStage === "paid"
+                                    ? "Check your WhatsApp for payment instructions and order updates."
+                                    : "Your order is now being processed by the seller."}
                         </p>
                         <Button onClick={handleClose} className="w-full">
                             Continue Shopping
@@ -193,16 +246,22 @@ export function Checkout({ open, onOpenChange, storeSlug, product, quantity }: C
                         </div>
 
                         <div className="grid gap-2">
-                            <Label htmlFor="phone">WhatsApp Phone Number *</Label>
+                            <Label htmlFor="phone">
+                                {paymentMethod === "mtn_momo" ? "Phone Number *" : "WhatsApp Phone Number"}
+                            </Label>
                             <Input
                                 id="phone"
                                 type="tel"
                                 placeholder="+256 7XX XXX XXX"
                                 value={customerPhone}
                                 onChange={(e) => setCustomerPhone(e.target.value)}
-                                required
+                                required={paymentMethod === "mtn_momo"}
                             />
-                            <p className="text-xs text-muted-foreground">We will send order updates to this number on WhatsApp.</p>
+                            <p className="text-xs text-muted-foreground">
+                                {paymentMethod === "mtn_momo"
+                                    ? "Required for MTN MoMo payment prompt."
+                                    : "Optional, used for order updates on WhatsApp."}
+                            </p>
                         </div>
                     </div>
 
@@ -219,6 +278,7 @@ export function Checkout({ open, onOpenChange, storeSlug, product, quantity }: C
                             <SelectContent>
                                 <SelectItem value="cash_on_delivery">Cash on Delivery</SelectItem>
                                 <SelectItem value="mpesa">M-Pesa</SelectItem>
+                                <SelectItem value="mtn_momo">MTN MoMo (Sandbox)</SelectItem>
                                 <SelectItem value="card">Card Payment</SelectItem>
                             </SelectContent>
                         </Select>
@@ -244,7 +304,12 @@ export function Checkout({ open, onOpenChange, storeSlug, product, quantity }: C
                     <Button
                         type="submit"
                         className="w-full h-12"
-                        disabled={isSubmitting || !customerName || !customerEmail || !customerPhone}
+                        disabled={
+                            isSubmitting ||
+                            !customerName ||
+                            !customerEmail ||
+                            (paymentMethod === "mtn_momo" && !customerPhone)
+                        }
                     >
                         {isSubmitting ? (
                             <>

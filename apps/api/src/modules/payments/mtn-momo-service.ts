@@ -96,6 +96,21 @@ export type RequestToPayStatus = {
   reason?: unknown;
 };
 
+const requestToPayStatusSchema = z.object({
+  amount: z.string().optional(),
+  currency: z.string().optional(),
+  financialTransactionId: z.string().optional(),
+  externalId: z.string().optional(),
+  payer: z
+    .object({
+      partyIdType: z.string().optional(),
+      partyId: z.string().optional(),
+    })
+    .optional(),
+  status: z.string().min(1),
+  reason: z.unknown().optional(),
+});
+
 async function fetchJson(
   url: string,
   init: RequestInit
@@ -165,28 +180,131 @@ export const mtnMomoCollections = {
   getBaseUrl,
   getTargetEnvironmentHeader,
 
-  // MTN MoMo disabled: return stub reference without making external calls.
   async requestToPay(input: RequestToPayInput): Promise<RequestToPayResult> {
     const parsed = requestToPayInputSchema.parse(input);
     const referenceId = parsed.referenceId || crypto.randomUUID();
+
+    const accessToken = await getAccessToken();
+    const targetEnvironment = getTargetEnvironmentHeader();
+    const subscriptionKey = getRequiredEnv("MTN_MOMO_COLLECTION_SUBSCRIPTION_KEY");
+
+    const headers: Record<string, string> = {
+      Authorization: `Bearer ${accessToken}`,
+      "X-Reference-Id": referenceId,
+      "X-Target-Environment": targetEnvironment,
+      "Ocp-Apim-Subscription-Key": subscriptionKey,
+      "Content-Type": "application/json",
+    };
+
+    if (parsed.callbackUrl) {
+      headers["X-Callback-Url"] = parsed.callbackUrl;
+    }
+
+    const { ok, status, json, text } = await fetchJson(`${getBaseUrl()}/collection/v1_0/requesttopay`, {
+      method: "POST",
+      headers,
+      body: JSON.stringify({
+        amount: parsed.amount,
+        currency: parsed.currency,
+        externalId: parsed.externalId,
+        payer: {
+          partyIdType: "MSISDN",
+          partyId: parsed.payerMsisdn,
+        },
+        payerMessage: parsed.payerMessage || "",
+        payeeNote: parsed.payeeNote || "",
+      }),
+    });
+
+    if (!ok) {
+      throw new Error(
+        `MTN MoMo request-to-pay failed (${status}): ${pickErrorMessage(json, text || "Unknown error")}`
+      );
+    }
+
     return { referenceId };
   },
 
-  // MTN MoMo disabled: always return pending status.
   async getRequestToPayStatus(referenceId: string): Promise<RequestToPayStatus> {
     if (!referenceId) throw new Error("Missing referenceId");
+
+    const accessToken = await getAccessToken();
+    const targetEnvironment = getTargetEnvironmentHeader();
+    const subscriptionKey = getRequiredEnv("MTN_MOMO_COLLECTION_SUBSCRIPTION_KEY");
+
+    const { ok, status, json, text } = await fetchJson(
+      `${getBaseUrl()}/collection/v1_0/requesttopay/${encodeURIComponent(referenceId)}`,
+      {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "X-Target-Environment": targetEnvironment,
+          "Ocp-Apim-Subscription-Key": subscriptionKey,
+        },
+      }
+    );
+
+    if (!ok) {
+      throw new Error(
+        `MTN MoMo request-to-pay status failed (${status}): ${pickErrorMessage(json, text || "Unknown error")}`
+      );
+    }
+
+    const parsed = requestToPayStatusSchema.safeParse(json);
+    if (parsed.success) {
+      return {
+        amount: parsed.data.amount || "",
+        currency: parsed.data.currency || "",
+        financialTransactionId: parsed.data.financialTransactionId,
+        externalId: parsed.data.externalId || referenceId,
+        payer: parsed.data.payer,
+        status: parsed.data.status,
+        reason: parsed.data.reason,
+      };
+    }
+
+    const jsonRecord = asRecord(json);
+    const payerRecord = asRecord(jsonRecord?.payer);
     return {
-      amount: "0",
-      currency: "",
-      externalId: referenceId,
-      status: "PENDING",
+      amount: getStringField(json, "amount") || "",
+      currency: getStringField(json, "currency") || "",
+      financialTransactionId: getStringField(json, "financialTransactionId"),
+      externalId: getStringField(json, "externalId") || referenceId,
+      payer: payerRecord
+        ? {
+            partyIdType: typeof payerRecord.partyIdType === "string" ? payerRecord.partyIdType : undefined,
+            partyId: typeof payerRecord.partyId === "string" ? payerRecord.partyId : undefined,
+          }
+        : undefined,
+      status: getStringField(json, "status") || "PENDING",
+      reason: jsonRecord?.reason,
     };
   },
 
-  // MTN MoMo disabled: skip validation.
   async validateAccountHolderMsisdn(msisdn: string): Promise<boolean> {
-    void msisdn;
-    void getAccessToken;
-    return false;
+    if (!msisdn) return false;
+
+    const accessToken = await getAccessToken();
+    const targetEnvironment = getTargetEnvironmentHeader();
+    const subscriptionKey = getRequiredEnv("MTN_MOMO_COLLECTION_SUBSCRIPTION_KEY");
+
+    const { ok, status, json, text } = await fetchJson(
+      `${getBaseUrl()}/collection/v1_0/accountholder/msisdn/${encodeURIComponent(msisdn)}/active`,
+      {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "X-Target-Environment": targetEnvironment,
+          "Ocp-Apim-Subscription-Key": subscriptionKey,
+        },
+      }
+    );
+
+    if (ok) return true;
+    if (status === 404) return false;
+
+    throw new Error(
+      `MTN MoMo account validation failed (${status}): ${pickErrorMessage(json, text || "Unknown error")}`
+    );
   },
 };
