@@ -1,7 +1,6 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { MarketplaceStore } from "@/types/marketplace";
 import {
@@ -69,7 +68,7 @@ export function StoreCard({ store }: StoreCardProps) {
                       className="object-cover"
                       sizes="(max-width: 768px) 50vw, 33vw"
                       priority={idx === 0}
-                      unoptimized={src.includes("blob.vercel-storage.com")}
+                      unoptimized={src.includes(".ufs.sh")}
                     />
                   </div>
                 </CarouselItem>

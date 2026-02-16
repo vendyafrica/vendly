@@ -33,11 +33,11 @@ export function ProductCard({ title, slug, price, image, contentType, index = 0,
   const aspectClass = aspectVariants[index % aspectVariants.length];
 
   const imageUrl = image || FALLBACK_PRODUCT_IMAGE;
-  const isBlobUrl = imageUrl.includes("blob.vercel-storage.com");
+  const isBlobUrl = imageUrl.includes(".ufs.sh");
 
   const isVideo = contentType?.startsWith("video/")
     || imageUrl.match(/\.(mp4|webm|mov|ogg)$/i) !== null
-    || (imageUrl.includes("blob.vercel-storage.com") && !imageUrl.match(/\.(jpg|jpeg|png|webp|gif)$/i) && !contentType?.startsWith("image/")); // Heuristic for blobs if no extension and not explicitly image
+    || (imageUrl.includes(".ufs.sh") && !imageUrl.match(/\.(jpg|jpeg|png|webp|gif)$/i) && !contentType?.startsWith("image/")); // Heuristic for CDN URLs if no extension and not explicitly image
 
   return (
     <Link

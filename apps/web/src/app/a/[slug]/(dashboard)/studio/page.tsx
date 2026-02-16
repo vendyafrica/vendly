@@ -95,16 +95,14 @@ export default function StudioPage() {
           uploadTarget = await compressImage(file);
         }
 
-        // Optional soft cap for videos
-        if (file.type.startsWith("video/") && file.size > 60 * 1024 * 1024) {
-          alert("Video is larger than 60MB. Please compress before uploading.");
-          return;
-        }
-
-        const blob = await uploadFile(uploadTarget, `tenants/${tenantId}/hero`);
+        const uploaded = await uploadFile(uploadTarget, {
+          tenantId,
+          endpoint: "storeHeroMedia",
+          compressVideo: true,
+        });
 
         const rest = heroMedia.filter((_, idx) => idx !== 0);
-        const nextUrls = [blob.url, ...rest];
+        const nextUrls = [uploaded.url, ...rest];
 
         const response = await fetch(`/api/storefront/${storeSlug}/hero`, {
           method: "PUT",

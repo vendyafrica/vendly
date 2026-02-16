@@ -16,12 +16,11 @@ import { Label } from "@vendly/ui/components/label";
 import { Textarea } from "@vendly/ui/components/textarea";
 import Image from "next/image";
 import { useTenant } from "../../tenant-context";
-import { upload } from "@vercel/blob/client";
+import { useUpload } from "@/hooks/use-upload";
 
 interface UploadModalProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
-    storeId: string;
     tenantId: string;
     onCreate?: (productData: ProductFormData, media: MediaItem[]) => void;
 }
@@ -49,17 +48,16 @@ interface FilePreview {
     error?: string;
 }
 
-const API_BASE = "";
 
 export function UploadModal({
     open,
     onOpenChange,
-    storeId,
     tenantId,
     onCreate,
 }: UploadModalProps) {
     const { bootstrap } = useTenant();
     const currency = bootstrap?.defaultCurrency || "UGX";
+    const { uploadFile } = useUpload();
 
     const [files, setFiles] = React.useState<FilePreview[]>([]);
     const [isSaving, setIsSaving] = React.useState(false);
@@ -91,18 +89,20 @@ export function UploadModal({
 
         const startIndex = files.length;
 
+        if (!tenantId) {
+            setError("Tenant not found. Please refresh and try again.");
+            setFiles(prev => prev.filter((_, idx) => idx < startIndex));
+            return;
+        }
+
         // Upload in parallel
         await Promise.all(selectedFiles.map(async (file, i) => {
             const index = startIndex + i;
             try {
-                // Construct path: tenants/{tenantId}/products/{filename}
-                const timestamp = Date.now();
-                const cleanName = file.name.replace(/[^a-zA-Z0-9.-]/g, "_");
-                const path = `tenants/${tenantId}/products/${cleanName}-${timestamp}`;
-
-                const blob = await upload(path, file, {
-                    access: "public",
-                    handleUploadUrl: "/api/upload",
+                const uploaded = await uploadFile(file, {
+                    tenantId,
+                    endpoint: "productMedia",
+                    compressVideo: true,
                 });
 
                 setFiles(prev => {
@@ -114,8 +114,8 @@ export function UploadModal({
                     if (updated[index]) {
                         updated[index] = {
                             ...updated[index],
-                            url: blob.url,
-                            pathname: blob.pathname,
+                            url: uploaded.url,
+                            pathname: uploaded.pathname,
                             isUploading: false
                         };
                     }

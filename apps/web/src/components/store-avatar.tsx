@@ -107,7 +107,7 @@ export function StoreAvatarSimple({
                     fill
                     sizes={`${size}px`}
                     className="object-cover"
-                    unoptimized={avatarUrl.includes("blob.vercel-storage.com")}
+                    unoptimized={avatarUrl.includes(".ufs.sh")}
                 />
             ) : (
                 <span

@@ -50,9 +50,13 @@ export function HeroEditor({
                 return;
             }
 
-            const blob = await uploadFile(file, `tenants/${tenantId}/hero`);
+            const uploaded = await uploadFile(file, {
+                tenantId,
+                endpoint: "storeHeroMedia",
+                compressVideo: true,
+            });
             const rest = heroMedia.filter((_, idx) => idx !== 0);
-            const nextUrls = [blob.url, ...rest];
+            const nextUrls = [uploaded.url, ...rest];
 
             const response = await fetch(`/api/storefront/${storeSlug}/hero`, {
                 method: "PUT",
@@ -162,10 +166,10 @@ export function HeroEditor({
                 <div className="space-y-4">
                     <CoverUpload
                         accept="image/*,video/*"
-                        maxSize={10 * 1024 * 1024}
+                        maxSize={50 * 1024 * 1024}
                         disabled={!tenantId || isUploading || isSaving}
                         title={!tenantId ? "Loading store..." : isUploading ? "Uploading..." : "Upload cover image or video"}
-                        description="Drag & drop, or click to browse"
+                        description="Drag & drop, or click to browse (images up to 10MB, videos up to 50MB)"
                         onFileSelected={handleCoverSelected}
                     />
 

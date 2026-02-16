@@ -15,8 +15,8 @@ import { Button } from "@vendly/ui/components/button";
 import { Input } from "@vendly/ui/components/input";
 import { Label } from "@vendly/ui/components/label";
 import Image from "next/image";
-import { upload } from "@vercel/blob/client";
 import { useTenant } from "../../tenant-context";
+import { useUpload } from "@/hooks/use-upload";
 
 interface AddProductProps {
     storeId?: string;
@@ -35,6 +35,7 @@ export function AddProduct({ storeId, onProductCreated }: AddProductProps) {
     const { bootstrap } = useTenant();
     const currency = bootstrap?.defaultCurrency || "UGX";
     const tenantId = bootstrap?.tenantId;
+    const { uploadFile } = useUpload();
 
     const [open, setOpen] = React.useState(false);
     const [files, setFiles] = React.useState<UploadedFile[]>([]);
@@ -61,17 +62,20 @@ export function AddProduct({ storeId, onProductCreated }: AddProductProps) {
         // We'll map the index from the end of the previous array
         const startIndex = files.length;
 
+        if (!tenantId) {
+            console.error("Missing tenantId for upload");
+            setFiles(prev => prev.filter((_, idx) => idx < startIndex));
+            return;
+        }
+
         await Promise.all(selectedFiles.map(async (file, i) => {
             const index = startIndex + i;
-            // Construct path: tenants/{tenantId}/products/{filename}
-            const timestamp = Date.now();
-            const cleanName = file.name.replace(/[^a-zA-Z0-9.-]/g, "_");
-            const path = `tenants/${tenantId || ""}/products/${cleanName}-${timestamp}`;
 
             try {
-                const blob = await upload(path, file, {
-                    access: "public",
-                    handleUploadUrl: "/api/upload",
+                const uploaded = await uploadFile(file, {
+                    tenantId,
+                    endpoint: "productMedia",
+                    compressVideo: true,
                 });
 
                 setFiles(prev => {
@@ -79,11 +83,12 @@ export function AddProduct({ storeId, onProductCreated }: AddProductProps) {
                     if (updated[index]) {
                         updated[index] = {
                             ...updated[index],
-                            url: blob.url,
-                            pathname: blob.pathname,
+                            url: uploaded.url,
+                            pathname: uploaded.pathname,
                             isUploading: false
                         };
                     }
+
                     return updated;
                 });
             } catch (error) {
@@ -243,15 +248,15 @@ export function AddProduct({ storeId, onProductCreated }: AddProductProps) {
                             </div>
 
                             <div className="space-y-2">
-                                <Label>Product Images</Label>
+                                <Label>Product Media</Label>
                                 <div
                                     className={`flex items-center justify-between gap-3 rounded-lg border border-dashed border-border/70 px-3 py-3 sm:py-4 ${isDragging ? "border-primary bg-primary/5" : "hover:bg-muted/40"}`}
                                 >
                                     <div className="flex items-center gap-3">
                                         <HugeiconsIcon icon={Upload04Icon} className="size-8 text-muted-foreground" />
                                         <div className="text-left text-sm text-muted-foreground">
-                                            <p className="font-medium">{isDragging ? "Drop images" : "Add product media"}</p>
-                                            <p className="text-xs text-muted-foreground/70">SVG, PNG, JPG or GIF (max 5MB)</p>
+                                            <p className="font-medium">{isDragging ? "Drop files" : "Add product media"}</p>
+                                            <p className="text-xs text-muted-foreground/70">Images up to 10MB, videos up to 50MB</p>
                                         </div>
                                     </div>
                                     <Button type="button" variant="outline" size="sm" onClick={() => fileInputRef.current?.click()}>
@@ -260,7 +265,7 @@ export function AddProduct({ storeId, onProductCreated }: AddProductProps) {
                                     <input
                                         ref={fileInputRef}
                                         type="file"
-                                        accept="image/*"
+                                        accept="image/*,video/*"
                                         multiple
                                         className="hidden"
                                         onChange={handleFileChange}
@@ -274,12 +279,21 @@ export function AddProduct({ storeId, onProductCreated }: AddProductProps) {
                                     <div className="mt-2 flex gap-3 overflow-x-auto pb-1">
                                         {files.map((f, i) => (
                                             <div key={i} className="relative aspect-square w-24 shrink-0 overflow-hidden rounded-md border border-border/60">
-                                                <Image
-                                                    src={f.previewUrl}
-                                                    alt="Preview"
-                                                    fill
-                                                    className={`object-cover transition-opacity ${f.isUploading ? "opacity-50" : "opacity-100"}`}
-                                                />
+                                                {f.contentType.startsWith("video/") ? (
+                                                    <video
+                                                        src={f.previewUrl}
+                                                        className={`h-full w-full object-cover transition-opacity ${f.isUploading ? "opacity-50" : "opacity-100"}`}
+                                                        muted
+                                                        playsInline
+                                                    />
+                                                ) : (
+                                                    <Image
+                                                        src={f.previewUrl}
+                                                        alt="Preview"
+                                                        fill
+                                                        className={`object-cover transition-opacity ${f.isUploading ? "opacity-50" : "opacity-100"}`}
+                                                    />
+                                                )}
                                                 {f.isUploading && (
                                                     <div className="absolute inset-0 flex items-center justify-center">
                                                         <HugeiconsIcon icon={Loading03Icon} className="size-5 animate-spin text-white" />

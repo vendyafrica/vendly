@@ -374,7 +374,7 @@ export default function ProductsPage() {
                   alt={row.original.name}
                   fill
                   className="object-cover"
-                  unoptimized={row.original.thumbnailUrl.includes("blob.vercel-storage.com")}
+                  unoptimized={row.original.thumbnailUrl.includes(".ufs.sh")}
                 />
               )
             ) : (
@@ -573,7 +573,6 @@ export default function ProductsPage() {
       <UploadModal
         open={uploadModalOpen}
         onOpenChange={setUploadModalOpen}
-        storeId={bootstrap?.storeId || ""}
         tenantId={bootstrap?.tenantId || ""}
         onCreate={handleCreateProduct}
       />

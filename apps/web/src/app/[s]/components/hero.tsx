@@ -27,7 +27,7 @@ export function Hero({ store }: HeroProps) {
     const mediaUrl = heroMedia[0] || FALLBACK_HERO_MEDIA;
     const isVideo = typeof mediaUrl === "string" && isVideoUrl(mediaUrl);
 
-    const isBlobUrl = typeof mediaUrl === "string" && mediaUrl.includes("blob.vercel-storage.com");
+    const isBlobUrl = typeof mediaUrl === "string" && mediaUrl.includes(".ufs.sh");
 
     return (
         <section className="relative h-[60vh] sm:h-[70vh] md:h-[75vh] lg:h-[80vh] w-full overflow-hidden mb-8 sm:mb-12">

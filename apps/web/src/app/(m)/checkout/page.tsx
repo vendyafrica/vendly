@@ -220,7 +220,7 @@ function CheckoutContent() {
                                     className="flex gap-4 items-center"
                                 >
                                     <div className="relative h-16 w-16 rounded-lg overflow-hidden border bg-white">
-                                        {item.product.image && (item.product.contentType?.startsWith("video/") || item.product.image?.match(/\.(mp4|webm|mov|ogg)$/i) || ((item.product.image || "").includes("blob.vercel-storage.com") && !(item.product.image || "").match(/\.(jpg|jpeg|png|webp|gif)$/i) && !item.product.contentType?.startsWith("image/"))) ? (
+                                        {item.product.image && (item.product.contentType?.startsWith("video/") || item.product.image?.match(/\.(mp4|webm|mov|ogg)$/i) || ((item.product.image || "").includes(".ufs.sh") && !(item.product.image || "").match(/\.(jpg|jpeg|png|webp|gif)$/i) && !item.product.contentType?.startsWith("image/"))) ? (
                                             <video
                                                 src={item.product.image}
                                                 className="h-full w-full object-cover"

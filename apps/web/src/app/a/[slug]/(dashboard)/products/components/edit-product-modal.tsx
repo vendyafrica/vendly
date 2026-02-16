@@ -15,9 +15,9 @@ import { Input } from "@vendly/ui/components/input";
 import { Label } from "@vendly/ui/components/label";
 import { Textarea } from "@vendly/ui/components/textarea";
 import Image from "next/image";
-import { upload } from "@vercel/blob/client";
 import { useTenant } from "../../tenant-context";
 import type { ProductApiRow } from "@/hooks/use-products";
+import { useUpload } from "@/hooks/use-upload";
 
 interface Product {
     id: string;
@@ -54,8 +54,6 @@ interface UploadedFile {
     isNew: boolean;
 }
 
-const API_BASE = "";
-
 export function EditProductModal({
     product,
     open,
@@ -65,6 +63,7 @@ export function EditProductModal({
 }: EditProductModalProps) {
     const { bootstrap } = useTenant();
     const storeCurrency = bootstrap?.defaultCurrency || "UGX";
+    const { uploadFile } = useUpload();
 
     const [productName, setProductName] = React.useState("");
     const [description, setDescription] = React.useState("");
@@ -134,17 +133,19 @@ export function EditProductModal({
 
         const startIndex = files.length;
 
+        if (!tenantId) {
+            setError("Tenant not found. Please refresh and try again.");
+            setFiles(prev => prev.filter((_, idx) => idx < startIndex));
+            return;
+        }
+
         await Promise.all(selectedFiles.map(async (file, i) => {
             const index = startIndex + i;
             try {
-                // Construct path: tenants/{tenantId}/products/{filename}
-                const timestamp = Date.now();
-                const cleanName = file.name.replace(/[^a-zA-Z0-9.-]/g, "_");
-                const path = `tenants/${tenantId}/products/${cleanName}-${timestamp}`;
-
-                const blob = await upload(path, file, {
-                    access: "public",
-                    handleUploadUrl: "/api/upload",
+                const uploaded = await uploadFile(file, {
+                    tenantId,
+                    endpoint: "productMedia",
+                    compressVideo: true,
                 });
 
                 setFiles(prev => {
@@ -152,8 +153,8 @@ export function EditProductModal({
                     if (updated[index]) {
                         updated[index] = {
                             ...updated[index],
-                            url: blob.url,
-                            pathname: blob.pathname,
+                            url: uploaded.url,
+                            pathname: uploaded.pathname,
                             isUploading: false
                         };
                     }
@@ -247,7 +248,7 @@ export function EditProductModal({
                 }));
             }
 
-            const response = await fetch(`${API_BASE}/api/products/${product.id}`, {
+            const response = await fetch(`/api/products/${product.id}`, {
                 method: "PATCH",
                 headers: {
                     "Content-Type": "application/json",

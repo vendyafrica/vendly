@@ -116,7 +116,7 @@ export function ProductDetails({ product, storeCategories = [] }: ProductDetails
                                     sizes="90vw"
                                     className="object-cover"
                                     priority={index === 0}
-                                    unoptimized={img.includes("blob.vercel-storage.com")}
+                                    unoptimized={img.includes(".ufs.sh")}
                                 />
                             </div>
                         ))}
@@ -144,7 +144,7 @@ export function ProductDetails({ product, storeCategories = [] }: ProductDetails
                                         fill
                                         sizes="120px"
                                         className="object-cover"
-                                        unoptimized={img.includes("blob.vercel-storage.com")}
+                                        unoptimized={img.includes(".ufs.sh")}
                                     />
                                 </button>
                             ))}
@@ -158,7 +158,7 @@ export function ProductDetails({ product, storeCategories = [] }: ProductDetails
                                 sizes="(max-width: 1024px) 100vw, 60vw"
                                 className="object-cover"
                                 priority
-                                unoptimized={currentImage.includes("blob.vercel-storage.com")}
+                                unoptimized={currentImage.includes(".ufs.sh")}
                             />
                         </div>
                     </div>

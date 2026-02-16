@@ -29,19 +29,13 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: "https",
+        hostname: "**.ufs.sh",
+        port: "",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
         hostname: "**.public.blob.vercel-storage.com",
-        port: "",
-        pathname: "/**",
-      },
-      {
-        protocol: "https",
-        hostname: "**.blob.vercel-storage.com",
-        port: "",
-        pathname: "/**",
-      },
-      {
-        protocol: "https",
-        hostname: "blob.vercel-storage.com",
         port: "",
         pathname: "/**",
       },

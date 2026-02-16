@@ -1,6 +1,6 @@
 import { db } from "@vendly/db/db";
 import { products, productMedia, mediaObjects, orderItems, orders } from "@vendly/db/schema";
-import { eq, and, isNull, desc, sql, like, withCache, cacheKeys, TTL } from "@vendly/db";
+import { eq, and, isNull, desc, sql, like } from "@vendly/db";
 import { mediaService, type UploadFile } from "./media-service";
 import type { CreateProductInput, ProductFilters, ProductWithMedia, UpdateProductInput } from "../models/product-models";
 
@@ -418,10 +418,14 @@ export const productService = {
             .set({ deletedAt: new Date() })
             .where(and(eq(products.id, id), eq(products.tenantId, tenantId)));
 
-        // Delete uploaded media from blob storage
+        // Delete uploaded media from UploadThing by file key
         const uploadedMedia = product.media.filter((m) => m.source === "upload");
         if (uploadedMedia.length > 0) {
-            await mediaService.deleteBlobs(uploadedMedia.map((m) => m.blobUrl));
+            await mediaService.deleteFiles(
+                uploadedMedia
+                    .map((m) => m.blobPathname)
+                    .filter((value): value is string => Boolean(value))
+            );
         }
     },
 

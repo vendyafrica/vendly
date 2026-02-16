@@ -9,6 +9,7 @@
         "db:generate": "drizzle-kit generate",
         "db:push": "drizzle-kit push",
         "db:migrate": "drizzle-kit migrate",
+        "db:migrate:vercel-blob": "tsx src/migrate-vercel-blob-to-uploadthing.ts",
         "db:reset": "npx tsx src/reset.ts && drizzle-kit push && tsx src/seed.ts",
         "db:seed": "tsx src/seed.ts"
     },
@@ -16,6 +17,7 @@
         "@neondatabase/serverless": "^1.0.2",
         "@types/ws": "^8.5.14",
         "@upstash/redis": "^1.36.2",
+        "@vercel/blob": "^2.0.0",
         "bcrypt-ts": "^7.1.0",
         "dotenv": "^17.2.3",
         "drizzle-orm": "^0.45.1",
@@ -23,6 +25,7 @@
         "postgres": "^3.4.7",
         "server-only": "^0.0.1",
         "tsup": "^8.5.0",
+        "uploadthing": "^7.7.4",
         "ws": "^8.18.0"
     },
     "devDependencies": {

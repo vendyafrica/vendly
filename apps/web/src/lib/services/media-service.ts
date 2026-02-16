@@ -1,4 +1,6 @@
-import { put, del, list } from "@vercel/blob";
+import { UTApi, UTFile } from "uploadthing/server";
+
+const utapi = new UTApi();
 
 export interface UploadFile {
     buffer: Buffer;
@@ -12,9 +14,31 @@ export interface UploadResult {
     originalName: string;
 }
 
+type UploadThingSuccess = {
+    key: string;
+    ufsUrl: string;
+};
+
+type UploadThingResultLike = {
+    data: UploadThingSuccess | null;
+    error: unknown | null;
+};
+
+function assertUploadSuccess(result: UploadThingResultLike | UploadThingResultLike[]) {
+    const normalized = Array.isArray(result) ? result[0] : result;
+    if (!normalized || normalized.error || !normalized.data) {
+        const reason = normalized && normalized.error
+            ? JSON.stringify(normalized.error)
+            : "Unknown UploadThing upload error";
+        throw new Error(`UploadThing upload failed: ${reason}`);
+    }
+
+    return normalized.data;
+}
+
 /**
  * Media Service for serverless environment
- * Handles Vercel Blob uploads and media management
+ * Handles UploadThing uploads and media management
  */
 export const mediaService = {
     /**
@@ -32,16 +56,21 @@ export const mediaService = {
         const uploadPromises = files.map(async (file) => {
             const timestamp = Date.now();
             const sanitizedFilename = file.originalname.replace(/[^a-zA-Z0-9.-]/g, "_");
-            const pathname = `${tenantSlug}/products/${productId}/${timestamp}-${sanitizedFilename}`;
-
-            const blob = await put(pathname, file.buffer, {
-                access: "public",
-                contentType: file.mimetype,
+            const customId = `${tenantSlug}/products/${productId}/${timestamp}-${sanitizedFilename}`;
+            const uploadFile = new UTFile([Uint8Array.from(file.buffer)], sanitizedFilename, {
+                type: file.mimetype,
+                lastModified: Date.now(),
+                customId,
             });
 
+            const uploaded = assertUploadSuccess(await utapi.uploadFiles(uploadFile, {
+                acl: "public-read",
+                contentDisposition: "inline",
+            }));
+
             return {
-                url: blob.url,
-                pathname: blob.pathname,
+                url: uploaded.ufsUrl,
+                pathname: uploaded.key,
                 originalName: file.originalname,
             };
         });
@@ -64,49 +93,69 @@ export const mediaService = {
     ): Promise<{ url: string; pathname: string }> {
         const timestamp = Date.now();
         const sanitizedFilename = file.originalname.replace(/[^a-zA-Z0-9.-]/g, "_");
-        const pathname = `${tenantSlug}/${folder}/${timestamp}-${sanitizedFilename}`;
+        const customId = `${tenantSlug}/${folder}/${timestamp}-${sanitizedFilename}`;
 
-        const blob = await put(pathname, file.buffer, {
-            access: "public",
-            contentType: file.mimetype,
+        const uploadFile = new UTFile([Uint8Array.from(file.buffer)], sanitizedFilename, {
+            type: file.mimetype,
+            lastModified: Date.now(),
+            customId,
         });
 
+        const uploaded = assertUploadSuccess(await utapi.uploadFiles(uploadFile, {
+            acl: "public-read",
+            contentDisposition: "inline",
+        }));
+
         return {
-            url: blob.url,
-            pathname: blob.pathname,
+            url: uploaded.ufsUrl,
+            pathname: uploaded.key,
         };
     },
 
     /**
-     * Delete multiple blobs by URL
+     * Delete multiple UploadThing files by key
      */
-    async deleteBlobs(urls: string[]): Promise<void> {
-        if (urls.length === 0) return;
-        await Promise.all(urls.map((url) => del(url)));
+    async deleteFiles(fileKeys: string[]): Promise<void> {
+        const keys = fileKeys.filter(Boolean);
+        if (keys.length === 0) return;
+
+        await utapi.deleteFiles(keys);
     },
 
     /**
-     * List blobs for a tenant
+     * List files for a tenant by customId prefix
      */
     async listTenantBlobs(
         tenantSlug: string,
         options?: { limit?: number; cursor?: string }
     ) {
-        const result = await list({
-            prefix: `${tenantSlug}/`,
-            limit: options?.limit || 100,
-            cursor: options?.cursor,
+        const limit = options?.limit || 100;
+        const offset = Number.parseInt(options?.cursor || "0", 10) || 0;
+        const result = await utapi.listFiles({
+            limit,
+            offset,
         });
 
+        const scopedFiles = result.files.filter((file) =>
+            (file.customId ?? "").startsWith(`${tenantSlug}/`)
+        );
+
+        const blobs = await Promise.all(
+            scopedFiles.map(async (file) => {
+                const signed = await utapi.getSignedURL(file.key);
+                return {
+                    url: signed.ufsUrl,
+                    pathname: file.key,
+                    size: file.size,
+                    uploadedAt: new Date(file.uploadedAt),
+                };
+            })
+        );
+
         return {
-            blobs: result.blobs.map((blob) => ({
-                url: blob.url,
-                pathname: blob.pathname,
-                size: blob.size,
-                uploadedAt: blob.uploadedAt,
-            })),
+            blobs,
             hasMore: result.hasMore,
-            cursor: result.cursor,
+            cursor: result.hasMore ? String(offset + limit) : undefined,
         };
     },
 };
