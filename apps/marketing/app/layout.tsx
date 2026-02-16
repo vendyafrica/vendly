@@ -1,15 +1,18 @@
 import type { Metadata } from "next";
 import { ThemeProvider } from "next-themes";
-import { Bricolage_Grotesque, Geist_Mono } from "next/font/google";
+import { Inter } from "next/font/google";
+import Script from "next/script";
 import "./globals.css";
 
-const geistSans = Bricolage_Grotesque({
-  variable: "--font-bricolage-grotesque",
+const GA_ID = "G-JWNNZYPEX5";
+
+const geistSans = Inter({
+  variable: "--font-inter",
   subsets: ["latin"],
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const geistMono = Inter({
+  variable: "--font-inter",
   subsets: ["latin"],
 });
 

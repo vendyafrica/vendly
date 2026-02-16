@@ -7,16 +7,16 @@ const Analytics = dynamic(
   { ssr: false }
 );
 
-const SpeedInsights = dynamic(
-  () => import("@vercel/speed-insights/next").then((m) => m.SpeedInsights),
-  { ssr: false }
-);
+// const SpeedInsights = dynamic(
+//   () => import("@vercel/speed-insights/next").then((m) => m.SpeedInsights),
+//   { ssr: false }
+// );
 
 export function ThirdParty() {
   return (
     <>
       <Analytics />
-      <SpeedInsights />
+      {/* <SpeedInsights /> */}
     </>
   );
 }
