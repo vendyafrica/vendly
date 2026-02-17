@@ -13,7 +13,7 @@ const geistSans = Inter({
 
 const geistMono = Inter({
   variable: "--font-inter",
-  subsets: ["latin"],
+  subsets: ["latin"], 
 });
 
 const siteUrl = "https://vendlyafrica.store";
