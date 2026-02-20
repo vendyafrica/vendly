@@ -1,68 +1,53 @@
-"use client";
-import Link from "next/link";
-import { Logo } from "@/components/logo";
-import { Menu, X } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import React from "react";
-import { cn } from "@/lib/utils";
+'use client'
+import Link from 'next/link'
+import { Logo } from '@/components/logo'
+import { HugeiconsIcon } from '@hugeicons/react'
+import { Menu01Icon, Cancel01Icon } from '@hugeicons/core-free-icons'
+import { Button } from '@/components/ui/button'
+import React from 'react'
 
 const menuItems = [
-  { name: "Features", href: "#link" },
-  { name: "Pricing", href: "#link" },
-  { name: "Company", href: "#link" },
-];
+  { name: 'Features', href: '#link' },
+  { name: 'Solution', href: '#link' },
+  { name: 'Pricing', href: '#link' },
+  { name: 'About', href: '#link' },
+]
 
 export const HeroHeader = () => {
-  const [menuState, setMenuState] = React.useState(false);
-  const [isScrolled, setIsScrolled] = React.useState(false);
-
-  React.useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 50);
-    };
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+  const [menuState, setMenuState] = React.useState(false)
   return (
     <header>
       <nav
-        data-state={menuState && "active"}
-        className={cn(
-          "fixed z-20 w-full transition-all duration-300",
-          isScrolled &&
-            "bg-background/75 border-b border-black/5 backdrop-blur-lg",
-        )}
-      >
-        <div className="mx-auto max-w-5xl px-6">
-          <div className="relative flex flex-wrap items-center justify-between gap-6 py-6 lg:gap-0">
-            <div className="flex w-full justify-between gap-6 lg:w-auto">
+        data-state={menuState && 'active'}
+        className="fixed z-20 w-full transition-all duration-300">
+        <div className="mx-auto max-w-6xl px-6 transition-all duration-300">
+          <div className="relative flex flex-wrap items-center justify-between gap-6 py-3 lg:gap-0 lg:py-4">
+            <div className="flex w-full items-center justify-between gap-12 lg:w-auto">
               <Link
                 href="/"
                 aria-label="home"
-                className="flex items-center space-x-2"
-              >
+                className="flex items-center space-x-2 text-white">
                 <Logo />
               </Link>
 
               <button
                 onClick={() => setMenuState(!menuState)}
-                aria-label={menuState == true ? "Close Menu" : "Open Menu"}
-                className="relative z-20 -m-2.5 -mr-4 block cursor-pointer p-2.5 lg:hidden"
-              >
-                <Menu className="in-data-[state=active]:rotate-180 in-data-[state=active]:scale-0 in-data-[state=active]:opacity-0 m-auto size-6 duration-200" />
-                <X className="in-data-[state=active]:rotate-0 in-data-[state=active]:scale-100 in-data-[state=active]:opacity-100 absolute inset-0 m-auto size-6 -rotate-180 scale-0 opacity-0 duration-200" />
+                aria-label={menuState == true ? 'Close Menu' : 'Open Menu'}
+                className="relative z-20 -m-2.5 -mr-4 block cursor-pointer p-2.5 text-white lg:hidden">
+                <HugeiconsIcon icon={Menu01Icon} />
+                <HugeiconsIcon icon={Cancel01Icon} />
               </button>
             </div>
 
-            <div className="absolute inset-0 m-auto hidden size-fit lg:block">
-              <ul className="flex gap-1">
+            <div className="hidden lg:absolute lg:left-1/2 lg:-translate-x-1/2 lg:block">
+              <ul className="flex gap-8 text-sm font-medium">
                 {menuItems.map((item, index) => (
                   <li key={index}>
-                    <Button asChild variant="ghost" size="sm">
-                      <Link href={item.href} className="text-base">
-                        <span>{item.name}</span>
-                      </Link>
-                    </Button>
+                    <Link
+                      href={item.href}
+                      className="block text-white/80 duration-150 hover:text-white">
+                      <span>{item.name}</span>
+                    </Link>
                   </li>
                 ))}
               </ul>
@@ -75,8 +60,7 @@ export const HeroHeader = () => {
                     <li key={index}>
                       <Link
                         href={item.href}
-                        className="text-muted-foreground hover:text-accent-foreground block duration-150"
-                      >
+                        className="text-muted-foreground hover:text-accent-foreground block duration-150">
                         <span>{item.name}</span>
                       </Link>
                     </li>
@@ -85,32 +69,10 @@ export const HeroHeader = () => {
               </div>
               <div className="flex w-full flex-col space-y-3 sm:flex-row sm:gap-3 sm:space-y-0 md:w-fit">
                 <Button
-                  asChild
                   variant="ghost"
                   size="sm"
-                  className={cn(isScrolled && "lg:hidden")}
-                >
-                  <Link href="#">
-                    <span>Login</span>
-                  </Link>
-                </Button>
-                <Button
-                  asChild
-                  size="sm"
-                  className={cn(isScrolled && "lg:hidden")}
-                >
-                  <Link href="#">
-                    <span>Sign Up</span>
-                  </Link>
-                </Button>
-                <Button
-                  asChild
-                  size="sm"
-                  className={cn(isScrolled ? "lg:inline-flex" : "hidden")}
-                >
-                  <Link href="#">
-                    <span>Get Started</span>
-                  </Link>
+                  className='text-white hover:bg-primary hover:text-white cursor-pointer'>
+                   Login
                 </Button>
               </div>
             </div>
@@ -118,5 +80,5 @@ export const HeroHeader = () => {
         </div>
       </nav>
     </header>
-  );
-};
+  )
+}
