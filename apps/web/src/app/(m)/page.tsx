@@ -13,7 +13,7 @@ import type { Metadata } from "next";
 
 export const dynamic = "force-dynamic";
 
-const homeTitle = "Duuka | Shop Your Favorite Online Stores";
+const homeTitle = "ShopVendly Marketplace | Shop Your Favorite Online Stores";
 const homeDescription =
   "Discover and shop from African creators, brands, and small sellers. Secure mobile money payments, integrated delivery, and trusted independent stores all in one marketplace.";
 const homeImage = "/og-image.png";
@@ -22,13 +22,13 @@ export const metadata: Metadata = {
   title: homeTitle,
   description: homeDescription,
   alternates: {
-    canonical: "/",
+    canonical: "/m",
   },
   openGraph: {
     title: homeTitle,
     description: homeDescription,
-    url: "/",
-    siteName: "Duuka",
+    url: "/m",
+    siteName: "ShopVendly",
     images: [{ url: homeImage }],
   },
   twitter: {
