@@ -42,10 +42,10 @@ export function FAQ() {
     <section className="bg-background @container py-20 sm:py-24 lg:py-28">
       <div className="mx-auto max-w-3xl px-6">
         <div className="text-center">
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-semibold tracking-tight text-balance">
+          <h2 className="text-[10vw] md:text-[6vw] font-black tracking-tighter uppercase leading-[0.85] text-balance">
             Frequently asked questions
           </h2>
-          <p className="text-muted-foreground mx-auto mt-4 max-w-xl text-base sm:text-lg text-balance">
+          <p className="text-muted-foreground mx-auto mt-6 max-w-xl text-lg sm:text-2xl font-mono font-bold lowercase text-balance">
             Everything you need to know about selling on Instagram with Vendly.
           </p>
         </div>
@@ -53,11 +53,11 @@ export function FAQ() {
           <Accordion type="single" collapsible>
             {faqItems.map((item) => (
               <AccordionItem key={item.id} value={item.id} className="border-b-0 px-4">
-                <AccordionTrigger className="cursor-pointer py-4 text-sm font-medium hover:no-underline">
+                <AccordionTrigger className="cursor-pointer py-4 text-base md:text-lg font-black tracking-tighter uppercase text-left hover:no-underline">
                   {item.question}
                 </AccordionTrigger>
                 <AccordionContent>
-                  <p className="text-muted-foreground pb-2 text-sm">{item.answer}</p>
+                  <p className="text-muted-foreground pb-4 text-base font-mono font-bold lowercase">{item.answer}</p>
                 </AccordionContent>
               </AccordionItem>
             ))}

@@ -38,7 +38,7 @@ export function Features() {
                         Curated<br />
                         <span className="text-foreground/30">Storefronts.</span>
                     </h2>
-                    <p className="text-xl md:text-2xl font-mono text-muted-foreground font-medium max-w-md lowercase pb-2">
+                    <p className="text-xl md:text-2xl font-mono text-muted-foreground font-bold max-w-md lowercase pb-2">
                         Discover the best independent brands across Africa, handpicked for you.
                     </p>
                 </div>
@@ -64,7 +64,7 @@ export function Features() {
                                 <span className="text-primary font-mono text-[10px] font-bold tracking-widest uppercase py-1.5 px-3 bg-black/80 backdrop-blur-md rounded-full w-fit">
                                     {curator.category}
                                 </span>
-                                <h3 className="text-white text-3xl md:text-4xl font-bold tracking-tight">
+                                <h3 className="text-white text-3xl md:text-4xl font-black tracking-tighter uppercase">
                                     {curator.name}
                                 </h3>
                             </div>

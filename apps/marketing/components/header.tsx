@@ -1,84 +1,55 @@
-'use client'
 import Link from 'next/link'
-import { Logo } from '@/components/logo'
+import Image from 'next/image'
 import { HugeiconsIcon } from '@hugeicons/react'
-import { Menu01Icon, Cancel01Icon } from '@hugeicons/core-free-icons'
-import { Button } from '@/components/ui/button'
-import React from 'react'
+import { ArrowRight02Icon } from '@hugeicons/core-free-icons'
 
-const menuItems = [
-  { name: 'Features', href: '#link' },
-  { name: 'Solution', href: '#link' },
-  { name: 'Pricing', href: '#link' },
-  { name: 'About', href: '#link' },
-]
+export function Header() {
+    return (
+        <div className="absolute top-0 left-0 right-0 z-100 flex justify-center w-full px-4 pt-6 pointer-events-none transition-all duration-300">
+            <div className="pointer-events-auto flex w-full max-w-5xl items-center justify-between px-6 py-4">
 
-export const HeroHeader = () => {
-  const [menuState, setMenuState] = React.useState(false)
-  return (
-    <header>
-      <nav
-        data-state={menuState && 'active'}
-        className="absolute z-20 w-full transition-all duration-300">
-        <div className="mx-auto max-w-6xl px-6 transition-all duration-300">
-          <div className="relative flex flex-wrap items-center justify-between gap-6 py-3 lg:gap-0 lg:py-4">
-            <div className="flex w-full items-center justify-between gap-12 lg:w-auto">
-              <Link
-                href="/"
-                aria-label="home"
-                className="flex items-center space-x-2 text-white">
-                <Logo />
-              </Link>
-
-              <button
-                onClick={() => setMenuState(!menuState)}
-                aria-label={menuState == true ? 'Close Menu' : 'Open Menu'}
-                className="relative z-20 -m-2.5 -mr-4 block cursor-pointer p-2.5 text-white lg:hidden">
-                <HugeiconsIcon icon={Menu01Icon} />
-                <HugeiconsIcon icon={Cancel01Icon} />
-              </button>
-            </div>
-
-            <div className="hidden lg:absolute lg:left-1/2 lg:-translate-x-1/2 lg:block">
-              <ul className="flex gap-8 text-sm font-medium">
-                {menuItems.map((item, index) => (
-                  <li key={index}>
-                    <Link
-                      href={item.href}
-                      className="block text-white/80 duration-150 hover:text-white">
-                      <span>{item.name}</span>
+                {/* Left: Logo and Name */}
+                <div className="flex-1 flex justify-start items-center">
+                    <Link href="/" className="flex items-center gap-2 group">
+                        <div className="relative w-8 h-8 overflow-hidden flex items-center justify-center">
+                            <Image
+                                src="/vendly.png"
+                                alt="Vendly Logo"
+                                fill
+                                className="object-cover"
+                            />
+                        </div>
+                        <span className="text-2xl font-black tracking-tighter uppercase text-white drop-shadow-md">
+                            vendly
+                        </span>
                     </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
+                </div>
 
-            <div className="bg-background in-data-[state=active]:block lg:in-data-[state=active]:flex mb-6 hidden w-full flex-wrap items-center justify-end space-y-8 rounded-3xl border p-6 shadow-2xl shadow-zinc-300/20 md:flex-nowrap lg:m-0 lg:flex lg:w-fit lg:gap-6 lg:space-y-0 lg:border-transparent lg:bg-transparent lg:p-0 lg:shadow-none dark:shadow-none dark:lg:bg-transparent">
-              <div className="lg:hidden">
-                <ul className="space-y-6 text-base">
-                  {menuItems.map((item, index) => (
-                    <li key={index}>
-                      <Link
-                        href={item.href}
-                        className="text-muted-foreground hover:text-accent-foreground block duration-150">
-                        <span>{item.name}</span>
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-              <div className="flex w-full flex-col space-y-3 sm:flex-row sm:gap-3 sm:space-y-0 md:w-fit">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className='text-white hover:bg-primary hover:text-white cursor-pointer'>
-                  Login
-                </Button>
-              </div>
+                {/* Middle: Links */}
+                <div className="flex-1 hidden md:flex justify-center items-center gap-8">
+                    <Link href="#features" className="text-sm font-mono font-bold lowercase text-white/90 hover:text-white transition-colors drop-shadow-md">
+                        Features
+                    </Link>
+                    <Link href="#pricing" className="text-sm font-mono font-bold lowercase text-white/90 hover:text-white transition-colors drop-shadow-md">
+                        Pricing
+                    </Link>
+                    <Link href="#about" className="text-sm font-mono font-bold lowercase text-white/90 hover:text-white transition-colors drop-shadow-md">
+                        About
+                    </Link>
+                </div>
+
+                {/* Right: Login Link */}
+                <div className="flex-1 flex justify-end items-center gap-6">
+                    <Link
+                        href="/login"
+                        className="text-sm font-mono font-bold lowercase flex items-center text-white hover:text-white/80 transition-colors px-5 py-2.5 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-sm border border-white/20 shadow-sm"
+                    >
+                        Start Selling
+                        <HugeiconsIcon icon={ArrowRight02Icon} className="ml-2 size-4" />
+                    </Link>
+                </div>
             </div>
-          </div>
         </div>
-      </nav>
-    </header>
-  )
+    )
 }
+

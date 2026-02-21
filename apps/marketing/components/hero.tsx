@@ -42,10 +42,10 @@ export function Hero() {
           transition={{ duration: 0.8, ease: "easeOut" }}
           className="flex flex-col items-center w-full"
         >
-          <h1 className="text-center text-5xl sm:text-6xl md:text-7xl lg:text-[6rem] font-semibold tracking-[-0.03em] text-white leading-[1.05] drop-shadow-lg">
-            Commerce built for <span className="text-white/60">Social brands.</span>
+          <h1 className="text-center text-[14vw] md:text-[5vw] font-black tracking-tighter text-white leading-[0.85] uppercase drop-shadow-lg">
+            Commerce built for <br /><span className="text-white/60">Social brands.</span>
           </h1>
-          <p className="mt-6 max-w-2xl text-center text-lg md:text-xl text-white/80 font-medium leading-relaxed drop-shadow-md">
+          <p className="mt-8 max-w-2xl text-center text-lg md:text-2xl font-mono font-bold lowercase text-white/80 drop-shadow-md">
             Sell through your social media and content.
           </p>
         </motion.div>

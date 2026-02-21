@@ -46,20 +46,20 @@ const Footer = () => {
               <Link href="/" className="inline-flex items-center gap-2">
                 <Logo />
               </Link>
-              <p className="text-muted-foreground mt-1.5">
+              <p className="text-muted-foreground mt-4 text-sm font-mono font-bold lowercase">
                 Vendly gives creators and small businesses online storefronts to
                 sell anywhere. {" "}
               </p>
             </div>
             {sections.map(({ title, links }) => (
               <div key={title}>
-                <h3 className="text-lg font-semibold">{title}</h3>
+                <h3 className="text-xl font-black tracking-tighter uppercase">{title}</h3>
                 <ul className="mt-3 flex flex-col gap-2">
                   {links.map(({ title, href }) => (
                     <li key={title}>
                       <Link
                         href={href}
-                        className="text-muted-foreground hover:text-primary"
+                        className="text-sm font-mono font-bold lowercase text-muted-foreground hover:text-primary"
                       >
                         {title}
                       </Link>
@@ -72,7 +72,7 @@ const Footer = () => {
         </div>
         <Separator />
         <div className="flex flex-col-reverse items-center justify-center gap-6 px-2 pt-6 pb-4 sm:flex-row sm:justify-between">
-          <p className="text-muted-foreground text-sm font-medium">
+          <p className="text-muted-foreground text-sm font-mono font-bold lowercase">
             &copy; {new Date().getFullYear()} Vendly. All rights reserved.
           </p>
           <div className="flex items-center gap-4">

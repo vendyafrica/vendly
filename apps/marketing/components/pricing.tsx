@@ -36,10 +36,10 @@ export function Pricing() {
     <section className="bg-background @container py-20 sm:py-24 lg:py-28">
       <div className="mx-auto max-w-5xl px-6">
         <div className="text-center max-w-3xl mx-auto">
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-semibold tracking-tight text-balance">
+          <h2 className="text-[10vw] md:text-[5vw] font-black tracking-tighter uppercase leading-[0.85] text-balance">
             One simple plan today, more coming soon
           </h2>
-          <p className="text-muted-foreground mx-auto mt-4 max-w-2xl text-base sm:text-lg text-balance">
+          <p className="text-muted-foreground mx-auto mt-6 max-w-2xl text-lg sm:text-2xl font-mono font-bold lowercase text-balance">
             Start free right now. Our next pricing option is in progress—join the waitlist to be first to know.
           </p>
         </div>
@@ -54,24 +54,24 @@ export function Pricing() {
             >
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  <h3 className="text-lg font-semibold text-foreground">{plan.name}</h3>
-                  <p className="text-muted-foreground mt-1 text-sm leading-relaxed">{plan.description}</p>
+                  <h3 className="text-xl font-black tracking-tighter uppercase text-foreground">{plan.name}</h3>
+                  <p className="text-muted-foreground mt-2 text-sm font-mono font-bold lowercase leading-relaxed">{plan.description}</p>
                 </div>
                 {plan.badge && (
-                  <span className="rounded-full bg-primary/10 text-primary px-3 py-1 text-xs font-semibold">
+                  <span className="rounded-full bg-primary/10 text-primary px-3 py-1 text-xs font-mono font-bold uppercase">
                     {plan.badge}
                   </span>
                 )}
               </div>
 
               <div className="flex items-baseline gap-2">
-                <span className="font-serif text-5xl font-medium">{plan.price}</span>
-                {plan.period && <span className="text-muted-foreground text-lg">{plan.period}</span>}
+                <span className="font-black tracking-tighter text-5xl md:text-6xl">{plan.price}</span>
+                {plan.period && <span className="text-muted-foreground text-lg font-mono font-bold lowercase">{plan.period}</span>}
               </div>
 
               <ul className="mt-2 space-y-3">
                 {plan.features.map((feature) => (
-                  <li key={feature} className="text-muted-foreground flex items-center gap-2 text-sm">
+                  <li key={feature} className="text-muted-foreground flex items-center gap-2 text-sm font-mono font-bold lowercase">
                     <Check className="text-primary size-4" />
                     {feature}
                   </li>

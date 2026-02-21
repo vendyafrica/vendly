@@ -10,10 +10,10 @@ export function Contact() {
     <section className="bg-background @container py-20 sm:py-24 lg:py-28">
       <div className="mx-auto max-w-5xl px-6">
         <div className="max-w-2xl">
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-semibold tracking-tight text-balance">
+          <h2 className="text-[12vw] md:text-[7vw] font-black tracking-tighter uppercase leading-[0.85] text-balance">
             Get in touch
           </h2>
-          <p className="text-muted-foreground mt-4 max-w-xl text-base sm:text-lg text-balance">
+          <p className="text-muted-foreground mt-6 max-w-xl text-lg sm:text-2xl font-mono font-bold lowercase text-balance">
             Have questions? We'd love to hear from you. Send us a message and we'll respond as soon as possible.
           </p>
         </div>
@@ -21,28 +21,28 @@ export function Contact() {
         <div className="@xl:grid-cols-5 mt-12 grid gap-10">
           <div className="@xl:col-span-2 space-y-6 *:space-y-2">
             <div>
-              <p className="text-foreground text-sm font-medium">Email</p>
+              <p className="text-foreground text-lg font-black tracking-tighter uppercase">Email</p>
               <Link
                 href="mailto:hello@example.com"
-                className="text-muted-foreground hover:text-primary text-sm"
+                className="text-muted-foreground hover:text-primary text-sm font-mono font-bold lowercase"
               >
                 hello@vendlyafrica.store
               </Link>
             </div>
 
             <div>
-              <p className="text-foreground text-sm font-medium">Phone</p>
+              <p className="text-foreground text-lg font-black tracking-tighter uppercase">Phone</p>
               <Link
                 href="tel:+1234567890"
-                className="text-muted-foreground hover:text-primary text-sm"
+                className="text-muted-foreground hover:text-primary text-sm font-mono font-bold lowercase"
               >
                 +256 780 808992
               </Link>
             </div>
 
             <div>
-              <p className="text-foreground text-sm font-medium">Office Hours</p>
-              <p className="text-muted-foreground text-sm">Monday - Friday: 9:00 AM - 5:00 PM</p>
+              <p className="text-foreground text-lg font-black tracking-tighter uppercase">Office Hours</p>
+              <p className="text-muted-foreground text-sm font-mono font-bold lowercase">Monday - Friday: 9:00 AM - 5:00 PM</p>
             </div>
           </div>
 
@@ -50,7 +50,7 @@ export function Contact() {
             <form action="" className="space-y-5">
               <div className="@md:grid-cols-2 grid gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="name" className="text-sm">
+                  <Label htmlFor="name" className="text-sm font-mono font-bold lowercase">
                     Name
                   </Label>
                   <Input
@@ -62,7 +62,7 @@ export function Contact() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="email" className="text-sm">
+                  <Label htmlFor="email" className="text-sm font-mono font-bold lowercase">
                     Email
                   </Label>
                   <Input
@@ -76,7 +76,7 @@ export function Contact() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="subject" className="text-sm">
+                <Label htmlFor="subject" className="text-sm font-mono font-bold lowercase">
                   Subject
                 </Label>
                 <Input
@@ -88,7 +88,7 @@ export function Contact() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="message" className="text-sm">
+                <Label htmlFor="message" className="text-sm font-mono font-bold lowercase">
                   Message
                 </Label>
                 <Textarea
