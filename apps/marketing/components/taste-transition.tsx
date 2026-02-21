@@ -1,60 +1,74 @@
 "use client"
 
-import { motion, useScroll, useTransform } from 'framer-motion'
-import { useRef } from 'react'
+const problems = [
+    {
+        num: "01",
+        text: "Your DMs are not an order management system. They're a waiting room where buyers lose patience and leave."
+    },
+    {
+        num: "02",
+        text: "Buyers who can't buy in the moment don't come back. Every missed message is a missed sale."
+    },
+    {
+        num: "03",
+        text: "Marketplaces steal your audience & margins. You built the following — you should keep the revenue."
+    }
+]
 
 export function TasteTransition() {
-    const containerRef = useRef<HTMLDivElement>(null)
-
-    const { scrollYProgress } = useScroll({
-        target: containerRef,
-        offset: ['start end', 'end start']
-    })
-
-    const scale = useTransform(scrollYProgress, [0, 0.5], [0.85, 1])
-    const opacity = useTransform(scrollYProgress, [0, 0.3], [0, 1])
-    const y = useTransform(scrollYProgress, [0, 0.5], [100, 0])
-
-    const problems = [
-        "Link-in-bio tools are dead ends without commerce.",
-        "Traditional storefronts kill your conversions.",
-        "Marketplaces steal your audience & margins."
-    ]
-
     return (
-        <section ref={containerRef} className="relative min-h-screen bg-background flex items-center justify-center overflow-hidden py-32">
-            <motion.div
-                style={{ scale, opacity, y }}
-                className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col items-center justify-center"
-            >
-                <div className="text-center w-full mb-16 md:mb-24">
-                    <h2 className="text-[14vw] md:text-[9vw] font-black tracking-tighter text-foreground leading-[0.85] uppercase">
-                        The System <br />
-                        <span className="text-foreground/30">is broken.</span>
+        <section
+            className="relative bg-[#0A0A0F] overflow-hidden py-24 md:py-36"
+        >
+            {/* Subtle purple radial glow */}
+            <div className="absolute inset-0 pointer-events-none" style={{
+                background: 'radial-gradient(ellipse 60% 50% at 50% 0%, rgba(91,75,255,0.12) 0%, transparent 70%)'
+            }} />
+
+            <div className="relative mx-auto max-w-6xl px-6 md:px-8">
+                {/* Headline */}
+                <div className="mb-16 md:mb-20">
+                    <div className="text-[11px] font-semibold tracking-[2px] uppercase text-[#7B6EFF] mb-5">
+                        The problem
+                    </div>
+                    <h2
+                        className="text-[clamp(36px,6vw,64px)] font-extrabold leading-[1.04] text-white"
+                        style={{ fontFamily: 'var(--font-sora), Sora, sans-serif', letterSpacing: '-2px' }}
+                    >
+                        Stop selling<br />
+                        <span className="text-white/30">from your inbox.</span>
                     </h2>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-10 md:gap-12 w-full max-w-5xl mx-auto">
-                    {problems.map((problem, i) => (
-                        <div key={i} className="flex flex-col gap-5 text-left">
-                            <div className="h-[2px] w-full bg-foreground/20" />
-                            <span className="text-foreground/30 font-mono font-bold text-sm">
-                                0{i + 1}
-                            </span>
-                            <p className="text-xl md:text-2xl font-mono text-foreground/80 font-bold lowercase">
-                                {problem}
+                {/* Problem cards */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-px bg-white/6 rounded-2xl overflow-hidden">
+                    {problems.map((p) => (
+                        <div
+                            key={p.num}
+                            className="bg-[#0A0A0F] hover:bg-white/4 transition-colors p-8 md:p-10 flex flex-col gap-5"
+                        >
+                            <div
+                                className="text-[12px] font-bold text-[#5B4BFF] tracking-wider"
+                                style={{ fontFamily: 'var(--font-sora), Sora, sans-serif' }}
+                            >
+                                {p.num}
+                            </div>
+                            <div className="h-px w-full bg-white/10" />
+                            <p className="text-[16px] text-white/70 leading-relaxed">
+                                {p.text}
                             </p>
                         </div>
                     ))}
                 </div>
 
-                <div className="mt-20 md:mt-32 text-center">
-                    <p className="text-lg md:text-2xl font-mono text-foreground/60 max-w-3xl mx-auto lowercase">
-                        creators shouldn't have to duct-tape five different tools together just to sell a product.
-                        it's time for a platform that actually works for you.
+                {/* Closing line */}
+                <div className="mt-16 max-w-2xl">
+                    <p className="text-[17px] text-white/45 leading-relaxed">
+                        Sellers on Shopvendly stop losing orders they didn't even know they were losing.
+                        It's time for a storefront that actually works with how you sell.
                     </p>
                 </div>
-            </motion.div>
+            </div>
         </section>
     )
 }

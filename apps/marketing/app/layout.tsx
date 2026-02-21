@@ -1,20 +1,23 @@
 import type { Metadata, Viewport } from "next";
 import { ThemeProvider } from "next-themes";
-import { Inter } from "next/font/google";
+import { Sora, DM_Sans } from "next/font/google";
 import Script from "next/script";
-import { LenisProvider } from "@/components/lenis-provider";
 import "./globals.css";
 
 const GA_ID = "G-JWNNZYPEX5";
 
-const geistSans = Inter({
-  variable: "--font-inter",
+const sora = Sora({
+  variable: "--font-sora",
   subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700", "800"],
+  display: "swap",
 });
 
-const geistMono = Inter({
-  variable: "--font-inter",
+const dmSans = DM_Sans({
+  variable: "--font-dm-sans",
   subsets: ["latin"],
+  weight: ["300", "400", "500", "600"],
+  display: "swap",
 });
 
 const siteUrl = "https://vendlyafrica.store";
@@ -180,9 +183,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="dark" suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased selection:bg-primary selection:text-primary-foreground bg-background text-foreground`}
+        className={`${sora.variable} ${dmSans.variable} antialiased selection:bg-primary selection:text-primary-foreground bg-background text-foreground`}
+        style={{ fontFamily: 'var(--font-dm-sans), DM Sans, sans-serif' }}
       >
         <script
           type="application/ld+json"
@@ -201,11 +205,9 @@ export default function RootLayout({
             gtag('config', '${GA_ID}');
           `}
         </Script>
-        <LenisProvider>
-          <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false} forcedTheme="light">
-            {children}
-          </ThemeProvider>
-        </LenisProvider>
+        <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false} forcedTheme="light">
+          {children}
+        </ThemeProvider>
       </body>
     </html>
   );

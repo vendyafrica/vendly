@@ -1,100 +1,150 @@
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { Check, ArrowRight } from "lucide-react";
-import { cn } from "@/lib/utils";
 
 const plans = [
   {
-    name: "Free",
-    price: "$0",
-    period: "/month",
-    description: "Start with everything you need to sell today.",
+    name: "Starter",
+    price: "Free",
+    period: "Your first 10 orders",
+    description: "Get your store live, share your links, and prove the product works for your business — completely free.",
     features: [
-      "Storefront & checkout",
-      "Unlimited products",
-      "Direct payouts",
-      "Customer messaging",
+      "Full storefront with your own link",
+      "Instagram product import",
+      "Mobile Money checkout",
+      "WhatsApp order notifications",
+      "Up to 10 completed orders",
     ],
-    highlighted: true,
-    badge: "Default",
-    cta: "Get started free",
+    featured: false,
+    badge: null,
+    cta: "Create free store",
+    ctaHref: "https://duuka.store/onboarding",
   },
   {
-    name: "Pricing plan",
-    price: "Working on it",
-    period: "",
-    description: "Next-tier pricing coming soon. We are finalizing the details.",
-    features: ["Early access perks", "Priority support", "Launch partner benefits"],
-    cta: "Join the waitlist",
-    subtle: true,
+    name: "Growth",
+    price: "4%",
+    period: "per completed sale · no monthly fee",
+    description: "You only pay when you make a sale. Everything you need to run and grow a serious social commerce business.",
+    features: [
+      "Everything in Starter",
+      "Unlimited orders",
+      "Creator referral tracking",
+      "Commission automation",
+      "Sales analytics dashboard",
+      "Customer contact history",
+    ],
+    featured: true,
+    badge: "Most popular",
+    cta: "Get started free →",
+    ctaHref: "https://duuka.store/onboarding",
   },
-];
+  {
+    name: "Scale",
+    price: "2%",
+    period: "per completed sale · flat monthly fee",
+    description: "Lower per-sale rate for sellers doing serious volume. Talk to us when you're ready to scale.",
+    features: [
+      "Everything in Growth",
+      "Reduced transaction fee",
+      "Priority support",
+      "Custom store domain",
+      "Bulk product management",
+      "Dedicated account manager",
+    ],
+    featured: false,
+    badge: null,
+    cta: "Talk to us",
+    ctaHref: "mailto:hello@vendlyafrica.store",
+  },
+]
 
 export function Pricing() {
   return (
-    <section className="bg-background @container py-20 sm:py-24 lg:py-28">
-      <div className="mx-auto max-w-5xl px-6">
-        <div className="text-center max-w-3xl mx-auto">
-          <h2 className="text-[10vw] md:text-[5vw] font-black tracking-tighter uppercase leading-[0.85] text-balance">
-            One simple plan today, more coming soon
+    <section id="pricing" className="bg-[#F5F5F7] py-24 md:py-32">
+      <div className="mx-auto max-w-6xl px-6 md:px-8">
+
+        {/* Header */}
+        <div className="mb-16 max-w-xl">
+          <div className="text-[11px] font-semibold tracking-[2px] uppercase text-[#5B4BFF] mb-5">Pricing</div>
+          <h2
+            className="text-[clamp(32px,5vw,52px)] font-extrabold text-[#0A0A0F] leading-[1.06] mb-4"
+            style={{ fontFamily: 'var(--font-sora), Sora, sans-serif', letterSpacing: '-1.5px' }}
+          >
+            We make money<br />
+            <span className="text-[#8A8A9E]">when you do.</span>
           </h2>
-          <p className="text-muted-foreground mx-auto mt-6 max-w-2xl text-lg sm:text-2xl font-mono font-bold lowercase text-balance">
-            Start free right now. Our next pricing option is in progress—join the waitlist to be first to know.
+          <p className="text-[16px] text-[#3D3D4E] leading-relaxed">
+            No monthly fees until you're ready. We take a small cut of completed
+            sales only — so our incentives are perfectly aligned with yours.
           </p>
         </div>
-        <div className="@xl:grid-cols-2 @xl:gap-6 mt-12 grid gap-6">
+
+        {/* Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
           {plans.map((plan) => (
-            <Card
+            <div
               key={plan.name}
-              className={cn(
-                "relative p-6 h-full flex flex-col gap-6",
-                plan.highlighted && "ring-primary"
-              )}
+              className={`relative rounded-2xl p-8 transition-all duration-200 hover:-translate-y-1 ${plan.featured
+                  ? 'bg-[#0A0A0F] shadow-2xl shadow-black/20 md:scale-[1.03] md:-mt-2'
+                  : 'bg-white border border-[#EBEBF0] shadow-sm hover:shadow-md'
+                }`}
             >
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <h3 className="text-xl font-black tracking-tighter uppercase text-foreground">{plan.name}</h3>
-                  <p className="text-muted-foreground mt-2 text-sm font-mono font-bold lowercase leading-relaxed">{plan.description}</p>
+              {/* Badge */}
+              {plan.badge && (
+                <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-[#5B4BFF] text-white text-[11px] font-semibold rounded-full px-4 py-1 whitespace-nowrap">
+                  {plan.badge}
                 </div>
-                {plan.badge && (
-                  <span className="rounded-full bg-primary/10 text-primary px-3 py-1 text-xs font-mono font-bold uppercase">
-                    {plan.badge}
-                  </span>
-                )}
+              )}
+
+              {/* Plan name */}
+              <div className={`text-[11px] font-semibold tracking-[1.5px] uppercase mb-3 ${plan.featured ? 'text-white/50' : 'text-[#8A8A9E]'}`}>
+                {plan.name}
               </div>
 
-              <div className="flex items-baseline gap-2">
-                <span className="font-black tracking-tighter text-5xl md:text-6xl">{plan.price}</span>
-                {plan.period && <span className="text-muted-foreground text-lg font-mono font-bold lowercase">{plan.period}</span>}
+              {/* Price */}
+              <div className="mb-1">
+                <span
+                  className={`text-[44px] font-extrabold leading-none tracking-tight ${plan.featured ? 'text-white' : 'text-[#0A0A0F]'}`}
+                  style={{ fontFamily: 'var(--font-sora), Sora, sans-serif' }}
+                >
+                  {plan.name === 'Starter' ? plan.price : (
+                    <><sup className="text-[22px] align-super">%</sup>{plan.price.replace('%', '')}</>
+                  )}
+                </span>
+              </div>
+              <div className={`text-[13px] mb-6 pb-6 border-b ${plan.featured ? 'text-white/40 border-white/10' : 'text-[#8A8A9E] border-[#EBEBF0]'}`}>
+                {plan.period}
               </div>
 
-              <ul className="mt-2 space-y-3">
-                {plan.features.map((feature) => (
-                  <li key={feature} className="text-muted-foreground flex items-center gap-2 text-sm font-mono font-bold lowercase">
-                    <Check className="text-primary size-4" />
-                    {feature}
+              {/* Description */}
+              <p className={`text-[14px] leading-relaxed mb-6 ${plan.featured ? 'text-white/55' : 'text-[#3D3D4E]'}`}>
+                {plan.description}
+              </p>
+
+              {/* Features */}
+              <ul className="flex flex-col gap-3 mb-8">
+                {plan.features.map((f) => (
+                  <li key={f} className={`flex items-center gap-2.5 text-[13px] ${plan.featured ? 'text-white/70' : 'text-[#3D3D4E]'}`}>
+                    <span className={`w-4 h-4 rounded-full flex-shrink-0 flex items-center justify-center text-[9px] font-bold ${plan.featured ? 'bg-[#5B4BFF]/40 text-white' : 'bg-[#F0EEFF] text-[#5B4BFF]'}`}>
+                      ✓
+                    </span>
+                    {f}
                   </li>
                 ))}
               </ul>
 
-              <Button
-                asChild
-                variant={plan.highlighted ? "default" : "outline"}
-                className="mt-auto w-full gap-2"
+              {/* CTA */}
+              <Link
+                href={plan.ctaHref}
+                className={`block w-full text-center text-[14px] font-semibold rounded-full py-3.5 transition-all duration-200 ${plan.featured
+                    ? 'bg-[#5B4BFF] text-white hover:bg-[#7B6EFF] shadow-lg shadow-[#5B4BFF]/40'
+                    : 'border-[1.5px] border-[#EBEBF0] text-[#0A0A0F] hover:border-[#5B4BFF] hover:text-[#5B4BFF]'
+                  }`}
               >
-                <Link href="#pricing">
-                  {plan.cta}
-                  <ArrowRight className="size-4" />
-                </Link>
-              </Button>
-            </Card>
+                {plan.cta}
+              </Link>
+            </div>
           ))}
         </div>
-        <p className="text-muted-foreground mt-8 text-center text-sm">
-          All plans include a 14-day free trial. No credit card required.
-        </p>
       </div>
     </section>
-  );
+  )
 }
