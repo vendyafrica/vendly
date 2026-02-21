@@ -18,7 +18,7 @@ export function Hero() {
         className="object-cover object-center opacity-70"
         priority
       />
-      <div className="absolute inset-0 bg-linear-to-r from-black/80 via-black/65 to-black/35" />
+      <div className="absolute inset-0 bg-linear-to-r from-[#121214] via-[#121214]/80 to-[#121214]/35" />
 
       <div className="relative mx-auto w-full max-w-6xl px-5 md:px-10 py-16 md:py-28">
         <div className="max-w-2xl space-y-6 md:space-y-8">

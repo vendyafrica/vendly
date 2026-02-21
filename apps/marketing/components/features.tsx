@@ -52,112 +52,107 @@ export function Features() {
     const step = steps[activeIndex]!
 
     return (
-        <section id="product" className="bg-[#F8F7F4] text-[#0A0A0F] pt-8 md:pt-14 pb-14 md:pb-24">
-            <div className="mx-auto max-w-6xl px-5 md:px-8">
+        <section id="product" className="relative overflow-hidden pt-20 md:pt-32 pb-16 md:pb-24 flex flex-col justify-center min-h-screen"
+            onMouseEnter={() => setIsPaused(true)}
+            onMouseLeave={() => setIsPaused(false)}
+        >
+            {/* Background media */}
+            {step.media.type === "image" ? (
+                <img
+                    key={step.media.src}
+                    src={step.media.src}
+                    alt={step.title}
+                    className="absolute inset-0 h-full w-full object-cover object-[50%_30%]"
+                    loading="lazy"
+                />
+            ) : (
+                <video
+                    key={step.media.src}
+                    className="absolute inset-0 h-full w-full object-cover object-[50%_30%]"
+                    src={step.media.src}
+                    autoPlay
+                    loop
+                    muted
+                    playsInline
+                    preload="auto"
+                />
+            )}
+            <div className="absolute inset-0 bg-linear-to-r from-[#121214] via-[#121214]/80 to-[#121214]/30" />
+
+            <div className="relative mx-auto w-full max-w-6xl px-5 md:px-8 z-10 flex flex-col flex-1 h-full">
 
                 {/* Header */}
-                <div className="mb-8 md:mb-12">
-                    <div className="text-[11px] font-semibold tracking-[2px] uppercase text-[#7B6EFF] mb-5">
+                <div className="mb-12 md:mb-16">
+                    <div className="text-[11px] font-semibold tracking-[2px] uppercase text-[#BDB3FF] mb-5">
                         How it works
                     </div>
                     <h2
-                        className="text-[clamp(32px,5vw,52px)] font-extrabold leading-[1.06] text-[#0A0A0F]"
+                        className="text-[clamp(32px,5vw,52px)] font-extrabold leading-[1.06] text-white"
                         style={{ fontFamily: 'var(--font-sora), Sora, sans-serif', letterSpacing: '-1.5px' }}
                     >
                         From post to paid.<br />
-                        <span className="text-[#3D3D4E]">In four steps.</span>
+                        <span className="text-white/60">In four steps.</span>
                     </h2>
-                    <p className="mt-5 text-[16px] text-[#3D3D4E] max-w-3xl leading-relaxed">
+                    <p className="mt-5 text-[16px] text-white/80 max-w-2xl leading-relaxed">
                         No DMs. No back-and-forth. No dropped orders. Your content does
                         the selling — Shopvendly handles everything that comes after.
                     </p>
                 </div>
 
-                <div
-                    className="relative overflow-hidden rounded-[20px] md:rounded-[36px] min-h-[480px] md:min-h-[620px] isolate border border-white/10 bg-white/5"
-                    onMouseEnter={() => setIsPaused(true)}
-                    onMouseLeave={() => setIsPaused(false)}
-                >
-                    {/* Background media */}
-                    {step.media.type === "image" ? (
-                        <img
-                            key={step.media.src}
-                            src={step.media.src}
-                            alt={step.title}
-                            className="absolute inset-0 h-full w-full object-cover object-[50%_30%]"
-                            loading="lazy"
-                        />
-                    ) : (
-                        <video
-                            key={step.media.src}
-                            className="absolute inset-0 h-full w-full object-cover object-[50%_30%]"
-                            src={step.media.src}
-                            autoPlay
-                            loop
-                            muted
-                            playsInline
-                            preload="auto"
-                        />
-                    )}
-                    <div className="absolute inset-0 bg-linear-to-r from-black/70 via-black/40 to-black/15" />
-
-                    <div className="relative h-full px-5 md:px-10 py-8 md:py-14 flex flex-col">
-                        <div className="flex flex-wrap items-center gap-2 md:gap-3">
-                            {tabs.map((tab, i) => {
-                                const isActive = i === activeIndex
-                                return (
-                                    <button
-                                        key={tab}
-                                        type="button"
-                                        onClick={() => {
-                                            lastManualSwitchRef.current = Date.now()
-                                            setActiveIndex(i)
-                                        }}
-                                        className={
-                                            isActive
-                                                ? "px-4 py-2 rounded-full bg-white text-[#0A0A0F] text-[11px] font-bold tracking-widest uppercase"
-                                                : "px-4 py-2 rounded-full bg-white/10 hover:bg-white/15 text-white text-[11px] font-bold tracking-widest uppercase transition-colors"
-                                        }
-                                    >
-                                        {tab}
-                                    </button>
-                                )
-                            })}
-                        </div>
-
-                        <div className="flex-1 flex items-center">
-                            <div className="max-w-2xl">
-                                <div
-                                    className="text-[11px] font-bold tracking-widest text-[#BDB3FF] mb-4"
-                                    style={{ fontFamily: 'var(--font-sora), Sora, sans-serif' }}
+                <div className="flex-1 flex flex-col justify-end">
+                    <div className="flex flex-wrap items-center gap-2 md:gap-3 mb-8">
+                        {tabs.map((tab, i) => {
+                            const isActive = i === activeIndex
+                            return (
+                                <button
+                                    key={tab}
+                                    type="button"
+                                    onClick={() => {
+                                        lastManualSwitchRef.current = Date.now()
+                                        setActiveIndex(i)
+                                    }}
+                                    className={
+                                        isActive
+                                            ? "px-4 py-2 rounded-full bg-white text-[#0A0A0F] text-[11px] font-bold tracking-widest uppercase"
+                                            : "px-4 py-2 rounded-full border border-white/20 bg-black/20 backdrop-blur-md hover:bg-white/10 text-white text-[11px] font-bold tracking-widest uppercase transition-colors"
+                                    }
                                 >
-                                    {step.num}
-                                </div>
-                                <div
-                                    className="text-[clamp(28px,4vw,44px)] font-extrabold text-white leading-[1.05]"
-                                    style={{ fontFamily: 'var(--font-sora), Sora, sans-serif', letterSpacing: '-1px' }}
-                                >
-                                    {step.title}
-                                </div>
-                                <p className="mt-5 text-[15px] md:text-[16px] text-white/85 leading-relaxed max-w-xl">
-                                    {step.body}
-                                </p>
-                            </div>
-                        </div>
+                                    {tab}
+                                </button>
+                            )
+                        })}
+                    </div>
 
-                        <div className="mt-8 flex items-center">
-                            <div className="flex items-center gap-2">
-                                {steps.map((_, i) => (
-                                    <div
-                                        key={i}
-                                        className={
-                                            i === activeIndex
-                                                ? "h-1.5 w-6 rounded-full bg-white"
-                                                : "h-1.5 w-6 rounded-full bg-white/25"
-                                        }
-                                    />
-                                ))}
-                            </div>
+                    <div className="max-w-2xl">
+                        <div
+                            className="text-[11px] font-bold tracking-widest text-[#BDB3FF] mb-4"
+                            style={{ fontFamily: 'var(--font-sora), Sora, sans-serif' }}
+                        >
+                            {step.num}
+                        </div>
+                        <div
+                            className="text-[clamp(28px,4vw,44px)] font-extrabold text-white leading-[1.05]"
+                            style={{ fontFamily: 'var(--font-sora), Sora, sans-serif', letterSpacing: '-1px' }}
+                        >
+                            {step.title}
+                        </div>
+                        <p className="mt-5 text-[15px] md:text-[16px] text-white/85 leading-relaxed max-w-xl">
+                            {step.body}
+                        </p>
+                    </div>
+
+                    <div className="mt-8 flex items-center">
+                        <div className="flex items-center gap-2">
+                            {steps.map((_, i) => (
+                                <div
+                                    key={i}
+                                    className={
+                                        i === activeIndex
+                                            ? "h-1.5 w-6 rounded-full bg-white"
+                                            : "h-1.5 w-6 rounded-full bg-white/25"
+                                    }
+                                />
+                            ))}
                         </div>
                     </div>
                 </div>

@@ -8,7 +8,7 @@ import { Solutions } from "@/components/solutions";
 
 export default function Home() {
   return (
-    <div className="bg-white text-[#0A0A0F]">
+    <div className="bg-[#121214] text-white selection:bg-[#5B4BFF] selection:text-white">
       <Header />
       <Hero />
       <TasteTransition />

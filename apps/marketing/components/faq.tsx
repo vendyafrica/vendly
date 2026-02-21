@@ -40,37 +40,36 @@ const faqItems = [
 
 export function FAQ() {
   return (
-    <section className="bg-[#F8F7F4] py-12 md:py-24">
+    <section className="py-12 md:py-24 border-t border-white/5 relative z-10">
       <div className="mx-auto max-w-6xl px-5 md:px-8">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-20 items-start">
 
           {/* Left: Heading */}
           <div className="md:sticky md:top-28">
-            <div className="text-[11px] font-semibold tracking-[2px] uppercase text-[#5B4BFF] mb-5">FAQ</div>
+            <div className="text-[11px] font-semibold tracking-[2px] uppercase text-[#BDB3FF] mb-5">FAQ</div>
             <h2
-              className={`${anton.className} text-[clamp(32px,5vw,52px)] font-extrabold text-[#0A0A0F] leading-[1.06] mb-5`}
-              style={{ letterSpacing: '-1.5px' }}
+              className={`${anton.className} text-[clamp(32px,5vw,52px)] font-extrabold text-white leading-[1.06] mb-5 tracking-normal`}
             >
               Good<br />questions.
             </h2>
-            <p className="text-[15px] text-[#3D3D4E] leading-relaxed mb-6">
+            <p className="text-[15px] text-white/70 leading-relaxed mb-6">
               Everything you need to know about selling on shopvendly.
             </p>
           </div>
 
           {/* Right: Accordion */}
           <div>
-            <Accordion type="single" collapsible className="flex flex-col divide-y divide-[#EBEBF0]">
+            <Accordion type="single" collapsible className="flex flex-col divide-y divide-white/10">
               {faqItems.map((item) => (
                 <AccordionItem key={item.id} value={item.id} className="border-0 py-1">
                   <AccordionTrigger
-                    className="text-[15px] font-bold text-[#0A0A0F] text-left py-5 hover:no-underline cursor-pointer hover:text-[#5B4BFF] transition-colors"
+                    className="text-[15px] font-bold text-white text-left py-5 hover:no-underline cursor-pointer hover:text-[#BDB3FF] transition-colors"
                     style={{ fontFamily: 'var(--font-sora), Sora, sans-serif' }}
                   >
                     {item.question}
                   </AccordionTrigger>
                   <AccordionContent>
-                    <p className="text-[14px] text-[#8A8A9E] leading-relaxed pb-5">
+                    <p className="text-[14px] text-white/60 leading-relaxed pb-5">
                       {item.answer}
                     </p>
                   </AccordionContent>

@@ -27,38 +27,44 @@ const Footer = () => {
   return (
     <>
       {/* CTA Band */}
-      <div className="bg-[#F8F7F4] py-14 md:py-20 px-5 text-center">
+      <div className="py-14 md:py-20 px-5 text-center border-t border-white/5 relative z-10">
         <h2
-          className={`${anton.className} text-[clamp(26px,4vw,44px)] font-extrabold text-[#0A0A0F] leading-[1.1] mb-4`}
-          style={{ letterSpacing: '-1.5px' }}
+          className={`${anton.className} text-[clamp(26px,4vw,44px)] font-extrabold text-white leading-[1.1] mb-4 tracking-normal`}
         >
           Your followers are already interested.<br />
           Give them somewhere to buy.
         </h2>
-        <p className="text-[14px] text-[#3D3D4E] mb-10">
+        <p className="text-[14px] text-white/70 mb-10">
           Takes 3 minutes.
         </p>
         <Link
           href="https://duuka.store/onboarding"
-          className="inline-flex items-center gap-2 bg-[#FF2FB2] hover:bg-[#ff4bc2] text-white font-bold text-[15px] rounded-full px-9 py-4 hover:-translate-y-0.5 transition-all duration-200 shadow-xl shadow-[#FF6FA5]/30"
+          className="inline-flex items-center gap-2 bg-[#FF2FB2] hover:bg-[#ff4bc2] text-white font-bold text-[15px] rounded-full px-9 py-4 hover:-translate-y-0.5 transition-all duration-200 shadow-xl shadow-[#FF6FA5]/20"
         >
           Create your free store →
         </Link>
       </div>
 
       {/* Footer */}
-      <footer className="bg-[#F1F0EC] px-5 pt-10 md:pt-14 pb-8">
+      <footer className="bg-white/5 px-5 pt-10 md:pt-14 pb-8 border-t border-white/5 relative z-10">
         <div className="mx-auto max-w-6xl">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-10 mb-10 md:mb-12">
             {/* Brand col */}
             <div className="col-span-2 md:col-span-1">
-              <span
-                className="text-[18px] font-bold text-[#0A0A0F] block mb-3"
-                style={{ fontFamily: 'var(--font-sora), Sora, sans-serif' }}
-              >
-                shop<span className="text-[#7B6EFF]">vendly</span>
-              </span>
-              <p className="text-[13px] text-[#3D3D4E] leading-relaxed">
+              <div className="flex items-center gap-1 group shrink-0 mb-4">
+                <span
+                  className={`${anton.className} text-[20px] leading-none text-white`}
+                >
+                  shop
+                </span>
+                <span
+                  className="text-[18px] font-bold leading-none text-[#5B4BFF] -ml-[2px]"
+                  style={{ fontFamily: "var(--font-sora), Sora, sans-serif" }}
+                >
+                  Vendly
+                </span>
+              </div>
+              <p className="text-[13px] text-white/60 leading-relaxed">
                 Sell more from every post you share. Built for Instagram, TikTok,
                 and WhatsApp sellers across Africa.
               </p>
@@ -66,11 +72,11 @@ const Footer = () => {
 
             {/* Product */}
             <div>
-              <div className="text-[10px] font-semibold tracking-[1px] uppercase text-[#6C6C7A] mb-4">Product</div>
+              <div className="text-[10px] font-semibold tracking-[1px] uppercase text-white/40 mb-4">Product</div>
               <ul className="flex flex-col gap-2.5">
                 {productLinks.map((l) => (
                   <li key={l.title}>
-                    <Link href={l.href} className="text-[13px] text-[#3D3D4E] hover:text-[#F2C94C] transition-colors">
+                    <Link href={l.href} className="text-[13px] text-white/60 hover:text-white transition-colors">
                       {l.title}
                     </Link>
                   </li>
@@ -80,11 +86,11 @@ const Footer = () => {
 
             {/* Company */}
             <div>
-              <div className="text-[10px] font-semibold tracking-[1px] uppercase text-[#6C6C7A] mb-4">Company</div>
+              <div className="text-[10px] font-semibold tracking-[1px] uppercase text-white/40 mb-4">Company</div>
               <ul className="flex flex-col gap-2.5">
                 {companyLinks.map((l) => (
                   <li key={l.title}>
-                    <Link href={l.href} className="text-[13px] text-[#3D3D4E] hover:text-[#F2C94C] transition-colors">
+                    <Link href={l.href} className="text-[13px] text-white/60 hover:text-white transition-colors">
                       {l.title}
                     </Link>
                   </li>
@@ -94,11 +100,11 @@ const Footer = () => {
 
             {/* Follow */}
             <div>
-              <div className="text-[10px] font-semibold tracking-[1px] uppercase text-[#6C6C7A] mb-4">Follow</div>
+              <div className="text-[10px] font-semibold tracking-[1px] uppercase text-white/40 mb-4">Follow</div>
               <ul className="flex flex-col gap-2.5">
                 {followLinks.map((l) => (
                   <li key={l.title}>
-                    <Link href={l.href} className="text-[13px] text-[#3D3D4E] hover:text-[#F2C94C] transition-colors">
+                    <Link href={l.href} className="text-[13px] text-white/60 hover:text-white transition-colors">
                       {l.title}
                     </Link>
                   </li>
@@ -108,8 +114,8 @@ const Footer = () => {
           </div>
 
           {/* Bottom bar */}
-          <div className="border-t border-[#E2E0DA] pt-6 flex flex-col sm:flex-row items-center justify-between gap-3">
-            <span className="text-[12px] text-[#6C6C7A]"> 2026 Vendly. All rights reserved.</span>
+          <div className="border-t border-white/10 pt-6 flex flex-col sm:flex-row items-center justify-between gap-3">
+            <span className="text-[12px] text-white/40"> 2026 Vendly. All rights reserved.</span>
           </div>
         </div>
       </footer>
