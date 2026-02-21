@@ -1,73 +1,88 @@
 "use client"
 
-const problems = [
-    {
-        num: "01",
-        text: "Your DMs are not an order management system. They're a waiting room where buyers lose patience and leave."
-    },
-    {
-        num: "02",
-        text: "Buyers who can't buy in the moment don't come back. Every missed message is a missed sale."
-    },
-    {
-        num: "03",
-        text: "Marketplaces steal your audience & margins. You built the following — you should keep the revenue."
-    }
-]
+import Image from "next/image"
+import { Anton } from "next/font/google"
+import { useEffect, useRef, useState } from "react"
+import { Highlighter } from "@/components/ui/highlighter"
+import { TextAnimate } from "@/components/ui/text-animate"
+
+const anton = Anton({ weight: "400", subsets: ["latin"], display: "swap" })
 
 export function TasteTransition() {
+    const containerRef = useRef<HTMLElement | null>(null)
+    const [hasEntered, setHasEntered] = useState(false)
+    const [showHighlight, setShowHighlight] = useState(false)
+    const [cycle, setCycle] = useState(0)
+
+    useEffect(() => {
+        const el = containerRef.current
+        if (!el) return
+
+        const observer = new IntersectionObserver(
+            ([entry]) => {
+                if (entry?.isIntersecting) {
+                    setHasEntered(true)
+                    setShowHighlight(false)
+                    setCycle((c) => c + 1)
+                } else {
+                    setHasEntered(false)
+                    setShowHighlight(false)
+                }
+            },
+            { threshold: 0.4 }
+        )
+
+        observer.observe(el)
+        return () => observer.disconnect()
+    }, [])
+
+    useEffect(() => {
+        if (!hasEntered) return
+        const t = window.setTimeout(() => setShowHighlight(true), 1600)
+        return () => window.clearTimeout(t)
+    }, [hasEntered])
+
     return (
-        <section
-            className="relative bg-[#0A0A0F] overflow-hidden py-24 md:py-36"
-        >
-            {/* Subtle purple radial glow */}
-            <div className="absolute inset-0 pointer-events-none" style={{
-                background: 'radial-gradient(ellipse 60% 50% at 50% 0%, rgba(91,75,255,0.12) 0%, transparent 70%)'
-            }} />
-
-            <div className="relative mx-auto max-w-6xl px-6 md:px-8">
-                {/* Headline */}
-                <div className="mb-16 md:mb-20">
-                    <div className="text-[11px] font-semibold tracking-[2px] uppercase text-[#7B6EFF] mb-5">
-                        The problem
-                    </div>
+        <section ref={containerRef} className="relative bg-[#F8F7F4] text-[#0A0A0F] py-24 md:py-28">
+            <div className="mx-auto max-w-4xl px-6 md:px-8 text-center space-y-6">
+                <div className="flex justify-center">
+                    <Image src="/vendly.png" alt="Vendly" width={120} height={32} className="h-8 w-auto" />
+                </div>
+                <div className="text-[11px] font-semibold tracking-[0.18em] uppercase text-[#6C6C7A]">
+                    Built for social sellers who want speed and control
+                </div>
+                {showHighlight ? (
                     <h2
-                        className="text-[clamp(36px,6vw,64px)] font-extrabold leading-[1.04] text-white"
-                        style={{ fontFamily: 'var(--font-sora), Sora, sans-serif', letterSpacing: '-2px' }}
+                        key={`highlight-${cycle}`}
+                        className={`${anton.className} text-[clamp(32px,5vw,52px)] font-extrabold leading-[1.05] tracking-normal`}
                     >
-                        Stop selling<br />
-                        <span className="text-white/30">from your inbox.</span>
+                        <Highlighter action="underline" color="#5B4BFF" strokeWidth={2.4} animationDuration={1200} iterations={3} padding={2} isView>
+                            Scale
+                        </Highlighter>{" "}
+                        every conversation into a confirmed{" "}
+                        <Highlighter action="highlight" color="#D9D6FF" strokeWidth={1.6} animationDuration={1200} iterations={2} padding={3} isView>
+                            order
+                        </Highlighter>
+                        .
                     </h2>
-                </div>
-
-                {/* Problem cards */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-px bg-white/6 rounded-2xl overflow-hidden">
-                    {problems.map((p) => (
-                        <div
-                            key={p.num}
-                            className="bg-[#0A0A0F] hover:bg-white/4 transition-colors p-8 md:p-10 flex flex-col gap-5"
-                        >
-                            <div
-                                className="text-[12px] font-bold text-[#5B4BFF] tracking-wider"
-                                style={{ fontFamily: 'var(--font-sora), Sora, sans-serif' }}
-                            >
-                                {p.num}
-                            </div>
-                            <div className="h-px w-full bg-white/10" />
-                            <p className="text-[16px] text-white/70 leading-relaxed">
-                                {p.text}
-                            </p>
-                        </div>
-                    ))}
-                </div>
-
-                {/* Closing line */}
-                <div className="mt-16 max-w-2xl">
-                    <p className="text-[17px] text-white/45 leading-relaxed">
-                        Sellers on Shopvendly stop losing orders they didn't even know they were losing.
-                        It's time for a storefront that actually works with how you sell.
-                    </p>
-                </div>
+                ) : (
+                    <TextAnimate
+                        key={`text-${cycle}`}
+                        animation="blurInUp"
+                        by="word"
+                        className={`text-[clamp(32px,5vw,52px)] ${anton.className} font-extrabold leading-[1.05] tracking-tight`}
+                        segmentClassName="inline-block"
+                        delay={0.15}
+                        duration={1.4}
+                        startOnView={false}
+                        animate={hasEntered ? "show" : "hidden"}
+                    >
+                        Scale every conversation into a confirmed order.
+                    </TextAnimate>
+                )}
+                <p className="text-[16px] md:text-[17px] text-[#3D3D4E] leading-relaxed max-w-2xl mx-auto">
+                    Automate checkout, keep your margins, and stay in control of your customer list—without sending buyers to a marketplace that owns the relationship.
+                </p>
             </div>
         </section>
     )

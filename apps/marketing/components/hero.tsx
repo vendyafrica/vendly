@@ -2,8 +2,11 @@
 
 import Image from "next/image"
 import Link from "next/link"
+import { Anton } from "next/font/google"
 import { HugeiconsIcon } from "@hugeicons/react"
 import { MetaIcon, TiktokIcon, InstagramIcon } from "@hugeicons/core-free-icons"
+
+const anton = Anton({ weight: "400", subsets: ["latin"], display: "swap" })
 
 export function Hero() {
   return (
@@ -21,13 +24,12 @@ export function Hero() {
         <div className="max-w-2xl space-y-8">
           <div className="inline-flex items-center gap-2 rounded-full bg-white/10 border border-white/15 px-4 py-2 backdrop-blur">
             <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-            <span className="text-xs font-semibold tracking-[0.2em] uppercase text-white/80">Automate Instagram, TikTok, WhatsApp</span>
+            <span className="text-[9px] font-semibold tracking-[0.18em] uppercase text-white/80">Automate Instagram, TikTok, WhatsApp</span>
           </div>
 
           <div className="space-y-4">
             <h1
-              className="text-[clamp(34px,5vw,58px)] leading-[1.05] font-black tracking-tight"
-              style={{ fontFamily: "var(--font-sora), Sora, sans-serif" }}
+              className={`${anton.className} text-[clamp(34px,5vw,58px)] leading-[1.05] font-black tracking-tight`}
             >
               Make the most out of every customer conversation.
             </h1>
@@ -43,23 +45,17 @@ export function Hero() {
             >
               Get Started
             </Link>
-            <Link
-              href="https://duuka.store/login"
-              className="inline-flex items-center justify-center rounded-full border border-white/40 hover:border-white text-white font-semibold px-6 py-3 text-sm backdrop-blur transition-colors"
-            >
-              Sign in
-            </Link>
-            <span className="text-sm text-white/60">Free to start. No credit card.</span>
+            <span className="text-sm text-white/60">Try it 14 days free.</span>
           </div>
 
           <div className="flex flex-wrap items-center gap-6 pt-4 text-sm text-white/80">
             <div className="flex items-center gap-2">
               <HugeiconsIcon icon={MetaIcon} size={22} />
-              <span className="font-semibold">Meta Business Partner</span>
+              <span className="font-semibold">Meta Business</span>
             </div>
             <div className="flex items-center gap-2">
               <HugeiconsIcon icon={InstagramIcon} size={22} />
-              <span className="font-semibold">Instagram Commerce</span>
+              <span className="font-semibold">Instagram Shopping</span>
             </div>
             <div className="flex items-center gap-2">
               <HugeiconsIcon icon={TiktokIcon} size={22} />

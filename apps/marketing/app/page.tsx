@@ -3,7 +3,6 @@ import Footer from "@/components/footer";
 import { Hero } from "@/components/hero";
 import { Header } from "@/components/header";
 import { Features } from "@/components/features";
-import { Pricing } from "@/components/pricing";
 import { TasteTransition } from "@/components/taste-transition";
 import { Solutions } from "@/components/solutions";
 
@@ -15,7 +14,6 @@ export default function Home() {
       <TasteTransition />
       <Features />
       <Solutions />
-      <Pricing />
       <FAQ />
       <Footer />
     </div>
