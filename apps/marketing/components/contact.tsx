@@ -7,8 +7,8 @@ import Link from "next/link";
 
 export function Contact() {
   return (
-    <section className="bg-background @container py-20 sm:py-24 lg:py-28">
-      <div className="mx-auto max-w-5xl px-6">
+    <section className="bg-background @container py-12 sm:py-16 lg:py-20">
+      <div className="mx-auto max-w-5xl px-5">
         <div className="max-w-2xl">
           <h2 className="text-[12vw] md:text-[7vw] font-black tracking-tighter uppercase leading-[0.85] text-balance">
             Get in touch

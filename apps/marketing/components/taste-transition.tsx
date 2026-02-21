@@ -43,8 +43,8 @@ export function TasteTransition() {
     }, [hasEntered])
 
     return (
-        <section ref={containerRef} className="relative bg-[#F8F7F4] text-[#0A0A0F] py-24 md:py-28">
-            <div className="mx-auto max-w-4xl px-6 md:px-8 text-center space-y-6">
+        <section ref={containerRef} className="relative bg-[#F8F7F4] text-[#0A0A0F] py-14 md:py-20">
+            <div className="mx-auto max-w-4xl px-5 md:px-8 text-center space-y-5 md:space-y-6">
                 <div className="flex justify-center">
                     <Image src="/vendly.png" alt="Vendly" width={120} height={32} className="h-8 w-auto" />
                 </div>

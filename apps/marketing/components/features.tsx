@@ -8,7 +8,7 @@ const steps = [
         tab: "Post",
         title: "Post it.",
         body: "Add your Shopvendly link to your bio or drop it in the caption. Every product gets its own link. Share the dress. Share the skincare set. Share anything.",
-        media: { type: "image", src: "/hero-5.jpg" }
+        media: { type: "image", src: "https://mplsrodasp.ufs.sh/f/9yFN4ZxbAeCYJSC8u5AGXKmU67zhiVxFL4cqrgDYdMQaenAN" }
     },
     {
         num: "02",
@@ -22,14 +22,14 @@ const steps = [
         tab: "Ping",
         title: "You get the ping.",
         body: "The moment an order lands, your WhatsApp gets everything — buyer name, number, address, and what they ordered. No inbox-checking. No missed messages.",
-        media: { type: "image", src: "/hero-2.jpg" }
+        media: { type: "image", src: "https://mplsrodasp.ufs.sh/f/9yFN4ZxbAeCYbewHzom1tJzyuCTxU2RmXc6QZOKgE8wSPGIn" }
     },
     {
         num: "04",
         tab: "Credit",
         title: "Creators get credit.",
         body: "Give any creator a link with their tag. Every sale they drive shows up in your dashboard — automatically tracked, commission calculated. They earn. You scale.",
-        media: { type: "image", src: "/hero-3.jpg" }
+        media: { type: "image", src: "https://mplsrodasp.ufs.sh/f/9yFN4ZxbAeCYBgl6bhtJ1aPV9vKIdZyqjXue6k7FNTswrcLA" }
     }
 ]
 
@@ -52,11 +52,11 @@ export function Features() {
     const step = steps[activeIndex]!
 
     return (
-        <section id="product" className="bg-[#F8F7F4] text-[#0A0A0F] pt-12 md:pt-18 pb-24 md:pb-32">
-            <div className="mx-auto max-w-6xl px-6 md:px-8">
+        <section id="product" className="bg-[#F8F7F4] text-[#0A0A0F] pt-8 md:pt-14 pb-14 md:pb-24">
+            <div className="mx-auto max-w-6xl px-5 md:px-8">
 
                 {/* Header */}
-                <div className="mb-14 md:mb-16">
+                <div className="mb-8 md:mb-12">
                     <div className="text-[11px] font-semibold tracking-[2px] uppercase text-[#7B6EFF] mb-5">
                         How it works
                     </div>
@@ -74,7 +74,7 @@ export function Features() {
                 </div>
 
                 <div
-                    className="relative overflow-hidden rounded-[28px] md:rounded-[36px] min-h-[520px] md:min-h-[620px] isolate border border-white/10 bg-white/5"
+                    className="relative overflow-hidden rounded-[20px] md:rounded-[36px] min-h-[480px] md:min-h-[620px] isolate border border-white/10 bg-white/5"
                     onMouseEnter={() => setIsPaused(true)}
                     onMouseLeave={() => setIsPaused(false)}
                 >
@@ -101,7 +101,7 @@ export function Features() {
                     )}
                     <div className="absolute inset-0 bg-linear-to-r from-black/70 via-black/40 to-black/15" />
 
-                    <div className="relative h-full px-6 md:px-10 py-12 md:py-14 flex flex-col">
+                    <div className="relative h-full px-5 md:px-10 py-8 md:py-14 flex flex-col">
                         <div className="flex flex-wrap items-center gap-2 md:gap-3">
                             {tabs.map((tab, i) => {
                                 const isActive = i === activeIndex

@@ -1,7 +1,9 @@
 'use client';
 
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import Link from "next/link";
+import { Anton } from "next/font/google";
+
+const anton = Anton({ weight: "400", subsets: ["latin"], display: "swap" });
 
 const faqItems = [
   {
@@ -38,28 +40,22 @@ const faqItems = [
 
 export function FAQ() {
   return (
-    <section className="bg-white py-24 md:py-32">
-      <div className="mx-auto max-w-6xl px-6 md:px-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-16 md:gap-24 items-start">
+    <section className="bg-[#F8F7F4] py-12 md:py-24">
+      <div className="mx-auto max-w-6xl px-5 md:px-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-20 items-start">
 
           {/* Left: Heading */}
           <div className="md:sticky md:top-28">
             <div className="text-[11px] font-semibold tracking-[2px] uppercase text-[#5B4BFF] mb-5">FAQ</div>
             <h2
-              className="text-[clamp(32px,5vw,52px)] font-extrabold text-[#0A0A0F] leading-[1.06] mb-5"
-              style={{ fontFamily: 'var(--font-sora), Sora, sans-serif', letterSpacing: '-1.5px' }}
+              className={`${anton.className} text-[clamp(32px,5vw,52px)] font-extrabold text-[#0A0A0F] leading-[1.06] mb-5`}
+              style={{ letterSpacing: '-1.5px' }}
             >
               Good<br />questions.
             </h2>
             <p className="text-[15px] text-[#3D3D4E] leading-relaxed mb-6">
-              Everything you need to know about selling on Shopvendly.
+              Everything you need to know about selling on shopvendly.
             </p>
-            <Link
-              href="mailto:hello@vendlyafrica.store"
-              className="text-[13px] font-semibold text-[#5B4BFF] hover:underline"
-            >
-              Still have questions? Contact us →
-            </Link>
           </div>
 
           {/* Right: Accordion */}
