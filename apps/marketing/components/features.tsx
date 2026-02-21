@@ -1,244 +1,77 @@
-import { Card } from '@/components/ui/card'
-import { cn } from '@/lib/utils'
-import { Shield } from 'lucide-react'
-import React from 'react'
+"use client"
 
+import { motion } from 'framer-motion'
+
+const curators = [
+    {
+        name: "Amina's Boutique",
+        category: "High Fashion",
+        image: "/images/african_fashion.png",
+        className: "md:col-span-2 md:row-span-2 min-h-[500px]"
+    },
+    {
+        name: "Kofi Organics",
+        category: "Skincare",
+        image: "/images/african_beauty.png",
+        className: "md:col-span-1 md:row-span-1 min-h-[300px]"
+    },
+    {
+        name: "Nairobi Tech",
+        category: "Electronics",
+        image: "/images/african_entrepreneur.png",
+        className: "md:col-span-1 md:row-span-1 min-h-[300px]"
+    },
+    {
+        name: "Lagos Streetwear",
+        category: "Apparel",
+        image: "https://cdn.cosmos.so/5d252bfc-ff2d-421b-8e3b-fe7d9874d5b5?format=jpeg",
+        className: "md:col-span-3 md:row-span-1 min-h-[400px]"
+    }
+]
 
 export function Features() {
     return (
-        <section className="bg-background @container py-24">
-            <div className="mx-auto max-w-6xl px-6">
-                <div className="max-w-2xl">
-                    <h2 className="text-balance text-4xl font-medium">Everything you need to sell Online</h2>
+        <section className="bg-background pb-32 pt-16 overflow-hidden">
+            <div className="mx-auto max-w-7xl px-4 md:px-8">
+                <div className="mb-24 flex flex-col md:flex-row md:items-end justify-between gap-8">
+                    <h2 className="text-[12vw] md:text-[8rem] font-black tracking-tighter text-foreground leading-[0.85] uppercase max-w-2xl">
+                        Curated<br />
+                        <span className="text-foreground/30">Storefronts.</span>
+                    </h2>
+                    <p className="text-xl md:text-2xl font-mono text-muted-foreground font-medium max-w-md lowercase pb-2">
+                        Discover the best independent brands across Africa, handpicked for you.
+                    </p>
                 </div>
-                <div className="@xl:grid-cols-2 mt-12 grid gap-3">
 
-                    <Card className="group row-span-2 grid grid-rows-subgrid gap-4 overflow-hidden p-6">
-                        <div className="space-y-2">
-                            <h3 className="text-foreground font-medium">Integrate with your favorite tools</h3>
-                            <p className="text-muted-foreground text-sm">
-                                Connect seamlessly with popular platforms to seamlessly reach your customers.
-                            </p>
-                        </div>
-                        <div className="relative mx-auto flex aspect-16/10 w-full max-w-64 items-center justify-between sm:max-w-72 lg:max-w-80">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 auto-rows-[minmax(300px,auto)]">
+                    {curators.map((curator, i) => (
+                        <motion.div
+                            initial={{ y: 50, opacity: 0 }}
+                            whileInView={{ y: 0, opacity: 1 }}
+                            viewport={{ once: true, margin: "-10%" }}
+                            transition={{ duration: 0.8, delay: i * 0.1, ease: [0.76, 0, 0.24, 1] }}
+                            key={curator.name}
+                            className={`group relative overflow-hidden rounded-4xl bg-black/5 ${curator.className}`}
+                        >
+                            <img
+                                src={curator.image}
+                                alt={curator.name}
+                                className="absolute inset-0 h-full w-full object-cover transition-transform duration-[1.5s] ease-[0.16,1,0.3,1] group-hover:scale-105"
+                            />
+                            <div className="absolute inset-0 bg-linear-to-t from-black/80 via-black/20 to-transparent opacity-60 transition-opacity duration-500 group-hover:opacity-80" />
 
-                            <div
-                                role="presentation"
-                                className="bg-linear-to-b border-foreground/5 absolute inset-0 z-10 aspect-square animate-spin items-center justify-center rounded-full border-t from-lime-500/15 to-transparent to-25% opacity-0 duration-[3.5s] group-hover:opacity-100 dark:from-white/5"
-                            ></div>
-                            <div
-                                role="presentation"
-                                className="bg-linear-to-b border-foreground/5 absolute inset-8 z-10 aspect-square scale-90 animate-spin items-center justify-center rounded-full border-t from-blue-500/15 to-transparent to-25% opacity-0 duration-[3.5s] group-hover:opacity-100 sm:inset-10 lg:inset-12"
-                            ></div>
-
-                            <div className="bg-linear-to-b from-muted-foreground/15 absolute inset-0 flex aspect-square items-center justify-center rounded-full border-t to-transparent to-25%">
-                                <IntegrationCard className="-translate-x-1/6 absolute left-0 top-1/4 -translate-y-1/4">
-                                    <Gemini />
-                                </IntegrationCard>
-                                <IntegrationCard className="absolute top-0 -translate-y-1/2">
-                                    <Replit />
-                                </IntegrationCard>
-                                <IntegrationCard className="translate-x-1/6 absolute right-0 top-1/4 -translate-y-1/4">
-                                    <MagicUI />
-                                </IntegrationCard>
+                            <div className="absolute bottom-0 left-0 p-8 flex flex-col gap-3">
+                                <span className="text-primary font-mono text-[10px] font-bold tracking-widest uppercase py-1.5 px-3 bg-black/80 backdrop-blur-md rounded-full w-fit">
+                                    {curator.category}
+                                </span>
+                                <h3 className="text-white text-3xl md:text-4xl font-bold tracking-tight">
+                                    {curator.name}
+                                </h3>
                             </div>
-                            <div className="bg-linear-to-b from-muted-foreground/15 absolute inset-8 flex aspect-square scale-90 items-center justify-center rounded-full border-t to-transparent to-25% sm:inset-10 lg:inset-12">
-
-                                <IntegrationCard className="absolute top-0 -translate-y-1/2">
-                                    <VSCodium />
-                                </IntegrationCard>
-
-                                <IntegrationCard className="absolute left-0 top-1/4 -translate-x-1/4 -translate-y-1/4">
-                                    <MediaWiki />
-                                </IntegrationCard>
-                                <IntegrationCard className="absolute right-0 top-1/4 -translate-y-1/4 translate-x-1/4">
-                                    <GooglePaLM />
-                                </IntegrationCard>
-                            </div>
-
-                            <div className="absolute inset-x-0 bottom-3 mx-auto flex w-fit justify-center gap-2 sm:bottom-2">
-                                <div className="bg-muted relative z-20 rounded-full border p-1">
-                                    <IntegrationCard
-                                        className="shadow-black-950/10 dark:bg-background size-16 border-black/20 shadow-xl dark:border-white/25 dark:shadow-white/15 sm:size-18 lg:size-20"
-                                        isCenter={true}
-                                    >
-                                        <LogoIcon className="text-blue-500" />
-
-                                    </IntegrationCard>
-                                </div>
-                            </div>
-                        </div>
-                    </Card>
-
-                    <Card
-                        className="row-span-2 grid grid-rows-subgrid gap-4 overflow-hidden p-6">
-                        <div className="space-y-2">
-                            <h3 className="text-foreground font-medium">Real-time Sync</h3>
-                            <p className="text-muted-foreground text-sm">Keep your data synchronized across all platforms automatically.</p>
-                        </div>
-                        <div
-                            aria-hidden
-                            className="relative h-44 translate-y-6">
-                            <div className="bg-foreground/15 absolute inset-0 mx-auto w-px"></div>
-                            <div className="absolute -inset-x-16 top-6 aspect-square rounded-full border"></div>
-                            <div className="border-primary mask-l-from-50% mask-l-to-90% mask-r-from-50% mask-r-to-50% absolute -inset-x-16 top-6 aspect-square rounded-full border"></div>
-                            <div className="absolute -inset-x-8 top-24 aspect-square rounded-full border"></div>
-                            <div className="mask-r-from-50% mask-r-to-90% mask-l-from-50% mask-l-to-50% absolute -inset-x-8 top-24 aspect-square rounded-full border border-lime-500"></div>
-                        </div>
-                    </Card>
-
-                    <Card
-                        className="row-span-2 grid grid-rows-subgrid gap-4 p-6">
-                        <div className="space-y-2">
-                            <h3 className="font-medium">Developer First</h3>
-                            <p className="text-muted-foreground mt-2 text-sm">Built with developers in mind, featuring comprehensive APIs and SDKs.</p>
-                        </div>
-                        <div
-                            aria-hidden
-                            className="**:bg-foreground/15 flex h-44 justify-between pb-6 pt-12 *:h-full *:w-px">
-                            <div></div>
-                            <div></div>
-                            <div></div>
-                            <div></div>
-                            <div className="bg-primary!"></div>
-                            <div></div>
-                            <div></div>
-                            <div></div>
-                            <div></div>
-                            <div className="bg-primary!"></div>
-                            <div></div>
-                            <div></div>
-                            <div></div>
-                            <div className="bg-primary!"></div>
-                            <div></div>
-                            <div></div>
-                            <div></div>
-                            <div></div>
-                            <div className="bg-primary!"></div>
-                            <div></div>
-                            <div></div>
-                            <div></div>
-                            <div className="bg-primary!"></div>
-                        </div>
-                    </Card>
-                    <Card
-                        className="row-span-2 grid grid-rows-subgrid gap-4 p-6">
-                        <div className="space-y-2">
-                            <h3 className="font-medium">Enterprise Ready</h3>
-                            <p className="text-muted-foreground text-sm">Scale confidently with enterprise-grade security and reliability.</p>
-                        </div>
-
-                        <div className="pointer-events-none relative -ml-7 flex size-44 items-center justify-center pt-5">
-                            <Shield className="absolute inset-0 top-2.5 size-full stroke-[0.1px] opacity-15" />
-                            <Shield className="size-32 stroke-[0.1px]" />
-                        </div>
-                    </Card>
+                        </motion.div>
+                    ))}
                 </div>
             </div>
         </section>
     )
 }
-
-const IntegrationCard = ({
-    children,
-    className,
-    isCenter = false,
-
-}: {
-    children: React.ReactNode
-    className?: string
-    isCenter?: boolean
-}) => {
-    return (
-        <div
-            className={cn(
-                'relative z-30 flex size-10 rounded-full border bg-white shadow-sm shadow-black/5 dark:bg-white/5 dark:backdrop-blur-md sm:size-12 lg:size-14',
-                className
-            )}
-        >
-            <div className={cn('m-auto size-fit *:size-5 sm:*:size-6 lg:*:size-7', isCenter && '*:size-8 sm:*:size-9 lg:*:size-10')}>{children}</div>
-        </div>
-    )
-}
-
-// Заглушка для вашего основного логотипа
-const LogoIcon = (props: React.SVGProps<SVGSVGElement>) => (
-    <svg
-        xmlns="http://www.w3.org/2000/svg"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        {...props}
-    >
-        <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
-    </svg>
-)
-
-const Gemini = (props: React.SVGProps<SVGSVGElement>) => (
-    <svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg" {...props}>
-        <path d="M12.0001 9.1716L14.8285 6.34313L17.6569 9.1716L14.8285 12.0001L12.0001 9.1716Z" />
-        <path d="M9.17157 12.0001L6.34311 14.8285L9.17157 17.6569L12.0001 14.8285L9.17157 12.0001Z" />
-        <path
-            fillRule="evenodd"
-            clipRule="evenodd"
-            d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22ZM12 20C16.4183 20 20 16.4183 20 12C20 7.58172 16.4183 4 12 4C7.58172 4 4 7.58172 4 12C4 16.4183 7.58172 20 12 20Z"
-        />
-    </svg>
-)
-
-const Replit = (props: React.SVGProps<SVGSVGElement>) => (
-    <svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg" {...props}>
-        <path d="M8.28,3.027,3.16,8.147v7.706l5.12,5.12h7.706l5.12-5.12V8.147L15.987,3.027ZM9.033,9.44h5.933v2.373H9.033Zm0,3.56h5.933v2.373H9.033Z" />
-    </svg>
-)
-
-const MagicUI = (props: React.SVGProps<SVGSVGElement>) => (
-    <svg
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        xmlns="http://www.w3.org/2000/svg"
-        {...props}
-    >
-        <path d="M12 3v6M6.343 6.343l4.243 4.243M3 12h6m-1.657 5.657l4.243-4.243M12 21v-6m5.657-4.343l-4.243 4.243M21 12h-6m1.657-5.657l-4.243 4.243" />
-    </svg>
-)
-
-const VSCodium = (props: React.SVGProps<SVGSVGElement>) => (
-    <svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg" {...props}>
-        <path d="M22.5 1.5l-13 10.375v9.625l13 1.5V1.5zm-14.5.5L1.625 8.125 8 12l-6.375 3.875L8 22l6.5-4.5V5z" />
-    </svg>
-)
-
-const MediaWiki = (props: React.SVGProps<SVGSVGElement>) => (
-    <svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg" {...props}>
-        <path d="M4.11 15.35c.42 0 .8-.14 1.09-.42l1.01-1.02a.84.84 0 00.25-.6c0-.23-.08-.44-.25-.6L4.25 10.7a1.44 1.44 0 00-1.09-.44c-.41 0-.8.15-1.1.44l-.8.8c-.3.3-.44.68-.44 1.1s.15.8.44 1.1l.8.8c.3.28.68.41 1.09.41zm15.78 0c.41 0 .8-.14 1.09-.42l.8-.8c.3-.3.44-.68-.44-1.1s-.14-.8-.44-1.1l-.8-.8a1.44 1.44 0 00-1.09-.44c-.42 0-.8.15-1.09.44l-1.96 1.97c-.17.16-.25.37-.25.6s.08.44.25.6l1.01 1.02c.28.28.67.42 1.09.42zM12 2.01c.41 0 .8.15 1.1.44l.8.8c.3.3.44.68.44 1.1s-.14.8-.44 1.1l-1.95 1.96a.84.84 0 01-.6.25c-.24 0-.45-.08-.61-.25L9.72 6.46a1.44 1.44 0 01-.44-1.1c0-.41.15-.8.44-1.1l.8-.8c.3-.3.68-.44 1.09-.44zm0 11.28c.41 0 .8.14 1.09.42l1.01 1.01c.17.17.25.38.25.61s-.08.44-.25.6L12.09 18a1.44 1.44 0 01-1.09.44c-.41 0-.8-.14-1.09-.44l-1.01-1.01a.84.84 0 01-.25-.6c0-.24.08-.45.25-.61l2-1.96c.28-.28.67-.42 1.09-.42zm-2.65 6.36c.42 0 .8-.14 1.09-.42l1.96-1.96a.84.84 0 00.25-.6c0-.24-.08-.45-.25-.61L9.4 14.1c-.3-.3-.68-.44-1.09-.44-.41 0-.8.15-1.09.44l-.8.8c-.3.3-.44.68-.44 1.1s.15.8.44 1.1l.8.8c.3.28.68.41 1.09.41zm10.6-5.26c-.17-.17-.38-.25-.6-.25-.24 0-.45.08-.61.25l-2 1.96c-.3.3-.44.68-.44 1.09s.14.8.44 1.09l1.01 1.01c.28.28.67.42 1.09.42.41 0 .8-.14 1.09-.42l.8-.8c.3-.3.44-.68-.44-1.1s-.14-.8-.44-1.1l-.8-.8a1.44 1.44 0 00-1.09-.44z" />
-    </svg>
-)
-
-const GooglePaLM = (props: React.SVGProps<SVGSVGElement>) => (
-    <svg
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        xmlns="http://www.w3.org/2000/svg"
-        {...props}
-    >
-        <path d="M12 2a10 10 0 0 0-4.32 19.14" />
-        <path d="M12 2a10 10 0 0 1 4.32 19.14" />
-        <path d="M12 2v8" />
-        <path d="M17.68 6.86a6 6 0 0 1-11.36 0" />
-        <path d="M4 12H2" />
-        <path d="M22 12h-2" />
-        <path d="M12 12v10" />
-    </svg>
-)

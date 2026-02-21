@@ -1,59 +1,56 @@
 
-import Link from 'next/link'
-import { Button } from '@/components/ui/button'
-import { HeroHeader } from "@/components/header"
-import { HugeiconsIcon } from '@hugeicons/react'
-import { ArrowRight02Icon } from '@hugeicons/core-free-icons'
+"use client"
+
+import { motion } from 'framer-motion'
+import { useEffect, useRef } from 'react'
 
 export function Hero() {
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  useEffect(() => {
+    if (videoRef.current) {
+      // Ensure the video plays automatically on load
+      videoRef.current.play().catch(error => {
+        console.log("Video auto-play was prevented by browser:", error);
+      });
+    }
+  }, []);
+
   return (
-    <>
-      <HeroHeader />
-      <main className="overflow-hidden">
-        <section className="relative bg-black">
-          <div className="absolute inset-0">
-            <video
-              autoPlay
-              loop
-              muted
-              playsInline
-              className="size-full object-cover"
-              src="https://cdn.cosmos.so/08020ebf-2819-4bb1-ab66-ae3642a73697.mp4"
-            />
-            <div className="absolute inset-0 bg-linear-to-r from-black/90 via-black/60 to-black/20" />
-          </div>
+    <main className="relative overflow-hidden min-h-screen flex flex-col items-center justify-end pt-24 pb-16 md:pb-24">
+      {/* Background Video */}
+      <video
+        ref={videoRef}
+        autoPlay
+        loop
+        muted
+        playsInline
+        className="absolute inset-0 w-full h-full object-cover z-0"
+      >
+        <source src="https://cdn.cosmos.so/08020ebf-2819-4bb1-ab66-ae3642a73697.mp4" type="video/mp4" />
+      </video>
 
-          <div className="relative z-10 mx-auto w-full max-w-7xl px-6 py-32 md:py-48">
-            <div className="max-w-3xl text-left">
-              <h1 className="text-balance text-5xl font-bold tracking-tight text-white sm:text-7xl">
-                Build your store <br />
-                <span className="text-blue-500">Sell everywhere.</span>
-              </h1>
-              <p className="mt-6 text-start text-lg text-gray-300 md:text-xl">
-                Sell across social media.<br /> Grow your audience and sales all in one platform.
-              </p>
+      {/* Dark Overlay Gradient for Readability */}
+      <div className="absolute inset-0 bg-black/50 z-1 pointer-events-none" />
+      <div className="absolute inset-0 bg-linear-to-t from-black/80 via-black/20 to-black/60 z-2 pointer-events-none" />
 
-              <div className="mt-10 flex flex-col items-start gap-4 sm:flex-row">
-                <Button
-                  asChild
-                  size="lg"
-                  className="rounded-full bg-blue-600 px-8 text-white hover:bg-blue-700 cursor-pointer">
-                  <Link href="#create-store">
-                    <span className="text-nowrap font-medium">Create your store</span>
-                    <HugeiconsIcon icon={ArrowRight02Icon} className="ml-2 size-5" />
-                  </Link>
-                </Button>
-                <Button
-                  variant="outline"
-                  size="lg"
-                  className="rounded-full border-white/20 bg-white/10 px-8 text-white backdrop-blur-md hover:bg-white/20 hover:text-white cursor-pointer">
-                  See pricing
-                </Button>
-              </div>
-            </div>
-          </div>
-        </section>
-      </main>
-    </>
+      {/* Main Content */}
+      <div className="relative z-10 mx-auto w-full max-w-4xl px-6 flex flex-col items-center">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, ease: "easeOut" }}
+          className="flex flex-col items-center w-full"
+        >
+          <h1 className="text-center text-5xl sm:text-6xl md:text-7xl lg:text-[6rem] font-semibold tracking-[-0.03em] text-white leading-[1.05] drop-shadow-lg">
+            Commerce built for <span className="text-white/60">Social brands.</span>
+          </h1>
+          <p className="mt-6 max-w-2xl text-center text-lg md:text-xl text-white/80 font-medium leading-relaxed drop-shadow-md">
+            Sell through your social media and content.
+          </p>
+        </motion.div>
+      </div>
+    </main>
   )
 }
+

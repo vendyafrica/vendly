@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { ThemeProvider } from "next-themes";
 import { Inter } from "next/font/google";
 import Script from "next/script";
+import { LenisProvider } from "@/components/lenis-provider";
 import "./globals.css";
 
 const GA_ID = "G-JWNNZYPEX5";
@@ -13,7 +14,7 @@ const geistSans = Inter({
 
 const geistMono = Inter({
   variable: "--font-inter",
-  subsets: ["latin"], 
+  subsets: ["latin"],
 });
 
 const siteUrl = "https://vendlyafrica.store";
@@ -181,7 +182,7 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark" suppressHydrationWarning>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased selection:bg-primary selection:text-primary-foreground bg-background text-foreground`}
       >
         <script
           type="application/ld+json"
@@ -200,9 +201,11 @@ export default function RootLayout({
             gtag('config', '${GA_ID}');
           `}
         </Script>
-        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-          {children}
-        </ThemeProvider>
+        <LenisProvider>
+          <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false} forcedTheme="light">
+            {children}
+          </ThemeProvider>
+        </LenisProvider>
       </body>
     </html>
   );
