@@ -13,9 +13,9 @@ import { Bricolage_Grotesque } from "next/font/google";
 import { Input } from "@vendly/ui/components/input";
 
 const geistSans = Bricolage_Grotesque({
-    variable: "--font-bricolage-grotesque",
-    subsets: ["latin"],
-  });
+  variable: "--font-bricolage-grotesque",
+  subsets: ["latin"],
+});
 
 interface StorefrontFooterProps {
   store: {
@@ -56,23 +56,39 @@ export function StorefrontFooter({ store }: StorefrontFooterProps) {
 
           <div>
             <h4 className="text-sm font-medium uppercase tracking-wider mb-4 text-muted-foreground">
-              Shop
+              Navigation
             </h4>
             <ul className="space-y-3">
               <li>
                 <Link
-                  href="#"
+                  href={`/${store.slug}`}
                   className="text-sm transition-colors duration-200 text-foreground hover:text-muted-foreground"
                 >
-                  New Arrivals
+                  Home
                 </Link>
               </li>
               <li>
                 <Link
-                  href="#"
+                  href={`/${store.slug}/cart`}
                   className="text-sm transition-colors duration-200 text-foreground hover:text-muted-foreground"
                 >
-                  Best Sellers
+                  Shopping Bag
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href={`/${store.slug}/wishlist`}
+                  className="text-sm transition-colors duration-200 text-foreground hover:text-muted-foreground"
+                >
+                  Wishlist
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href={`/a/${store.slug}/login`}
+                  className="text-sm transition-colors duration-200 text-foreground hover:text-muted-foreground"
+                >
+                  Account
                 </Link>
               </li>
             </ul>
@@ -81,23 +97,39 @@ export function StorefrontFooter({ store }: StorefrontFooterProps) {
           {/* Support */}
           <div>
             <h4 className="text-sm font-medium uppercase tracking-wider mb-4 text-muted-foreground">
-              Support
+              Support & Legal
             </h4>
             <ul className="space-y-3">
               <li>
-                <Link
-                  href="#"
+                <a
+                  href={`mailto:hello@vendlyafrica.store?subject=Inquiry for ${store.name}`}
                   className="text-sm transition-colors duration-200 text-foreground hover:text-muted-foreground"
                 >
                   Contact Us
+                </a>
+              </li>
+              <li>
+                <Link
+                  href={`/${store.slug}/shipping-returns`}
+                  className="text-sm transition-colors duration-200 text-foreground hover:text-muted-foreground"
+                >
+                  Shipping & Returns
                 </Link>
               </li>
               <li>
                 <Link
-                  href="#"
+                  href={`/${store.slug}/privacy-policy`}
                   className="text-sm transition-colors duration-200 text-foreground hover:text-muted-foreground"
                 >
-                  Policies
+                  Privacy Policy
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href={`/${store.slug}/terms`}
+                  className="text-sm transition-colors duration-200 text-foreground hover:text-muted-foreground"
+                >
+                  Terms of Service
                 </Link>
               </li>
             </ul>
