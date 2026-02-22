@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { motion, AnimatePresence, Transition } from "motion/react";
 import { cn } from "@vendly/ui/lib/utils";
 

@@ -175,6 +175,7 @@ export function Step1Info() {
           value={storeDescription}
           onChange={(e) => setStoreDescription(e.target.value)}
           disabled={isLoading}
+          className="focus-visible:border-primary/50 focus-visible:ring-primary/10 transition-colors"
         />
       </Field>
 

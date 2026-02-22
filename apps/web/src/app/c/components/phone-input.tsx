@@ -32,7 +32,7 @@ export function PhoneInput({
   const selected = COUNTRY_OPTIONS.find((o) => o.code === countryCode);
 
   return (
-    <div className="flex h-9 rounded-md border border-input bg-background focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2 overflow-hidden">
+    <div className="flex h-9 rounded-md border border-input bg-background focus-within:border-primary/50 focus-within:ring-[3px] focus-within:ring-primary/10 overflow-hidden transition-colors">
       <Select
         value={countryCode}
         onValueChange={(value) => {
@@ -40,9 +40,9 @@ export function PhoneInput({
         }}
         disabled={disabled}
       >
-        <SelectTrigger className="w-[68px] shrink-0 rounded-none border-0 border-r border-input bg-muted/40 shadow-none focus:ring-0 focus-visible:ring-0 gap-1 px-2">
+        <SelectTrigger className="h-full w-[68px] shrink-0 rounded-none border-0 border-r border-input bg-muted/40 shadow-none focus-visible:ring-0 px-2 transition-colors">
           <SelectValue>
-            <span className="text-base leading-none">{selected?.flag}</span>
+            <span className="flex items-center justify-center text-base">{selected?.flag}</span>
           </SelectValue>
         </SelectTrigger>
         <SelectContent align="start" className="min-w-[200px]">
@@ -64,7 +64,7 @@ export function PhoneInput({
         value={value}
         onChange={(e) => onValueChange(e.target.value)}
         disabled={disabled}
-        className="flex-1 rounded-none border-0 shadow-none focus-visible:ring-0"
+        className="h-full flex-1 rounded-none border-0 shadow-none focus-visible:ring-0 px-3"
       />
     </div>
   );
