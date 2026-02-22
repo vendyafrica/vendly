@@ -1,3 +1,5 @@
+"use client"
+
 import Image from "next/image";
 import { DeferredHeroVideo } from "./deferred-hero-video";
 
@@ -30,8 +32,8 @@ export function Hero({ store }: HeroProps) {
     const isBlobUrl = typeof mediaUrl === "string" && mediaUrl.includes(".ufs.sh");
 
     return (
-        <section className="relative h-[60vh] sm:h-[70vh] md:h-[75vh] lg:h-[80vh] w-full overflow-hidden mb-8 sm:mb-12">
-            <div className="relative h-full w-full overflow-hidden rounded-none sm:rounded-b-3xl md:rounded-b-[40px]">
+        <section className="relative h-[75vh] min-h-[75vh] sm:h-screen sm:min-h-screen w-full overflow-hidden">
+            <div className="relative h-full w-full overflow-hidden">
                 {/* Media - Video or Image */}
                 {isVideo ? (
                     <DeferredHeroVideo
@@ -51,20 +53,31 @@ export function Hero({ store }: HeroProps) {
                 )}
 
                 {/* Subtle gradient overlay */}
-                <div className="absolute inset-0 bg-linear-to-t from-black/50 via-black/0 to-black/0" />
+                <div className="absolute inset-0 bg-linear-to-t from-black/80 via-black/20 to-transparent" />
 
                 {/* Bottom overlay with store info */}
-                <div className="absolute bottom-0 left-0 right-0 p-5 sm:p-6 md:p-8 lg:p-10">
-                    <div className="flex items-end justify-between flex-wrap gap-4">
-                        <div className="text-white">
-                            {/* <h1 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-medium mb-2">
+                <div className="absolute bottom-0 left-0 right-0 p-6 sm:p-10 md:p-14 lg:p-20">
+                    <div className="flex items-end justify-between flex-wrap gap-6">
+                        <div className="text-white max-w-2xl">
+                            <h1 className="text-4xl sm:text-5xl md:text-6xl font-serif tracking-tight mb-4">
                                 {store.name}
-                            </h1> */}
+                            </h1>
                             {store.description && (
-                                <p className="text-sm sm:text-base md:text-md text-white/90 max-w-lg">
+                                <p className="text-base sm:text-lg text-white/90 mb-8 max-w-xl font-light leading-relaxed">
                                     {store.description}
                                 </p>
                             )}
+                            <button
+                                onClick={() => {
+                                    window.scrollTo({
+                                        top: window.innerHeight,
+                                        behavior: 'smooth'
+                                    });
+                                }}
+                                className="px-8 py-3 bg-white text-black text-sm font-medium tracking-widest uppercase hover:bg-white/90 transition-colors"
+                            >
+                                Shop Now
+                            </button>
                         </div>
                     </div>
                 </div>

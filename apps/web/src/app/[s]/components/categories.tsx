@@ -13,7 +13,7 @@ interface Category {
     image: string | null;
 }
 
-const API_BASE = ""; // Force relative for same-origin internal API
+const API_BASE = ""; 
 
 export function Categories() {
     const params = useParams();

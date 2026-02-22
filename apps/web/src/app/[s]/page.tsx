@@ -74,7 +74,6 @@ export default async function StorefrontHomePage({ params, searchParams }: Store
       <StorefrontViewTracker storeSlug={s} />
       <Hero store={store} />
       <div className="w-full">
-        <Categories />
         <div className="px-3 sm:px-6 lg:px-8">
           <h3 className="text-lg font-semibold my-8 text-foreground">
             All Products

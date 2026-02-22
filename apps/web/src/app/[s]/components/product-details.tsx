@@ -16,8 +16,8 @@ import { Bricolage_Grotesque } from "next/font/google";
 import { getStyleGuideAudience } from "@/lib/constants/style-guide";
 
 const geistSans = Bricolage_Grotesque({
-  variable: "--font-bricolage-grotesque",
-  subsets: ["latin"],
+    variable: "--font-bricolage-grotesque",
+    subsets: ["latin"],
 });
 
 
@@ -100,18 +100,17 @@ export function ProductDetails({ product, storeCategories = [] }: ProductDetails
     const currentImage = displayImages[safeSelectedIndex] ?? displayImages[0];
 
     return (
-        <div className="min-h-screen bg-white pb-20" suppressHydrationWarning>
-            <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-[1.5fr_1fr] gap-10 lg:gap-16 px-2 sm:px-4 lg:px-8">
+        <div className="min-h-screen bg-white pb-24" suppressHydrationWarning>
+            <div className="max-w-[1440px] mx-auto grid grid-cols-1 lg:grid-cols-[1.5fr_1fr] xl:grid-cols-[1.8fr_1fr] gap-8 lg:gap-14 xl:gap-20 px-4 sm:px-6 lg:px-10 pt-8 lg:pt-14">
                 {/* Left: Gallery */}
                 <div className="flex flex-col gap-4">
                     {/* Mobile carousel */}
                     <div className="lg:hidden flex gap-3 overflow-x-auto snap-x snap-mandatory pb-2 scrollbar-hide">
                         {displayImages.map((img, index) => (
-                            <div key={index} className="relative min-w-[78%] aspect-3/4 snap-center rounded-xl overflow-hidden bg-neutral-50">
+                            <div key={index} className="relative min-w-[85%] aspect-3/4 snap-center rounded-none overflow-hidden bg-neutral-100">
                                 <Image
                                     src={img}
                                     alt={`${product.name} ${index + 1}`}
-
                                     fill
                                     sizes="90vw"
                                     className="object-cover"
@@ -123,18 +122,18 @@ export function ProductDetails({ product, storeCategories = [] }: ProductDetails
                     </div>
 
                     {/* Desktop thumbs + main */}
-                    <div className="hidden lg:flex flex-row gap-6">
-                        <div className="flex flex-col gap-3 w-20 shrink-0">
+                    <div className="hidden lg:flex flex-row gap-6 lg:gap-8 h-[75vh] min-h-[600px] max-h-[900px]">
+                        <div className="flex flex-col gap-4 w-20 xl:w-24 shrink-0 overflow-y-auto scrollbar-hide">
                             {displayImages.map((img, index) => (
                                 <button
                                     key={index}
                                     onClick={() => setSelectedMediaIndex(index)}
                                     onMouseEnter={() => setSelectedMediaIndex(index)}
                                     className={`
-                                        relative w-full h-24 overflow-hidden border transition-all duration-300 rounded-md
+                                        relative w-full aspect-3/4 overflow-hidden transition-all duration-300
                                         ${safeSelectedIndex === index
-                                            ? "border-neutral-900 opacity-100"
-                                            : "border-transparent opacity-70 hover:opacity-100 hover:border-neutral-200"
+                                            ? "ring-1 ring-black opacity-100"
+                                            : "opacity-60 hover:opacity-100"
                                         }
                                     `}
                                 >
@@ -150,13 +149,13 @@ export function ProductDetails({ product, storeCategories = [] }: ProductDetails
                             ))}
                         </div>
 
-                        <div className="flex-1 relative aspect-4/5 bg-neutral-50 overflow-hidden rounded-xl">
+                        <div className="flex-1 relative bg-neutral-100 overflow-hidden h-full">
                             <Image
                                 src={currentImage}
                                 alt={product.name}
                                 fill
                                 sizes="(max-width: 1024px) 100vw, 60vw"
-                                className="object-cover"
+                                className="object-cover object-center"
                                 priority
                                 unoptimized={currentImage.includes(".ufs.sh")}
                             />
@@ -165,21 +164,21 @@ export function ProductDetails({ product, storeCategories = [] }: ProductDetails
                 </div>
 
                 {/* Right: Product Details */}
-                <div className="flex flex-col pt-2 lg:pt-0 lg:pl-6">
+                <div className="flex flex-col pt-6 lg:pt-0 lg:pl-6 max-w-xl">
 
                     {/* Store Info - Header */}
-                    <div className="flex items-start justify-between mb-6 gap-4">
-                        <div className="flex items-start gap-3">
+                    <div className="flex items-start justify-between mb-8 gap-4 pb-6 border-b border-neutral-200">
+                        <div className="flex items-center gap-3">
                             <StoreAvatar
                                 storeName={product.store.name}
                                 logoUrl={product.store.logoUrl}
                                 size="md"
                             />
                             <div>
-                                <p className={` ${geistSans.className} text-md font-semibold text-neutral-900 capitalize`}>{product.store.name}</p>
+                                <p className={` ${geistSans.className} text-sm tracking-wide font-medium text-neutral-900 uppercase`}>{product.store.name}</p>
                             </div>
                         </div>
-                        <div className="flex items-center gap-1 mt-1">
+                        <div className="flex items-center gap-1">
                             <HugeiconsIcon icon={StarIcon} size={14} className="fill-neutral-900 text-neutral-900" />
                             <span className="text-sm font-medium text-neutral-900">
                                 {ratingValue.toFixed(1) !== "NaN" ? ratingValue.toFixed(1) : "0.0"}
@@ -190,67 +189,47 @@ export function ProductDetails({ product, storeCategories = [] }: ProductDetails
                         </div>
                     </div>
 
-                    {/* Product Name */}
-                    <h1 className="text-2xl lg:text-2xl font-semibold text-neutral-900 leading-tight mb-3">
-                        {product.name}
-                    </h1>
+                    {/* Product Name & Price Module */}
+                    <div className="mb-10">
+                        <h1 className="text-3xl lg:text-4xl font-serif text-neutral-900 leading-tight mb-4 tracking-tight">
+                            {product.name}
+                        </h1>
 
-                    {/* Price */}
-                    <div className="flex items-center gap-3 mb-6">
-                        <span className="text-md lg:text-lg font-bold text-neutral-900">
-                            {product.currency} {product.price.toLocaleString(undefined, {
-                                minimumFractionDigits: product.currency === "USD" ? 2 : 0,
-                                maximumFractionDigits: product.currency === "USD" ? 2 : 0,
-                            })}
-                        </span>
-                        {/* Optional: Add strikethrough price if you have original price */}
-                        {/* <span className="text-sm text-neutral-400 line-through">
-                            {product.currency} {(product.price * 2).toLocaleString()}
-                        </span>
-                        <span className="px-2.5 py-1 bg-neutral-900 text-white text-sm font-semibold rounded-full">
-                            50% off
-                        </span> */}
-                    </div>
-                    <h2 className="text-md font-semibold mb-1">Description</h2>
-                    {/* Description */}
-                    {product.description && (
-                        <div className="mb-8 text-base leading-relaxed text-neutral-600 max-w-lg">
-                            <p>{product.description}</p>
+                        <div className="flex items-center gap-3 mt-2">
+                            <span className="text-xl font-medium text-neutral-900">
+                                {product.currency} {product.price.toLocaleString(undefined, {
+                                    minimumFractionDigits: product.currency === "USD" ? 2 : 0,
+                                    maximumFractionDigits: product.currency === "USD" ? 2 : 0,
+                                })}
+                            </span>
                         </div>
-                    )}
+                    </div>
 
-                    {/* Style Section */}
+                    {/* Style Section (Size Variants) */}
                     {styleGuideAudience && (
-                        <div className="mb-8">
-                            {/* Size */}
+                        <div className="mb-12">
                             <div className="mb-2">
-                                <div className="flex items-center justify-between mb-3">
-                                    <span className="text-sm font-medium text-neutral-900">Size {selectedSize && <span className="text-neutral-500">{selectedSize}</span>}</span>
-                                    <button className="text-sm text-neutral-600 underline hover:text-neutral-900 transition-colors">
+                                <div className="flex items-center justify-between mb-4">
+                                    <span className="text-sm font-medium text-neutral-900 uppercase tracking-widest">
+                                        Size {selectedSize && <span className="text-neutral-500 ml-1">- {selectedSize}</span>}
+                                    </span>
+                                    <button className="text-xs text-neutral-500 underline hover:text-neutral-900 transition-colors uppercase tracking-widest">
                                         Size Guide
                                     </button>
                                 </div>
-                                <div className="flex flex-wrap gap-2">
+                                <div className="grid grid-cols-4 sm:grid-cols-5 gap-2">
                                     {sizes.map((size) => (
                                         <button
                                             key={size}
                                             onClick={() => setSelectedSize(size)}
                                             className={`
-                                                h-9 px-2 min-w-[3.5rem] cursor-pointer border-1 rounded-full flex items-center justify-center text-sm font-semibold transition-all duration-200
-
+                                                h-12 w-full cursor-pointer border flex items-center justify-center text-sm font-medium transition-all duration-200
                                                 ${selectedSize === size
                                                     ? "border-neutral-900 bg-neutral-900 text-white"
-                                                    : "border-neutral-200 text-neutral-900 hover:border-neutral-400"
+                                                    : "border-neutral-300 text-neutral-900 hover:border-neutral-900"
                                                 }
                                             `}
                                         >
-                                            {size === "2X" && (
-                                                <HugeiconsIcon
-                                                    icon={FlashIcon}
-                                                    size={12}
-                                                    className={`mr-1.5 ${selectedSize === size ? "text-yellow-400" : "text-yellow-500"}`}
-                                                />
-                                            )}
                                             {size}
                                         </button>
                                     ))}
@@ -260,7 +239,20 @@ export function ProductDetails({ product, storeCategories = [] }: ProductDetails
                     )}
 
                     {/* Actions */}
-                    <ProductActions product={product} />
+                    <div className="mb-12">
+                        <ProductActions product={product} />
+                    </div>
+
+                    {/* Description */}
+                    {product.description && (
+                        <div className="pt-8 border-t border-neutral-200">
+                            <h2 className="text-sm font-medium mb-4 uppercase tracking-widest text-neutral-900">Description / Details</h2>
+                            <div className="text-sm leading-relaxed text-neutral-600">
+                                <p>{product.description}</p>
+                            </div>
+                        </div>
+                    )}
+
                 </div>
             </div>
         </div>
