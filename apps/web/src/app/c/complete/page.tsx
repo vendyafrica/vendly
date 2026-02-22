@@ -1,40 +1,24 @@
 "use client";
 
 import { Button } from "@vendly/ui/components/button";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Instagram, Upload } from "lucide-react";
 
 export default function Complete() {
-  const [tenantSlug, setTenantSlug] = useState<string | null>(null);
-  const [storeSlug, setStoreSlug] = useState<string | null>(null);
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-    setTenantSlug(localStorage.getItem("vendly_tenant_slug"));
-    setStoreSlug(localStorage.getItem("vendly_store_slug"));
-  }, []);
+  const [tenantSlug] = useState<string | null>(
+    () => (typeof window !== "undefined" ? localStorage.getItem("vendly_tenant_slug") : null)
+  );
 
   const adminBase = tenantSlug ? `/a/${tenantSlug}` : "/a";
 
-  if (!mounted) {
-    return (
-      <div className="w-full max-w-lg mx-auto">
-        <div className="rounded-xl border bg-background shadow-sm p-8 flex items-center justify-center min-h-[240px]">
-          <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full" />
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="w-full max-w-lg mx-auto">
-      <div className="rounded-xl border bg-background shadow-sm p-6 md:p-8 space-y-8 text-center">
+      <div className="rounded-xl border bg-card text-card-foreground shadow-sm p-6 md:p-8 space-y-7 text-center">
         {/* Success icon */}
-        <div className="flex flex-col items-center gap-4">
-          <div className="h-16 w-16 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center mx-auto">
+        <div className="flex flex-col items-center gap-3">
+          <div className="h-14 w-14 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
             <svg
-              className="h-8 w-8 text-green-600 dark:text-green-400"
+              className="h-7 w-7 text-green-600 dark:text-green-400"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -44,52 +28,50 @@ export default function Complete() {
             </svg>
           </div>
           <div className="space-y-1">
-            <h1 className="text-2xl font-semibold tracking-tight">
-              Your store is ready! 🎉
-            </h1>
+            <h1 className="text-2xl font-semibold tracking-tight">Your store is ready! 🎉</h1>
             <p className="text-sm text-muted-foreground max-w-sm mx-auto">
-              Congratulations! You&apos;re all set. Now let&apos;s get your first customers.
+              You&apos;re all set. Now let&apos;s get your first customers.
             </p>
           </div>
         </div>
 
         {/* CTAs */}
         <div className="space-y-3">
-          <p className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
-            Choose how to get started
+          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-widest">
+            How do you want to start?
           </p>
 
-          <div className="grid gap-3">
-            <Button
-              size="lg"
-              className="w-full h-14 text-white"
-              style={{ background: "linear-gradient(135deg, #833ab4 0%, #fd1d1d 50%, #fcb045 100%)" }}
-            >
-              <a href={`${adminBase}/instagram`} className="flex items-center justify-center gap-3">
-                <Instagram className="h-5 w-5" />
-                <div className="text-left">
-                  <div className="font-semibold text-sm">Connect Instagram</div>
-                  <div className="text-xs opacity-80 font-normal">Import your products from Instagram</div>
+          <div className="grid gap-2.5">
+            {/* Instagram — using a wrapper div with bg class instead of inline style */}
+            <a href={`${adminBase}/instagram`} className="block">
+              <Button
+                size="lg"
+                className="w-full h-14 bg-gradient-to-r from-purple-600 via-red-500 to-orange-400 text-white border-0 hover:opacity-90 transition-opacity"
+              >
+                <Instagram className="h-5 w-5 shrink-0" />
+                <div className="text-left ml-1">
+                  <div className="font-semibold text-sm leading-tight">Connect Instagram</div>
+                  <div className="text-xs opacity-80 font-normal leading-tight">
+                    Import products directly from your posts
+                  </div>
                 </div>
-              </a>
-            </Button>
+              </Button>
+            </a>
 
-            <Button
-              variant="outline"
-              size="lg"
-              className="w-full h-14"
-            >
-              <a href={`${adminBase}/products/new`} className="flex items-center justify-center gap-3">
-                <Upload className="h-5 w-5" />
-                <div className="text-left">
-                  <div className="font-semibold text-sm">Upload Sample Products</div>
-                  <div className="text-xs text-muted-foreground font-normal">Add your first products manually</div>
+            <a href={`${adminBase}/products/new`} className="block">
+              <Button variant="outline" size="lg" className="w-full h-14">
+                <Upload className="h-5 w-5 shrink-0" />
+                <div className="text-left ml-1">
+                  <div className="font-semibold text-sm leading-tight">Add Products Manually</div>
+                  <div className="text-xs text-muted-foreground font-normal leading-tight">
+                    Upload photos and set your prices
+                  </div>
                 </div>
-              </a>
-            </Button>
+              </Button>
+            </a>
           </div>
 
-          <p className="text-xs text-muted-foreground pt-2">
+          <p className="text-xs text-muted-foreground">
             You can always do this later from your dashboard.
           </p>
         </div>

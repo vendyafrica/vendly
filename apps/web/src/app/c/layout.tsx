@@ -6,13 +6,9 @@ import { auth } from "@vendly/auth";
 
 import { OnboardingProvider } from "./context/onboarding-context";
 import { AppSessionProvider } from "@/contexts/app-session-context";
-import { StepIndicator } from "./components/step-indicator";
+import { StepIndicator } from "./components/category-selector";
 
-export default async function OnboardingLayout({
-  children,
-}: {
-  children: ReactNode;
-}) {
+export default async function OnboardingLayout({ children }: { children: ReactNode }) {
   const headerList = await headers();
   const sessionPromise = auth.api.getSession({ headers: headerList });
 
@@ -35,20 +31,19 @@ export default async function OnboardingLayout({
 
 function OnboardingShell({ children }: { children: ReactNode }) {
   return (
-    <div className="min-h-dvh bg-muted flex flex-col overflow-auto">
-      <header className="flex items-center justify-between px-4 py-3 md:px-8 md:py-4 border-b border-border bg-background shrink-0">
-        {/* Logo */}
+    <div className="h-dvh bg-muted flex flex-col overflow-hidden">
+      {/* Header — fixed height */}
+      <header className="flex items-center justify-between px-4 py-3 md:px-8 border-b border-border bg-background shrink-0">
         <div className="flex items-center gap-2">
-          <Image src="/vendly.png" alt="Vendly" width={28} height={28} />
-          <span className="text-base font-semibold tracking-tight">vendly.</span>
+          <Image src="/vendly.png" alt="Vendly" width={26} height={26} />
+          <span className="text-sm font-semibold tracking-tight">vendly.</span>
         </div>
-
-        {/* Progress */}
         <StepIndicator />
       </header>
 
-      <main className="flex-1 flex justify-center px-4 md:px-6 py-10 md:py-16">
-        <div className="w-full max-w-2xl">{children}</div>
+      {/* Scrollable content area */}
+      <main className="flex-1 overflow-y-auto flex justify-center px-4 md:px-6 py-6">
+        <div className="w-full max-w-4xl">{children}</div>
       </main>
     </div>
   );
