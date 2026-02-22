@@ -1,7 +1,7 @@
 import type { MetadataRoute } from "next";
 import { marketplaceService } from "@/lib/services/marketplace-service";
 
-const siteUrl = "https://duuka.store";
+const siteUrl = "https://shopvendly.store";
 
 export const dynamic = "force-dynamic";
 
@@ -13,6 +13,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       lastModified: new Date(),
       changeFrequency: "daily",
       priority: 1,
+    },
+    {
+      url: `${siteUrl}/m`,
+      lastModified: new Date(),
+      changeFrequency: "daily",
+      priority: 0.9,
     },
   ];
 

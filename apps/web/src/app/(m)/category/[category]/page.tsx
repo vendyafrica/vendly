@@ -27,8 +27,8 @@ export async function generateMetadata({ params }: CategoryPageProps): Promise<M
     const categoryName = formatCategoryName(categorySlug);
     const ogImage = "/og-image.png";
 
-    const title = `${categoryName} | Shop ${categoryName} on Duuka`;
-    const description = `Discover ${categoryName} stores and products. Browse curated selections and shop ${categoryName.toLowerCase()} on Duuka.`;
+    const title = `${categoryName} | Shop ${categoryName} on ShopVendly`;
+    const description = `Discover ${categoryName} stores and products. Browse curated selections and shop ${categoryName.toLowerCase()} on ShopVendly.`;
 
     return {
         title,
@@ -40,7 +40,7 @@ export async function generateMetadata({ params }: CategoryPageProps): Promise<M
             title,
             description,
             url: `/category/${categorySlug}`,
-            siteName: "Duuka",
+            siteName: "ShopVendly",
             images: [{ url: ogImage }],
         },
         twitter: {

@@ -84,7 +84,7 @@ export default async function HomePage() {
       {uiStores.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 px-4 text-center">
           <h3 className="text-2xl font-semibold mb-4">No stores yet</h3>
-          <p className="text-muted-foreground mb-8">Be the first to create a store on Vendly!</p>
+          <p className="text-muted-foreground mb-8">Be the first to create a store on ShopVendly!</p>
           <Link href="/c">
             <Button size="lg" className="cursor-pointer">Create Your Store</Button>
           </Link>

@@ -1,6 +1,6 @@
 import type { MetadataRoute } from "next";
 
-const siteUrl = "https://duuka.store";
+const siteUrl = "https://shopvendly.store";
 
 export default function robots(): MetadataRoute.Robots {
   return {

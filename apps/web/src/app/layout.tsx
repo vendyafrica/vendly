@@ -1,10 +1,25 @@
 import "@vendly/ui/globals.css";
+import "../styles/marketing/globals.css";
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono, Nunito_Sans } from "next/font/google";
+import { Geist, Geist_Mono, Nunito_Sans, Sora, DM_Sans } from "next/font/google";
 import type { ReactNode } from "react";
 import { ThirdParty } from "./third-party";
 
 const nunitoSans = Nunito_Sans({ variable: "--font-sans" });
+
+const sora = Sora({
+  variable: "--font-sora",
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700", "800"],
+  display: "swap",
+});
+
+const dmSans = DM_Sans({
+  variable: "--font-dm-sans",
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600"],
+  display: "swap",
+});
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -16,11 +31,11 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-const siteUrl = "https://duuka.store";
-const vendlyUrl = "https://vendlyafrica.store";
-const defaultTitle = "Duuka | Marketplace for your favorite social media stores";
+const siteUrl = "https://shopvendly.store";
+const vendlyUrl = "https://shopvendly.store";
+const defaultTitle = "ShopVendly | Social commerce storefronts & marketplace";
 const defaultDescription =
-  "Discover and shop from instagram and tiktok stores. Browse visual storefronts, order via WhatsApp, and support independent brands — all on Duuka.";
+  "Build and shop storefronts from Instagram and TikTok sellers. Onboard in minutes, collect orders, and sell through the ShopVendly marketplace.";
 const defaultImage = `${siteUrl}/og-image.png`;
 
 export const viewport: Viewport = {
@@ -33,7 +48,7 @@ export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
     default: defaultTitle,
-    template: "%s | Duuka",
+    template: "%s | ShopVendly",
   },
   description: defaultDescription,
   robots: { index: true, follow: true },
@@ -44,16 +59,16 @@ export const metadata: Metadata = {
     },
   },
   openGraph: {
-    title: "Duuka | Discover & Shop from your favorite social media stores",
+    title: "ShopVendly | Discover & Shop from social sellers",
     description: defaultDescription,
     url: siteUrl,
-    siteName: "Duuka",
+    siteName: "ShopVendly",
     images: [
       {
         url: defaultImage,
         width: 1200,
         height: 630,
-        alt: "Duuka — Marketplace for your favorite social media stores",
+        alt: "ShopVendly — Marketplace for your favorite social sellers",
       },
     ],
     locale: "en_UG",
@@ -61,7 +76,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Duuka | Discover & Shop from your favorite social media stores",
+    title: "ShopVendly | Discover & Shop from social sellers",
     description: defaultDescription,
     images: [defaultImage],
     site: "@vendlyafrica",
@@ -82,11 +97,11 @@ const jsonLdGraph = {
     {
       "@type": "Organization",
       "@id": `${siteUrl}/#organization`,
-      name: "Duuka",
+      name: "ShopVendly",
       url: siteUrl,
       logo: {
         "@type": "ImageObject",
-        url: `${siteUrl}/duuka.png`,
+        url: `${siteUrl}/vendly.png`,
         width: 512,
         height: 512,
       },
@@ -101,17 +116,17 @@ const jsonLdGraph = {
         { "@type": "Place", name: "East Africa" },
       ],
       sameAs: [
-        "https://www.instagram.com/vendlyafrica",
-        "https://x.com/vendlyafrica",
-        "https://www.linkedin.com/company/vendlyafrica",
-        "https://www.tiktok.com/@vendlyafrica",
+        "https://www.instagram.com/shopvendly",
+        "https://x.com/shopvendly",
+        "https://www.linkedin.com/company/shopvendly",
+        "https://www.tiktok.com/@shopvendly",
       ],
     },
     {
       "@type": "WebSite",
       "@id": `${siteUrl}/#website`,
       url: siteUrl,
-      name: "Duuka",
+      name: "ShopVendly",
       publisher: { "@id": `${siteUrl}/#organization` },
       potentialAction: {
         "@type": "SearchAction",
@@ -125,7 +140,7 @@ const jsonLdGraph = {
     {
       "@type": "WebApplication",
       "@id": `${siteUrl}/#app`,
-      name: "Duuka Marketplace",
+      name: "ShopVendly Marketplace",
       url: siteUrl,
       applicationCategory: "ShoppingApplication",
       operatingSystem: "Web",
@@ -150,7 +165,7 @@ const jsonLdGraph = {
     {
       "@type": "ItemList",
       "@id": `${siteUrl}/#marketplace`,
-      name: "African Brands & Stores on Duuka",
+      name: "African Brands & Stores on ShopVendly",
       description:
         "Browse curated storefronts from African creators, fashion brands, and small businesses.",
       itemListOrder: "https://schema.org/ItemListUnordered",
@@ -165,7 +180,10 @@ export default async function RootLayout({
   children: ReactNode;
 }) {
   return (
-    <html lang="en" className={nunitoSans.variable}>
+    <html
+      lang="en"
+      className={`${nunitoSans.variable} ${sora.variable} ${dmSans.variable}`}
+    >
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
