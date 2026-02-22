@@ -1,63 +1,150 @@
 "use client";
 
 import { Button } from "@vendly/ui/components/button";
-import { useEffect, useRef, useState } from "react";
-import { Instagram, Upload } from "lucide-react";
+import { useEffect, useRef, useState, useCallback } from "react";
+import { HugeiconsIcon } from "@hugeicons/react";
+import {
+  ArrowRight02Icon,
+  InstagramIcon,
+  Upload02Icon,
+  Cancel01Icon,
+} from "@hugeicons/core-free-icons";
+import Image from "next/image";
 import { useOnboarding } from "../context/onboarding-context";
 
 export default function Complete() {
   const { isComplete, completeOnboarding, isLoading, isHydrated, error } = useOnboarding();
 
-  // tenantSlug is only available AFTER completeOnboarding succeeds,
-  // so we read it reactively instead of in a useState initializer.
   const [tenantSlug, setTenantSlug] = useState<string | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const [previews, setPreviews] = useState<{ url: string; name: string; file: File }[]>([]);
+  const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const didAttemptRef = useRef(false);
 
-  // Finalize onboarding once hydrated (e.g. after Google OAuth redirect)
   useEffect(() => {
     if (!isHydrated || isComplete || didAttemptRef.current) return;
     didAttemptRef.current = true;
-
-    (async () => {
-      await completeOnboarding();
-    })();
+    (async () => { await completeOnboarding(); })();
   }, [isHydrated, isComplete, completeOnboarding]);
 
-  // Read tenantSlug from localStorage once onboarding is complete
   useEffect(() => {
-    if (isComplete) {
-      setTenantSlug(localStorage.getItem("vendly_tenant_slug"));
-    }
+    if (isComplete) setTenantSlug(localStorage.getItem("vendly_tenant_slug"));
   }, [isComplete]);
+
+  // Cleanup object URLs on unmount
+  useEffect(() => {
+    return () => { previews.forEach((p) => URL.revokeObjectURL(p.url)); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const adminBase = tenantSlug ? `/a/${tenantSlug}` : "/a";
   const showLoading = (isLoading || !isHydrated) && !isComplete;
+  const hasFiles = previews.length > 0;
+
+  const addFiles = useCallback((files: File[]) => {
+    const images = files.filter((f) => f.type.startsWith("image/") || f.type.startsWith("video/"));
+    if (images.length === 0) return;
+    const newPreviews = images.map((f) => ({ url: URL.createObjectURL(f), name: f.name, file: f }));
+    setPreviews((prev) => [...prev, ...newPreviews]);
+  }, []);
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+    addFiles(Array.from(e.dataTransfer.files));
+  };
+
+  const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) addFiles(Array.from(e.target.files));
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
+  const removePreview = (index: number) => {
+    setPreviews((prev) => {
+      URL.revokeObjectURL(prev[index].url);
+      return prev.filter((_, i) => i !== index);
+    });
+  };
+
+  const handleContinue = async () => {
+    // If no files are dropped, we assume they chose the normal "Continue" (which is Instagram logic for the empty state)
+    if (!hasFiles) {
+      if (!tenantSlug) return;
+      setIsUploading(true);
+      try {
+        const { linkInstagram } = await import("@vendly/auth/client");
+        await linkInstagram({
+          callbackURL: `${window.location.origin}/a/${tenantSlug}?instagramConnected=true`,
+        });
+      } catch (err) {
+        console.error("Instagram connect failed:", err);
+        window.location.href = adminBase;
+      } finally {
+        setIsUploading(false);
+      }
+      return;
+    }
+
+    // Manual Upload flow
+    const tenantId = localStorage.getItem("vendly_tenant_id");
+    const storeId = localStorage.getItem("vendly_store_id");
+    const storeSlug = localStorage.getItem("vendly_store_slug");
+
+    if (!tenantId || !storeId) {
+      window.location.href = `/a/${tenantSlug}`;
+      return;
+    }
+
+    setIsUploading(true);
+
+    try {
+      // Create FormData to hit /api/products directly
+      const formData = new FormData();
+      formData.append("storeId", storeId);
+      formData.append("title", "My First Product");
+      formData.append("priceAmount", "0");
+
+      // Append files
+      previews.forEach((p) => {
+        formData.append("files", p.file);
+      });
+
+      const res = await fetch("/api/products", {
+        method: "POST",
+        body: formData, // FormData automatically sets multipart/form-data boundary
+      });
+
+      if (!res.ok) {
+        throw new Error("Failed to upload product");
+      }
+
+      window.location.href = `/a/${storeSlug || tenantSlug}`; // land squarely on admin page dashboard
+    } catch (err) {
+      console.error(err);
+      // Even if it fails, drop them into admin dashboard instead of getting stuck
+      window.location.href = `/a/${tenantSlug}`;
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const handleSkip = () => {
+    window.location.href = `/a/${tenantSlug}`;
+  };
 
   return (
-    <div className="w-full max-w-lg mx-auto">
-      <div className="rounded-xl border bg-card text-card-foreground shadow-sm p-6 md:p-8 space-y-7 text-center">
-        {/* Success icon */}
+    <div className="w-full h-[calc(100vh-80px)] max-w-md mx-auto flex flex-col items-center justify-center -mt-6">
+      <div className="w-full rounded-2xl border bg-card text-card-foreground shadow-sm p-6 md:p-8 space-y-6 text-center">
         <div className="flex flex-col items-center gap-3">
-          <div className="h-14 w-14 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
-            <svg
-              className="h-7 w-7 text-green-600 dark:text-green-400"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth={2}
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-            </svg>
-          </div>
           <div className="space-y-1">
-            <h1 className="text-2xl font-semibold tracking-tight">Your store is ready! 🎉</h1>
-            <p className="text-sm text-muted-foreground max-w-sm mx-auto">
-              You&apos;re all set. Now let&apos;s get your first customers.
+            <h1 className="text-2xl font-semibold tracking-tight">Your store is ready!</h1>
+            <p className="text-sm text-muted-foreground max-w-xs mx-auto">
+              Add your first products to start selling.
             </p>
           </div>
         </div>
 
-        {/* CTAs / Loading / Error */}
         {error && !isLoading ? (
           <div className="space-y-3">
             <div className="rounded-lg border border-destructive/40 bg-destructive/10 px-4 py-3 text-sm text-destructive">
@@ -66,54 +153,126 @@ export default function Complete() {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => {
-                didAttemptRef.current = false;
-                completeOnboarding();
-              }}
+              onClick={() => { didAttemptRef.current = false; completeOnboarding(); }}
             >
               Try again
             </Button>
           </div>
         ) : showLoading ? (
-          <p className="text-sm text-muted-foreground">Finishing your setup…</p>
+          <div className="flex flex-col items-center gap-2 py-2">
+            <div className="h-5 w-5 rounded-full border-2 border-primary/30 border-t-primary animate-spin" />
+            <p className="text-sm text-muted-foreground">Finishing your setup…</p>
+          </div>
         ) : (
-          <div className="space-y-3">
-            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-widest">
-              How do you want to start?
-            </p>
+          <div className="space-y-4 text-left">
+            {/* Drop zone */}
+            <div
+              className={`relative rounded-xl border-2 border-dashed transition-colors cursor-pointer
+                ${isDragging
+                  ? "border-primary bg-primary/5"
+                  : "border-border/70 hover:border-muted-foreground/40 hover:bg-muted/20"
+                }
+              `}
+              onClick={() => fileInputRef.current?.click()}
+              onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
+              onDragLeave={(e) => { e.preventDefault(); setIsDragging(false); }}
+              onDrop={handleDrop}
+            >
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*,video/*"
+                multiple
+                className="hidden"
+                onChange={handleFileInput}
+              />
 
-            <div className="grid gap-2.5">
-              {/* Instagram */}
-              <a href={`${adminBase}/instagram`} className="block">
-                <Button
-                  size="lg"
-                  className="w-full h-14 bg-gradient-to-r from-purple-600 via-red-500 to-orange-400 text-white border-0 hover:opacity-90 transition-opacity"
-                >
-                  <Instagram className="h-5 w-5 shrink-0" />
-                  <div className="text-left ml-1">
-                    <div className="font-semibold text-sm leading-tight">Connect Instagram</div>
-                    <div className="text-xs opacity-80 font-normal leading-tight">
-                      Import products directly from your posts
+              {hasFiles ? (
+                /* Preview grid */
+                <div className="p-3 space-y-2">
+                  <div className="flex flex-wrap gap-2">
+                    {previews.map((p, i) => (
+                      <div
+                        key={i}
+                        className="relative w-16 h-16 rounded-lg overflow-hidden border border-border/60 shrink-0"
+                      >
+                        <Image src={p.url} alt={p.name} fill className="object-cover" />
+                        <button
+                          type="button"
+                          onClick={(e) => { e.stopPropagation(); removePreview(i); }}
+                          className="absolute top-0.5 right-0.5 rounded-full bg-black/60 p-0.5 text-white"
+                        >
+                          <HugeiconsIcon icon={Cancel01Icon} className="h-2.5 w-2.5" />
+                        </button>
+                      </div>
+                    ))}
+                    {/* Add more tile */}
+                    <div className="w-16 h-16 rounded-lg border-2 border-dashed border-border/60 flex items-center justify-center text-muted-foreground hover:bg-muted/30 transition-colors shrink-0">
+                      <HugeiconsIcon icon={Upload02Icon} className="h-5 w-5" />
                     </div>
                   </div>
-                </Button>
-              </a>
-
-              <a href={`${adminBase}/products/new`} className="block">
-                <Button variant="outline" size="lg" className="w-full h-14">
-                  <Upload className="h-5 w-5 shrink-0" />
-                  <div className="text-left ml-1">
-                    <div className="font-semibold text-sm leading-tight">Add Products Manually</div>
-                    <div className="text-xs text-muted-foreground font-normal leading-tight">
-                      Upload photos and set your prices
-                    </div>
+                  <p className="text-xs text-muted-foreground px-1">
+                    {previews.length} file{previews.length !== 1 ? "s" : ""} selected — click to add more
+                  </p>
+                </div>
+              ) : (
+                /* Empty state */
+                <div className="flex flex-col items-center gap-2 py-8 px-4 text-center">
+                  <div className="h-10 w-10 rounded-xl bg-muted flex items-center justify-center">
+                    <HugeiconsIcon icon={Upload02Icon} className="h-5 w-5 text-muted-foreground" />
                   </div>
-                </Button>
-              </a>
+                  <div>
+                    <p className="text-sm font-medium text-foreground">Upload product photos</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      Drag &amp; drop or click to browse
+                    </p>
+                  </div>
+                </div>
+              )}
             </div>
 
-            <p className="text-xs text-muted-foreground">
-              You can always do this later from your dashboard.
+            {/* Divider */}
+            <div className="flex items-center gap-3">
+              <div className="flex-1 h-px bg-border" />
+              <span className="text-xs text-muted-foreground">or</span>
+              <div className="flex-1 h-px bg-border" />
+            </div>
+
+            {/* Instagram / Continue CTA */}
+            <Button
+              size="lg"
+              className="w-full gap-2 transition-all"
+              variant={hasFiles ? "default" : "outline"}
+              onClick={handleContinue}
+              disabled={isUploading}
+            >
+              {isUploading ? (
+                <>
+                  <div className="h-4 w-4 rounded-full border-2 border-current border-t-transparent animate-spin" />
+                  Please wait...
+                </>
+              ) : hasFiles ? (
+                <>
+                  Continue
+                  <HugeiconsIcon icon={ArrowRight02Icon} className="h-4 w-4" />
+                </>
+              ) : (
+                <>
+                  <HugeiconsIcon icon={InstagramIcon} className="h-4 w-4" />
+                  Continue with Instagram
+                </>
+              )}
+            </Button>
+
+            <p className="text-center text-xs text-muted-foreground">
+              <button
+                type="button"
+                onClick={handleSkip}
+                className="underline underline-offset-2 hover:text-foreground transition-colors"
+              >
+                Skip for now
+              </button>
+              {" "}— you can always add products from your dashboard.
             </p>
           </div>
         )}

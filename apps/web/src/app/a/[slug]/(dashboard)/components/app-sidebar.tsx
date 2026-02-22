@@ -227,7 +227,7 @@ export function AppSidebar({
         <SidebarGroup>
           <SidebarGroupLabel>Menu</SidebarGroupLabel>
           <SidebarGroupContent>
-            <SidebarMenu>
+            <SidebarMenu className="gap-1">
               {items.map((item) => {
                 const fullUrl = basePath ? joinPaths(basePath, item.url) : normalizePath(item.url);
                 const isActive = item.url === "/"

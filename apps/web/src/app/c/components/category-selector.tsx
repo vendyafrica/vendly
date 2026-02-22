@@ -22,7 +22,7 @@ export function StepIndicator() {
 
   const currentIndex = steps.indexOf(currentStep);
 
-  if (!isHydrated) {
+  if (!isHydrated) {  
     return (
       <div className="flex items-center gap-3 text-xs font-medium text-muted-foreground">
         {steps.map((step, idx) => (

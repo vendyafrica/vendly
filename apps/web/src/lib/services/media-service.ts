@@ -63,11 +63,13 @@ export const mediaService = {
                 customId,
             });
 
-            const uploaded = assertUploadSuccess(await utapi.uploadFiles(uploadFile, {
+            const uploadedRes = await utapi.uploadFiles(uploadFile, {
                 acl: "public-read",
                 contentDisposition: "inline",
-            }));
+            });
+            const uploaded = assertUploadSuccess(uploadedRes);
 
+            // Using ufsUrl instead of deprecated url or appUrl
             return {
                 url: uploaded.ufsUrl,
                 pathname: uploaded.key,
@@ -101,10 +103,11 @@ export const mediaService = {
             customId,
         });
 
-        const uploaded = assertUploadSuccess(await utapi.uploadFiles(uploadFile, {
+        const uploadedRes = await utapi.uploadFiles(uploadFile, {
             acl: "public-read",
             contentDisposition: "inline",
-        }));
+        });
+        const uploaded = assertUploadSuccess(uploadedRes);
 
         return {
             url: uploaded.ufsUrl,
