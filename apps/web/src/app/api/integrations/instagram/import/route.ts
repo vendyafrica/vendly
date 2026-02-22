@@ -6,6 +6,7 @@ import { tenantMemberships, instagramAccounts, instagramSyncJobs, account, store
 import { eq, and } from "@vendly/db";
 import { z } from "zod";
 import { parseInstagramCaption } from "@/lib/instagram/parse-caption";
+import { put } from "@vercel/blob";
 
 type InstagramMediaChild = {
   id: string | number;
@@ -35,6 +36,45 @@ function slugify(text: string) {
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/(^-|-$)+/g, "")
     .slice(0, 50) + "-" + Math.random().toString(36).substring(2, 6);
+}
+
+async function copyToBlob(params: {
+  tenantId: string;
+  sourceUrl: string;
+  preferredBasename: string;
+  fallbackContentType: string;
+}) {
+  try {
+    const res = await fetch(params.sourceUrl);
+    if (!res.ok) {
+      throw new Error(`Fetch failed: ${res.status}`);
+    }
+
+    const arrayBuf = await res.arrayBuffer();
+    const buffer = Buffer.from(arrayBuf);
+
+    const contentType = res.headers.get("content-type") || params.fallbackContentType;
+    const ext = contentType.includes("png")
+      ? "png"
+      : contentType.includes("webp")
+        ? "webp"
+        : contentType.includes("gif")
+          ? "gif"
+          : contentType.includes("mp4")
+            ? "mp4"
+            : "jpg";
+
+    const pathname = `instagram/${params.tenantId}/${params.preferredBasename}.${ext}`;
+    const blob = await put(pathname, buffer, { access: "public", contentType });
+
+    return { url: blob.url, pathname: blob.pathname, contentType };
+  } catch (err) {
+    console.warn("[InstagramImport] Blob copy failed; falling back to source URL", {
+      url: params.sourceUrl,
+      err,
+    });
+    return { url: params.sourceUrl, pathname: params.preferredBasename, contentType: params.fallbackContentType };
+  }
 }
 
 export async function POST(request: NextRequest) {
@@ -172,13 +212,19 @@ export async function POST(request: NextRequest) {
           if (!childUrl) continue;
 
           const contentType = childMediaType === "VIDEO" ? "video/mp4" : "image/jpeg";
+          const copied = await copyToBlob({
+            tenantId: membership.tenantId,
+            sourceUrl: childUrl,
+            preferredBasename: childId,
+            fallbackContentType: contentType,
+          });
           const [mediaObj] = await db
             .insert(mediaObjects)
             .values({
               tenantId: membership.tenantId,
-              blobUrl: childUrl,
-              blobPathname: childId,
-              contentType,
+              blobUrl: copied.url,
+              blobPathname: copied.pathname,
+              contentType: copied.contentType,
               source: "instagram",
               sourceMediaId: childId,
             })
@@ -205,13 +251,19 @@ export async function POST(request: NextRequest) {
         const itemUrl = String(item.media_url || item.thumbnail_url || "");
         if (itemUrl) {
           const contentType = itemType === "VIDEO" ? "video/mp4" : "image/jpeg";
+          const copied = await copyToBlob({
+            tenantId: membership.tenantId,
+            sourceUrl: itemUrl,
+            preferredBasename: itemId,
+            fallbackContentType: contentType,
+          });
           const [mediaObj] = await db
             .insert(mediaObjects)
             .values({
               tenantId: membership.tenantId,
-              blobUrl: itemUrl,
-              blobPathname: itemId,
-              contentType,
+              blobUrl: copied.url,
+              blobPathname: copied.pathname,
+              contentType: copied.contentType,
               source: "instagram",
               sourceMediaId: itemId,
             })

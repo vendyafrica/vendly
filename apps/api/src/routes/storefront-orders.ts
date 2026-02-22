@@ -1,25 +1,14 @@
 import { Router } from "express";
 import { createOrderSchema, orderService } from "../services/order-service";
-// import { notifyCustomerOrderReceived, notifySellerNewOrder } from "../services/notifications";
-import { mtnMomoCollections } from "../modules/payments/mtn-momo-service";
-import { normalizePhoneToE164 } from "../shared/utils/phone";
 import { capturePosthogEvent } from "../shared/utils/posthog";
 
-export const storefrontOrdersRouter:Router = Router();
-
-function getMtnCurrencyForOrder(orderCurrency: string): string {
-  return process.env.MTN_MOMO_COLLECTION_CURRENCY || orderCurrency;
-}
+export const storefrontOrdersRouter: Router = Router();
 
 // POST /api/storefront/:slug/orders
 storefrontOrdersRouter.post("/storefront/:slug/orders", async (req, res, next) => {
   try {
     const { slug } = req.params;
     const input = createOrderSchema.parse(req.body);
-
-    if (input.paymentMethod === "mtn_momo" && !input.customerPhone) {
-      throw new Error("customerPhone is required for MTN MoMo payments");
-    }
 
     const order = await orderService.createOrder(slug, input);
 
@@ -35,59 +24,37 @@ storefrontOrdersRouter.post("/storefront/:slug/orders", async (req, res, next) =
       },
     });
 
-    let momo: { referenceId: string; status: "pending" } | { error: string; status: "failed" } | null = null;
-    if (order.paymentMethod === "mtn_momo") {
-      try {
-        const payerMsisdn = normalizePhoneToE164(order.customerPhone || "", {
-          defaultCountryCallingCode: process.env.DEFAULT_COUNTRY_CALLING_CODE || "256",
-        });
-
-        if (!payerMsisdn) {
-          throw new Error("Invalid customer phone number for MTN MoMo payment");
-        }
-
-        const result = await mtnMomoCollections.requestToPay({
-          amount: String(order.totalAmount),
-          currency: getMtnCurrencyForOrder(order.currency),
-          externalId: order.id,
-          payerMsisdn,
-          payerMessage: `Payment for ${order.orderNumber}`,
-          payeeNote: `Order ${order.orderNumber}`,
-          callbackUrl: process.env.MTN_MOMO_CALLBACK_URL,
-        });
-
-        momo = { referenceId: result.referenceId, status: "pending" };
-      } catch (err) {
-        const message = err instanceof Error ? err.message : "Failed to initiate MTN MoMo payment";
-        console.error("[StorefrontOrders] MTN MoMo initiation failed", { orderId: order.id, message });
-        await orderService.updateOrderStatus(order.id, order.tenantId, { paymentStatus: "failed" });
-        momo = { error: message, status: "failed" };
-      }
-    }
-
-    // WhatsApp notifications temporarily disabled for sandbox/Postman testing.
-    // await Promise.allSettled([
-    //   (async () => {
-    //     try {
-    //       console.log("[StorefrontOrders] Sending WhatsApp order received to customer", { slug, orderId: order.id });
-    //       await notifyCustomerOrderReceived({ order });
-    //     } catch (err) {
-    //       console.error("[StorefrontOrders] Failed to send customer WhatsApp notification", err);
-    //     }
-    //   })(),
-    //   (async () => {
-    //     try {
-    //       const sellerPhone = await orderService.getTenantPhoneByStoreSlug(slug);
-    //       console.log("[StorefrontOrders] Sending WhatsApp new order to seller", { slug, orderId: order.id });
-    //       await notifySellerNewOrder({ sellerPhone, order });
-    //     } catch (err) {
-    //       console.error("[StorefrontOrders] Failed to send seller WhatsApp notification", err);
-    //     }
-    //   })(),
-    // ]);
-
-    return res.status(201).json({ order, momo });
+    return res.status(201).json({ order });
   } catch (err) {
     next(err);
   }
 });
+
+// POST /api/storefront/orders/:orderId/pay
+// Dummy/test payment confirmation — marks the order as paid without a real gateway.
+// Used by the /pay/[orderId] payment page for sandbox testing.
+storefrontOrdersRouter.post("/storefront/orders/:orderId/pay", async (req, res, next) => {
+  try {
+    const { orderId } = req.params;
+
+    const existing = await orderService.getOrderById(orderId);
+    if (!existing) {
+      return res.status(404).json({ error: "Order not found" });
+    }
+
+    if (existing.paymentStatus === "paid") {
+      // Idempotent — already paid
+      return res.status(200).json({ success: true, alreadyPaid: true });
+    }
+
+    await orderService.updateOrderStatusByOrderId(orderId, {
+      paymentStatus: "paid",
+      status: "processing",
+    });
+
+    return res.status(200).json({ success: true });
+  } catch (err) {
+    next(err);
+  }
+});
+

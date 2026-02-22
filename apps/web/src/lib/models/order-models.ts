@@ -18,7 +18,7 @@ export const createOrderSchema = z.object({
   customerName: z.string().min(1).max(255),
   customerEmail: z.string().email(),
   customerPhone: z.string().optional(),
-  paymentMethod: z.enum(["card", "mpesa", "mtn_momo", "paypal", "cash_on_delivery"]).default("cash_on_delivery"),
+  paymentMethod: z.enum(["card", "mpesa", "mtn_momo", "paypal", "paystack", "cash_on_delivery"]).default("cash_on_delivery"),
   notes: z.string().optional(),
   items: z.array(orderItemInputSchema).min(1),
 });

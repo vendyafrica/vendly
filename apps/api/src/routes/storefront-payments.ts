@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { orderService } from "../services/order-service";
-import { notifyCustomerPreparing, notifySellerCustomerDetails, notifySellerOrderDetails } from "../services/notifications";
+import { notifyCustomerOrderReceived, notifyCustomerPreparing, notifySellerNewOrder } from "../services/notifications";
 import { z } from "zod";
 
 const orderIdSchema = z.string().uuid();
@@ -23,15 +23,17 @@ storefrontPaymentsRouter.post("/storefront/orders/:orderId/pay", async (req, res
     }
 
     if (order.paymentStatus !== "paid") {
-      await orderService.updateOrderStatusByOrderId(orderId, { paymentStatus: "paid", status: "processing" });
+      await orderService.updateOrderStatusByOrderId(orderId, { paymentStatus: "paid", status: "processing", paymentMethod: "paystack" });
     }
 
     const full = await orderService.getOrderById(orderId);
     if (full) {
       const sellerPhone = await orderService.getTenantPhoneByTenantId(full.tenantId);
-      await notifySellerCustomerDetails({ sellerPhone, order: full });
-      await notifySellerOrderDetails({ sellerPhone, order: full });
-      await notifyCustomerPreparing({ order: full });
+      await Promise.allSettled([
+        notifyCustomerOrderReceived({ order: full }),
+        notifyCustomerPreparing({ order: full }),
+        notifySellerNewOrder({ sellerPhone, order: full }),
+      ]);
     }
 
     return res.status(200).json({ orderId, paymentStatus: "paid" });

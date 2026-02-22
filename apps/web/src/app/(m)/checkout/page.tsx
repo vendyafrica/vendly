@@ -16,6 +16,37 @@ import { useCart } from "../../../contexts/cart-context";
 import { useAppSession } from "@/contexts/app-session-context";
 
 const API_BASE = ""; // Force relative for same-origin internal API
+const PAYMENTS_API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://127.0.0.1:8000";
+
+type PaystackPopup = {
+    resumeTransaction: (accessCode: string, callback?: (resp: { status: string; reference: string }) => void) => void;
+    newTransaction: (config: {
+        key: string;
+        email: string;
+        amount: number;
+        currency: string;
+        ref: string;
+        onSuccess: (resp: { reference: string }) => void;
+        onCancel: () => void;
+    }) => void;
+};
+
+const loadPaystackPopup = (): Promise<new () => PaystackPopup> =>
+    new Promise((resolve, reject) => {
+        if (typeof window !== "undefined" && (window as unknown as Record<string, unknown>).PaystackPop) {
+            resolve((window as unknown as Record<string, unknown>).PaystackPop as new () => PaystackPopup);
+            return;
+        }
+        const script = document.createElement("script");
+        script.src = "https://js.paystack.co/v2/inline.js";
+        script.onload = () => {
+            const pop = (window as unknown as Record<string, unknown>).PaystackPop;
+            if (pop) resolve(pop as new () => PaystackPopup);
+            else reject(new Error("Paystack InlineJS failed to load"));
+        };
+        script.onerror = () => reject(new Error("Failed to load Paystack InlineJS"));
+        document.head.appendChild(script);
+    });
 
 function CheckoutContent() {
     const router = useRouter();
@@ -35,6 +66,7 @@ function CheckoutContent() {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [isSuccess, setIsSuccess] = useState(false);
+    const [failedImageKeys, setFailedImageKeys] = useState<Record<string, true>>({});
 
     useEffect(() => {
         if (session?.user) {
@@ -77,7 +109,7 @@ function CheckoutContent() {
                 customerName: fullName,
                 customerEmail: email,
                 customerPhone: phone,
-                paymentMethod: "cash_on_delivery",
+                paymentMethod: "paystack",
                 shippingAddress: {
                     street: address,
                     country: "Uganda",
@@ -101,10 +133,60 @@ function CheckoutContent() {
 
             const data = await res.json();
             const orderId = "order" in data ? data.order?.id : data.id;
-            if (orderId) {
-                clearStoreFromCart(store.id);
+            if (!orderId) throw new Error("Missing order ID");
+
+            const callbackUrl = `${window.location.origin}/${store.slug}`;
+            const initRes = await fetch(`${PAYMENTS_API_BASE}/api/payments/paystack/initialize`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    email,
+                    amount: Math.round(storeTotal),
+                    currency,
+                    orderId,
+                    callbackUrl,
+                }),
+            });
+
+            if (!initRes.ok) {
+                const initJson = await initRes.json().catch(() => ({}));
+                throw new Error((initJson as { error?: string }).error || "Failed to initialize Paystack");
             }
+
+            const { access_code, reference } = await initRes.json() as {
+                access_code: string;
+                reference: string;
+            };
+
+            const PaystackPop = await loadPaystackPopup();
+            const popup = new PaystackPop();
+
+            await new Promise<void>((resolve, reject) => {
+                const publicKey = process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY;
+
+                if (publicKey) {
+                    popup.newTransaction({
+                        key: publicKey,
+                        email,
+                        amount: Math.round(storeTotal),
+                        currency,
+                        ref: reference,
+                        onSuccess: () => resolve(),
+                        onCancel: () => reject(new Error("Payment cancelled")),
+                    });
+                } else {
+                    popup.resumeTransaction(access_code, (resp) => {
+                        if (resp.status === "success") resolve();
+                        else reject(new Error("Payment not completed"));
+                    });
+                }
+            });
+
+            await clearStoreFromCart(store.id);
             setIsSuccess(true);
+            setTimeout(() => {
+                window.location.assign(`${window.location.origin}/${store.slug}`);
+            }, 1200);
         } catch {
             setError("Something went wrong. Please try again.");
             setIsSubmitting(false);
@@ -229,14 +311,22 @@ function CheckoutContent() {
                                                 loop
                                                 autoPlay
                                             />
-                                        ) : item.product.image ? (
+                                        ) : item.product.image && !failedImageKeys[item.id] ? (
                                             <Image
                                                 src={item.product.image}
                                                 alt={item.product.name}
                                                 fill
                                                 className="object-cover"
+                                                unoptimized={item.product.image.includes("cdninstagram.com") || item.product.image.includes("scontent-")}
+                                                onError={() => {
+                                                    setFailedImageKeys((prev) => ({ ...prev, [item.id]: true }));
+                                                }}
                                             />
-                                        ) : null}
+                                        ) : (
+                                            <div className="h-full w-full bg-neutral-100 text-neutral-400 text-[10px] flex items-center justify-center px-1 text-center">
+                                                No image
+                                            </div>
+                                        )}
                                         <span className="absolute -top-2 -right-2 h-5 w-5 rounded-full bg-neutral-700 text-white text-xs flex items-center justify-center">
                                             {item.quantity}
                                         </span>

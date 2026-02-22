@@ -120,5 +120,5 @@ export type OrderItem = typeof orderItems.$inferSelect;
 export type NewOrderItem = typeof orderItems.$inferInsert;
 
 export type OrderStatus = "pending" | "processing" | "ready" | "out_for_delivery" | "completed" | "cancelled" | "refunded";
-export type PaymentMethod = "card" | "mpesa" | "mtn_momo" | "cash_on_delivery";
+export type PaymentMethod = "card" | "mpesa" | "mtn_momo" | "paystack" | "cash_on_delivery";
 export type PaymentStatus = "pending" | "paid" | "failed" | "refunded";

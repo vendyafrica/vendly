@@ -1,5 +1,4 @@
 import "@vendly/ui/globals.css";
-import "../styles/marketing/globals.css";
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono, Nunito_Sans, Sora, DM_Sans } from "next/font/google";
 import type { ReactNode } from "react";
