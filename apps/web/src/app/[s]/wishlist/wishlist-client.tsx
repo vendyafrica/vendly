@@ -13,6 +13,8 @@ export default function WishlistClient() {
     const storeSlug = params?.s as string;
     const { items, removeFromWishlist } = useWishlist();
 
+    const storeItems = items.filter(item => item.store?.slug === storeSlug);
+
     const FALLBACK_PRODUCT_IMAGE = "https://cdn.cosmos.so/25e7ef9d-3d95-486d-b7db-f0d19c1992d7?format=jpeg";
 
     const formatPrice = (amount: number | undefined, currency: string | undefined) => {
@@ -21,27 +23,27 @@ export default function WishlistClient() {
         return `${c} ${amount.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 })}`.trim();
     };
 
-    if (items.length === 0) {
+    if (storeItems.length === 0) {
         return (
-            <main className="min-h-screen">
-                <div className="max-w-3xl mx-auto px-4 py-12">
-                    <div className="flex items-center gap-2 mb-6">
-                        <Link href={`/${storeSlug || ""}`} className="p-2 -ml-2 hover:bg-neutral-100 rounded-full transition-colors">
+            <main className="min-h-screen bg-white pt-24">
+                <div className="max-w-2xl mx-auto px-4 py-8">
+                    <div className="flex items-center gap-2 mb-10">
+                        <Link href={`/${storeSlug || ""}`} className="p-2 -ml-2 text-neutral-400 hover:text-neutral-900 transition-colors">
                             <HugeiconsIcon icon={ArrowLeft01Icon} className="h-5 w-5" />
                         </Link>
-                        <h1 className="text-xl font-semibold">Wishlist</h1>
+                        <h1 className="text-xl uppercase tracking-widest font-semibold">Wishlist</h1>
                     </div>
 
-                    <div className="bg-white rounded-3xl border border-neutral-200 p-12 flex flex-col items-center justify-center text-center shadow-sm">
-                        <div className="bg-neutral-50 p-6 rounded-full mb-6">
-                            <HugeiconsIcon icon={Delete02Icon} className="h-10 w-10 text-neutral-300" />
+                    <div className="p-12 flex flex-col items-center justify-center text-center">
+                        <div className="mb-6">
+                            <HugeiconsIcon icon={Delete02Icon} size={48} className="text-neutral-200 stroke-[1.5]" />
                         </div>
-                        <h2 className="text-xl font-semibold mb-2">No saved items</h2>
-                        <p className="text-neutral-500 mb-8">
+                        <h2 className="text-xl uppercase tracking-widest font-semibold mb-2">No saved items</h2>
+                        <p className="text-neutral-500 mb-8 max-w-sm">
                             Tap the heart on a product to save it here for later.
                         </p>
                         <Link href={`/${storeSlug || ""}`}>
-                            <Button size="lg" className="rounded-full px-8 h-12">
+                            <Button className="h-14 rounded-none px-8 bg-neutral-900 text-white hover:bg-black uppercase text-xs tracking-widest font-semibold transition-colors">
                                 Continue Shopping
                             </Button>
                         </Link>
@@ -52,31 +54,32 @@ export default function WishlistClient() {
     }
 
     return (
-        <main className="min-h-screen">
-            <div className="max-w-4xl mx-auto px-4 md:px-6 lg:px-8 py-10 space-y-6">
-                <div className="flex items-center gap-2 mb-1">
-                    <Link href={`/${storeSlug || ""}`} className="p-2 -ml-2 hover:bg-neutral-100 rounded-full transition-colors">
-                        <HugeiconsIcon icon={ArrowLeft01Icon} className="h-5 w-5" />
+        <main className="min-h-screen bg-white pt-24 pb-24">
+            <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                <div className="flex items-center gap-4 border-b border-neutral-200 pb-6 mb-8">
+                    <Link href={`/${storeSlug || ""}`} className="p-2 -ml-2 text-neutral-400 hover:text-neutral-900 transition-colors">
+                        <HugeiconsIcon icon={ArrowLeft01Icon} className="h-6 w-6" />
                     </Link>
-                    <h1 className="text-2xl font-semibold">Wishlist</h1>
-                    <span className="ml-2 text-sm text-neutral-500">{items.length} item{items.length === 1 ? "" : "s"}</span>
+                    <h1 className="text-2xl uppercase tracking-widest font-semibold">Wishlist</h1>
+                    <span className="text-sm font-medium text-neutral-500 uppercase tracking-widest ml-auto">
+                        {storeItems.length} {storeItems.length === 1 ? 'Item' : 'Items'}
+                    </span>
                 </div>
-                <p className="text-sm text-neutral-500">Saved products from this store</p>
 
                 <div className="space-y-4">
-                    {items.map((item) => {
+                    {storeItems.map((item) => {
                         const href = item.slug ? `/${storeSlug}/${item.id}/${item.slug}` : `/${storeSlug}`;
                         return (
                             <div
                                 key={item.id}
-                                className="bg-white rounded-2xl border border-neutral-200 shadow-sm transition-all duration-200 hover:shadow-md"
+                                className="bg-white border-b border-neutral-200 transition-all duration-200"
                             >
-                                <div className="p-5 flex gap-5 items-start">
-                                    <div className="relative h-24 w-24 bg-neutral-50 rounded-2xl overflow-hidden shrink-0 border border-neutral-100">
+                                <div className="py-6 flex gap-6 items-start">
+                                    <Link href={href} className="relative w-24 aspect-3/4 bg-neutral-100 shrink-0 block overflow-hidden">
                                         {item.contentType?.startsWith("video/") || item.image?.match(/\.(mp4|webm|mov|ogg)$/i) || ((item.image || "").includes(".ufs.sh") && !(item.image || "").match(/\.(jpg|jpeg|png|webp|gif)$/i) && !item.contentType?.startsWith("image/")) ? (
                                             <video
                                                 src={item.image || ""}
-                                                className="h-full w-full object-cover"
+                                                className="h-full w-full object-cover mix-blend-multiply"
                                                 muted
                                                 playsInline
                                                 loop
@@ -87,44 +90,44 @@ export default function WishlistClient() {
                                                 src={item.image || FALLBACK_PRODUCT_IMAGE}
                                                 alt={item.name}
                                                 fill
-                                                className="object-cover"
+                                                className="object-cover mix-blend-multiply"
                                                 sizes="120px"
                                                 unoptimized={item.image?.includes(".ufs.sh")}
                                             />
                                         )}
-                                    </div>
+                                    </Link>
 
-                                    <div className="flex-1 flex flex-col justify-between py-0.5">
+                                    <div className="flex-1 flex flex-col justify-between self-stretch py-0.5">
                                         <div className="flex justify-between items-start gap-4">
                                             <div className="space-y-1">
-                                                <h3 className="font-semibold text-base leading-snug">
+                                                <h3 className="font-serif text-lg leading-tight">
                                                     <Link href={href} className="hover:underline">
                                                         {item.name}
                                                     </Link>
                                                 </h3>
                                                 {item.store?.name && (
-                                                    <p className="text-xs text-neutral-500">{item.store.name}</p>
+                                                    <p className="text-[10px] uppercase tracking-widest text-neutral-500 mt-1">{item.store.name}</p>
                                                 )}
                                             </div>
-                                            <div className="text-right">
-                                                <span className="inline-flex items-center rounded-full bg-neutral-100 px-3 py-1 text-xs font-semibold text-neutral-700">
+                                            <div className="text-right mt-0.5">
+                                                <span className="font-medium text-sm">
                                                     {formatPrice(item.price, item.currency)}
                                                 </span>
                                             </div>
                                         </div>
 
-                                        <div className="flex items-center justify-between mt-4 gap-3">
-                                            <Link href={href} className="flex-1">
-                                                <Button variant="outline" className="w-full h-10 rounded-full text-sm font-medium">
+                                        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mt-auto gap-4">
+                                            <Link href={href} className="w-full sm:w-auto">
+                                                <Button className="w-full sm:w-auto h-12 rounded-none px-8 border border-neutral-900 bg-white text-neutral-900 hover:bg-neutral-900 hover:text-white uppercase text-xs tracking-widest font-semibold transition-colors">
                                                     View product
                                                 </Button>
                                             </Link>
                                             <button
                                                 onClick={() => removeFromWishlist(item.id)}
-                                                className="ml-1 text-neutral-400 hover:text-red-500 transition-colors p-2"
+                                                className="text-xs uppercase tracking-widest text-neutral-400 hover:text-neutral-900 transition-colors underline underline-offset-4"
                                                 aria-label="Remove from wishlist"
                                             >
-                                                <HugeiconsIcon icon={Delete02Icon} size={18} />
+                                                Remove
                                             </button>
                                         </div>
                                     </div>

@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import MarketplaceLayout from "../(m)/layout";
 import { StorefrontHeader } from "./components/header";
+import { NavigationOverlayProvider } from "./components/navigation-overlay";
 
 export default function StorefrontLayout({
   children,
@@ -9,10 +10,12 @@ export default function StorefrontLayout({
 }) {
   return (
     <MarketplaceLayout>
-      <div className="relative min-h-screen bg-background text-foreground antialiased">
-        <StorefrontHeader />
-        <main className="flex flex-col w-full">{children}</main>
-      </div>
+      <NavigationOverlayProvider>
+        <div className="relative min-h-screen bg-background text-foreground antialiased">
+          <StorefrontHeader />
+          <main className="flex flex-col w-full">{children}</main>
+        </div>
+      </NavigationOverlayProvider>
     </MarketplaceLayout>
   );
 }

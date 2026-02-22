@@ -2,7 +2,8 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
+import { useState } from "react";
 
 interface ProductCardProps {
   title: string;
@@ -29,6 +30,9 @@ const aspectVariants = [
 
 export function ProductCard({ title, slug, price, image, contentType, index = 0, storeSlug, id }: ProductCardProps) {
   const params = useParams();
+  const router = useRouter();
+  const [isNavigating, setIsNavigating] = useState(false);
+
   const currentStoreSlug = storeSlug || (params?.s as string);
   const aspectClass = aspectVariants[index % aspectVariants.length];
 
@@ -39,10 +43,26 @@ export function ProductCard({ title, slug, price, image, contentType, index = 0,
     || imageUrl.match(/\.(mp4|webm|mov|ogg)$/i) !== null
     || (imageUrl.includes(".ufs.sh") && !imageUrl.match(/\.(jpg|jpeg|png|webp|gif)$/i) && !contentType?.startsWith("image/")); // Heuristic for CDN URLs if no extension and not explicitly image
 
+  const handleClick = (event: React.MouseEvent<HTMLAnchorElement>) => {
+    if (isNavigating) {
+      event.preventDefault();
+      return;
+    }
+    setIsNavigating(true);
+    // Best-effort prefetch to reduce perceived delay
+    try {
+      router.prefetch(`/${currentStoreSlug}/${id}/${slug}`);
+    } catch {
+      // Prefetch is best-effort; ignore errors
+    }
+  };
+
   return (
     <Link
       href={`/${currentStoreSlug}/${id}/${slug}`}
-      className="group block break-inside-avoid mb-3 sm:mb-4 lg:mb-5"
+      onClick={handleClick}
+      className={`group block break-inside-avoid mb-3 sm:mb-4 lg:mb-5 ${isNavigating ? "pointer-events-none opacity-70" : ""}`}
+      aria-busy={isNavigating}
     >
       {/* Image Container */}
       <div className={`relative overflow-hidden rounded-lg ${aspectClass} bg-muted`}>
@@ -84,6 +104,12 @@ export function ProductCard({ title, slug, price, image, contentType, index = 0,
 
         {/* Subtle hover overlay */}
         <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors duration-300" />
+
+        {isNavigating && (
+          <div className="absolute inset-0 bg-white/70 backdrop-blur-[2px] flex items-center justify-center">
+            <div className="h-8 w-8 rounded-full border-2 border-neutral-900 border-t-transparent animate-spin" aria-label="Loading" />
+          </div>
+        )}
       </div>
 
       {/* Product Info - Clean and minimal */}

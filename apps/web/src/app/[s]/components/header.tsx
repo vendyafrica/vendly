@@ -28,8 +28,26 @@ interface StoreData {
 export function StorefrontHeader() {
   const params = useParams();
   const pathname = usePathname();
-  const { itemCount } = useCart();
+  const { itemsByStore } = useCart();
   const [store, setStore] = useState<StoreData | null>(null);
+
+  // Derive storeId matching the currently loaded slug context to show accurate item count
+  const [storeId, setStoreId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!store) return;
+    let foundId = null;
+    for (const [id, items] of Object.entries(itemsByStore)) {
+      if (items[0]?.store?.slug === store.slug) {
+        foundId = id;
+        break;
+      }
+    }
+    setStoreId(foundId);
+  }, [itemsByStore, store]);
+
+  const storeItems = storeId ? itemsByStore[storeId] : [];
+  const storeItemCount = storeItems ? storeItems.length : 0;
 
   const [loading, setLoading] = useState(true);
   const [isVisible, setIsVisible] = useState(true);
@@ -127,7 +145,7 @@ export function StorefrontHeader() {
             {/* Right: Icons */}
             <div className="flex items-center gap-1 sm:gap-1 ml-auto">
               <Link
-                href="/cart"
+                href={`/${store.slug}/cart`}
                 className={`relative inline-flex h-10 w-10 items-center cursor-pointer justify-center transition-colors ${isHomePage ? "hover:opacity-80" : "hover:bg-muted/70 rounded-full"}`}
                 aria-label="Cart"
               >
@@ -136,11 +154,11 @@ export function StorefrontHeader() {
                   size={18}
                   className={iconColor}
                 />
-                {itemCount > 0 && (
+                {storeItemCount > 0 && (
                   <span
-                    className={`pointer-events-none absolute -top-0.5 -right-0.5 flex h-3.5 w-3.5 items-center justify-center rounded-full text-[10px] font-semibold text-white ${isHomePage ? "bg-black/80 ring-2 ring-white/60" : "bg-neutral-900 ring-2 ring-white"}`}
+                    className={`pointer-events-none absolute -top-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full text-[10px] font-semibold text-white ${isHomePage ? "bg-black/90 ring-2 ring-white/60" : "bg-neutral-900 ring-2 ring-white"}`}
                   >
-                    {itemCount > 99 ? "99+" : itemCount}
+                    {storeItemCount > 99 ? "99+" : storeItemCount}
                   </span>
                 )}
               </Link>
