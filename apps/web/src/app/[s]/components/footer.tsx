@@ -167,7 +167,7 @@ export function StorefrontFooter({ store }: StorefrontFooterProps) {
               target="_blank"
               rel="noopener noreferrer"
             >
-              Vendly
+              shopVendly
             </Link>
           </p>
         </div>

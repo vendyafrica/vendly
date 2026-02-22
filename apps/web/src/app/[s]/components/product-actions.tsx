@@ -116,7 +116,7 @@ export function ProductActions({ product }: ProductActionsProps) {
       <div className="grid gap-3 pt-4">
         <Button
           onClick={handleAddToCart}
-          className="w-full h-12 rounded-md bg-primary text-white hover:bg-primary/80 uppercase text-xs tracking-wider cursor"
+          className="w-full h-12 rounded-none bg-primary text-white hover:bg-primary/80 uppercase text-xs tracking-widest font-semibold transition-colors"
           disabled={isAdded}
         >
           {isAdded ? (
@@ -131,19 +131,18 @@ export function ProductActions({ product }: ProductActionsProps) {
         <Button
           onClick={handleToggleWishlist}
           variant="outline"
-          className={`h-12 rounded-md border text-sm font-medium transition-all flex items-center justify-center gap-2 ${
-            wishlisted
+          className={`h-12 rounded-none border text-xs font-semibold uppercase tracking-widest transition-all flex items-center justify-center gap-2 ${wishlisted
               ? "border-neutral-900 text-neutral-900 bg-neutral-50"
               : "border-neutral-200 text-neutral-800 hover:border-neutral-900 hover:text-neutral-900"
-          }`}
+            }`}
           aria-pressed={wishlisted}
         >
           <HugeiconsIcon
             icon={FavouriteIcon}
-            size={18}
-            className={wishlisted ? "text-neutral-900" : "text-neutral-600"}
+            size={16}
+            className={wishlisted ? "fill-neutral-900 text-neutral-900" : "text-neutral-600"}
           />
-          {wishlisted ? "Saved to Wishlist" : "Save to Wishlist"}
+          {wishlisted ? "Saved" : "Save to Wishlist"}
         </Button>
       </div>
     </div>

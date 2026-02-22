@@ -4,10 +4,7 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import { HugeiconsIcon } from "@hugeicons/react";
 
-import {
-    StarIcon,
-    FlashIcon,
-} from "@hugeicons/core-free-icons";
+import { StarIcon } from "@hugeicons/core-free-icons";
 import { StoreAvatar } from "@/components/store-avatar";
 import { useRecentlyViewed } from "@/hooks/use-recently-viewed";
 import { trackStorefrontEvents } from "@/lib/storefront-tracking";
@@ -107,7 +104,11 @@ export function ProductDetails({ product, storeCategories = [] }: ProductDetails
                     {/* Mobile carousel */}
                     <div className="lg:hidden flex gap-3 overflow-x-auto snap-x snap-mandatory pb-2 scrollbar-hide">
                         {displayImages.map((img, index) => (
-                            <div key={index} className="relative min-w-[85%] aspect-3/4 snap-center rounded-none overflow-hidden bg-neutral-100">
+                            <div
+                                key={index}
+                                className="relative w-[85vw] sm:w-[70vw] shrink-0 snap-center rounded-none overflow-hidden bg-neutral-100 aspect-3/4 min-h-[320px]"
+                                style={{ aspectRatio: "3 / 4" }}
+                            >
                                 <Image
                                     src={img}
                                     alt={`${product.name} ${index + 1}`}
