@@ -1,28 +1,15 @@
 "use client";
-
-import { useState } from "react";
-import { Button } from "@vendly/ui/components/button";
 import {
   Empty,
-  EmptyContent,
   EmptyDescription,
   EmptyHeader,
   EmptyMedia,
   EmptyTitle,
 } from "@vendly/ui/components/empty";
-import { useRouter } from "next/navigation";
 import { useOnboarding } from "../context/onboarding-context";
 
 export default function Complete() {
-  const router = useRouter();
   const { data, isLoading } = useOnboarding();
-
-  const [storeSlug] = useState<string | null>(() =>
-    typeof window === "undefined" ? null : localStorage.getItem("vendly_store_slug")
-  );
-  const [tenantSlug] = useState<string | null>(() =>
-    typeof window === "undefined" ? null : localStorage.getItem("vendly_tenant_slug")
-  );
 
   // Show loading state
   if (isLoading) {
@@ -45,7 +32,7 @@ export default function Complete() {
     );
   }
 
-  // Show success state
+  // Show welcome email sent confirmation
   return (
     <div className="mx-auto w-full max-w-lg rounded-xl p-6 md:p-8 shadow-sm bg-background">
       <Empty className="w-full">
@@ -68,48 +55,16 @@ export default function Complete() {
             </div>
           </EmptyMedia>
           <EmptyTitle className="text-lg font-semibold">
-            🎉 Your store is ready!
+            Your store is ready!
           </EmptyTitle>
-          <EmptyDescription className="text-sm text-muted-foreground">
+          <EmptyDescription className="text-sm text-muted-foreground max-w-sm">
             Congratulations {data.personal?.fullName?.split(" ")[0] || "there"}!
-            Your store {data.store?.storeName ? `"${data.store?.storeName}" ` : ""}has been created successfully.
+            {data.store?.storeName ? ` Your store "${data.store.storeName}" has been created.` : " Your store has been created."}
+          </EmptyDescription>
+          <EmptyDescription className="text-sm text-muted-foreground max-w-sm mt-2">
+            We&apos;ve sent a welcome email to your inbox. Click the link in the email to verify your account and access your dashboard.
           </EmptyDescription>
         </EmptyHeader>
-        <EmptyContent className="space-y-3">
-          <Button
-            size="lg"
-            className="w-full cursor-pointer"
-            onClick={() => {
-              const targetSlug = storeSlug || tenantSlug;
-              if (targetSlug) {
-                window.location.href = `/a/${targetSlug}`;
-              } else {
-                console.error("No redirect path found");
-              }
-            }}
-          >
-            Go to Dashboard
-          </Button>
-          <Button
-            variant="outline"
-            size="lg"
-            className="w-full cursor-pointer"
-            onClick={() => {
-              const fallbackSlug = data.store?.storeName
-                ?.toLowerCase()
-                .replace(/[^a-z0-9]+/g, "-")
-                .replace(/^-|-$/g, "");
-              const targetSlug = storeSlug || fallbackSlug;
-              if (targetSlug) {
-                router.push(`/${targetSlug}`);
-              } else {
-                router.push("/");
-              }
-            }}
-          >
-            Preview Store
-          </Button>
-        </EmptyContent>
       </Empty>
     </div>
   );

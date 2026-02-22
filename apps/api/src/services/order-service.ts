@@ -3,16 +3,17 @@ import {
   and,
   cacheKeys,
   db,
-  dbWs,
   eq,
   inArray,
   invalidateCache,
   isNull,
+  like,
+  or,
   sql,
   withCache,
 } from "@vendly/db";
 import { orders, orderItems, products, stores, tenants } from "@vendly/db";
-import { normalizePhoneToE164 } from "../utils/phone";
+import { normalizePhoneToE164 } from "../shared/utils/phone";
 import { z } from "zod";
 
 type ProductWithMedia = (typeof products.$inferSelect) & {
@@ -38,7 +39,7 @@ export const createOrderSchema = z.object({
 export type CreateOrderInput = z.infer<typeof createOrderSchema>;
 
 export const updateOrderStatusSchema = z.object({
-  status: z.enum(["pending", "processing", "completed", "cancelled", "refunded"]).optional(),
+  status: z.enum(["pending", "processing", "ready", "out_for_delivery", "completed", "cancelled", "refunded"]).optional(),
   paymentStatus: z.enum(["pending", "paid", "failed", "refunded"]).optional(),
 });
 
@@ -108,36 +109,32 @@ export const orderService = {
 
     const totalAmount = subtotal;
 
-    const order = await dbWs.transaction(async (tx) => {
-      const [newOrder] = await tx
-        .insert(orders)
-        .values({
-          tenantId: store.tenantId,
-          storeId: store.id,
-          orderNumber,
-          customerName: input.customerName,
-          customerEmail: input.customerEmail,
-          customerPhone: input.customerPhone,
-          paymentMethod: input.paymentMethod,
-          paymentStatus: "pending",
-          status: "pending",
-          notes: input.notes,
-          subtotal,
-          totalAmount,
-          currency,
-        })
-        .returning();
+    const [order] = await db
+      .insert(orders)
+      .values({
+        tenantId: store.tenantId,
+        storeId: store.id,
+        orderNumber,
+        customerName: input.customerName,
+        customerEmail: input.customerEmail,
+        customerPhone: input.customerPhone,
+        paymentMethod: input.paymentMethod,
+        paymentStatus: "pending",
+        status: "pending",
+        notes: input.notes,
+        subtotal,
+        totalAmount,
+        currency,
+      })
+      .returning();
 
-      await tx.insert(orderItems).values(
-        orderItemsData.map((i) => ({
-          tenantId: store.tenantId,
-          orderId: newOrder.id,
-          ...i,
-        }))
-      );
-
-      return newOrder;
-    });
+    await db.insert(orderItems).values(
+      orderItemsData.map((i) => ({
+        tenantId: store.tenantId,
+        orderId: order.id,
+        ...i,
+      }))
+    );
 
     const completeOrder = await db.query.orders.findFirst({
       where: eq(orders.id, order.id),
@@ -234,31 +231,34 @@ export const orderService = {
     if (trimmed) variants.add(trimmed);
 
     const normalized = normalizePhoneToE164(trimmed, {
-      defaultCountryCallingCode: process.env.DEFAULT_COUNTRY_CALLING_CODE || "254",
+      defaultCountryCallingCode: process.env.DEFAULT_COUNTRY_CALLING_CODE || "256",
     });
-    if (normalized) variants.add(normalized);
+    if (normalized) {
+      variants.add(normalized);
+      if (normalized.startsWith("+")) variants.add(normalized.slice(1));
+    }
 
-    // Sometimes WhatsApp "from" arrives without '+'
-    if (normalized?.startsWith("+")) variants.add(normalized.slice(1));
-
-    // Local format with leading 0 (e.g. 256780... -> 0780...)
-    if (normalized?.startsWith("+")) {
-      const withoutPlus = normalized.slice(1);
-      const defaultCode = process.env.DEFAULT_COUNTRY_CALLING_CODE || "254";
-      if (withoutPlus.startsWith(defaultCode)) {
-        const national = withoutPlus.slice(defaultCode.length);
-        if (national) {
-          const withZero = `0${national}`;
-          variants.add(withZero);
-        }
+    const digitsOnly = trimmed.replace(/\D/g, "");
+    if (digitsOnly) {
+      variants.add(digitsOnly);
+      variants.add(`+${digitsOnly}`);
+      if (digitsOnly.startsWith("0") && digitsOnly.length > 1) {
+        variants.add(digitsOnly.slice(1));
       }
     }
 
-    const list = Array.from(variants);
+    const list = Array.from(variants).filter(Boolean);
     if (!list.length) return null;
 
+    const suffixes = new Set<string>();
+    if (digitsOnly.length >= 9) suffixes.add(digitsOnly.slice(-9));
+    if (digitsOnly.length >= 10) suffixes.add(digitsOnly.slice(-10));
+    if (digitsOnly.startsWith("0") && digitsOnly.length > 1) suffixes.add(digitsOnly.slice(1));
+
+    const conditions = [inArray(tenants.phoneNumber, list), ...Array.from(suffixes).map((suffix) => like(tenants.phoneNumber, `%${suffix}`))];
+
     const tenant = await db.query.tenants.findFirst({
-      where: and(inArray(tenants.phoneNumber, list), isNull(tenants.deletedAt)),
+      where: and(conditions.length > 1 ? or(...conditions) : conditions[0], isNull(tenants.deletedAt)),
       columns: { id: true },
     });
 
@@ -273,7 +273,7 @@ export const orderService = {
     return order;
   },
 
-  async getLatestOrderForTenantByStatus(tenantId: string, statuses: Array<"pending" | "processing" | "completed" | "cancelled" | "refunded">) {
+  async getLatestOrderForTenantByStatus(tenantId: string, statuses: Array<"pending" | "processing" | "ready" | "out_for_delivery" | "completed" | "cancelled" | "refunded">) {
     const order = await db.query.orders.findFirst({
       where: and(eq(orders.tenantId, tenantId), inArray(orders.status, statuses), isNull(orders.deletedAt)),
       orderBy: (o, { desc }) => [desc(o.createdAt)],
@@ -281,5 +281,45 @@ export const orderService = {
     });
 
     return order;
+  },
+
+  async getLatestOrderByCustomerPhone(phone: string, paymentStatuses: Array<"pending" | "paid" | "failed" | "refunded">) {
+    const variants = new Set<string>();
+    const trimmed = phone.trim();
+    if (trimmed) variants.add(trimmed);
+
+    const normalized = normalizePhoneToE164(trimmed, {
+      defaultCountryCallingCode: process.env.DEFAULT_COUNTRY_CALLING_CODE || "256",
+    });
+    if (normalized) variants.add(normalized);
+    if (normalized?.startsWith("+")) variants.add(normalized.slice(1));
+
+    const list = Array.from(variants);
+    if (!list.length) return null;
+
+    const order = await db.query.orders.findFirst({
+      where: and(
+        inArray(orders.customerPhone, list),
+        inArray(orders.paymentStatus, paymentStatuses),
+        isNull(orders.deletedAt),
+      ),
+      orderBy: (o, { desc }) => [desc(o.createdAt)],
+      with: { items: true, store: true },
+    });
+
+    return order || null;
+  },
+
+  async updateOrderStatusByOrderId(orderId: string, input: UpdateOrderStatusInput) {
+    const [updated] = await db
+      .update(orders)
+      .set({
+        ...input,
+        updatedAt: new Date(),
+      })
+      .where(and(eq(orders.id, orderId), isNull(orders.deletedAt)))
+      .returning();
+
+    return updated;
   },
 };

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createOrderSchema } from "@/lib/services/order-models";
+import { createOrderSchema } from "@/lib/models/order-models";
 
 type RouteParams = {
     params: Promise<{ slug: string }>;

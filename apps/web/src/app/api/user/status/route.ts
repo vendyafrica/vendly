@@ -1,9 +1,10 @@
 import { auth } from "@vendly/auth";
 import { headers } from "next/headers";
 import { NextResponse } from "next/server";
+import { getTenantMembership } from "@/lib/services/tenant-membership";
 import { db } from "@vendly/db/db";
 import { and, eq, isNull } from "@vendly/db";
-import { stores, superAdmins, tenantMemberships } from "@vendly/db/schema";
+import { stores, superAdmins } from "@vendly/db/schema";
 
 export const GET = async () => {
     const session = await auth.api.getSession({
@@ -14,10 +15,7 @@ export const GET = async () => {
         return NextResponse.json({ hasTenant: false });
     }
 
-    const membership = await db.query.tenantMemberships.findFirst({
-        where: eq(tenantMemberships.userId, session.user.id),
-        with: { tenant: true },
-    });
+    const membership = await getTenantMembership(session.user.id, { includeTenant: true });
 
     const hasTenant = !!membership;
 

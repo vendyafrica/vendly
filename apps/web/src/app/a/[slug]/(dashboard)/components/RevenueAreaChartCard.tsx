@@ -37,33 +37,41 @@ export function RevenueAreaChartCard({
     <Card className={cn("w-full border-border/70 shadow-sm", className)}>
       <CardHeader className="space-y-1 pb-2">
         <CardTitle className="text-base">{title}</CardTitle>
-        <div className="text-3xl font-bold text-foreground">{totalLabel}</div>
+        <div className="text-2xl font-bold text-foreground md:text-3xl">{totalLabel}</div>
       </CardHeader>
-      <CardContent className="px-3 pb-4 md:px-5">
-        <ChartContainer config={chartConfig} className="aspect-auto h-[260px] w-full md:h-[320px]">
+      <CardContent className="p-0">
+        <ChartContainer config={chartConfig} className="block! aspect-auto! h-[220px] w-full md:h-[320px]">
           <AreaChart
             accessibilityLayer
             data={data}
             margin={{
-              left: 18,
-              right: 18,
-              top: 20,
-              bottom: 20,
+              left: 4,  // Reduce left margin for mobile, allow negative for tighter spacing
+              right: 8,  // Reduce right margin
+              top: 12,   // Reduce top margin
+              bottom: 0,
             }}
           >
-            <CartesianGrid vertical={false} />
+            <CartesianGrid vertical={false} strokeDasharray="3 3" opacity={0.3} />
             <XAxis
               dataKey="date"
               tickLine={false}
               axisLine={false}
               tickMargin={8}
+              minTickGap={32}
+              tick={{ fontSize: 11 }}  // Make ticks smaller on mobile
             />
             <YAxis
               tickLine={false}
               axisLine={false}
-              width={42}
-              tickMargin={10}
+              width={28}  // Reduce from 36 to 32 for mobile
+              tickMargin={2}  // Reduce from 6 to 4
               padding={{ top: 8, bottom: 8 }}
+              tick={{ fontSize: 10 }}  // Make Y-axis labels smaller
+              tickFormatter={(value) => {
+                if (value >= 1000000) return `${(value / 1000000).toFixed(1)}M`;
+                if (value >= 1000) return `${(value / 1000).toFixed(0)}k`;
+                return value;
+              }}
             />
             <ChartTooltip cursor={false} content={<ChartTooltipContent hideLabel />} />
             <defs>

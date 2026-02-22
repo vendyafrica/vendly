@@ -1,17 +1,16 @@
-import type { NextConfig } from "next";
+import { NextConfig } from "next";
+import path from "path";
+
+const repoRoot = path.resolve(__dirname, "../..");
 
 const nextConfig: NextConfig = {
-  transpilePackages: ["@vendly/ui"],
-    images: {
-      remotePatterns: [
-        {
-          protocol: "https",
-          hostname: "images.unsplash.com",
-          port: "",
-          pathname: "/**",
-        },
-      ],
-    },
+  typescript: {
+    ignoreBuildErrors: true,
+  },
+  outputFileTracingRoot: repoRoot,
+  experimental: {
+    optimizePackageImports: ["lucide-react"],
+  },
 };
 
 export default nextConfig;

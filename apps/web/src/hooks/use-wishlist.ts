@@ -8,6 +8,7 @@ export interface WishlistItem {
     price: number;
     currency: string;
     image?: string;
+    contentType?: string;
     slug?: string;
     store?: {
         id?: string;

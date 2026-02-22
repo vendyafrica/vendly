@@ -39,9 +39,21 @@ const CATEGORY_DATA = [
         image: "https://cdn.cosmos.so/64986e58-da40-41e5-b0e2-1d041230c287?format=jpeg",
         level: 0,
     },
+    {
+        name: "Babies & Toddlers",
+        slug: "babies-and-toddlers",
+        image: "https://cdn.cosmos.so/8f0e2e15-4940-42f1-880a-58a692c03fa7?format=jpeg",
+        level: 0,
+    },
+    {
+        name: "Electronics",
+        slug: "electronics",
+        image: "https://cdn.cosmos.so/f78c6679-210d-4ac3-9891-2b63dfce19f1?format=jpeg",
+        level: 0,
+    }
 ];
 
-async function seed() {
+async function seedCategories() {
     console.log("Seeding categories...");
 
     for (const cat of CATEGORY_DATA) {
@@ -64,12 +76,15 @@ async function seed() {
             await db.insert(categories).values(cat);
         }
     }
-
-    console.log("Seeding complete.");
-    process.exit(0);
 }
 
-seed().catch((err) => {
-    console.error("Seeding failed:", err);
-    process.exit(1);
-});
+async function seed() {
+    try {
+        await seedCategories();
+        console.log("Seeding complete.");
+    } catch (err) {
+        console.error("Seeding failed:", err);
+    }
+}
+
+seed();

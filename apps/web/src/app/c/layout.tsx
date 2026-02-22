@@ -20,15 +20,15 @@ export default async function OnboardingLayout({
             <Suspense
                 fallback={
                     <AppSessionProvider session={null}>
-                        <div className="h-screen bg-muted flex flex-col overflow-hidden">
-                            <header className="flex items-start justify-between p-6 shrink-0">
+                        <div className="min-h-dvh bg-muted flex flex-col overflow-auto">
+                            <header className="flex items-start justify-between p-4 md:p-6 shrink-0">
                                 <div className="flex items-center gap-1">
                                     <Image src="/vendly.png" alt="Vendly" width={32} height={32} />
                                     <span className="text-md font-semibold">vendly.</span>
                                 </div>
                             </header>
 
-                            <main className="flex-1 flex items-center justify-center px-6">
+                            <main className="flex-1 flex items-center justify-center px-4 md:px-6 py-6">
                                 <div className="w-full max-w-4xl">{children}</div>
                             </main>
                         </div>
@@ -36,15 +36,15 @@ export default async function OnboardingLayout({
                 }
             >
                 <SessionBoundary sessionPromise={sessionPromise}>
-                    <div className="h-screen bg-muted flex flex-col overflow-hidden">
-                        <header className="flex items-start justify-between p-6 shrink-0">
+                    <div className="min-h-dvh bg-muted flex flex-col overflow-auto">
+                        <header className="flex items-start justify-between p-4 md:p-6 shrink-0">
                             <div className="flex items-center gap-1">
                                 <Image src="/vendly.png" alt="Vendly" width={32} height={32} />
                                 <span className="text-md font-semibold">vendly.</span>
                             </div>
                         </header>
 
-                        <main className="flex-1 flex items-center justify-center px-6">
+                        <main className="flex-1 flex items-center justify-center px-4 md:px-6 py-6">
                             <div className="w-full max-w-4xl">{children}</div>
                         </main>
                     </div>

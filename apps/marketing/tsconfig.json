@@ -1,34 +1,37 @@
 {
+  "extends": "../../packages/config-typescript/nextjs.json",
   "compilerOptions": {
-    "target": "ES2017",
-    "lib": ["dom", "dom.iterable", "esnext"],
-    "allowJs": true,
-    "skipLibCheck": true,
-    "strict": true,
-    "noEmit": true,
-    "esModuleInterop": true,
-    "module": "esnext",
-    "moduleResolution": "bundler",
-    "resolveJsonModule": true,
-    "isolatedModules": true,
     "jsx": "react-jsx",
-    "incremental": true,
+    "outDir": "dist",
+    "paths": {
+      "@/components/*": ["./components/*"],
+      "@/lib/*": ["./lib/*"],
+      "@/app/*": ["./app/*"],
+      "@/*": ["./*"],
+      "@vendly/ui/*": ["../../packages/ui/src/*"],
+      "@vendly/auth": ["../../packages/auth/src/index.ts"],
+      "@vendly/auth/auth-client": ["../../packages/auth/src/auth-client.ts"],
+      "@vendly/auth/react": ["../../packages/auth/src/auth-client.ts"],
+      "@vendly/db": ["../../packages/db/src/index.ts"],
+      "@vendly/db/db": ["../../packages/db/src/db.ts"],
+      "@vendly/db/schema": ["../../packages/db/src/schema/index.ts"],
+      "@vendly/transactional": ["../../packages/transactional/index.ts"]
+    },
     "plugins": [
       {
         "name": "next"
       }
-    ],
-    "paths": {
-      "@/*": ["./*"]
-    }
+    ]
   },
+  "exclude": ["node_modules"],
   "include": [
+    "app",
+    "components",
+    "contexts",
+    "lib",
+    "components.json",
     "next-env.d.ts",
-    "**/*.ts",
-    "**/*.tsx",
-    ".next/types/**/*.ts",
-    ".next/dev/types/**/*.ts",
-    "**/*.mts"
-  ],
-  "exclude": ["node_modules"]
+    "next.config.ts",
+    ".next/types/**/*.ts"
+  ]
 }

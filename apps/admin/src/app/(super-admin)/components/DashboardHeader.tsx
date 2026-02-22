@@ -3,7 +3,15 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@vendly/ui/components/avatar";
 import { Button } from "@vendly/ui/components/button";
 import { HugeiconsIcon } from "@hugeicons/react";
-import { Notification01Icon } from "@hugeicons/core-free-icons";
+import { Notification01Icon, Logout01Icon } from "@hugeicons/core-free-icons";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from "@vendly/ui/components/dropdown-menu";
+import { signOut } from "@/lib/auth";
+import { useRouter } from "next/navigation";
 
 export function DashboardHeader({
     title = "Dashboard",
@@ -16,9 +24,16 @@ export function DashboardHeader({
         email?: string | null;
     }
 }) {
+    const router = useRouter();
     const fullName = user?.name || "Admin";
     const firstName = fullName.split(" ")[0];
     const avatarUrl = user?.image || "";
+
+    const handleLogout = async () => {
+        await signOut();
+        router.push("/login");
+        router.refresh();
+    };
 
     return (
         <header className="flex h-16 shrink-0 items-center justify-between gap-3 border-b bg-background/80 px-4 backdrop-blur supports-backdrop-filter:bg-background/60">
@@ -38,12 +53,22 @@ export function DashboardHeader({
                     <span className="sr-only">Notifications</span>
                 </Button>
 
-                <Avatar className="h-7 w-7">
-                    <AvatarImage src={avatarUrl} alt={fullName} />
-                    <AvatarFallback className="text-xs font-semibold">
-                        {firstName.charAt(0) || "A"}
-                    </AvatarFallback>
-                </Avatar>
+                <DropdownMenu>
+                    <DropdownMenuTrigger className="inline-flex h-7 w-7 items-center justify-center rounded-full">
+                        <Avatar className="h-7 w-7">
+                            <AvatarImage src={avatarUrl} alt={fullName} />
+                            <AvatarFallback className="text-xs font-semibold">
+                                {firstName.charAt(0) || "A"}
+                            </AvatarFallback>
+                        </Avatar>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={handleLogout}>
+                            <HugeiconsIcon icon={Logout01Icon} className="mr-2 size-4" />
+                            Log out
+                        </DropdownMenuItem>
+                    </DropdownMenuContent>
+                </DropdownMenu>
             </div>
         </header>
     );

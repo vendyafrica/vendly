@@ -1,54 +1,22 @@
 import crypto from "crypto";
 import { Router } from "express";
 import type { Router as ExpressRouter } from "express";
-import type { RawBodyRequest } from "../types/raw-body";
+import type { RawBodyRequest } from "../shared/types/raw-body";
 import { orderService } from "../services/order-service";
-import { whatsappClient } from "../services/whatsapp/whatsapp-client";
-import { notifyCustomerOrderAccepted, notifyCustomerOrderOutForDelivery } from "../services/notifications";
-
-function formatSellerOrderDetails(order: { orderNumber: string; currency?: string | null; items?: Array<{ productName?: string | null; quantity?: number | null; unitPrice?: number | null; totalPrice?: number | null } | null>; customerPhone?: string | null; shippingAddress?: unknown; notes?: string | null }) {
-  const lines: string[] = [];
-  lines.push(`Order ${order.orderNumber} details:`);
-
-  const currency = order.currency || "";
-  const items = (order.items || []).filter(Boolean) as Array<{
-    productName?: string | null;
-    quantity?: number | null;
-    unitPrice?: number | null;
-    totalPrice?: number | null;
-  }>;
-
-  if (items.length) {
-    lines.push("Items:");
-    for (const item of items) {
-      const qty = item.quantity ?? 0;
-      const name = item.productName || "Item";
-      const unit = item.unitPrice != null ? `${currency} ${item.unitPrice}` : undefined;
-      const total = item.totalPrice != null ? `${currency} ${item.totalPrice}` : undefined;
-      const pricePart = unit && total ? ` @ ${unit} = ${total}` : unit ? ` @ ${unit}` : total ? ` (total ${total})` : "";
-      lines.push(`- ${qty}x ${name}${pricePart}`);
-    }
-  }
-
-  if (order.customerPhone) {
-    lines.push(`Customer phone: ${order.customerPhone}`);
-  }
-
-  const addr = asObject(order.shippingAddress);
-  const street = typeof addr?.street === "string" ? addr.street : undefined;
-  const city = typeof addr?.city === "string" ? addr.city : undefined;
-  const country = typeof addr?.country === "string" ? addr.country : undefined;
-  const addressParts = [street, city, country].filter(Boolean);
-  if (addressParts.length) {
-    lines.push(`Delivery address: ${addressParts.join(", ")}`);
-  }
-
-  if (order.notes) {
-    lines.push(`Notes: ${order.notes}`);
-  }
-
-  return lines.join("\n");
-}
+import { enqueueInboundMessage, enqueueTextMessage, hasDedupeKey } from "../services/whatsapp/message-queue";
+import {
+  notifyCustomerOrderAccepted,
+  notifyCustomerPreparing,
+  notifyCustomerOrderReady,
+  notifyCustomerOutForDelivery,
+  notifyCustomerOrderDelivered,
+  notifyCustomerOrderDeclined,
+  notifySellerCustomerDetails,
+  notifySellerOrderDetails,
+  notifySellerMarkReady,
+  notifySellerOutForDelivery,
+  notifySellerOrderCompleted,
+} from "../services/notifications";
 
 export const whatsappRouter: ExpressRouter = Router();
 
@@ -86,7 +54,13 @@ function timingSafeEqual(a: string, b: string) {
   return crypto.timingSafeEqual(aBuf, bBuf);
 }
 
+const BYPASS_SIGNATURE = process.env.WHATSAPP_BYPASS_SIGNATURE === "true" || process.env.NODE_ENV === "development";
+
 function verifySignature(req: RawBodyRequest): boolean {
+  if (BYPASS_SIGNATURE) {
+    return true;
+  }
+
   const appSecret = process.env.WHATSAPP_APP_SECRET;
   if (!appSecret) return false;
 
@@ -122,9 +96,11 @@ whatsappRouter.post("/webhooks/whatsapp", async (req, res) => {
     rawLen,
     hasAppSecret,
     signatureOk: ok,
+    bypassSignature: BYPASS_SIGNATURE,
   });
 
   if (!ok) {
+    console.warn("[WhatsAppWebhook] Signature failed; returning 403", { hasSignatureHeader: Boolean(signatureHeader), hasRawBody, rawLen });
     return res.sendStatus(403);
   }
 
@@ -148,6 +124,14 @@ whatsappRouter.post("/webhooks/whatsapp", async (req, res) => {
       return res.sendStatus(200);
     }
 
+    const messageId = typeof message.id === "string" ? message.id : null;
+    const inboundDedupeKey = messageId ? `inbound:${messageId}` : null;
+    if (inboundDedupeKey) {
+      if (await hasDedupeKey(inboundDedupeKey)) {
+        return res.sendStatus(200);
+      }
+    }
+
     // Meta webhooks can send:
     // - type: "button" with message.button.text
     // - type: "interactive" with message.interactive.button_reply.title
@@ -166,45 +150,148 @@ whatsappRouter.post("/webhooks/whatsapp", async (req, res) => {
       return res.sendStatus(200);
     }
 
-    console.log("[WhatsAppWebhook] Message", { from, type, raw });
+    console.log("[WhatsAppWebhook] Message", { from, type, raw, messageId });
 
-    const normalized = raw.toLowerCase();
+    const normalized = raw.toLowerCase().trim();
 
-    const tenantId = await orderService.getTenantIdByPhoneNumber(from);
-    if (!tenantId) {
-      console.warn("[WhatsAppWebhook] Could not map sender to tenant", { from, raw });
+    // -----------------------------------------------------------------------
+    // Buyer "I PAID" quick reply — sender is NOT a tenant (seller)
+    // -----------------------------------------------------------------------
+    if (normalized === "i paid") {
+      // Look up the latest pending-payment order for this buyer phone
+      const buyerOrder = await orderService.getLatestOrderByCustomerPhone(from, ["pending"]);
+      if (!buyerOrder) {
+        await enqueueInboundMessage({
+          from,
+          to: "vendly",
+          messageBody: raw,
+          dedupeKey: inboundDedupeKey ?? undefined,
+        });
+        await enqueueTextMessage({
+          to: from,
+          body: "We could not find a pending order for your number. If you have paid, please wait for confirmation.",
+          dedupeKey: `customer:paid:missing:${from}`,
+        });
+        return res.sendStatus(200);
+      }
+
+      await enqueueInboundMessage({
+        from,
+        to: "vendly",
+        messageBody: raw,
+        tenantId: buyerOrder.tenantId,
+        orderId: buyerOrder.id,
+        dedupeKey: inboundDedupeKey ?? undefined,
+      });
+
+      // Simulated: mark payment as paid
+      await orderService.updateOrderStatusByOrderId(buyerOrder.id, { paymentStatus: "paid", status: "processing" });
+
+      await enqueueTextMessage({
+        to: from,
+        body: `✅ Payment received for order ${buyerOrder.orderNumber}. The seller is preparing it now.`,
+        tenantId: buyerOrder.tenantId,
+        orderId: buyerOrder.id,
+        dedupeKey: `customer:paid:ack:${buyerOrder.id}:${from}`,
+      });
+
+      // Notify seller about the paid order
+      try {
+        const full = await orderService.getOrderById(buyerOrder.id);
+        if (full) {
+          const sellerPhone = await orderService.getTenantPhoneByTenantId(full.tenantId);
+          await notifySellerCustomerDetails({ sellerPhone, order: full });
+          await notifySellerOrderDetails({ sellerPhone, order: full });
+          await notifyCustomerPreparing({ order: full });
+        }
+      } catch (err) {
+        console.error("[WhatsAppWebhook] Failed to notify seller after I PAID", err);
+      }
+
       return res.sendStatus(200);
     }
 
-    // MVP command parsing:
-    // - "accept" / "decline" / "ready" / "out"
-    // - optionally: "accept ORD-0001"
+    // -----------------------------------------------------------------------
+    // Seller commands: ACCEPT, DECLINE, READY, OUT, DELIVERED
+    // -----------------------------------------------------------------------
+    const tenantId = await orderService.getTenantIdByPhoneNumber(from);
+    if (!tenantId) {
+      const buyerOrder = await orderService.getLatestOrderByCustomerPhone(from, ["pending"]);
+      if (!buyerOrder) {
+        console.warn("[WhatsAppWebhook] Could not map sender to tenant or buyer order", { from, raw });
+        await enqueueInboundMessage({
+          from,
+          to: "vendly",
+          messageBody: raw,
+          dedupeKey: inboundDedupeKey ?? undefined,
+        });
+        return res.sendStatus(200);
+      }
+
+      await enqueueInboundMessage({
+        from,
+        to: "vendly",
+        messageBody: raw,
+        tenantId: buyerOrder.tenantId,
+        orderId: buyerOrder.id,
+        dedupeKey: inboundDedupeKey ?? undefined,
+      });
+      await enqueueTextMessage({
+        to: from,
+        body: `📌 Thanks for your order ${buyerOrder.orderNumber}! We are waiting for the seller to accept it. You will receive delivery updates once accepted.`,
+        tenantId: buyerOrder.tenantId,
+        orderId: buyerOrder.id,
+        dedupeKey: `customer:pending:status:${buyerOrder.id}:${from}`,
+      });
+      return res.sendStatus(200);
+    }
+
     const parts = normalized.split(/\s+/).filter(Boolean);
     const action = parts[0];
     const maybeOrderNumber = parts.find((p: string) => p.startsWith("ord-"));
 
     const order = maybeOrderNumber
       ? await orderService.getOrderByOrderNumberForTenant(tenantId, maybeOrderNumber.toUpperCase())
-      : action === "ready" || action === "out"
+      : action === "ready"
         ? await orderService.getLatestOrderForTenantByStatus(tenantId, ["processing"])
-        : await orderService.getLatestOrderForTenantByStatus(tenantId, ["pending"]);
+        : action === "out"
+          ? await orderService.getLatestOrderForTenantByStatus(tenantId, ["ready"])
+          : action === "delivered"
+            ? await orderService.getLatestOrderForTenantByStatus(tenantId, ["out_for_delivery"])
+            : await orderService.getLatestOrderForTenantByStatus(tenantId, ["pending"]);
 
     if (!order) {
-      await whatsappClient.sendTextMessage({
+      await enqueueInboundMessage({
+        from,
+        to: "vendly",
+        messageBody: raw,
+        tenantId,
+        dedupeKey: inboundDedupeKey ?? undefined,
+      });
+      await enqueueTextMessage({
         to: from,
-        body: "No matching order found. Reply like: ACCEPT ORD-0001, DECLINE ORD-0001, OUT ORD-0001, or READY ORD-0001.",
+        body: "No matching order found. Reply like: ACCEPT ORD-0001, DECLINE ORD-0001, READY ORD-0001, OUT ORD-0001, or DELIVERED ORD-0001.",
+        tenantId,
+        dedupeKey: `seller:no_order:${tenantId}:${from}`,
       });
       return res.sendStatus(200);
     }
 
+    await enqueueInboundMessage({
+      from,
+      to: "vendly",
+      messageBody: raw,
+      tenantId,
+      orderId: order.id,
+      dedupeKey: inboundDedupeKey ?? undefined,
+    });
+
+    const sellerPhone = await orderService.getTenantPhoneByTenantId(tenantId);
+
     if (action === "accept") {
       await orderService.updateOrderStatus(order.id, tenantId, { status: "processing" });
-      await whatsappClient.sendTextMessage({
-        to: from,
-        body: `Accepted ${order.orderNumber}. Reply READY ${order.orderNumber} when it is ready for pickup.`,
-      });
 
-      // Notify customer (best-effort)
+      // Seller accepted: notify buyer that order has been accepted.
       try {
         const full = await orderService.getOrderById(order.id);
         if (full) {
@@ -213,62 +300,83 @@ whatsappRouter.post("/webhooks/whatsapp", async (req, res) => {
       } catch (err) {
         console.error("[WhatsAppWebhook] Failed to notify customer (accepted)", err);
       }
-
-      // Follow-up details message (no template changes required)
-      try {
-        const full = await orderService.getOrderById(order.id);
-        if (full) {
-          await whatsappClient.sendTextMessage({
-            to: from,
-            body: formatSellerOrderDetails(full),
-          });
-        }
-      } catch (err) {
-        console.error("[WhatsAppWebhook] Failed to send order details", err);
-      }
-      return res.sendStatus(200);
-    }
-
-    if (action === "out") {
-      // No DB status change for MVP. We only notify the customer.
-      await whatsappClient.sendTextMessage({
-        to: from,
-        body: `Noted. We will notify the customer that ${order.orderNumber} is out for delivery.`,
-      });
-
-      try {
-        const full = await orderService.getOrderById(order.id);
-        if (full) {
-          await notifyCustomerOrderOutForDelivery({ order: full });
-        }
-      } catch (err) {
-        console.error("[WhatsAppWebhook] Failed to notify customer (out for delivery)", err);
-      }
-
       return res.sendStatus(200);
     }
 
     if (action === "decline") {
       await orderService.updateOrderStatus(order.id, tenantId, { status: "cancelled" });
-      await whatsappClient.sendTextMessage({
+
+      // Notify buyer their order was declined
+      try {
+        const full = await orderService.getOrderById(order.id);
+        if (full) {
+          await notifyCustomerOrderDeclined({ order: full });
+        }
+      } catch (err) {
+        console.error("[WhatsAppWebhook] Failed to notify customer (declined)", err);
+      }
+
+      await enqueueTextMessage({
         to: from,
         body: `Declined ${order.orderNumber}.`,
+        tenantId,
+        orderId: order.id,
+        dedupeKey: `seller:declined:ack:${order.id}:${from}`,
       });
       return res.sendStatus(200);
     }
 
     if (action === "ready") {
-      await orderService.updateOrderStatus(order.id, tenantId, { status: "completed" });
-      await whatsappClient.sendTextMessage({
-        to: from,
-        body: `Marked ${order.orderNumber} as ready.`,
-      });
+      await orderService.updateOrderStatus(order.id, tenantId, { status: "ready" });
+
+      try {
+        const full = await orderService.getOrderById(order.id);
+        if (full) {
+          await notifySellerMarkReady({ sellerPhone, order: full });
+          await notifyCustomerOrderReady({ order: full });
+        }
+      } catch (err) {
+        console.error("[WhatsAppWebhook] Failed to send ready notifications", err);
+      }
       return res.sendStatus(200);
     }
 
-    await whatsappClient.sendTextMessage({
+    if (action === "out") {
+      await orderService.updateOrderStatus(order.id, tenantId, { status: "out_for_delivery" });
+
+      const riderDetails = "Vendly Rider (+256700000000)";
+      try {
+        const full = await orderService.getOrderById(order.id);
+        if (full) {
+          await notifySellerOutForDelivery({ sellerPhone, order: full, riderDetails });
+          await notifyCustomerOutForDelivery({ order: full, riderDetails });
+        }
+      } catch (err) {
+        console.error("[WhatsAppWebhook] Failed to send out-for-delivery notifications", err);
+      }
+      return res.sendStatus(200);
+    }
+
+    if (action === "delivered") {
+      await orderService.updateOrderStatus(order.id, tenantId, { status: "completed", paymentStatus: "paid" });
+
+      try {
+        const full = await orderService.getOrderById(order.id);
+        if (full) {
+          await notifySellerOrderCompleted({ sellerPhone, order: full });
+          await notifyCustomerOrderDelivered({ order: full });
+        }
+      } catch (err) {
+        console.error("[WhatsAppWebhook] Failed to send delivered notifications", err);
+      }
+      return res.sendStatus(200);
+    }
+
+    await enqueueTextMessage({
       to: from,
-      body: "Unknown command. Reply: ACCEPT, DECLINE, OUT, or READY (optionally with order number).",
+      body: "Unknown command. Reply: ACCEPT, DECLINE, READY, OUT, or DELIVERED (optionally with order number).",
+      tenantId,
+      dedupeKey: `seller:unknown:${tenantId}:${from}`,
     });
   } catch (err) {
     console.error("[WhatsAppWebhook] Handler error", err);

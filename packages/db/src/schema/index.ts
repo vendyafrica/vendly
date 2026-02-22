@@ -10,3 +10,4 @@ export * from "./order-schema";
 export * from "./cart-schema";
 export * from "./category-schema";
 export * from "./analytics-schema";
+export * from "./whatsapp-log-schema";

@@ -36,12 +36,8 @@ export function DashboardHeader({
   return (
     <header className="flex h-16 shrink-0 items-center justify-between gap-3 border-b bg-background/80 px-4 backdrop-blur supports-backdrop-filter:bg-background/60">
       <div className="flex min-w-0 items-center gap-3">
-        <div className="flex items-center gap-2">
-          <h1 className="truncate text-base font-semibold text-foreground">{title}:</h1>
-        </div>
-        <div className="hidden sm:flex items-center gap-2 text-sm text-muted-foreground">
-          <span className="font-semibold text-muted-foreground">Welcome back, {firstName}</span>
-          <span className="truncate text-xs text-muted-foreground/60">• {resolvedTenantName}</span>
+        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <span className="font-semibold text-muted-foreground">Welcome to {resolvedTenantName}</span>
         </div>
       </div>
 

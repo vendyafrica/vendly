@@ -50,6 +50,7 @@ export const productRepo = {
             media: {
               columns: {
                 blobUrl: true,
+                contentType: true,
               },
             },
           },

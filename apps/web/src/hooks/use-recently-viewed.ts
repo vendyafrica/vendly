@@ -8,6 +8,7 @@ export interface RecentItem {
     price: number;
     currency: string;
     image: string;
+    contentType?: string;
     store: {
         name: string;
         slug: string;

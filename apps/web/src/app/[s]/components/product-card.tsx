@@ -9,6 +9,7 @@ interface ProductCardProps {
   slug: string;
   price: string;
   image: string | null;
+  contentType?: string | null;
   index?: number;
   id: string;
   storeSlug?: string;
@@ -26,13 +27,17 @@ const aspectVariants = [
   "aspect-[5/6]",
 ];
 
-export function ProductCard({ title, slug, price, image, index = 0, storeSlug, id }: ProductCardProps) {
+export function ProductCard({ title, slug, price, image, contentType, index = 0, storeSlug, id }: ProductCardProps) {
   const params = useParams();
   const currentStoreSlug = storeSlug || (params?.s as string);
   const aspectClass = aspectVariants[index % aspectVariants.length];
 
   const imageUrl = image || FALLBACK_PRODUCT_IMAGE;
-  const isBlobUrl = imageUrl.includes("blob.vercel-storage.com");
+  const isBlobUrl = imageUrl.includes(".ufs.sh");
+
+  const isVideo = contentType?.startsWith("video/")
+    || imageUrl.match(/\.(mp4|webm|mov|ogg)$/i) !== null
+    || (imageUrl.includes(".ufs.sh") && !imageUrl.match(/\.(jpg|jpeg|png|webp|gif)$/i) && !contentType?.startsWith("image/")); // Heuristic for CDN URLs if no extension and not explicitly image
 
   return (
     <Link
@@ -41,7 +46,16 @@ export function ProductCard({ title, slug, price, image, index = 0, storeSlug, i
     >
       {/* Image Container */}
       <div className={`relative overflow-hidden rounded-lg ${aspectClass} bg-muted`}>
-        {imageUrl ? (
+        {isVideo ? (
+          <video
+            src={imageUrl}
+            className="h-full w-full object-cover transition-all duration-700 ease-out group-hover:scale-[1.03]"
+            muted
+            playsInline
+            loop
+            autoPlay
+          />
+        ) : imageUrl ? (
           <Image
             src={imageUrl}
             alt={title}
@@ -73,7 +87,7 @@ export function ProductCard({ title, slug, price, image, index = 0, storeSlug, i
       </div>
 
       {/* Product Info - Clean and minimal */}
-      <div className="mt-2 px-0.5">
+      <div className="mt-2 px-0.5 sm:px-0.5">
         <h3 className="text-[13px] sm:text-sm font-normal text-foreground leading-tight line-clamp-2 mb-1">
           {title}
         </h3>

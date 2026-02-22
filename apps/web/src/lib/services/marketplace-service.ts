@@ -18,7 +18,7 @@ function slugifyName(name: string): string {
     return name.toLowerCase().trim().replace(/[^a-z0-9\s-]/g, "").replace(/\s+/g, "-").replace(/-+/g, "-");
 }
 
-type ProductMediaRow = { media?: { url?: string | null; blobUrl?: string | null } | null };
+type ProductMediaRow = { media?: { url?: string | null; blobUrl?: string | null; contentType?: string | null } | null };
 type ProductRecordForMarketplace = {
     id: string;
     slug: string | null;
@@ -29,15 +29,14 @@ type ProductRecordForMarketplace = {
     media?: ProductMediaRow[];
 };
 
-type ProductRepoListItem = {
-    id: string;
-    storeId: string;
-    slug: string | null;
-    productName: string;
-    priceAmount: unknown;
-    currency: string;
-    media?: ProductMediaRow[];
-};
+// type ProductRepoListItem = {
+//     id: string;
+//     slug: string | null;
+//     productName: string;
+//     priceAmount: unknown;
+//     currency: string;
+//     media?: ProductMediaRow[];
+// };
 
 function mapProductRecord(product: ProductRecordForMarketplace, store: { id: string; name: string; slug: string; logoUrl?: string | null }) {
     const slug = product.slug || slugifyName(product.productName || "");
@@ -48,6 +47,13 @@ function mapProductRecord(product: ProductRecordForMarketplace, store: { id: str
         .map((m) => m?.media?.url || m?.media?.blobUrl)
         .filter(Boolean) as string[];
 
+    const mediaItems = mediaList
+        .map((m) => ({
+            url: m?.media?.url || m?.media?.blobUrl,
+            contentType: m?.media?.contentType || null,
+        }))
+        .filter((m) => m.url) as { url: string; contentType: string | null }[];
+
     return {
         id: product.id,
         slug,
@@ -56,6 +62,7 @@ function mapProductRecord(product: ProductRecordForMarketplace, store: { id: str
         price: priceAmount,
         currency: product.currency,
         images,
+        mediaItems,
         store: {
             id: store.id,
             name: store.name,
@@ -102,7 +109,7 @@ async function batchFetchStoreProductImages(storeIds: string[]): Promise<Map<str
                 limit: 5,
                 with: {
                     media: {
-                        columns: { blobUrl: true }
+                        columns: { blobUrl: true, contentType: true }
                     }
                 }
             }
@@ -115,7 +122,7 @@ async function batchFetchStoreProductImages(storeIds: string[]): Promise<Map<str
         const existingImages = storeImages.get(product.storeId) || [];
         const productImages = (product.media ?? [])
             .map((m) => m?.media?.blobUrl)
-            .filter(Boolean);
+            .filter(Boolean); // Note: we are currently only returning strings here for StoreCard compatibility. StoreCard needs update if we want video on store cards.
 
         // Limit to 5 images per store
         const combined = [...existingImages, ...productImages].slice(0, 5);
@@ -183,7 +190,7 @@ export const marketplaceService = {
                     };
                 });
             },
-            TTL.MEDIUM // 5 minutes
+            TTL.SHORT // 1 minute
         );
     },
 
@@ -242,12 +249,12 @@ export const marketplaceService = {
             let images: string[] = heroImages;
 
             if (images.length === 0) {
-                const products = (await productRepo.findByStoreId(store.id)) as ProductRepoListItem[];
+                const products = await productRepo.findByStoreId(store.id);
                 images = products
                     .flatMap((p) =>
                         (p.media ?? [])
-                            .map((m) => m?.media?.blobUrl ?? m?.media?.url ?? null)
-                            .filter(Boolean)
+                            .map((m) => m?.media?.blobUrl)
+                            .filter((u): u is string => typeof u === "string" && u.length > 0)
                     )
                     .slice(0, 5);
             }
@@ -263,6 +270,22 @@ export const marketplaceService = {
                 images,
             };
         }));
+    },
+
+    async getSubcategoriesByParentSlug(parentSlug: string): Promise<Array<{ id: string; name: string; slug: string; image: string | null }> | null> {
+        const parentCategory = await categoryRepo.findBySlug(parentSlug);
+        if (!parentCategory) return null;
+
+        const allCategories = await categoryRepo.findAll();
+
+        return allCategories
+            .filter((category) => category.parentId === parentCategory.id)
+            .map((subcategory) => ({
+                id: subcategory.id,
+                name: subcategory.name,
+                slug: subcategory.slug,
+                image: subcategory.image ?? parentCategory.image ?? null,
+            }));
     },
 
     async getStoreDetails(slug: string) {
@@ -281,7 +304,7 @@ export const marketplaceService = {
                     heroMedia: (store as { heroMedia?: string[] }).heroMedia ?? [],
                 };
             },
-            TTL.MEDIUM
+            TTL.SHORT
         );
     },
 
@@ -298,7 +321,7 @@ export const marketplaceService = {
             async () => {
                 // Dynamic import to avoid circular dependency
                 const { productRepo } = await import("../data/product-repo");
-                const products = (await productRepo.findByStoreId(store.id)) as ProductRepoListItem[];
+                const products = await productRepo.findByStoreId(store.id);
 
                 const filtered = normalizedQuery
                     ? products.filter((p) => p.productName?.toLowerCase().includes(normalizedQuery))
@@ -311,7 +334,63 @@ export const marketplaceService = {
                     price: Number(p.priceAmount || 0),
                     currency: p.currency,
                     // Extract first image from media relation if available
-                    image: p.media?.[0]?.media?.url || p.media?.[0]?.media?.blobUrl || null,
+                    image: p.media?.[0]?.media?.blobUrl || null,
+                    contentType: p.media?.[0]?.media?.contentType || null,
+                }));
+            },
+            TTL.SHORT
+        );
+    },
+
+    async getStoreProductsByCategorySlug(storeSlug: string, categorySlug: string, query?: string) {
+        const store = await storeRepo.findBySlug(storeSlug);
+        if (!store) return [];
+
+        const normalizedQuery = query?.trim().toLowerCase() || "";
+        const cacheKey = cacheKeys.products.list(
+            store.id,
+            1,
+            `category=${categorySlug}${normalizedQuery ? `&q=${normalizedQuery}` : ""}`
+        );
+
+        return withCache(
+            cacheKey,
+            async () => {
+                const { db, and, eq, products, productCategories, categories } = await import("@vendly/db");
+
+                const matches = await db
+                    .select({ id: products.id })
+                    .from(products)
+                    .innerJoin(productCategories, eq(productCategories.productId, products.id))
+                    .innerJoin(categories, eq(categories.id, productCategories.categoryId))
+                    .where(
+                        and(
+                            eq(products.storeId, store.id),
+                            eq(products.status, "active"),
+                            eq(categories.slug, categorySlug)
+                        )
+                    );
+
+                const ids = new Set(matches.map((m) => m.id));
+                if (ids.size === 0) return [];
+
+                const { productRepo } = await import("../data/product-repo");
+                const productsForStore = await productRepo.findByStoreId(store.id);
+
+                const filteredByCategory = productsForStore.filter((p) => ids.has(p.id));
+
+                const filtered = normalizedQuery
+                    ? filteredByCategory.filter((p) => p.productName?.toLowerCase().includes(normalizedQuery))
+                    : filteredByCategory;
+
+                return filtered.map((p) => ({
+                    id: p.id,
+                    slug: p.slug || p.productName.toLowerCase().replace(/\s+/g, "-"),
+                    name: p.productName,
+                    price: Number(p.priceAmount || 0),
+                    currency: p.currency,
+                    image: p.media?.[0]?.media?.blobUrl || null,
+                    contentType: p.media?.[0]?.media?.contentType || null,
                 }));
             },
             TTL.SHORT
@@ -325,7 +404,7 @@ export const marketplaceService = {
         const { productRepo } = await import("../data/product-repo");
         // Optimization: Ideally repo has findOneBySlug. For now, we fetch all and find. 
         // This mirrors storefrontService logic but we should improve repo later.
-        const products = (await productRepo.findByStoreId(store.id)) as ProductRepoListItem[];
+        const products = await productRepo.findByStoreId(store.id);
 
         const product = products.find((p) => {
             const slug = p.slug || p.productName.toLowerCase().replace(/\s+/g, "-");
@@ -433,6 +512,7 @@ export const marketplaceService = {
                 price: Number(p.priceAmount ?? 0),
                 currency: p.currency,
                 image: p.media?.[0]?.media?.blobUrl || null,
+                contentType: p.media?.[0]?.media?.contentType || null,
                 store: p.store ? { slug: p.store.slug, name: p.store.name } : null,
             })),
         };

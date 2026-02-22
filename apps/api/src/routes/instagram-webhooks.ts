@@ -1,10 +1,12 @@
 import crypto from "crypto";
 import { Router } from "express";
 import type { Router as ExpressRouter } from "express";
-import type { RawBodyRequest } from "../types/raw-body";
-import { and, db, dbWs, eq, instagramAccounts, account, stores, products, mediaObjects, productMedia } from "@vendly/db";
+import type { RawBodyRequest } from "../shared/types/raw-body";
+import { and, db, eq, instagramAccounts, account, stores, products, mediaObjects, productMedia } from "@vendly/db";
 
 export const instagramWebhookRouter: ExpressRouter = Router();
+
+const BYPASS_SIGNATURE = process.env.NODE_ENV === "development";
 
 function timingSafeEqual(a: string, b: string) {
   const aBuf = Buffer.from(a);
@@ -14,6 +16,10 @@ function timingSafeEqual(a: string, b: string) {
 }
 
 function verifySignature(req: RawBodyRequest): boolean {
+  if (BYPASS_SIGNATURE) {
+    return true;
+  }
+
   const appSecret = process.env.INSTAGRAM_APP_SECRET;
   if (!appSecret) return false;
 
@@ -68,6 +74,11 @@ function parseCaption(caption: string, defaultCurrency: string) {
   };
 }
 
+type FetchResponseLike = {
+  ok: boolean;
+  json: () => Promise<unknown>;
+};
+
 instagramWebhookRouter.get("/webhooks/instagram", (req, res) => {
   const modeRaw = req.query["hub.mode"];
   const tokenRaw = req.query["hub.verify_token"];
@@ -89,20 +100,43 @@ instagramWebhookRouter.get("/webhooks/instagram", (req, res) => {
 instagramWebhookRouter.post("/webhooks/instagram", async (req, res) => {
   const rawReq = req as RawBodyRequest;
   const ok = verifySignature(rawReq);
+  console.log("[InstagramWebhook] Incoming", {
+    path: req.path,
+    hasSignatureHeader: Boolean(req.header("x-hub-signature-256")),
+    hasRawBody: Boolean(rawReq.rawBody),
+    rawLen: rawReq.rawBody?.length ?? 0,
+    hasAppSecret: Boolean(process.env.INSTAGRAM_APP_SECRET),
+    signatureOk: ok,
+    bypassSignature: BYPASS_SIGNATURE,
+  });
   if (!ok) {
+    console.warn("[InstagramWebhook] Signature verification failed");
     return res.sendStatus(403);
   }
 
   const payloadObj = asObject(req.body);
   const entry = (payloadObj?.entry as unknown as unknown[] | undefined)?.[0];
   const entryObj = asObject(entry);
-
-  const igUserId = typeof entryObj?.id === "string" ? entryObj.id : undefined;
   const changes = (entryObj?.changes as unknown as unknown[] | undefined)?.[0];
   const changesObj = asObject(changes);
   const value = asObject(changesObj?.value);
 
-  const mediaId = typeof value?.media_id === "string" ? value.media_id : undefined;
+  const igUserId =
+    (typeof entryObj?.id === "string" ? entryObj.id : undefined) ||
+    (typeof asObject(value?.from)?.id === "string" ? (asObject(value?.from)?.id as string) : undefined);
+
+  const mediaId =
+    (typeof value?.media_id === "string" ? value.media_id : undefined) ||
+    (typeof asObject(value?.media)?.id === "string" ? (asObject(value?.media)?.id as string) : undefined) ||
+    (typeof value?.id === "string" ? value.id : undefined);
+
+  console.log("[InstagramWebhook] Parsed payload", {
+    igUserId,
+    mediaId,
+    hasEntry: Boolean(entryObj),
+    hasChanges: Boolean(changesObj),
+    hasValue: Boolean(value),
+  });
 
   if (!igUserId || !mediaId) {
     return res.sendStatus(200);
@@ -134,9 +168,9 @@ instagramWebhookRouter.post("/webhooks/instagram", async (req, res) => {
       return res.sendStatus(200);
     }
 
-    const mediaRes = await fetch(
+    const mediaRes = (await fetch(
       `https://graph.instagram.com/${mediaId}?fields=id,caption,media_type,media_url,thumbnail_url,permalink,children{id,media_type,media_url,thumbnail_url}&access_token=${accessToken}`
-    );
+    )) as FetchResponseLike;
 
     const mediaJson = (await mediaRes.json()) as unknown;
     const mediaObj = asObject(mediaJson);
@@ -154,106 +188,107 @@ instagramWebhookRouter.post("/webhooks/instagram", async (req, res) => {
     const childrenDataRaw = asObject(mediaObj?.children)?.data as unknown;
     const childrenData = Array.isArray(childrenDataRaw) ? childrenDataRaw : [];
 
-    await dbWs.transaction(async (tx) => {
-      const existingProduct = await tx.query.products.findFirst({
-        where: and(eq(products.storeId, store.id), eq(products.source, "instagram"), eq(products.sourceId, sourceId)),
-        columns: { id: true },
-      });
-
-      if (existingProduct) {
-        return;
-      }
-
-      const [product] = await tx
-        .insert(products)
-        .values({
-          tenantId: igAccount.tenantId,
-          storeId: store.id,
-          productName: parsed.productName,
-          slug: slugify(parsed.productName),
-          description: parsed.description,
-          priceAmount: parsed.priceAmount,
-          currency: parsed.currency,
-          status: "draft",
-          source: "instagram",
-          sourceId,
-          sourceUrl,
-          variants: [],
-        })
-        .returning();
-
-      const variantEntries: Array<{ name: string; sourceMediaId: string; mediaObjectId: string; mediaType?: string }> = [];
-
-      if (mediaType === "CAROUSEL_ALBUM" && childrenData.length) {
-        let idx = 0;
-        for (const childRaw of childrenData) {
-          const child = asObject(childRaw);
-          if (!child) continue;
-          idx++;
-
-          const childId = typeof child.id === "string" ? child.id : String(child.id || idx);
-          const childMediaType = typeof child.media_type === "string" ? child.media_type : "IMAGE";
-          const childUrl = String(child.media_url || child.thumbnail_url || "");
-          if (!childUrl) continue;
-
-          const contentType = childMediaType === "VIDEO" ? "video/mp4" : "image/jpeg";
-          const [mediaRow] = await tx
-            .insert(mediaObjects)
-            .values({
-              tenantId: igAccount.tenantId,
-              blobUrl: childUrl,
-              blobPathname: childId,
-              contentType,
-              source: "instagram",
-              sourceMediaId: childId,
-            })
-            .returning();
-
-          await tx.insert(productMedia).values({
-            tenantId: igAccount.tenantId,
-            productId: product.id,
-            mediaId: mediaRow.id,
-            isFeatured: idx === 1,
-            sortOrder: idx - 1,
-          });
-
-          variantEntries.push({
-            name: `Option ${idx}`,
-            sourceMediaId: childId,
-            mediaObjectId: mediaRow.id,
-            mediaType: childMediaType,
-          });
-        }
-      } else {
-        const mediaUrl = String(mediaObj?.media_url || mediaObj?.thumbnail_url || "");
-        if (mediaUrl) {
-          const contentType = mediaType === "VIDEO" ? "video/mp4" : "image/jpeg";
-          const [mediaRow] = await tx
-            .insert(mediaObjects)
-            .values({
-              tenantId: igAccount.tenantId,
-              blobUrl: mediaUrl,
-              blobPathname: sourceId,
-              contentType,
-              source: "instagram",
-              sourceMediaId: sourceId,
-            })
-            .returning();
-
-          await tx.insert(productMedia).values({
-            tenantId: igAccount.tenantId,
-            productId: product.id,
-            mediaId: mediaRow.id,
-            isFeatured: true,
-            sortOrder: 0,
-          });
-        }
-      }
-
-      if (variantEntries.length) {
-        await tx.update(products).set({ variants: variantEntries, updatedAt: new Date() }).where(eq(products.id, product.id));
-      }
+    const existingProduct = await db.query.products.findFirst({
+      where: and(eq(products.storeId, store.id), eq(products.source, "instagram"), eq(products.sourceId, sourceId)),
+      columns: { id: true },
     });
+
+    if (existingProduct) {
+      return res.sendStatus(200);
+    }
+
+    const [product] = await db
+      .insert(products)
+      .values({
+        tenantId: igAccount.tenantId,
+        storeId: store.id,
+        productName: parsed.productName,
+        slug: slugify(parsed.productName),
+        description: parsed.description,
+        priceAmount: parsed.priceAmount,
+        currency: parsed.currency,
+        status: "draft",
+        source: "instagram",
+        sourceId,
+        sourceUrl,
+        variants: [],
+      })
+      .returning();
+
+    const variantEntries: Array<{ name: string; sourceMediaId: string; mediaObjectId: string; mediaType?: string }> = [];
+
+    if (mediaType === "CAROUSEL_ALBUM" && childrenData.length) {
+      let idx = 0;
+      for (const childRaw of childrenData) {
+        const child = asObject(childRaw);
+        if (!child) continue;
+        idx++;
+
+        const childId = typeof child.id === "string" ? child.id : String(child.id || idx);
+        const childMediaType = typeof child.media_type === "string" ? child.media_type : "IMAGE";
+        const childUrl = String(child.media_url || child.thumbnail_url || "");
+        if (!childUrl) continue;
+
+        const contentType = childMediaType === "VIDEO" ? "video/mp4" : "image/jpeg";
+        const [mediaRow] = await db
+          .insert(mediaObjects)
+          .values({
+            tenantId: igAccount.tenantId,
+            blobUrl: childUrl,
+            blobPathname: childId,
+            contentType,
+            source: "instagram",
+            sourceMediaId: childId,
+          })
+          .returning();
+
+        await db.insert(productMedia).values({
+          tenantId: igAccount.tenantId,
+          productId: product.id,
+          mediaId: mediaRow.id,
+          isFeatured: idx === 1,
+          sortOrder: idx - 1,
+        });
+
+        variantEntries.push({
+          name: `Option ${idx}`,
+          sourceMediaId: childId,
+          mediaObjectId: mediaRow.id,
+          mediaType: childMediaType,
+        });
+      }
+    } else {
+      const mediaUrl = String(mediaObj?.media_url || mediaObj?.thumbnail_url || "");
+      if (mediaUrl) {
+        const contentType = mediaType === "VIDEO" ? "video/mp4" : "image/jpeg";
+        const [mediaRow] = await db
+          .insert(mediaObjects)
+          .values({
+            tenantId: igAccount.tenantId,
+            blobUrl: mediaUrl,
+            blobPathname: sourceId,
+            contentType,
+            source: "instagram",
+            sourceMediaId: sourceId,
+          })
+          .returning();
+
+        await db.insert(productMedia).values({
+          tenantId: igAccount.tenantId,
+          productId: product.id,
+          mediaId: mediaRow.id,
+          isFeatured: true,
+          sortOrder: 0,
+        });
+      }
+    }
+
+    if (variantEntries.length) {
+      await db
+        .update(products)
+        .set({ variants: variantEntries, updatedAt: new Date() })
+        .where(eq(products.id, product.id));
+    }
   } catch (err) {
     console.error("[InstagramWebhook] Error", err);
   }

@@ -1,5 +1,5 @@
-import { AppSidebar } from "@/components/app-sidebar";
-import { AdminMobileDock } from "@/components/admin-mobile-dock";
+import { AppSidebar } from "./components/app-sidebar";
+import { AdminMobileDock } from "./components/admin-mobile-dock";
 import { DashboardPageSkeleton } from "@/components/ui/page-skeletons";
 import { redirect } from "next/navigation";
 import { headers } from "next/headers";

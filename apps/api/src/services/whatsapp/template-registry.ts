@@ -1,56 +1,114 @@
-import type { CreateTemplateInput } from "./whatsapp-client";
+import type { SendTemplateMessageInput } from "./whatsapp-client";
 
-export const templateRegistry = {
-  sellerNewPaidOrder(): CreateTemplateInput {
+export const TEMPLATE_NAMES = {
+  SELLER_NEW_ORDER: "seller_new_order_action_v10",
+  BUYER_ORDER_RECEIVED: "buyer_order_received_v10",
+  BUYER_ORDER_READY: "buyer_order_ready_v10",
+  BUYER_OUT_FOR_DELIVERY: "buyer_out_for_delivery_v10",
+  BUYER_ORDER_DELIVERED: "buyer_order_delivered_v10",
+  BUYER_ORDER_DECLINED: "buyer_order_declined_v10",
+  BUYER_PREF_OPENER: "buyer_pref_opener_v10",
+} as const;
+
+const LANG = "en_US";
+
+function namedParam(paramName: string, text: string): Record<string, unknown> {
+  return { type: "text", parameter_name: paramName, text };
+}
+
+function bodyComponent(params: Record<string, unknown>[]): { type: "body"; parameters: Record<string, unknown>[] } {
+  return { type: "body", parameters: params };
+}
+
+export const templateSend = {
+  sellerNewOrder(
+    to: string,
+    p: {
+      sellerName: string;
+      orderId: string;
+      orderItems: string;
+      buyerName: string;
+      customerPhone: string;
+      customerLocation: string;
+      total: string;
+    }
+  ): SendTemplateMessageInput {
     return {
-      name: "seller_new_paid_order",
-      language: "en_US",
-      category: "utility",
-      parameter_format: "named",
-      components: [
-        {
-          type: "body",
-          text:
-            "New paid order: #{{order_number}}\nBuyer: {{buyer_name}}\nTotal: {{currency}} {{total}}\n\nTap to accept or decline.",
-          example: {
-            body_text_named_params: [
-              { param_name: "order_number", example: "ORD-0001" },
-              { param_name: "buyer_name", example: "Jane Doe" },
-              { param_name: "currency", example: "KES" },
-              { param_name: "total", example: "1500" },
-            ],
-          },
-        },
-        {
-          type: "buttons",
-          buttons: [
-            { type: "quick_reply", text: "Accept" },
-            { type: "quick_reply", text: "Decline" },
-          ],
-        },
-      ],
+      to,
+      templateName: TEMPLATE_NAMES.SELLER_NEW_ORDER,
+      languageCode: LANG,
+      components: [bodyComponent([
+        namedParam("seller_name", p.sellerName),
+        namedParam("order_id", p.orderId),
+        namedParam("order_items", p.orderItems),
+        namedParam("buyer_name", p.buyerName),
+        namedParam("customer_phone", p.customerPhone),
+        namedParam("customer_location", p.customerLocation),
+        namedParam("total", p.total),
+      ])],
     };
   },
 
-  orderReadyUpdate(): CreateTemplateInput {
+  buyerOrderReceived(to: string, p: { buyerName: string; storeName: string; sellerWhatsappLink: string }): SendTemplateMessageInput {
     return {
-      name: "order_ready_update",
-      language: "en_US",
-      category: "utility",
-      parameter_format: "named",
-      components: [
-        {
-          type: "body",
-          text: "Order #{{order_number}} is currently processing. Is it ready for pickup?",
-          example: {
-            body_text_named_params: [{ param_name: "order_number", example: "ORD-0001" }],
-          },
-        },
-        {
-          type: "buttons",
-          buttons: [{ type: "quick_reply", text: "Order Ready" }],
-        },
-      ],
+      to,
+      templateName: TEMPLATE_NAMES.BUYER_ORDER_RECEIVED,
+      languageCode: LANG,
+      components: [bodyComponent([
+        namedParam("buyer_name", p.buyerName),
+        namedParam("store_name", p.storeName),
+        namedParam("seller_whatsapp_link", p.sellerWhatsappLink),
+      ])],
+    };
+  },
+
+  buyerOrderReady(to: string, p: { buyerName: string; storeName: string }): SendTemplateMessageInput {
+    return {
+      to,
+      templateName: TEMPLATE_NAMES.BUYER_ORDER_READY,
+      languageCode: LANG,
+      components: [bodyComponent([
+        namedParam("buyer_name", p.buyerName),
+        namedParam("store_name", p.storeName),
+      ])],
+    };
+  },
+
+  buyerOutForDelivery(to: string, p: { buyerName: string; storeName: string; riderDetails: string }): SendTemplateMessageInput {
+    return {
+      to,
+      templateName: TEMPLATE_NAMES.BUYER_OUT_FOR_DELIVERY,
+      languageCode: LANG,
+      components: [bodyComponent([
+        namedParam("buyer_name", p.buyerName),
+        namedParam("store_name", p.storeName),
+        namedParam("rider_details", p.riderDetails),
+      ])],
+    };
+  },
+
+  buyerOrderDelivered(to: string, p: { buyerName: string; storeName: string }): SendTemplateMessageInput {
+    return {
+      to,
+      templateName: TEMPLATE_NAMES.BUYER_ORDER_DELIVERED,
+      languageCode: LANG,
+      components: [bodyComponent([
+        namedParam("buyer_name", p.buyerName),
+        namedParam("store_name", p.storeName),
+      ])],
+    };
+  },
+
+  buyerOrderDeclined(to: string, p: { buyerName: string; storeName: string; sellerWhatsappLink: string }): SendTemplateMessageInput {
+    return {
+      to,
+      templateName: TEMPLATE_NAMES.BUYER_ORDER_DECLINED,
+      languageCode: LANG,
+      components: [bodyComponent([
+        namedParam("buyer_name", p.buyerName),
+        namedParam("store_name", p.storeName),
+        namedParam("seller_whatsapp_link", p.sellerWhatsappLink),
+      ])],
     };
   },
 };

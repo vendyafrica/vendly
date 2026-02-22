@@ -16,6 +16,7 @@ export interface CartItem {
         price: number;
         currency: string;
         image?: string;
+        contentType?: string;
         slug: string;
     };
     store: {
@@ -37,6 +38,7 @@ interface CartContextType {
     itemCount: number;
     totalQuantity: number;
     itemsByStore: Record<string, CartItem[]>; // Grouped by storeId
+    isLoaded: boolean;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -333,6 +335,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
                 itemCount,
                 totalQuantity,
                 itemsByStore,
+                isLoaded,
             }}
         >
             {children}

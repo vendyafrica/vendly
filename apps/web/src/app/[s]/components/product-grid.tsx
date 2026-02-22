@@ -7,6 +7,7 @@ interface Product {
     price: number;
     currency: string;
     image: string | null;
+    contentType?: string | null;
 }
 
 interface ProductGridProps {
@@ -24,16 +25,15 @@ export function ProductGrid({ products }: ProductGridProps) {
 
     // Format price for display
     const formatPrice = (amount: number, currency: string) => {
-        // Current price storage is treated as a whole-unit integer for UGX/KES
-        // (no cents). For other currencies we fall back to a cents-like display.
-        if (currency === "KES" || currency === "UGX") {
-            return `${currency} ${amount.toLocaleString()}`;
-        }
-        return `${currency} ${(amount / 100).toFixed(2)}`;
+        const showDecimals = currency === "USD";
+        return `${currency} ${amount.toLocaleString(undefined, {
+            minimumFractionDigits: showDecimals ? 2 : 0,
+            maximumFractionDigits: showDecimals ? 2 : 0,
+        })}`.trim();
     };
 
     return (
-        <div className="columns-2 sm:columns-3 lg:columns-4 xl:columns-5 gap-3 sm:gap-4 lg:gap-5 px-3 sm:px-4 lg:px-6 xl:px-8 [column-fill:balance]">
+        <div className="columns-2 sm:columns-3 lg:columns-4 xl:columns-5 gap-2 sm:gap-4 lg:gap-5 px-1 sm:px-4 lg:px-6 xl:px-8 [column-fill:balance]">
             {products.map((product, index) => (
                 <ProductCard
                     key={product.id}
@@ -43,6 +43,7 @@ export function ProductGrid({ products }: ProductGridProps) {
                     slug={product.slug}
                     price={formatPrice(product.price, product.currency)}
                     image={product.image}
+                    contentType={product.contentType}
                 />
             ))}
         </div>

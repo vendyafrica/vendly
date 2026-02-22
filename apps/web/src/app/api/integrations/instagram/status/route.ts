@@ -1,16 +1,19 @@
 import { auth } from "@vendly/auth";
 import { headers } from "next/headers";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { db } from "@vendly/db/db";
-import { account } from "@vendly/db/schema";
+import { account, products, stores } from "@vendly/db/schema";
 import { eq, and } from "@vendly/db";
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
     const session = await auth.api.getSession({ headers: await headers() });
     if (!session?.user) {
-      return NextResponse.json({ connected: false }, { status: 401 });
+      return NextResponse.json({ connected: false, imported: false }, { status: 401 });
     }
+
+    const { searchParams } = new URL(req.url);
+    const storeId = searchParams.get("storeId");
 
     // Check better-auth account link
     const instagramAuthAccount = await db.query.account.findFirst({
@@ -20,13 +23,28 @@ export async function GET() {
       ),
     });
 
-    // Check internal instagram account link (optional, but good for consistency)
-    // We can rely on auth account to determine "connected" status for OAuth purposes
     const isConnected = !!instagramAuthAccount?.accessToken;
+    let isImported = false;
 
-    return NextResponse.json({ connected: isConnected });
+    if (isConnected && storeId) {
+      // Verify store access (optional but good practice)
+      // For now, just check if products exist for this store and source=instagram
+      const existingProduct = await db.query.products.findFirst({
+        where: and(
+          eq(products.storeId, storeId),
+          eq(products.source, "instagram")
+        ),
+        columns: { id: true }
+      });
+
+      if (existingProduct) {
+        isImported = true;
+      }
+    }
+
+    return NextResponse.json({ connected: isConnected, imported: isImported });
   } catch (error) {
     console.error("Instagram status check error:", error);
-    return NextResponse.json({ connected: false }, { status: 500 });
+    return NextResponse.json({ connected: false, imported: false }, { status: 500 });
   }
 }

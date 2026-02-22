@@ -16,10 +16,12 @@ if (!process.env.DATABASE_URL) {
 const sql = neon(process.env.DATABASE_URL);
 
 async function reset() {
-    console.log("Resetting database...");
+    console.log("Resetting database (dropping public schema)...");
     try {
         await sql`DROP SCHEMA IF EXISTS public CASCADE`;
         await sql`CREATE SCHEMA public`;
+        await sql`GRANT ALL ON SCHEMA public TO public`;
+        await sql`COMMENT ON SCHEMA public IS 'standard public schema';`;
     } catch (error) {
         console.error("Failed to reset database:", error);
         process.exit(1);

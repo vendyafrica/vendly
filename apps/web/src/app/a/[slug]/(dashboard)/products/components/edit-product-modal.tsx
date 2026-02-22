@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { HugeiconsIcon } from "@hugeicons/react";
-import { Loading03Icon, Cancel01Icon, ImageUpload01Icon } from "@hugeicons/core-free-icons";
+import { Loading03Icon, Cancel01Icon, ImageUpload01Icon, Add01Icon } from "@hugeicons/core-free-icons";
 import {
     Dialog,
     DialogContent,
@@ -15,8 +15,9 @@ import { Input } from "@vendly/ui/components/input";
 import { Label } from "@vendly/ui/components/label";
 import { Textarea } from "@vendly/ui/components/textarea";
 import Image from "next/image";
-import { upload } from "@vercel/blob/client";
 import { useTenant } from "../../tenant-context";
+import type { ProductApiRow } from "@/hooks/use-products";
+import { useUpload } from "@/hooks/use-upload";
 
 interface Product {
     id: string;
@@ -41,7 +42,7 @@ interface EditProductModalProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
     tenantId: string;
-    onProductUpdated?: () => void;
+    onProductUpdated?: (product?: ProductApiRow) => void;
 }
 
 interface UploadedFile {
@@ -53,8 +54,6 @@ interface UploadedFile {
     isNew: boolean;
 }
 
-const API_BASE = "";
-
 export function EditProductModal({
     product,
     open,
@@ -64,6 +63,7 @@ export function EditProductModal({
 }: EditProductModalProps) {
     const { bootstrap } = useTenant();
     const storeCurrency = bootstrap?.defaultCurrency || "UGX";
+    const { uploadFile } = useUpload();
 
     const [productName, setProductName] = React.useState("");
     const [description, setDescription] = React.useState("");
@@ -133,17 +133,19 @@ export function EditProductModal({
 
         const startIndex = files.length;
 
+        if (!tenantId) {
+            setError("Tenant not found. Please refresh and try again.");
+            setFiles(prev => prev.filter((_, idx) => idx < startIndex));
+            return;
+        }
+
         await Promise.all(selectedFiles.map(async (file, i) => {
             const index = startIndex + i;
             try {
-                // Construct path: tenants/{tenantId}/products/{filename}
-                const timestamp = Date.now();
-                const cleanName = file.name.replace(/[^a-zA-Z0-9.-]/g, "_");
-                const path = `tenants/${tenantId}/products/${cleanName}-${timestamp}`;
-
-                const blob = await upload(path, file, {
-                    access: "public",
-                    handleUploadUrl: "/api/upload",
+                const uploaded = await uploadFile(file, {
+                    tenantId,
+                    endpoint: "productMedia",
+                    compressVideo: true,
                 });
 
                 setFiles(prev => {
@@ -151,8 +153,8 @@ export function EditProductModal({
                     if (updated[index]) {
                         updated[index] = {
                             ...updated[index],
-                            url: blob.url,
-                            pathname: blob.pathname,
+                            url: uploaded.url,
+                            pathname: uploaded.pathname,
                             isUploading: false
                         };
                     }
@@ -246,7 +248,7 @@ export function EditProductModal({
                 }));
             }
 
-            const response = await fetch(`${API_BASE}/api/products/${product.id}`, {
+            const response = await fetch(`/api/products/${product.id}`, {
                 method: "PATCH",
                 headers: {
                     "Content-Type": "application/json",
@@ -259,8 +261,10 @@ export function EditProductModal({
                 throw new Error(errorData.error || "Failed to update product");
             }
 
+            const updatedProduct = (await response.json()) as ProductApiRow;
+
             onOpenChange(false);
-            onProductUpdated?.();
+            onProductUpdated?.(updatedProduct);
         } catch (err) {
             setError(err instanceof Error ? err.message : "Update failed");
         } finally {
@@ -272,101 +276,64 @@ export function EditProductModal({
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="sm:max-w-3xl" showCloseButton={false}>
-                <DialogHeader>
-                    <DialogTitle>Edit Product</DialogTitle>
-                </DialogHeader>
+            <DialogContent className="flex w-[96vw] max-w-4xl flex-col gap-0 overflow-hidden p-0 top-auto bottom-0 translate-y-0 rounded-t-2xl max-h-[92vh] sm:top-1/2 sm:-translate-y-1/2 sm:bottom-auto sm:max-h-[85vh] sm:rounded-lg" showCloseButton={false}>
+                <div className="border-b px-4 py-3 sm:px-6 sm:py-4">
+                    <DialogHeader>
+                        <DialogTitle>Edit Product</DialogTitle>
+                    </DialogHeader>
+                </div>
 
-                <div className="space-y-4">
-                    {error && (
-                        <p className="text-sm text-destructive bg-destructive/10 p-3 rounded-md">
-                            {error}
-                        </p>
-                    )}
+                <div className="flex-1 overflow-y-auto px-4 py-3 sm:px-6 sm:py-5">
+                    <div className="space-y-5 sm:space-y-6">
+                        {error && (
+                            <p className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">
+                                {error}
+                            </p>
+                        )}
 
-                    <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-                        {/* Gallery / drop zone */}
-                        <div
-                            className="border-2 border-dashed border-border/70 rounded-lg p-4 md:p-5 lg:p-6 cursor-pointer hover:bg-muted/50 transition-colors"
-                            onClick={() => !isSaving && fileInputRef.current?.click()}
-                            onDragOver={(e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-                            }}
-                            onDragLeave={(e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-                            }}
-                            onDrop={(e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-                                if (!isSaving && e.dataTransfer.files?.length) {
-                                    handleUploadFiles(Array.from(e.dataTransfer.files));
-                                }
-                            }}
-                        >
-                            {files.length === 0 ? (
-                                <div className="text-center py-10">
-                                    <HugeiconsIcon
-                                        icon={ImageUpload01Icon}
-                                        className="size-14 mx-auto text-muted-foreground"
-                                    />
-                                    <p className="text-sm text-muted-foreground mt-3 font-medium">
-                                        Drag & drop product media here
-                                    </p>
-                                    <p className="text-xs text-muted-foreground mt-1">
-                                        Images up to 10MB each
-                                    </p>
+                        <div className="grid grid-cols-1 gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)] lg:gap-8">
+                            {/* Gallery / drop zone */}
+                            <div
+                                className="space-y-2"
+                            >
+                                <Label>Product Images</Label>
+                                <div className={`flex items-center justify-between gap-3 rounded-lg border border-dashed border-border/70 px-3 py-3 sm:py-4 ${isSaving ? "opacity-70" : "hover:bg-muted/40"}`}>
+                                    <div className="flex items-center gap-3">
+                                        <HugeiconsIcon icon={ImageUpload01Icon} className="size-8 text-muted-foreground" />
+                                        <div className="text-left text-sm text-muted-foreground">
+                                            <p className="font-medium">Add product media</p>
+                                            <p className="text-xs text-muted-foreground/70">Images or videos up to 10MB</p>
+                                        </div>
+                                    </div>
                                     <Button
                                         type="button"
                                         variant="outline"
-                                        className="mt-4"
+                                        size="sm"
                                         onClick={(e) => {
                                             e.stopPropagation();
                                             fileInputRef.current?.click();
                                         }}
                                         disabled={isSaving}
                                     >
-                                        Upload media
+                                        Upload
                                     </Button>
+                                    <input
+                                        ref={fileInputRef}
+                                        type="file"
+                                        accept="image/*,video/*"
+                                        multiple
+                                        className="hidden"
+                                        onChange={handleFileChange}
+                                        disabled={isSaving}
+                                    />
                                 </div>
-                            ) : (
-                                <div className="space-y-4">
-                                    {/* Featured image */}
-                                    <div className="relative aspect-square max-h-80 mx-auto">
-                                        {files[0].contentType.startsWith("video/") ? (
-                                            <video
-                                                src={files[0].previewUrl}
-                                                className={`h-full w-full rounded-md object-cover transition-opacity ${files[0].isUploading ? "opacity-60" : "opacity-100"}`}
-                                                muted
-                                                playsInline
-                                                controls
-                                            />
-                                        ) : (
-                                            <div className="relative h-full w-full">
-                                                <Image
-                                                    src={files[0].previewUrl}
-                                                    alt="Featured preview"
-                                                    fill
-                                                    className={`object-contain rounded-md transition-opacity ${files[0].isUploading ? "opacity-60" : "opacity-100"}`}
-                                                />
-                                            </div>
-                                        )}
-                                        {files[0].isUploading && (
-                                            <div className="absolute inset-0 flex items-center justify-center">
-                                                <div className="size-10 rounded-full bg-background/80 flex items-center justify-center">
-                                                    <div className="size-7 rounded-full border-2 border-primary/60 border-t-primary animate-spin" />
-                                                </div>
-                                            </div>
-                                        )}
-                                    </div>
 
-                                    {/* Thumbnail strip */}
-                                    <div className="grid grid-cols-5 gap-2 sm:grid-cols-6">
+                                {files.length > 0 && (
+                                    <div className="mt-2 flex gap-3 overflow-x-auto pb-1">
                                         {files.map((f, i) => (
                                             <div
                                                 key={i}
-                                                className={`relative aspect-square cursor-pointer border-2 rounded-md ${i === 0 ? "border-primary" : "border-transparent hover:border-border"}`}
+                                                className={`relative aspect-square w-24 shrink-0 overflow-hidden rounded-md border ${i === 0 ? "border-primary" : "border-border/60"}`}
                                                 onClick={(e) => {
                                                     e.stopPropagation();
                                                     if (i !== 0) {
@@ -379,15 +346,25 @@ export function EditProductModal({
                                                     }
                                                 }}
                                             >
-                                                <Image
-                                                    src={f.previewUrl}
-                                                    alt="Preview"
-                                                    fill
-                                                    className={`object-cover rounded-md transition-opacity ${f.isUploading ? "opacity-60" : "opacity-100"}`}
-                                                />
+                                                {f.contentType.startsWith("video/") ? (
+                                                    <video
+                                                        src={f.previewUrl}
+                                                        className={`h-full w-full object-cover transition-opacity ${f.isUploading ? "opacity-60" : "opacity-100"}`}
+                                                        muted
+                                                        playsInline
+                                                        preload="metadata"
+                                                    />
+                                                ) : (
+                                                    <Image
+                                                        src={f.previewUrl}
+                                                        alt="Preview"
+                                                        fill
+                                                        className={`object-cover transition-opacity ${f.isUploading ? "opacity-60" : "opacity-100"}`}
+                                                    />
+                                                )}
                                                 {f.isUploading && (
                                                     <div className="absolute inset-0 flex items-center justify-center">
-                                                        <div className="size-5 rounded-full border-2 border-white/60 border-t-white animate-spin" />
+                                                        <div className="size-5 animate-spin rounded-full border-2 border-white/60 border-t-white" />
                                                     </div>
                                                 )}
 
@@ -398,7 +375,7 @@ export function EditProductModal({
                                                             e.stopPropagation();
                                                             removeFile(i);
                                                         }}
-                                                        className="absolute -top-1 -right-1 bg-destructive text-destructive-foreground rounded-full p-0.5 shadow-sm"
+                                                        className="absolute -right-1 -top-1 rounded-full bg-destructive p-0.5 text-destructive-foreground shadow-sm"
                                                     >
                                                         <HugeiconsIcon icon={Cancel01Icon} className="size-3" />
                                                     </button>
@@ -406,89 +383,80 @@ export function EditProductModal({
                                             </div>
                                         ))}
 
-                                        {/* Add more tile */}
                                         <button
                                             type="button"
-                                            className="relative aspect-square border-2 border-dashed border-border/70 rounded-md flex items-center justify-center hover:bg-muted/10"
+                                            className="relative flex aspect-square w-24 shrink-0 items-center justify-center rounded-md border border-dashed border-border/70 hover:bg-muted/10"
                                             onClick={(e) => {
                                                 e.stopPropagation();
                                                 fileInputRef.current?.click();
                                             }}
                                             disabled={isSaving}
                                         >
-                                            <HugeiconsIcon icon={ImageUpload01Icon} className="size-5 text-muted-foreground" />
+                                            <HugeiconsIcon icon={Add01Icon} className="size-4 text-muted-foreground" />
                                             <span className="sr-only">Add more media</span>
                                         </button>
                                     </div>
-                                </div>
-                            )}
-
-                            <input
-                                ref={fileInputRef}
-                                type="file"
-                                accept="image/*"
-                                multiple
-                                className="hidden"
-                                onChange={handleFileChange}
-                                disabled={isSaving}
-                            />
-                        </div>
-
-                        {/* Details */}
-                        <div className="space-y-4">
-                            <div className="space-y-2">
-                                <Label htmlFor="productName">Product Name</Label>
-                                <Input
-                                    id="productName"
-                                    value={productName}
-                                    onChange={(e) => setProductName(e.target.value)}
-                                    placeholder="e.g. Black Hoodie"
-                                    required
-                                    disabled={isSaving}
-                                />
+                                )}
                             </div>
 
-                            <div className="grid grid-cols-2 gap-3">
+                            {/* Details */}
+                            <div className="space-y-4">
                                 <div className="space-y-2">
-                                    <Label htmlFor="priceAmount">Price ({storeCurrency})</Label>
+                                    <Label htmlFor="productName">Product Name</Label>
                                     <Input
-                                        id="priceAmount"
-                                        value={priceAmount}
-                                        onChange={(e) => setPriceAmount(e.target.value)}
-                                        placeholder="0"
-                                        type="number"
-                                        min="0"
+                                        id="productName"
+                                        value={productName}
+                                        onChange={(e) => setProductName(e.target.value)}
+                                        placeholder="e.g. Black Hoodie"
+                                        required
                                         disabled={isSaving}
                                     />
                                 </div>
+
+                                <div className="grid grid-cols-2 gap-3">
+                                    <div className="space-y-2">
+                                        <Label htmlFor="priceAmount">Price ({storeCurrency})</Label>
+                                        <Input
+                                            id="priceAmount"
+                                            value={priceAmount}
+                                            onChange={(e) => setPriceAmount(e.target.value)}
+                                            placeholder="0"
+                                            type="number"
+                                            min="0"
+                                            disabled={isSaving}
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="quantity">Quantity</Label>
+                                        <Input
+                                            id="quantity"
+                                            value={quantity}
+                                            onChange={(e) => setQuantity(e.target.value)}
+                                            placeholder="0"
+                                            type="number"
+                                            min="0"
+                                            disabled={isSaving}
+                                        />
+                                    </div>
+                                </div>
+
                                 <div className="space-y-2">
-                                    <Label htmlFor="quantity">Quantity</Label>
-                                    <Input
-                                        id="quantity"
-                                        value={quantity}
-                                        onChange={(e) => setQuantity(e.target.value)}
-                                        placeholder="0"
-                                        type="number"
-                                        min="0"
+                                    <Label htmlFor="description">Description</Label>
+                                    <Textarea
+                                        id="description"
+                                        value={description}
+                                        onChange={(e) => setDescription(e.target.value)}
+                                        placeholder="Describe the product..."
+                                        rows={5}
                                         disabled={isSaving}
                                     />
                                 </div>
-                            </div>
-
-                            <div className="space-y-2">
-                                <Label htmlFor="description">Description</Label>
-                                <Textarea
-                                    id="description"
-                                    value={description}
-                                    onChange={(e) => setDescription(e.target.value)}
-                                    placeholder="Describe the product..."
-                                    rows={5}
-                                    disabled={isSaving}
-                                />
                             </div>
                         </div>
                     </div>
+                </div>
 
+                <div className="border-t bg-background px-6 py-4">
                     <DialogFooter className="flex gap-2">
                         <Button
                             type="button"
@@ -501,7 +469,7 @@ export function EditProductModal({
                         <Button type="submit" disabled={isSaving || files.some(f => f.isUploading)} onClick={handleSubmit}>
                             {isSaving ? (
                                 <>
-                                    <HugeiconsIcon icon={Loading03Icon} className="size-4 mr-2 animate-spin" />
+                                    <HugeiconsIcon icon={Loading03Icon} className="mr-2 size-4 animate-spin" />
                                     Saving...
                                 </>
                             ) : (

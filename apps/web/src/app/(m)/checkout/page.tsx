@@ -220,14 +220,23 @@ function CheckoutContent() {
                                     className="flex gap-4 items-center"
                                 >
                                     <div className="relative h-16 w-16 rounded-lg overflow-hidden border bg-white">
-                                        {item.product.image && (
+                                        {item.product.image && (item.product.contentType?.startsWith("video/") || item.product.image?.match(/\.(mp4|webm|mov|ogg)$/i) || ((item.product.image || "").includes(".ufs.sh") && !(item.product.image || "").match(/\.(jpg|jpeg|png|webp|gif)$/i) && !item.product.contentType?.startsWith("image/"))) ? (
+                                            <video
+                                                src={item.product.image}
+                                                className="h-full w-full object-cover"
+                                                muted
+                                                playsInline
+                                                loop
+                                                autoPlay
+                                            />
+                                        ) : item.product.image ? (
                                             <Image
                                                 src={item.product.image}
                                                 alt={item.product.name}
                                                 fill
                                                 className="object-cover"
                                             />
-                                        )}
+                                        ) : null}
                                         <span className="absolute -top-2 -right-2 h-5 w-5 rounded-full bg-neutral-700 text-white text-xs flex items-center justify-center">
                                             {item.quantity}
                                         </span>

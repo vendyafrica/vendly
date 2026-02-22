@@ -17,6 +17,18 @@ interface HeroEditorProps {
     onUpdate: (urls: string[]) => void;
 }
 
+const VIDEO_EXTENSIONS = [".mp4", ".webm", ".ogg"];
+
+function isVideoUrl(url: string) {
+    try {
+        const parsed = new URL(url);
+        return VIDEO_EXTENSIONS.some((ext) => parsed.pathname.toLowerCase().endsWith(ext));
+    } catch {
+        const cleanUrl = url.split("?")[0]?.split("#")[0] ?? url;
+        return VIDEO_EXTENSIONS.some((ext) => cleanUrl.toLowerCase().endsWith(ext));
+    }
+}
+
 export function HeroEditor({ 
     storeSlug, 
     tenantId,
@@ -25,7 +37,8 @@ export function HeroEditor({
 }: HeroEditorProps) {
     const [isSaving, setIsSaving] = useState(false);
     const { uploadFile, isUploading } = useUpload();
-
+    console.log("heroMedia", heroMedia);
+///hey ...
     const handleCoverSelected = async (file: File | null) => {
         if (!file) return;
 
@@ -37,9 +50,13 @@ export function HeroEditor({
                 return;
             }
 
-            const blob = await uploadFile(file, `tenants/${tenantId}/hero`);
+            const uploaded = await uploadFile(file, {
+                tenantId,
+                endpoint: "storeHeroMedia",
+                compressVideo: true,
+            });
             const rest = heroMedia.filter((_, idx) => idx !== 0);
-            const nextUrls = [blob.url, ...rest];
+            const nextUrls = [uploaded.url, ...rest];
 
             const response = await fetch(`/api/storefront/${storeSlug}/hero`, {
                 method: "PUT",
@@ -97,7 +114,7 @@ export function HeroEditor({
 
     const hasHeroMedia = heroMedia.length > 0;
     const firstUrl = heroMedia[0];
-    const isFirstVideo = typeof firstUrl === "string" && !!firstUrl.match(/\.(mp4|webm|ogg)$/i);
+    const isFirstVideo = typeof firstUrl === "string" && isVideoUrl(firstUrl);
 
     return (
         <div className="relative group">
@@ -149,10 +166,10 @@ export function HeroEditor({
                 <div className="space-y-4">
                     <CoverUpload
                         accept="image/*,video/*"
-                        maxSize={10 * 1024 * 1024}
+                        maxSize={50 * 1024 * 1024}
                         disabled={!tenantId || isUploading || isSaving}
                         title={!tenantId ? "Loading store..." : isUploading ? "Uploading..." : "Upload cover image or video"}
-                        description="Drag & drop, or click to browse"
+                        description="Drag & drop, or click to browse (images up to 10MB, videos up to 50MB)"
                         onFileSelected={handleCoverSelected}
                     />
 
@@ -166,7 +183,7 @@ export function HeroEditor({
                                     disabled={isSaving}
                                     className="relative aspect-square overflow-hidden rounded-md border border-border/60"
                                 >
-                                    {url.match(/\.(mp4|webm|ogg)$/i) ? (
+                                    {isVideoUrl(url) ? (
                                         <div className="w-full h-full bg-neutral-100 flex items-center justify-center">
                                             <HugeiconsIcon icon={PlayIcon} size={18} className="text-neutral-500" />
                                         </div>

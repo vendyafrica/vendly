@@ -8,10 +8,12 @@ import {
   InstagramIcon,
   WhatsappBusinessIcon,
 } from "@hugeicons/core-free-icons";
+import { Bricolage_Grotesque } from "next/font/google";
 
-/* -----------------------------
-   Footer Data
------------------------------- */
+const geistSans = Bricolage_Grotesque({
+  variable: "--font-bricolage-grotesque",
+  subsets: ["latin"],
+});
 
 const footerLinks = [
   {
@@ -34,7 +36,7 @@ const footerLinks = [
 const socialLinks = [
   {
     icon: WhatsappBusinessIcon,
-    href: "https://wa.me/256702222222",
+    href: "https://wa.me/254757767916",
     label: "WhatsApp",
   },
   {
@@ -44,18 +46,12 @@ const socialLinks = [
   },
 ];
 
-/* -----------------------------
-   Footer Component
------------------------------- */
-
 export default function Footer() {
 
   return (
     <footer className="border-t border-border bg-background">
       <div className="mx-auto max-w-7xl px-6 py-12">
-        {/* Top Section */}
         <div className="grid grid-cols-1 gap-10 md:grid-cols-4">
-          {/* Brand + Copy + Social */}
           <div className="md:col-span-2">
             <div className="flex items-center gap-2 mb-4">
               <Image
@@ -65,7 +61,7 @@ export default function Footer() {
                 height={32}
                 priority
               />
-              <span className="text-base font-semibold tracking-tight">
+              <span className= {`${geistSans.className} text-base font-semibold tracking-tight`}>
                 vendly
               </span>
             </div>
@@ -75,7 +71,6 @@ export default function Footer() {
               storefronts to sell anywhere.
             </p>
 
-            {/* Social Icons */}
             <div className="flex gap-3">
               {socialLinks.map(({ icon: Icon, href, label }) => (
                 <Button
@@ -92,7 +87,6 @@ export default function Footer() {
             </div>
           </div>
 
-          {/* Link Sections */}
           {footerLinks.map((section) => (
             <div key={section.title}>
               <h3 className="text-sm font-semibold mb-4">
@@ -114,13 +108,12 @@ export default function Footer() {
           ))}
         </div>
 
-        {/* Bottom Section */}
         <div className="border-t border-border mt-12 pt-8 grid grid-cols-1 gap-4 md:grid-cols-2 md:items-center">
-          <p className="text-sm text-muted-foreground md:justify-self-start">
+          <p className={`${geistSans.className} text-sm text-muted-foreground md:justify-self-start`}>
            Powered by Vendly.
           </p>
 
-          <p className="text-sm text-muted-foreground text-center md:justify-self-end">
+          <p className={`${geistSans.className} text-sm text-muted-foreground text-center md:justify-self-end`}>
            Built with 💓
           </p>
         </div>

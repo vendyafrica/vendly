@@ -1,6 +1,6 @@
 import { db } from "@vendly/db/db";
 import { tenants, stores, orders, storefrontSessions } from "@vendly/db/schema";
-import { count, eq, gte, sum, desc } from "@vendly/db";
+import { count, eq, gte, sum, desc, sql, and } from "@vendly/db";
 import { TTL, withCache } from "@vendly/db";
 import { NextResponse } from "next/server";
 import { checkSuperAdminApi } from "@/lib/auth-guard";
@@ -49,7 +49,30 @@ export async function GET() {
                     .where(eq(orders.paymentStatus, "paid"));
                 const gmv = Number(gmvResult?.total || 0);
 
+                const revenueSeriesRaw = await db
+                    .select({
+                        date: sql<string>`to_char(date_trunc('day', ${orders.createdAt}), 'YYYY-MM-DD')`,
+                        total: sql<number>`COALESCE(SUM(${orders.totalAmount}), 0)::int`,
+                    })
+                    .from(orders)
+                    .where(and(gte(orders.createdAt, thirtyDaysAgo), eq(orders.paymentStatus, "paid")))
+                    .groupBy(sql`date_trunc('day', ${orders.createdAt})`)
+                    .orderBy(sql`date_trunc('day', ${orders.createdAt})`);
+
                 const [totalOrders] = await db.select({ count: count() }).from(orders);
+
+                const topStoresByOrders = await db
+                    .select({
+                        storeId: orders.storeId,
+                        storeName: stores.name,
+                        orders: count(),
+                    })
+                    .from(orders)
+                    .leftJoin(stores, eq(orders.storeId, stores.id))
+                    .where(and(gte(orders.createdAt, thirtyDaysAgo), eq(orders.paymentStatus, "paid")))
+                    .groupBy(orders.storeId, stores.name)
+                    .orderBy(desc(count()))
+                    .limit(5);
                 // 4. Top Stores by Revenue
                 const topStoresByRevenue = await db
                     .select({
@@ -59,7 +82,7 @@ export async function GET() {
                     })
                     .from(orders)
                     .leftJoin(stores, eq(orders.storeId, stores.id))
-                    .where(eq(orders.paymentStatus, "paid"))
+                    .where(and(gte(orders.createdAt, thirtyDaysAgo), eq(orders.paymentStatus, "paid")))
                     .groupBy(orders.storeId, stores.name)
                     .orderBy(desc(sum(orders.totalAmount)))
                     .limit(5);
@@ -92,6 +115,8 @@ export async function GET() {
                         gmv: gmv,
                         totalOrders: totalOrders.count,
                     },
+                    revenueSeries: revenueSeriesRaw,
+                    topStoresByOrders,
                     topStores: {
                         byRevenue: topStoresByRevenue,
                         byVisits: topStoresByVisits,

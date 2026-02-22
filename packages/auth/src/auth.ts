@@ -1,9 +1,9 @@
 import { betterAuth } from "better-auth";
-import { genericOAuth, magicLink, oneTap } from "better-auth/plugins";
+import { genericOAuth, oneTap } from "better-auth/plugins";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { db } from "@vendly/db/db";
 import * as schema from "@vendly/db/schema";
-import { sendEmail, sendMagicLinkEmail, sendSellerMagicLinkEmail } from "@vendly/transactional";
+import { sendAdminVerificationEmail } from "@vendly/transactional";
 import { getInstagramToken, getInstagramUserInfo } from "./instagram";
 
 const baseURL =
@@ -40,6 +40,8 @@ const trustedOrigins = [
   "https://vendly-web.vercel.app",
   "https://www.vendlyafrica.store",
   "https://vendlyafrica.store",
+  "https://www.duuka.store",
+  "https://duuka.store",
   "https://*.ngrok-free.dev",
   "https://harmonically-carpetless-janna.ngrok-free.dev",
   baseURL,
@@ -61,18 +63,17 @@ export const auth = betterAuth({
 
   emailAndPassword: {
     enabled: true,
-    requireEmailVerification: true,
+    requireEmailVerification: false,
   },
 
   emailVerification: {
-    sendOnSignUp: true,
+    sendOnSignUp: false,
     autoSignInAfterVerification: true,
     async sendVerificationEmail({ user, url }) {
-      await sendEmail({
+      await sendAdminVerificationEmail({
         to: user.email,
-        subject: "Verify your email",
-        verificationUrl: url,
         name: user.name,
+        verificationUrl: url,
       });
     },
     async afterEmailVerification(user, request) {
@@ -145,9 +146,6 @@ export const auth = betterAuth({
     google: {
       clientId: process.env.GOOGLE_CLIENT_ID as string,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
-      // Explicitly set response mode to ensure response_type/code is requested correctly across environments
-      responseMode: "query",
-      redirectURI: `${baseURL}/api/auth/callback/google`,
     },
   },
 
@@ -176,26 +174,6 @@ export const auth = betterAuth({
     }),
 
     oneTap(),
-
-    magicLink({
-      async sendMagicLink({ email, url }) {
-        // If the magic link is used for seller onboarding, send a dedicated template.
-        // We detect this by checking the embedded callback URL.
-        const isSellerOnboarding = url.includes("entry=seller_magic");
-        if (isSellerOnboarding) {
-          await sendSellerMagicLinkEmail({
-            to: email,
-            url,
-          });
-          return;
-        }
-
-        await sendMagicLinkEmail({
-          to: email,
-          url,
-        });
-      },
-    }),
   ],
 
   session: {

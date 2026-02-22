@@ -3,7 +3,6 @@ import { NextRequest, NextResponse } from "next/server";
 import {
   and,
   db,
-  dbWs,
   eq,
   instagramAccounts,
   account,
@@ -165,106 +164,107 @@ export async function POST(request: NextRequest) {
     const childrenDataRaw = asObject(mediaObj?.children)?.data as unknown;
     const childrenData = Array.isArray(childrenDataRaw) ? childrenDataRaw : [];
 
-    await dbWs.transaction(async (tx) => {
-      const existingProduct = await tx.query.products.findFirst({
-        where: and(eq(products.storeId, store.id), eq(products.source, "instagram"), eq(products.sourceId, sourceId)),
-        columns: { id: true },
-      });
-
-      if (existingProduct) {
-        return;
-      }
-
-      const [product] = await tx
-        .insert(products)
-        .values({
-          tenantId: igAccount.tenantId,
-          storeId: store.id,
-          productName: parsed.productName,
-          slug: slugify(parsed.productName),
-          description: parsed.description,
-          priceAmount: parsed.priceAmount,
-          currency: parsed.currency,
-          status: "draft",
-          source: "instagram",
-          sourceId,
-          sourceUrl,
-          variants: [],
-        })
-        .returning();
-
-      const variantEntries: Array<{ name: string; sourceMediaId: string; mediaObjectId: string; mediaType?: string }> = [];
-
-      if (mediaType === "CAROUSEL_ALBUM" && childrenData.length) {
-        let idx = 0;
-        for (const childRaw of childrenData) {
-          const child = asObject(childRaw);
-          if (!child) continue;
-          idx++;
-
-          const childId = typeof child.id === "string" ? child.id : String(child.id || idx);
-          const childMediaType = typeof child.media_type === "string" ? child.media_type : "IMAGE";
-          const childUrl = String(child.media_url || child.thumbnail_url || "");
-          if (!childUrl) continue;
-
-          const contentType = childMediaType === "VIDEO" ? "video/mp4" : "image/jpeg";
-          const [mediaRow] = await tx
-            .insert(mediaObjects)
-            .values({
-              tenantId: igAccount.tenantId,
-              blobUrl: childUrl,
-              blobPathname: childId,
-              contentType,
-              source: "instagram",
-              sourceMediaId: childId,
-            })
-            .returning();
-
-          await tx.insert(productMedia).values({
-            tenantId: igAccount.tenantId,
-            productId: product.id,
-            mediaId: mediaRow.id,
-            isFeatured: idx === 1,
-            sortOrder: idx - 1,
-          });
-
-          variantEntries.push({
-            name: `Option ${idx}`,
-            sourceMediaId: childId,
-            mediaObjectId: mediaRow.id,
-            mediaType: childMediaType,
-          });
-        }
-      } else {
-        const mediaUrl = String(mediaObj?.media_url || mediaObj?.thumbnail_url || "");
-        if (mediaUrl) {
-          const contentType = mediaType === "VIDEO" ? "video/mp4" : "image/jpeg";
-          const [mediaRow] = await tx
-            .insert(mediaObjects)
-            .values({
-              tenantId: igAccount.tenantId,
-              blobUrl: mediaUrl,
-              blobPathname: sourceId,
-              contentType,
-              source: "instagram",
-              sourceMediaId: sourceId,
-            })
-            .returning();
-
-          await tx.insert(productMedia).values({
-            tenantId: igAccount.tenantId,
-            productId: product.id,
-            mediaId: mediaRow.id,
-            isFeatured: true,
-            sortOrder: 0,
-          });
-        }
-      }
-
-      if (variantEntries.length) {
-        await tx.update(products).set({ variants: variantEntries, updatedAt: new Date() }).where(eq(products.id, product.id));
-      }
+    const existingProduct = await db.query.products.findFirst({
+      where: and(eq(products.storeId, store.id), eq(products.source, "instagram"), eq(products.sourceId, sourceId)),
+      columns: { id: true },
     });
+
+    if (existingProduct) {
+      return NextResponse.json({ ok: true }, { status: 200 });
+    }
+
+    const [product] = await db
+      .insert(products)
+      .values({
+        tenantId: igAccount.tenantId,
+        storeId: store.id,
+        productName: parsed.productName,
+        slug: slugify(parsed.productName),
+        description: parsed.description,
+        priceAmount: parsed.priceAmount,
+        currency: parsed.currency,
+        status: "draft",
+        source: "instagram",
+        sourceId,
+        sourceUrl,
+        variants: [],
+      })
+      .returning();
+
+    const variantEntries: Array<{ name: string; sourceMediaId: string; mediaObjectId: string; mediaType?: string }> = [];
+
+    if (mediaType === "CAROUSEL_ALBUM" && childrenData.length) {
+      let idx = 0;
+      for (const childRaw of childrenData) {
+        const child = asObject(childRaw);
+        if (!child) continue;
+        idx++;
+
+        const childId = typeof child.id === "string" ? child.id : String(child.id || idx);
+        const childMediaType = typeof child.media_type === "string" ? child.media_type : "IMAGE";
+        const childUrl = String(child.media_url || child.thumbnail_url || "");
+        if (!childUrl) continue;
+
+        const contentType = childMediaType === "VIDEO" ? "video/mp4" : "image/jpeg";
+        const [mediaRow] = await db
+          .insert(mediaObjects)
+          .values({
+            tenantId: igAccount.tenantId,
+            blobUrl: childUrl,
+            blobPathname: childId,
+            contentType,
+            source: "instagram",
+            sourceMediaId: childId,
+          })
+          .returning();
+
+        await db.insert(productMedia).values({
+          tenantId: igAccount.tenantId,
+          productId: product.id,
+          mediaId: mediaRow.id,
+          isFeatured: idx === 1,
+          sortOrder: idx - 1,
+        });
+
+        variantEntries.push({
+          name: `Option ${idx}`,
+          sourceMediaId: childId,
+          mediaObjectId: mediaRow.id,
+          mediaType: childMediaType,
+        });
+      }
+    } else {
+      const mediaUrl = String(mediaObj?.media_url || mediaObj?.thumbnail_url || "");
+      if (mediaUrl) {
+        const contentType = mediaType === "VIDEO" ? "video/mp4" : "image/jpeg";
+        const [mediaRow] = await db
+          .insert(mediaObjects)
+          .values({
+            tenantId: igAccount.tenantId,
+            blobUrl: mediaUrl,
+            blobPathname: sourceId,
+            contentType,
+            source: "instagram",
+            sourceMediaId: sourceId,
+          })
+          .returning();
+
+        await db.insert(productMedia).values({
+          tenantId: igAccount.tenantId,
+          productId: product.id,
+          mediaId: mediaRow.id,
+          isFeatured: true,
+          sortOrder: 0,
+        });
+      }
+    }
+
+    if (variantEntries.length) {
+      await db
+        .update(products)
+        .set({ variants: variantEntries, updatedAt: new Date() })
+        .where(eq(products.id, product.id));
+    }
   } catch (err) {
     console.error("[InstagramWebhook] Error", err);
   }

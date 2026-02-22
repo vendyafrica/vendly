@@ -1,7 +1,7 @@
 import { auth } from "@vendly/auth";
 import { headers } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
-import { db, dbWs } from "@vendly/db/db";
+import { db } from "@vendly/db/db";
 import { tenantMemberships, instagramAccounts, instagramSyncJobs, account, stores } from "@vendly/db/schema";
 import { eq, and } from "@vendly/db";
 import { z } from "zod";
@@ -89,6 +89,8 @@ export async function POST(request: NextRequest) {
     }
 
     const mediaItems: InstagramMediaItem[] = Array.isArray(mediaData?.data) ? mediaData.data : [];
+    // Cap imports to first 50 items to avoid overloading the store
+    const limitedMediaItems = mediaItems.slice(0, 50);
 
     // 3. Update Account with Profile Picture
     const existing = await db.query.instagramAccounts.findFirst({
@@ -123,7 +125,7 @@ export async function POST(request: NextRequest) {
         tenantId: membership.tenantId,
         accountId: igAccount.id,
         status: "processing",
-        mediaFetched: mediaItems.length,
+        mediaFetched: limitedMediaItems.length,
         startedAt: new Date(),
       })
       .returning();
@@ -131,111 +133,107 @@ export async function POST(request: NextRequest) {
     // 5. Process Media (Inline for simplicity)
     let createdCount = 0;
 
-    await dbWs.transaction(async (tx) => {
-      const { products, mediaObjects, productMedia } = await import("@vendly/db/schema");
+    const { products, mediaObjects, productMedia } = await import("@vendly/db/schema");
 
-      for (const item of mediaItems) {
-        const caption = (item.caption as string | null | undefined) || "";
-        const parsed = parseInstagramCaption(caption, store.defaultCurrency);
-        const slug = slugify(parsed.productName);
+    for (const item of limitedMediaItems) {
+      const caption = (item.caption as string | null | undefined) || "";
+      const parsed = parseInstagramCaption(caption, store.defaultCurrency);
+      const slug = slugify(parsed.productName);
 
-        // Create Product
-        const [product] = await tx
-          .insert(products)
-          .values({
-            tenantId: membership.tenantId,
-            storeId: storeId,
-            productName: parsed.productName,
-            slug: slug,
-            description: parsed.description,
-            priceAmount: parsed.priceAmount,
-            currency: parsed.currency,
-            status: "draft", // Import as draft
-            source: "instagram",
-            sourceId: String(item.id),
-            sourceUrl: item.permalink ? String(item.permalink) : null,
-            variants: [],
-          })
-          .returning();
+      const [product] = await db
+        .insert(products)
+        .values({
+          tenantId: membership.tenantId,
+          storeId: storeId,
+          productName: parsed.productName,
+          slug: slug,
+          description: parsed.description,
+          priceAmount: parsed.priceAmount,
+          currency: parsed.currency,
+          status: "draft",
+          source: "instagram",
+          sourceId: String(item.id),
+          sourceUrl: item.permalink ? String(item.permalink) : null,
+          variants: [],
+        })
+        .returning();
 
-        createdCount++;
+      createdCount++;
 
-        const variantEntries: Array<{ name: string; sourceMediaId: string; mediaObjectId: string; mediaType?: string }> = [];
+      const variantEntries: Array<{ name: string; sourceMediaId: string; mediaObjectId: string; mediaType?: string }> = [];
 
-        // Process Content (Variants or Single Media)
-        if (item.media_type === "CAROUSEL_ALBUM" && Array.isArray(item.children?.data)) {
-          let idx = 0;
-          for (const child of item.children.data) {
-            idx++;
-            const childId = String(child.id);
-            const childMediaType = String(child.media_type || "IMAGE");
-            const childUrl = String(child.media_url || child.thumbnail_url || "");
-            if (!childUrl) continue;
+      if (item.media_type === "CAROUSEL_ALBUM" && Array.isArray(item.children?.data)) {
+        let idx = 0;
+        for (const child of item.children.data) {
+          idx++;
+          const childId = String(child.id);
+          const childMediaType = String(child.media_type || "IMAGE");
+          const childUrl = String(child.media_url || child.thumbnail_url || "");
+          if (!childUrl) continue;
 
-            const contentType = childMediaType === "VIDEO" ? "video/mp4" : "image/jpeg";
-            const [mediaObj] = await tx
-              .insert(mediaObjects)
-              .values({
-                tenantId: membership.tenantId,
-                blobUrl: childUrl,
-                blobPathname: childId,
-                contentType,
-                source: "instagram",
-                sourceMediaId: childId,
-              })
-              .returning();
-
-            await tx.insert(productMedia).values({
+          const contentType = childMediaType === "VIDEO" ? "video/mp4" : "image/jpeg";
+          const [mediaObj] = await db
+            .insert(mediaObjects)
+            .values({
               tenantId: membership.tenantId,
-              productId: product.id,
-              mediaId: mediaObj.id,
-              isFeatured: idx === 1,
-              sortOrder: idx - 1,
-            });
-
-            variantEntries.push({
-              name: `Option ${idx}`,
+              blobUrl: childUrl,
+              blobPathname: childId,
+              contentType,
+              source: "instagram",
               sourceMediaId: childId,
-              mediaObjectId: mediaObj.id,
-              mediaType: childMediaType,
-            });
-          }
-        } else {
-          const itemId = String(item.id);
-          const itemType = String(item.media_type || "IMAGE");
-          const itemUrl = String(item.media_url || item.thumbnail_url || "");
-          if (itemUrl) {
-            const contentType = itemType === "VIDEO" ? "video/mp4" : "image/jpeg";
-            const [mediaObj] = await tx
-              .insert(mediaObjects)
-              .values({
-                tenantId: membership.tenantId,
-                blobUrl: itemUrl,
-                blobPathname: itemId,
-                contentType,
-                source: "instagram",
-                sourceMediaId: itemId,
-              })
-              .returning();
+            })
+            .returning();
 
-            await tx.insert(productMedia).values({
-              tenantId: membership.tenantId,
-              productId: product.id,
-              mediaId: mediaObj.id,
-              isFeatured: true,
-              sortOrder: 0,
-            });
-          }
+          await db.insert(productMedia).values({
+            tenantId: membership.tenantId,
+            productId: product.id,
+            mediaId: mediaObj.id,
+            isFeatured: idx === 1,
+            sortOrder: idx - 1,
+          });
+
+          variantEntries.push({
+            name: `Option ${idx}`,
+            sourceMediaId: childId,
+            mediaObjectId: mediaObj.id,
+            mediaType: childMediaType,
+          });
         }
+      } else {
+        const itemId = String(item.id);
+        const itemType = String(item.media_type || "IMAGE");
+        const itemUrl = String(item.media_url || item.thumbnail_url || "");
+        if (itemUrl) {
+          const contentType = itemType === "VIDEO" ? "video/mp4" : "image/jpeg";
+          const [mediaObj] = await db
+            .insert(mediaObjects)
+            .values({
+              tenantId: membership.tenantId,
+              blobUrl: itemUrl,
+              blobPathname: itemId,
+              contentType,
+              source: "instagram",
+              sourceMediaId: itemId,
+            })
+            .returning();
 
-        if (variantEntries.length) {
-          await tx
-            .update(products)
-            .set({ variants: variantEntries, updatedAt: new Date() })
-            .where(eq(products.id, product.id));
+          await db.insert(productMedia).values({
+            tenantId: membership.tenantId,
+            productId: product.id,
+            mediaId: mediaObj.id,
+            isFeatured: true,
+            sortOrder: 0,
+          });
         }
       }
-    });
+
+      if (variantEntries.length) {
+        await db
+          .update(products)
+          .set({ variants: variantEntries, updatedAt: new Date() })
+          .where(eq(products.id, product.id));
+      }
+    }
 
     // Update Job Status
     await db

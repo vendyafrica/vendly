@@ -78,7 +78,7 @@ export function Checkout({ open, onOpenChange, storeSlug, product, quantity }: C
                 body: JSON.stringify({
                     customerName,
                     customerEmail,
-                    customerPhone: customerPhone || undefined,
+                    customerPhone,
                     paymentMethod,
                     notes: notes || undefined,
                     items: [
@@ -99,10 +99,7 @@ export function Checkout({ open, onOpenChange, storeSlug, product, quantity }: C
 
             setIsSuccess(true);
             setSuccessStage("paid");
-            setTimeout(() => setSuccessStage("processing"), 1000);
-            setTimeout(() => {
-                window.location.href = "http://localhost:3000/cart";
-            }, 1200);
+            setTimeout(() => setSuccessStage("processing"), 1500);
         } catch (err) {
             setError(err instanceof Error ? err.message : "Failed to place order");
         } finally {
@@ -128,11 +125,11 @@ export function Checkout({ open, onOpenChange, storeSlug, product, quantity }: C
                             <HugeiconsIcon icon={CheckmarkCircle02Icon} className="h-12 w-12 text-green-600" />
                         </div>
                         <h2 className="text-2xl font-semibold mb-2">
-                            {successStage === "paid" ? "Payment Successful" : "Processing Order"}
+                            {successStage === "paid" ? "Order Placed!" : "Processing Order"}
                         </h2>
                         <p className="text-muted-foreground mb-6">
                             {successStage === "paid"
-                                ? "Payment received. We’re confirming your order."
+                                ? "Check your WhatsApp for payment instructions and order updates."
                                 : "Your order is now being processed by the seller."}
                         </p>
                         <Button onClick={handleClose} className="w-full">
@@ -196,14 +193,16 @@ export function Checkout({ open, onOpenChange, storeSlug, product, quantity }: C
                         </div>
 
                         <div className="grid gap-2">
-                            <Label htmlFor="phone">Phone Number</Label>
+                            <Label htmlFor="phone">WhatsApp Phone Number *</Label>
                             <Input
                                 id="phone"
                                 type="tel"
-                                placeholder="+254 7XX XXX XXX"
+                                placeholder="+256 7XX XXX XXX"
                                 value={customerPhone}
                                 onChange={(e) => setCustomerPhone(e.target.value)}
+                                required
                             />
+                            <p className="text-xs text-muted-foreground">We will send order updates to this number on WhatsApp.</p>
                         </div>
                     </div>
 
@@ -245,7 +244,7 @@ export function Checkout({ open, onOpenChange, storeSlug, product, quantity }: C
                     <Button
                         type="submit"
                         className="w-full h-12"
-                        disabled={isSubmitting || !customerName || !customerEmail}
+                        disabled={isSubmitting || !customerName || !customerEmail || !customerPhone}
                     >
                         {isSubmitting ? (
                             <>

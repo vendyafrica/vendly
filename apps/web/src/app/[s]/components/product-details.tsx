@@ -2,22 +2,24 @@
 
 import { useState, useEffect } from "react";
 import Image from "next/image";
-import { Button } from "@vendly/ui/components/button";
 import { HugeiconsIcon } from "@hugeicons/react";
+
 import {
     StarIcon,
-    MinusSignIcon,
-    PlusSignIcon,
-    Tick02Icon,
     FlashIcon,
-    FavouriteIcon,
-    ArrowDown01Icon,
 } from "@hugeicons/core-free-icons";
-import { Avatar, AvatarImage, AvatarFallback } from "@vendly/ui/components/avatar";
-import { useCart } from "../../../contexts/cart-context";
+import { StoreAvatar } from "@/components/store-avatar";
 import { useRecentlyViewed } from "@/hooks/use-recently-viewed";
-import { useWishlist } from "@/hooks/use-wishlist";
 import { trackStorefrontEvents } from "@/lib/storefront-tracking";
+import { ProductActions } from "./product-actions";
+import { Bricolage_Grotesque } from "next/font/google";
+import { getStyleGuideAudience } from "@/lib/constants/style-guide";
+
+const geistSans = Bricolage_Grotesque({
+  variable: "--font-bricolage-grotesque",
+  subsets: ["latin"],
+});
+
 
 interface ProductDetailsProps {
     product: {
@@ -28,6 +30,7 @@ interface ProductDetailsProps {
         price: number;
         currency: string;
         images: string[];
+        mediaItems?: { url: string; contentType?: string | null }[];
         videos?: string[];
         rating?: number;
         store: {
@@ -37,13 +40,12 @@ interface ProductDetailsProps {
             logoUrl?: string | null;
         };
     };
+    storeCategories?: string[];
 }
 
-export function ProductDetails({ product }: ProductDetailsProps) {
+export function ProductDetails({ product, storeCategories = [] }: ProductDetailsProps) {
 
-    const { addItem } = useCart();
     const { addToRecentlyViewed } = useRecentlyViewed();
-    const { toggleWishlist, isInWishlist } = useWishlist();
 
     useEffect(() => {
         if (!product?.store?.slug || !product?.id) return;
@@ -64,6 +66,7 @@ export function ProductDetails({ product }: ProductDetailsProps) {
                 price: product.price,
                 currency: product.currency,
                 image: product.images[0] || "",
+                contentType: product.mediaItems?.[0]?.contentType || undefined,
                 store: {
                     name: product.store.name,
                     slug: product.store.slug,
@@ -73,75 +76,32 @@ export function ProductDetails({ product }: ProductDetailsProps) {
         }
     }, [product, addToRecentlyViewed]);
 
-    const [quantity, setQuantity] = useState(1);
     const [selectedMediaIndex, setSelectedMediaIndex] = useState(0);
 
-    const [isAdded, setIsAdded] = useState(false);
-
     const [selectedSize, setSelectedSize] = useState<string>("");
-    const sizes = ["XS", "S", "M", "L", "XL", "1X", "2X", "3X"];
+    const sizes = ["0/24", "1/25", "3/26", "5/27", "7/28", "9/29", "11/30", "13/31", "15/32", "1XL", "2XL", "3XL"];
 
-    const handleQuantityChange = (delta: number) => {
-        setQuantity(prev => Math.max(1, prev + delta));
-    };
-
-    const handleAddToCart = () => {
-        if (!product) return;
-
-        addItem({
-            id: product.id,
-            product: {
-                id: product.id,
-                name: product.name,
-                price: product.price,
-                currency: product.currency,
-                image: product.images[0],
-                slug: product.slug,
-            },
-            store: {
-                id: product.store.id,
-                name: product.store.name,
-                slug: product.store.slug,
-                logoUrl: product.store.logoUrl,
-            },
-        }, quantity);
-
-        setIsAdded(true);
-        setTimeout(() => setIsAdded(false), 2000);
-    };
-
-    const wishlisted = isInWishlist(product.id);
-
-    // Data is ensured by parent component
-    if (!product) return null;
+    const styleGuideAudience = getStyleGuideAudience(storeCategories);
 
     const ratingValue = typeof product.rating === "number" && Number.isFinite(product.rating)
         ? product.rating
         : 0;
 
-    const storeAvatarUrl = product.store.logoUrl
-        || `https://avatar.vercel.sh/${encodeURIComponent(product.store.slug || product.store.id)}.svg?text=${encodeURIComponent(product.store.name.charAt(0) || "S")}`;
-
     const FALLBACK_PRODUCT_IMAGE = "https://cdn.cosmos.so/25e7ef9d-3d95-486d-b7db-f0d19c1992d7?format=jpeg";
 
     const validImages = product.images && product.images.length > 0
-        ? product.images
+        ? product.images.filter(Boolean)
         : [FALLBACK_PRODUCT_IMAGE];
 
-    // Ensure we always have 5 images for the gallery layout
-    // If we have fewer than 5, we repeat the existing images to fill the slots
-    const galleryImages = [...validImages];
-    while (galleryImages.length < 5) {
-        galleryImages.push(...validImages);
-    }
-    // Take exactly the first 5
-    const displayImages = galleryImages.slice(0, 5);
+    // Only show the real images/variants without padding or duplication
+    const displayImages = Array.from(new Set(validImages));
 
-    const currentImage = displayImages[selectedMediaIndex];
+    const safeSelectedIndex = Math.min(selectedMediaIndex, displayImages.length - 1);
+    const currentImage = displayImages[safeSelectedIndex] ?? displayImages[0];
 
     return (
         <div className="min-h-screen bg-white pb-20" suppressHydrationWarning>
-            <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-[1.5fr_1fr] gap-10 lg:gap-16 px-4 lg:px-8">
+            <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-[1.5fr_1fr] gap-10 lg:gap-16 px-2 sm:px-4 lg:px-8">
                 {/* Left: Gallery */}
                 <div className="flex flex-col gap-4">
                     {/* Mobile carousel */}
@@ -156,7 +116,7 @@ export function ProductDetails({ product }: ProductDetailsProps) {
                                     sizes="90vw"
                                     className="object-cover"
                                     priority={index === 0}
-                                    unoptimized={img.includes("blob.vercel-storage.com")}
+                                    unoptimized={img.includes(".ufs.sh")}
                                 />
                             </div>
                         ))}
@@ -172,7 +132,7 @@ export function ProductDetails({ product }: ProductDetailsProps) {
                                     onMouseEnter={() => setSelectedMediaIndex(index)}
                                     className={`
                                         relative w-full h-24 overflow-hidden border transition-all duration-300 rounded-md
-                                        ${selectedMediaIndex === index
+                                        ${safeSelectedIndex === index
                                             ? "border-neutral-900 opacity-100"
                                             : "border-transparent opacity-70 hover:opacity-100 hover:border-neutral-200"
                                         }
@@ -184,7 +144,7 @@ export function ProductDetails({ product }: ProductDetailsProps) {
                                         fill
                                         sizes="120px"
                                         className="object-cover"
-                                        unoptimized={img.includes("blob.vercel-storage.com")}
+                                        unoptimized={img.includes(".ufs.sh")}
                                     />
                                 </button>
                             ))}
@@ -198,180 +158,109 @@ export function ProductDetails({ product }: ProductDetailsProps) {
                                 sizes="(max-width: 1024px) 100vw, 60vw"
                                 className="object-cover"
                                 priority
-                                unoptimized={currentImage.includes("blob.vercel-storage.com")}
+                                unoptimized={currentImage.includes(".ufs.sh")}
                             />
                         </div>
                     </div>
                 </div>
 
                 {/* Right: Product Details */}
-                <div className="flex flex-col pt-2 lg:pl-6">
+                <div className="flex flex-col pt-2 lg:pt-0 lg:pl-6">
 
-                    {/* Store Info */}
-                    <div className="flex items-center gap-3 mb-8">
-                        <Avatar className="h-8 w-8">
-                            <AvatarImage
-                                src={storeAvatarUrl}
-                                alt={product.store.name}
+                    {/* Store Info - Header */}
+                    <div className="flex items-start justify-between mb-6 gap-4">
+                        <div className="flex items-start gap-3">
+                            <StoreAvatar
+                                storeName={product.store.name}
+                                logoUrl={product.store.logoUrl}
+                                size="md"
                             />
-                            <AvatarFallback>{product.store.name?.[0] || "S"}</AvatarFallback>
-                        </Avatar>
-                        <div>
-                            <p className="text-sm font-medium text-neutral-900">{product.store.name}</p>
-                            <div className="flex items-center gap-1">
-                                <HugeiconsIcon icon={StarIcon} size={12} className="fill-neutral-900 text-neutral-900" />
-                                <span className="text-xs text-neutral-500">{ratingValue.toFixed(1) !== "NaN" ? ratingValue.toFixed(1) : "0.0"} Rating</span>
+                            <div>
+                                <p className={` ${geistSans.className} text-md font-semibold text-neutral-900 capitalize`}>{product.store.name}</p>
                             </div>
+                        </div>
+                        <div className="flex items-center gap-1 mt-1">
+                            <HugeiconsIcon icon={StarIcon} size={14} className="fill-neutral-900 text-neutral-900" />
+                            <span className="text-sm font-medium text-neutral-900">
+                                {ratingValue.toFixed(1) !== "NaN" ? ratingValue.toFixed(1) : "0.0"}
+                            </span>
+                            <span className="text-sm text-neutral-500">
+                                ({ratingValue > 0 ? "429.2K" : "0"})
+                            </span>
                         </div>
                     </div>
 
-                    {/* Title */}
-                    <h1 className="text-xl lg:text-xl font-normal text-neutral-900 leading-tight mb-2">
+                    {/* Product Name */}
+                    <h1 className="text-2xl lg:text-2xl font-semibold text-neutral-900 leading-tight mb-3">
                         {product.name}
                     </h1>
 
                     {/* Price */}
-                    <div className="text-md text-neutral-900 mb-6 font-medium">
-                        {product.currency} {product.price.toLocaleString()}
+                    <div className="flex items-center gap-3 mb-6">
+                        <span className="text-md lg:text-lg font-bold text-neutral-900">
+                            {product.currency} {product.price.toLocaleString(undefined, {
+                                minimumFractionDigits: product.currency === "USD" ? 2 : 0,
+                                maximumFractionDigits: product.currency === "USD" ? 2 : 0,
+                            })}
+                        </span>
+                        {/* Optional: Add strikethrough price if you have original price */}
+                        {/* <span className="text-sm text-neutral-400 line-through">
+                            {product.currency} {(product.price * 2).toLocaleString()}
+                        </span>
+                        <span className="px-2.5 py-1 bg-neutral-900 text-white text-sm font-semibold rounded-full">
+                            50% off
+                        </span> */}
                     </div>
-
+                    <h2 className="text-md font-semibold mb-1">Description</h2>
                     {/* Description */}
                     {product.description && (
-                        <div className="mb-6 text-sm leading-relaxed text-neutral-600 max-w-sm">
+                        <div className="mb-8 text-base leading-relaxed text-neutral-600 max-w-lg">
                             <p>{product.description}</p>
                         </div>
                     )}
 
-                    {/* Size Selector */}
-                    <div className="mb-6">
-                        <div className="flex items-center gap-2 mb-3">
-                            <span className="text-sm font-medium text-neutral-900">Size</span>
-                            <span className="text-sm text-neutral-300">|</span>
-                            <button className="text-sm text-neutral-600 underline decoration-neutral-300 underline-offset-4 hover:text-neutral-900 transition-colors">
-                                View Size Guide
-                            </button>
-                        </div>
-                        <div className="flex flex-wrap gap-2">
-                            {sizes.map((size) => (
-                                <button
-                                    key={size}
-                                    onClick={() => setSelectedSize(size)}
-                                    className={`
-                                        h-10 px-4 min-w-12 border flex items-center justify-center text-sm font-medium transition-all duration-200
-                                        ${selectedSize === size
-                                            ? "border-neutral-900 bg-neutral-900 text-white"
-                                            : "border-neutral-200 text-neutral-600 hover:border-neutral-900 hover:text-neutral-900"
-                                        }
-                                    `}
-                                >
-                                    {size === "2X" && (
-                                        <HugeiconsIcon
-                                            icon={FlashIcon}
-                                            size={12}
-                                            className={`mr-1.5 ${selectedSize === size ? "text-yellow-400" : "text-yellow-500"}`}
-                                        />
-                                    )}
-                                    {size}
-                                </button>
-                            ))}
-                        </div>
-                    </div>
+                    {/* Style Section */}
+                    {styleGuideAudience && (
+                        <div className="mb-8">
+                            {/* Size */}
+                            <div className="mb-2">
+                                <div className="flex items-center justify-between mb-3">
+                                    <span className="text-sm font-medium text-neutral-900">Size {selectedSize && <span className="text-neutral-500">{selectedSize}</span>}</span>
+                                    <button className="text-sm text-neutral-600 underline hover:text-neutral-900 transition-colors">
+                                        Size Guide
+                                    </button>
+                                </div>
+                                <div className="flex flex-wrap gap-2">
+                                    {sizes.map((size) => (
+                                        <button
+                                            key={size}
+                                            onClick={() => setSelectedSize(size)}
+                                            className={`
+                                                h-9 px-2 min-w-[3.5rem] cursor-pointer border-1 rounded-full flex items-center justify-center text-sm font-semibold transition-all duration-200
 
-                    {/* Actions */}
-                    <div className="max-w-sm mt-2">
-                        {/* Quantity */}
-                        <div className="flex items-center justify-between border-b border-neutral-200 pb-4">
-                            <span className="text-sm text-neutral-600">Quantity</span>
-                            <div className="flex items-center gap-4">
-                                <button
-                                    onClick={() => handleQuantityChange(-1)}
-                                    className="p-1 hover:text-neutral-900 text-neutral-500 transition-colors"
-                                >
-                                    <HugeiconsIcon icon={MinusSignIcon} size={16} />
-                                </button>
-                                <span className="text-sm font-medium w-4 text-center">{quantity}</span>
-                                <button
-                                    onClick={() => handleQuantityChange(1)}
-                                    className="p-1 hover:text-neutral-900 text-neutral-500 transition-colors"
-                                >
-                                    <HugeiconsIcon icon={PlusSignIcon} size={16} />
-                                </button>
+                                                ${selectedSize === size
+                                                    ? "border-neutral-900 bg-neutral-900 text-white"
+                                                    : "border-neutral-200 text-neutral-900 hover:border-neutral-400"
+                                                }
+                                            `}
+                                        >
+                                            {size === "2X" && (
+                                                <HugeiconsIcon
+                                                    icon={FlashIcon}
+                                                    size={12}
+                                                    className={`mr-1.5 ${selectedSize === size ? "text-yellow-400" : "text-yellow-500"}`}
+                                                />
+                                            )}
+                                            {size}
+                                        </button>
+                                    ))}
+                                </div>
                             </div>
                         </div>
+                    )}
 
-                        {/* Buttons */}
-                        <div className="grid gap-3 pt-4">
-                            <Button
-                                onClick={handleAddToCart}
-                                className="w-full h-12 rounded-md bg-primary text-white hover:bg-primary/80 uppercase text-xs tracking-wider"
-                                disabled={isAdded}
-                            >
-                                {isAdded ? (
-                                    <span className="flex items-center gap-2">
-                                        <HugeiconsIcon icon={Tick02Icon} size={16} />
-                                        Added to Bag
-                                    </span>
-                                ) : (
-                                    "Add to Bag"
-                                )}
-                            </Button>
-                            <button
-                                onClick={() => toggleWishlist({
-                                    id: product.id,
-                                    name: product.name,
-                                    price: product.price,
-                                    currency: product.currency,
-                                    image: product.images?.[0],
-                                    slug: product.slug,
-                                    store: {
-                                        id: product.store.id,
-                                        name: product.store.name,
-                                        slug: product.store.slug,
-                                    },
-                                })}
-                                className={`h-12 rounded-md border text-sm font-medium transition-all flex items-center justify-center gap-2 ${wishlisted
-                                    ? "border-neutral-900 text-neutral-900 bg-neutral-50"
-                                    : "border-neutral-200 text-neutral-800 hover:border-neutral-900 hover:text-neutral-900"
-                                    }`}
-                                aria-pressed={wishlisted}
-                            >
-                                <HugeiconsIcon icon={FavouriteIcon} size={18} className={wishlisted ? "text-neutral-900" : "text-neutral-600"} />
-                                {wishlisted ? "Saved to Wishlist" : "Save to Wishlist"}
-                            </button>
-                        </div>
-                    </div>
-
-                    {/* Info Accordions */}
-                    <div className="mt-10 space-y-3">
-                        {[
-                            {
-                                title: "Product Details",
-                                content: product.description || "Premium quality fabric with a tailored fit.",
-                            },
-                            {
-                                title: "Shipping",
-                                content: "Ships in 3-7 business days. Free shipping on orders over $75.",
-                            },
-                            {
-                                title: "Returns",
-                                content: "30-day returns for store credit. Items must be unworn and in original packaging.",
-                            },
-                        ].map((section, idx) => (
-                            <details key={idx} className="group border border-neutral-200 rounded-lg px-4 py-3">
-                                <summary className="flex items-center justify-between cursor-pointer text-sm font-medium text-neutral-900">
-                                    {section.title}
-                                    <HugeiconsIcon
-                                        icon={ArrowDown01Icon}
-                                        size={16}
-                                        className="text-neutral-500 transition-transform group-open:rotate-180"
-                                    />
-                                </summary>
-                                <div className="mt-2 text-sm text-neutral-600 leading-relaxed">
-                                    {section.content}
-                                </div>
-                            </details>
-                        ))}
-                    </div>
+                    {/* Actions */}
+                    <ProductActions product={product} />
                 </div>
             </div>
         </div>

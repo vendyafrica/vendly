@@ -22,14 +22,15 @@ export async function generateMetadata({ params }: StorefrontPageProps): Promise
   const store = await getStoreDetailsCached(s);
   if (!store) {
     return {
-      title: "Store not found | Vendly",
-      description: "Browse independent sellers on Vendly.",
+      title: "Store not found | Duuka",
+      description: "Browse independent sellers on Duuka.",
       robots: { index: false, follow: false },
     };
   }
 
-  const title = `${store.name} | Shop on Vendly`;
-  const description = store.description || `Shop ${store.name} with trusted payments and delivery on Vendly.`;
+  const title = `${store.name} | Shop on Duuka`;
+  const description = store.description || `Shop ${store.name} with trusted payments and delivery on Duuka.`;
+  const ogImage = store.heroMedia?.[0] || store.logoUrl || "/og-image.png";
 
   return {
     title,
@@ -41,23 +42,27 @@ export async function generateMetadata({ params }: StorefrontPageProps): Promise
       title,
       description,
       url: `/${store.slug}`,
+      siteName: "Duuka",
+      images: [{ url: ogImage }],
     },
     twitter: {
+      card: "summary_large_image",
       title,
       description,
+      images: [ogImage],
     },
   };
 }
 
 export default async function StorefrontHomePage({ params, searchParams }: StorefrontPageProps) {
-  const { s: storeSlug } = await params;
+  const { s } = await params;
   const resolvedSearchParams = await searchParams;
   const search = resolvedSearchParams?.q;
   const query = Array.isArray(search) ? search[0] : search;
 
   const [store, products] = await Promise.all([
-    getStoreDetailsCached(storeSlug),
-    marketplaceService.getStoreProducts(storeSlug, query),
+    getStoreDetailsCached(s),
+    marketplaceService.getStoreProducts(s, query),
   ]);
 
   if (!store) {
@@ -66,11 +71,11 @@ export default async function StorefrontHomePage({ params, searchParams }: Store
 
   return (
     <div className="min-h-screen">
-      <StorefrontViewTracker storeSlug={storeSlug} />
+      <StorefrontViewTracker storeSlug={s} />
       <Hero store={store} />
       <div className="w-full">
         <Categories />
-        <div className="px-8">
+        <div className="px-3 sm:px-6 lg:px-8">
           <h3 className="text-lg font-semibold my-8 text-foreground">
             All Products
           </h3>

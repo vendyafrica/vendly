@@ -11,6 +11,9 @@ import {
 } from "@vendly/ui/components/select";
 import { useTenant } from "../tenant-context";
 
+import { Loading03Icon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
+
 type AllowedCurrency = "UGX" | "KES" | "USD";
 
 const CURRENCY_OPTIONS: Array<{ value: AllowedCurrency; label: string }> = [
@@ -111,7 +114,12 @@ export function SettingsClient({
             </Select>
 
             <Button type="button" onClick={onSave} disabled={isSaving}>
-              {isSaving ? "Saving..." : "Save"}
+              {isSaving ? (
+                <>
+                  <HugeiconsIcon icon={Loading03Icon} className="mr-2 h-4 w-4 animate-spin" />
+                  Saving...
+                </>
+              ) : "Save"}
             </Button>
           </div>
         </div>

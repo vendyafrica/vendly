@@ -1,8 +1,8 @@
-import { db, dbWs } from "@vendly/db/db";
+import { db } from "@vendly/db/db";
 import { products, productMedia, mediaObjects, orderItems, orders } from "@vendly/db/schema";
 import { eq, and, isNull, desc, sql, like } from "@vendly/db";
 import { mediaService, type UploadFile } from "./media-service";
-import type { CreateProductInput, ProductFilters, ProductWithMedia, UpdateProductInput } from "./product-models";
+import type { CreateProductInput, ProductFilters, ProductWithMedia, UpdateProductInput } from "../models/product-models";
 
 function slugifyName(name: string) {
     return name
@@ -26,6 +26,38 @@ async function generateUniqueSlug(tx: { query: typeof db.query }, storeId: strin
     return slug;
 }
 
+type PgConstraintError = {
+    code?: string;
+    constraint?: string;
+};
+
+function isSlugConflict(error: unknown): error is PgConstraintError {
+    return Boolean(
+        error
+        && typeof error === "object"
+        && "code" in error
+        && "constraint" in error
+        && (error as PgConstraintError).code === "23505"
+        && (error as PgConstraintError).constraint === "products_store_slug_unique"
+    );
+}
+
+async function generateUniqueSlugWithTimestamp(tx: { query: typeof db.query }, storeId: string, base: string) {
+    const timestamp = Date.now();
+    let slug = `${base}-${timestamp}`;
+    let suffix = 1;
+
+    while (
+        await tx.query.products.findFirst({
+            where: and(eq(products.storeId, storeId), eq(products.slug, slug)),
+        })
+    ) {
+        slug = `${base}-${timestamp}-${suffix++}`;
+    }
+
+    return slug;
+}
+
 /**
  * Product Service for serverless environment
  */
@@ -41,10 +73,11 @@ export const productService = {
     ): Promise<ProductWithMedia> {
         const baseSlug = slugifyName(data.title);
 
-        const createdProduct = await dbWs.transaction(async (tx) => {
-            const slug = await generateUniqueSlug(tx, data.storeId, baseSlug);
-            // Create product
-            const [product] = await tx.insert(products).values({
+        let slug = await generateUniqueSlug({ query: db.query }, data.storeId, baseSlug);
+        let product;
+
+        try {
+            [product] = await db.insert(products).values({
                 tenantId,
                 storeId: data.storeId,
                 productName: data.title,
@@ -57,42 +90,59 @@ export const productService = {
                 sourceUrl: data.sourceUrl,
                 status: data.status,
             }).returning();
-
-            // Upload and attach media if files provided
-            if (files.length > 0) {
-                const uploadResult = await mediaService.uploadProductMedia(files, tenantSlug, product.id);
-
-                const mediaObjectsData = await Promise.all(
-                    uploadResult.images.map(async (img) => {
-                        const [m] = await tx.insert(mediaObjects).values({
-                            tenantId,
-                            blobUrl: img.url,
-                            blobPathname: img.pathname,
-                            contentType: "image/jpeg",
-                            source: "upload",
-                        }).returning();
-                        return m;
-                    })
-                );
-
-                await Promise.all(
-                    mediaObjectsData.map((m, index) =>
-                        tx.insert(productMedia).values({
-                            tenantId,
-                            productId: product.id,
-                            mediaId: m.id,
-                            sortOrder: index,
-                            isFeatured: index === 0,
-                        })
-                    )
-                );
+        } catch (error: unknown) {
+            if (isSlugConflict(error)) {
+                slug = await generateUniqueSlugWithTimestamp({ query: db.query }, data.storeId, baseSlug);
+                [product] = await db.insert(products).values({
+                    tenantId,
+                    storeId: data.storeId,
+                    productName: data.title,
+                    slug,
+                    description: data.description,
+                    priceAmount: data.priceAmount,
+                    currency: data.currency,
+                    source: data.source,
+                    sourceId: data.sourceId,
+                    sourceUrl: data.sourceUrl,
+                    status: data.status,
+                }).returning();
+            } else {
+                throw error;
             }
+        }
 
-            return product;
-        });
+        let formattedMedia: Array<{ sortOrder: number; isFeatured: boolean } & typeof mediaObjects.$inferSelect> = [];
 
-        // Fetch user-facing product *after* transaction commits so 'db' (reader) can see it.
-        return this.getProductWithMedia(createdProduct.id, tenantId);
+        if (files.length > 0) {
+            const uploadResult = await mediaService.uploadProductMedia(files, tenantSlug, product.id);
+            const mediaObjectsData = await db.insert(mediaObjects).values(
+                uploadResult.images.map((img) => ({
+                    tenantId,
+                    blobUrl: img.url,
+                    blobPathname: img.pathname,
+                    contentType: "image/jpeg",
+                    source: "upload",
+                }))
+            ).returning();
+
+            await db.insert(productMedia).values(
+                mediaObjectsData.map((m, index) => ({
+                    tenantId,
+                    productId: product.id,
+                    mediaId: m.id,
+                    sortOrder: index,
+                    isFeatured: index === 0,
+                }))
+            );
+
+            formattedMedia = mediaObjectsData.map((m, index) => ({
+                ...m,
+                sortOrder: index,
+                isFeatured: index === 0,
+            }));
+        }
+
+        return { ...product, media: formattedMedia } as ProductWithMedia;
     },
 
     /**
@@ -108,29 +158,24 @@ export const productService = {
 
         const uploadResult = await mediaService.uploadProductMedia(files, tenantSlug, productId);
 
-        const mediaObjectsData = await Promise.all(
-            uploadResult.images.map(async (img) => {
-                const [media] = await db.insert(mediaObjects).values({
-                    tenantId,
-                    blobUrl: img.url,
-                    blobPathname: img.pathname,
-                    contentType: "image/jpeg",
-                    source: "upload",
-                }).returning();
-                return media;
-            })
-        );
+        const mediaObjectsData = await db.insert(mediaObjects).values(
+            uploadResult.images.map((img) => ({
+                tenantId,
+                blobUrl: img.url,
+                blobPathname: img.pathname,
+                contentType: "image/jpeg",
+                source: "upload",
+            }))
+        ).returning();
 
-        await Promise.all(
-            mediaObjectsData.map((media, index) =>
-                db.insert(productMedia).values({
-                    tenantId,
-                    productId,
-                    mediaId: media.id,
-                    sortOrder: index,
-                    isFeatured: index === 0,
-                })
-            )
+        await db.insert(productMedia).values(
+            mediaObjectsData.map((media, index) => ({
+                tenantId,
+                productId,
+                mediaId: media.id,
+                sortOrder: index,
+                isFeatured: index === 0,
+            }))
         );
 
         return mediaObjectsData;
@@ -146,29 +191,24 @@ export const productService = {
     ) {
         if (media.length === 0) return [];
 
-        const mediaObjectsData = await Promise.all(
-            media.map(async (m) => {
-                const [mediaObj] = await db.insert(mediaObjects).values({
-                    tenantId,
-                    blobUrl: m.url,
-                    blobPathname: m.pathname,
-                    contentType: m.contentType || "image/jpeg",
-                    source: "upload",
-                }).returning();
-                return mediaObj;
-            })
-        );
+        const mediaObjectsData = await db.insert(mediaObjects).values(
+            media.map((m) => ({
+                tenantId,
+                blobUrl: m.url,
+                blobPathname: m.pathname,
+                contentType: m.contentType || "image/jpeg",
+                source: "upload",
+            }))
+        ).returning();
 
-        await Promise.all(
-            mediaObjectsData.map((mediaObj, index) =>
-                db.insert(productMedia).values({
-                    tenantId,
-                    productId,
-                    mediaId: mediaObj.id,
-                    sortOrder: index,
-                    isFeatured: index === 0,
-                })
-            )
+        await db.insert(productMedia).values(
+            mediaObjectsData.map((mediaObj, index) => ({
+                tenantId,
+                productId,
+                mediaId: mediaObj.id,
+                sortOrder: index,
+                isFeatured: index === 0,
+            }))
         );
 
         return mediaObjectsData;
@@ -196,7 +236,7 @@ export const productService = {
             throw new Error("Product not found");
         }
 
-        const formattedMedia = product.media.map((pm: any) => ({
+        const formattedMedia = product.media.map((pm) => ({
             ...pm.media,
             sortOrder: pm.sortOrder,
             isFeatured: pm.isFeatured,
@@ -218,6 +258,7 @@ export const productService = {
         const { storeId, source, page, limit, search } = filters;
         const offset = (page - 1) * limit;
 
+        // Removed caching to ensure admin dashboard always shows fresh data
         const conditions = [
             eq(products.tenantId, tenantId),
             isNull(products.deletedAt),
@@ -248,22 +289,23 @@ export const productService = {
             .from(products)
             .where(whereClause);
 
-        // Aggregate sales (revenue) per product for paid orders
-        const salesRows = await db
-            .select({
-                productId: orderItems.productId,
-                salesAmount: sql<number>`COALESCE(SUM(${orderItems.totalPrice}), 0)::int`,
-            })
-            .from(orderItems)
-            .innerJoin(orders, eq(orders.id, orderItems.orderId))
-            .where(
-                and(
-                    eq(orderItems.tenantId, tenantId),
-                    eq(orders.paymentStatus, "paid"),
-                    isNull(orders.deletedAt)
+        const salesRows = productList.length
+            ? await db
+                .select({
+                    productId: orderItems.productId,
+                    salesAmount: sql<number>`COALESCE(SUM(${orderItems.totalPrice}), 0)::int`,
+                })
+                .from(orderItems)
+                .innerJoin(orders, eq(orders.id, orderItems.orderId))
+                .where(
+                    and(
+                        eq(orderItems.tenantId, tenantId),
+                        eq(orders.paymentStatus, "paid"),
+                        isNull(orders.deletedAt)
+                    )
                 )
-            )
-            .groupBy(orderItems.productId);
+                .groupBy(orderItems.productId)
+            : [];
 
         const salesMap = new Map<string, number>();
         salesRows.forEach((row) => {
@@ -368,7 +410,7 @@ export const productService = {
     /**
      * Delete a product and its media
      */
-    async deleteProduct(id: string, tenantId: string, tenantSlug: string): Promise<void> {
+    async deleteProduct(id: string, tenantId: string): Promise<void> {
         const product = await this.getProductWithMedia(id, tenantId);
 
         // Soft delete the product
@@ -376,10 +418,14 @@ export const productService = {
             .set({ deletedAt: new Date() })
             .where(and(eq(products.id, id), eq(products.tenantId, tenantId)));
 
-        // Delete uploaded media from blob storage
-        const uploadedMedia = product.media.filter((m: any) => m.source === "upload");
+        // Delete uploaded media from UploadThing by file key
+        const uploadedMedia = product.media.filter((m) => m.source === "upload");
         if (uploadedMedia.length > 0) {
-            await mediaService.deleteBlobs(uploadedMedia.map((m: any) => m.blobUrl));
+            await mediaService.deleteFiles(
+                uploadedMedia
+                    .map((m) => m.blobPathname)
+                    .filter((value): value is string => Boolean(value))
+            );
         }
     },
 

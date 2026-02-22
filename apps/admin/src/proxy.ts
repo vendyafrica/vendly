@@ -5,10 +5,6 @@ export default function proxy(request: NextRequest) {
   const sessionToken = request.cookies.get("vendly.session_token")?.value ||
     request.cookies.get("__Secure-vendly.session_token")?.value;
 
-  const isAuthPageRoute = request.nextUrl.pathname.startsWith("/sign-in") ||
-    request.nextUrl.pathname.startsWith("/sign-up") ||
-    request.nextUrl.pathname.startsWith("/login");
-
   const isAuthRoute = request.nextUrl.pathname.startsWith("/sign-in") ||
     request.nextUrl.pathname.startsWith("/sign-up") ||
     request.nextUrl.pathname.startsWith("/login") ||
@@ -32,11 +28,6 @@ export default function proxy(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
     return NextResponse.redirect(new URL("/login", request.url));
-  }
-
-  // Redirect authenticated users away from auth pages
-  if (sessionToken && isAuthPageRoute) {
-    return NextResponse.redirect(new URL("/", request.url));
   }
 
   return NextResponse.next();

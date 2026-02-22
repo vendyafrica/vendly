@@ -3,10 +3,11 @@ import { headers } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { productService } from "@/lib/services/product-service";
-import { productQuerySchema, createProductSchema } from "@/lib/services/product-models";
+import { getTenantMembership } from "@/lib/services/tenant-membership";
+import { productQuerySchema, createProductSchema } from "@/lib/models/product-models";
 import { db } from "@vendly/db/db";
-import { tenantMemberships } from "@vendly/db/schema";
-import { eq } from "@vendly/db";
+import { stores } from "@vendly/db/schema";
+import { and, eq, isNull } from "@vendly/db";
 
 /**
  * GET /api/products
@@ -22,9 +23,7 @@ export async function GET(request: NextRequest) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
 
-        const membership = await db.query.tenantMemberships.findFirst({
-            where: eq(tenantMemberships.userId, session.user.id),
-        });
+        const membership = await getTenantMembership(session.user.id);
 
         if (!membership) {
             return NextResponse.json({ error: "No tenant found" }, { status: 404 });
@@ -61,10 +60,7 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
 
-        const membership = await db.query.tenantMemberships.findFirst({
-            where: eq(tenantMemberships.userId, session.user.id),
-            with: { tenant: true }
-        });
+        const membership = await getTenantMembership(session.user.id, { includeTenant: true });
 
         if (!membership || !membership.tenant) {
             return NextResponse.json({ error: "No tenant found" }, { status: 404 });
@@ -84,7 +80,7 @@ export async function POST(request: NextRequest) {
                 title: formData.get("title"),
                 description: formData.get("description") || undefined,
                 priceAmount: Number(formData.get("priceAmount")) || 0,
-                currency: formData.get("currency") || "UGX",
+                currency: formData.get("currency") || undefined,
             });
 
             // Get files
@@ -104,10 +100,19 @@ export async function POST(request: NextRequest) {
             input = createProductSchema.parse(body);
         }
 
+        let currency = input.currency;
+        if (!currency) {
+            const store = await db.query.stores.findFirst({
+                where: and(eq(stores.id, input.storeId), eq(stores.tenantId, membership.tenantId), isNull(stores.deletedAt)),
+                columns: { defaultCurrency: true },
+            });
+            currency = store?.defaultCurrency || "UGX";
+        }
+
         const product = await productService.createProduct(
             membership.tenantId,
             membership.tenant.slug,
-            input as Parameters<typeof productService.createProduct>[2],
+            { ...input, currency } as Parameters<typeof productService.createProduct>[2],
             files
         );
 

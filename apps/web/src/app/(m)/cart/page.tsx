@@ -6,13 +6,32 @@ import { HugeiconsIcon } from "@hugeicons/react";
 import { Delete02Icon, MinusSignIcon, PlusSignIcon, ArrowLeft01Icon } from "@hugeicons/core-free-icons";
 import { Button } from "@vendly/ui/components/button";
 import { useCart } from "../../../contexts/cart-context";
-import { Avatar, AvatarFallback, AvatarImage } from "@vendly/ui/components/avatar";
+import { StoreAvatar } from "@/components/store-avatar";
 import Header from "../components/header";
 import Footer from "../components/footer";
-import RecentlyViewed from "../components/RecentlyViewed";
+import RecentlyViewed from "../components/recently-viewed";
+import { Bricolage_Grotesque } from "next/font/google";
+
+const geistSans = Bricolage_Grotesque({
+  variable: "--font-bricolage-grotesque",
+  subsets: ["latin"],
+});
+
 
 export default function CartPage() {
-    const { itemsByStore, updateQuantity, removeItem, itemCount } = useCart();
+    const { itemsByStore, updateQuantity, removeItem, itemCount, isLoaded } = useCart();
+
+    // Check if loaded first
+    if (!isLoaded) {
+        return (
+            <main className="min-h-screen">
+                <Header hideSearch />
+                <div className="flex h-[calc(100vh-64px)] items-center justify-center">
+                    <div className="h-8 w-8 animate-spin rounded-full border-4 border-neutral-200 border-t-neutral-800" />
+                </div>
+            </main>
+        );
+    }
 
     const FALLBACK_PRODUCT_IMAGE = "https://cdn.cosmos.so/25e7ef9d-3d95-486d-b7db-f0d19c1992d7?format=jpeg";
 
@@ -76,16 +95,15 @@ export default function CartPage() {
                             <div key={storeId} className="bg-white rounded-3xl border border-neutral-200 overflow-hidden shadow-sm">
                                 <div className="p-6 pb-4 flex items-center justify-between border-b border-neutral-50">
                                     <div className="flex items-center gap-3">
-                                        <Avatar className="h-10 w-10 border border-neutral-100">
-                                            <AvatarImage
-                                                src={store.logoUrl || undefined}
-                                                alt={store.name}
-                                            />
-                                            <AvatarFallback>{store.name.charAt(0)}</AvatarFallback>
-                                        </Avatar>
+                                        <StoreAvatar
+                                            storeName={store.name}
+                                            logoUrl={store.logoUrl}
+                                            size="md"
+                                            className="border border-neutral-100"
+                                        />
                                         <div>
                                             <Link href={`/${store.slug}`}>
-                                                <h2 className="font-semibold text-base hover:text-primary transition-colors">{store.name}</h2>
+                                                <h2 className={`${geistSans.className} font-semibold text-base hover:text-primary transition-colors capitalize`}>{store.name}</h2>
                                             </Link>
                                             <p className="text-xs text-neutral-500">{storeItems.length} items</p>
                                         </div>
@@ -98,13 +116,24 @@ export default function CartPage() {
                                     {storeItems.map((item) => (
                                         <div key={item.id} className="p-6 flex gap-5">
                                             <div className="relative h-24 w-24 bg-neutral-50 rounded-xl overflow-hidden shrink-0 border border-neutral-100">
-                                                <Image
-                                                    src={item.product.image || FALLBACK_PRODUCT_IMAGE}
-                                                    alt={item.product.name}
-                                                    fill
-                                                    className="object-cover"
-                                                    unoptimized={(item.product.image || "").includes("blob.vercel-storage.com")}
-                                                />
+                                                {item.product.contentType?.startsWith("video/") || item.product.image?.match(/\.(mp4|webm|mov|ogg)$/i) || ((item.product.image || "").includes(".ufs.sh") && !(item.product.image || "").match(/\.(jpg|jpeg|png|webp|gif)$/i) && !item.product.contentType?.startsWith("image/")) ? (
+                                                    <video
+                                                        src={item.product.image || ""}
+                                                        className="h-full w-full object-cover"
+                                                        muted
+                                                        playsInline
+                                                        loop
+                                                        autoPlay
+                                                    />
+                                                ) : (
+                                                    <Image
+                                                        src={item.product.image || FALLBACK_PRODUCT_IMAGE}
+                                                        alt={item.product.name}
+                                                        fill
+                                                        className="object-cover"
+                                                        unoptimized={(item.product.image || "").includes(".ufs.sh")}
+                                                    />
+                                                )}
                                             </div>
 
                                             <div className="flex-1 flex flex-col justify-between py-0.5">

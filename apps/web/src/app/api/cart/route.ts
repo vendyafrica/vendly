@@ -12,7 +12,7 @@ type CartItemWithRelations = {
         productName: string;
         priceAmount: number;
         currency: string;
-        media?: { media?: { blobUrl?: string | null } | null }[];
+        media?: { media?: { blobUrl?: string | null; contentType?: string | null } | null }[];
         store?: {
             id?: string;
             name?: string;
@@ -65,24 +65,25 @@ export async function GET() {
             const storeTenantId = item.product.store?.tenantId;
 
             return {
-            id: item.productId,
-            quantity: item.quantity,
-            product: {
-                id: item.product.id,
-                name: item.product.productName,
-                price: item.product.priceAmount,
-                currency: item.product.currency,
-                image: item.product.media?.[0]?.media?.blobUrl ?? null,
-                slug: item.product.productName.toLowerCase().replace(/\s+/g, "-"),
-            },
-            store: {
-                id: item.product.store?.id,
-                name: item.product.store?.name,
-                slug: item.product.store?.slug,
-                logoUrl: storeTenantId
-                    ? igMap.get(storeTenantId) ?? item.product.store?.logoUrl ?? null
-                    : item.product.store?.logoUrl ?? null,
-            }
+                id: item.productId,
+                quantity: item.quantity,
+                product: {
+                    id: item.product.id,
+                    name: item.product.productName,
+                    price: item.product.priceAmount,
+                    currency: item.product.currency,
+                    image: item.product.media?.[0]?.media?.blobUrl ?? null,
+                    contentType: item.product.media?.[0]?.media?.contentType ?? null,
+                    slug: item.product.productName.toLowerCase().replace(/\s+/g, "-"),
+                },
+                store: {
+                    id: item.product.store?.id,
+                    name: item.product.store?.name,
+                    slug: item.product.store?.slug,
+                    logoUrl: storeTenantId
+                        ? igMap.get(storeTenantId) ?? item.product.store?.logoUrl ?? null
+                        : item.product.store?.logoUrl ?? null,
+                }
             };
         });
 

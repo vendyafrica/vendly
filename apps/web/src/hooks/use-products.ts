@@ -34,12 +34,19 @@ export type ProductTableRow = {
     quantity: number;
     status: "draft" | "ready" | "active" | "sold-out";
     thumbnailUrl?: string;
+    thumbnailType?: string;
     salesAmount?: number;
 };
 
 // API functions
 async function fetchProducts(storeId: string): Promise<ProductTableRow[]> {
-    const res = await fetch(`/api/products?storeId=${storeId}`);
+    const res = await fetch(`/api/products?storeId=${storeId}`, {
+        cache: "no-store",
+        headers: {
+            "Pragma": "no-cache",
+            "Cache-Control": "no-cache"
+        }
+    });
     if (!res.ok) {
         const text = await res.text();
         throw new Error(text || "Failed to load products");
@@ -56,6 +63,7 @@ async function fetchProducts(storeId: string): Promise<ProductTableRow[]> {
         quantity: p.quantity,
         status: p.status,
         thumbnailUrl: p.media?.[0]?.blobUrl,
+        thumbnailType: p.media?.[0]?.contentType || undefined,
         salesAmount: p.salesAmount ?? 0,
     }));
 }
