@@ -1,15 +1,37 @@
 "use client";
 
 import { Button } from "@vendly/ui/components/button";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Instagram, Upload } from "lucide-react";
+import { useOnboarding } from "../context/onboarding-context";
 
 export default function Complete() {
-  const [tenantSlug] = useState<string | null>(
-    () => (typeof window !== "undefined" ? localStorage.getItem("vendly_tenant_slug") : null)
-  );
+  const { isComplete, completeOnboarding, isLoading, isHydrated, error } = useOnboarding();
+
+  // tenantSlug is only available AFTER completeOnboarding succeeds,
+  // so we read it reactively instead of in a useState initializer.
+  const [tenantSlug, setTenantSlug] = useState<string | null>(null);
+  const didAttemptRef = useRef(false);
+
+  // Finalize onboarding once hydrated (e.g. after Google OAuth redirect)
+  useEffect(() => {
+    if (!isHydrated || isComplete || didAttemptRef.current) return;
+    didAttemptRef.current = true;
+
+    (async () => {
+      await completeOnboarding();
+    })();
+  }, [isHydrated, isComplete, completeOnboarding]);
+
+  // Read tenantSlug from localStorage once onboarding is complete
+  useEffect(() => {
+    if (isComplete) {
+      setTenantSlug(localStorage.getItem("vendly_tenant_slug"));
+    }
+  }, [isComplete]);
 
   const adminBase = tenantSlug ? `/a/${tenantSlug}` : "/a";
+  const showLoading = (isLoading || !isHydrated) && !isComplete;
 
   return (
     <div className="w-full max-w-lg mx-auto">
@@ -35,46 +57,66 @@ export default function Complete() {
           </div>
         </div>
 
-        {/* CTAs */}
-        <div className="space-y-3">
-          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-widest">
-            How do you want to start?
-          </p>
-
-          <div className="grid gap-2.5">
-            {/* Instagram — using a wrapper div with bg class instead of inline style */}
-            <a href={`${adminBase}/instagram`} className="block">
-              <Button
-                size="lg"
-                className="w-full h-14 bg-gradient-to-r from-purple-600 via-red-500 to-orange-400 text-white border-0 hover:opacity-90 transition-opacity"
-              >
-                <Instagram className="h-5 w-5 shrink-0" />
-                <div className="text-left ml-1">
-                  <div className="font-semibold text-sm leading-tight">Connect Instagram</div>
-                  <div className="text-xs opacity-80 font-normal leading-tight">
-                    Import products directly from your posts
-                  </div>
-                </div>
-              </Button>
-            </a>
-
-            <a href={`${adminBase}/products/new`} className="block">
-              <Button variant="outline" size="lg" className="w-full h-14">
-                <Upload className="h-5 w-5 shrink-0" />
-                <div className="text-left ml-1">
-                  <div className="font-semibold text-sm leading-tight">Add Products Manually</div>
-                  <div className="text-xs text-muted-foreground font-normal leading-tight">
-                    Upload photos and set your prices
-                  </div>
-                </div>
-              </Button>
-            </a>
+        {/* CTAs / Loading / Error */}
+        {error && !isLoading ? (
+          <div className="space-y-3">
+            <div className="rounded-lg border border-destructive/40 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+              {error}
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                didAttemptRef.current = false;
+                completeOnboarding();
+              }}
+            >
+              Try again
+            </Button>
           </div>
+        ) : showLoading ? (
+          <p className="text-sm text-muted-foreground">Finishing your setup…</p>
+        ) : (
+          <div className="space-y-3">
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-widest">
+              How do you want to start?
+            </p>
 
-          <p className="text-xs text-muted-foreground">
-            You can always do this later from your dashboard.
-          </p>
-        </div>
+            <div className="grid gap-2.5">
+              {/* Instagram */}
+              <a href={`${adminBase}/instagram`} className="block">
+                <Button
+                  size="lg"
+                  className="w-full h-14 bg-gradient-to-r from-purple-600 via-red-500 to-orange-400 text-white border-0 hover:opacity-90 transition-opacity"
+                >
+                  <Instagram className="h-5 w-5 shrink-0" />
+                  <div className="text-left ml-1">
+                    <div className="font-semibold text-sm leading-tight">Connect Instagram</div>
+                    <div className="text-xs opacity-80 font-normal leading-tight">
+                      Import products directly from your posts
+                    </div>
+                  </div>
+                </Button>
+              </a>
+
+              <a href={`${adminBase}/products/new`} className="block">
+                <Button variant="outline" size="lg" className="w-full h-14">
+                  <Upload className="h-5 w-5 shrink-0" />
+                  <div className="text-left ml-1">
+                    <div className="font-semibold text-sm leading-tight">Add Products Manually</div>
+                    <div className="text-xs text-muted-foreground font-normal leading-tight">
+                      Upload photos and set your prices
+                    </div>
+                  </div>
+                </Button>
+              </a>
+            </div>
+
+            <p className="text-xs text-muted-foreground">
+              You can always do this later from your dashboard.
+            </p>
+          </div>
+        )}
       </div>
     </div>
   );

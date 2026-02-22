@@ -18,6 +18,11 @@ export interface BusinessInfoDto {
   categories: string[];
 }
 
+// Convenience aliases used by the onboarding context
+export type PersonalInfo = PersonalInfoDto;
+export type StoreInfo = StoreInfoDto;
+export type BusinessInfo = BusinessInfoDto;
+
 export interface OnboardingData {
   personal?: PersonalInfoDto;
   store?: StoreInfoDto;

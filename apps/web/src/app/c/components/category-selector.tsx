@@ -16,11 +16,25 @@ const STEP_LABELS: Record<import("../context/onboarding-context").OnboardingStep
 };
 
 export function StepIndicator() {
-  const { currentStep } = useOnboarding();
+  const { currentStep, isHydrated } = useOnboarding();
 
   const steps: import("../context/onboarding-context").OnboardingStep[] = ["step1", "step2", "complete"];
 
   const currentIndex = steps.indexOf(currentStep);
+
+  if (!isHydrated) {
+    return (
+      <div className="flex items-center gap-3 text-xs font-medium text-muted-foreground">
+        {steps.map((step, idx) => (
+          <div key={step} className="flex items-center gap-2">
+            <div className="h-2.5 w-2.5 rounded-full border bg-muted border-border" />
+            <span>{STEP_LABELS[step]}</span>
+            {idx < steps.length - 1 && <div className="h-px w-6 bg-border" />}
+          </div>
+        ))}
+      </div>
+    );
+  }
 
   return (
     <div className="flex items-center gap-3 text-xs font-medium text-muted-foreground">

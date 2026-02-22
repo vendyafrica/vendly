@@ -1,17 +1,22 @@
 "use client";
 
 import { Button } from "@vendly/ui/components/button";
-import { useEffect, useState } from "react";
+import { GoogleIcon } from "@vendly/ui/components/svgs/google";
+import { signInWithGoogle } from "@vendly/auth/react";
+import { useEffect, useMemo, useState } from "react";
 
 import { useOnboarding } from "../context/onboarding-context";
 import { getCategoriesAction } from "../lib/categories";
 import { CategoriesSelector, type Category } from "../components/category-selector";
+import { useAppSession } from "@/contexts/app-session-context";
 
 export function Step2Categories() {
-  const { data, completeOnboarding, goBack, isLoading, error } = useOnboarding();
+  const { session: appSession } = useAppSession();
+  const { data, completeOnboarding, goBack, isLoading, error, saveBusinessDraft } = useOnboarding();
 
   const [categories, setCategories] = useState<string[]>(data.business?.categories ?? []);
   const [availableCategories, setAvailableCategories] = useState<Category[]>([]);
+  const [authLoading, setAuthLoading] = useState(false);
 
   useEffect(() => {
     getCategoriesAction().then((res) => {
@@ -21,10 +26,31 @@ export function Step2Categories() {
     });
   }, []);
 
+  const getCallbackURL = useMemo(
+    () => () =>
+      typeof window === "undefined"
+        ? "/c/complete"
+        : `${window.location.origin}/c/complete`,
+    []
+  );
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (categories.length === 0) return;
-    await completeOnboarding({ business: { categories } });
+    // Persist categories before any auth redirect
+    saveBusinessDraft({ categories });
+
+    if (appSession?.user) {
+      await completeOnboarding({ business: { categories } });
+      return;
+    }
+
+    try {
+      setAuthLoading(true);
+      await signInWithGoogle({ callbackURL: getCallbackURL() });
+    } catch {
+      setAuthLoading(false);
+    }
   };
 
   return (
@@ -49,13 +75,38 @@ export function Step2Categories() {
           maxSelections={5}
         />
 
-        <div className="flex items-center justify-between border-t border-border pt-4">
-          <Button type="button" variant="outline" onClick={goBack} disabled={isLoading}>
+        <div className="flex items-center justify-between gap-3 border-t border-border pt-4">
+          <Button type="button" variant="outline" onClick={goBack} disabled={isLoading || authLoading}>
             Back
           </Button>
-          <Button type="submit" disabled={isLoading || categories.length === 0}>
-            {isLoading ? "Setting up your store…" : "Finish setup"}
-          </Button>
+          <div className="flex flex-col md:flex-row gap-2 md:gap-3">
+            {appSession?.user ? (
+              <Button
+                type="submit"
+                variant="default"
+                className="min-w-[200px]"
+                disabled={isLoading || authLoading || categories.length === 0}
+              >
+                {isLoading ? "Setting up your store…" : "Finish setup"}
+              </Button>
+            ) : (
+              <Button
+                type="submit"
+                variant="outline"
+                className="min-w-[200px]"
+                disabled={isLoading || authLoading || categories.length === 0}
+              >
+                {authLoading || isLoading ? (
+                  "Continue with Google…"
+                ) : (
+                  <span className="flex items-center gap-2">
+                    <GoogleIcon />
+                    Continue with Google
+                  </span>
+                )}
+              </Button>
+            )}
+          </div>
         </div>
       </form>
     </div>

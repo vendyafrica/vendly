@@ -7,13 +7,11 @@ import { Textarea } from "@vendly/ui/components/textarea";
 import { Separator } from "@vendly/ui/components/separator";
 import { Checkbox } from "@vendly/ui/components/checkbox";
 import { Label } from "@vendly/ui/components/label";
-import { signInWithGoogle } from "@vendly/auth/react";
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 
 import { useOnboarding } from "../context/onboarding-context";
 import { useAppSession } from "@/contexts/app-session-context";
-import { GoogleIcon } from "@vendly/ui/components/svgs/google";
 import { PhoneInput } from "./phone-input";
 import { SectionLabel } from "./section-label";
 
@@ -31,7 +29,7 @@ function normalizePhone(countryCode: string, raw: string): string | null {
 
 export function Step1Info() {
   const { session: appSession } = useAppSession();
-  const { saveDraft, navigateToStep, data } = useOnboarding();
+  const { saveDraft, navigateToStep, data, isHydrated } = useOnboarding();
   const searchParams = useSearchParams();
 
   const [fullName, setFullName] = useState(data.personal?.fullName ?? "");
@@ -46,14 +44,25 @@ export function Step1Info() {
 
   const isLoading = formState === "loading";
 
+  // Sync form fields from localStorage data once hydration completes
+  // (useState initializers run before the hydration effect, so they start empty)
+  useEffect(() => {
+    if (!isHydrated) return;
+    if (data.personal) {
+      setFullName(prev => prev || data.personal!.fullName);
+      setPhoneNumber(prev => prev || data.personal!.phoneNumber);
+      setCountryCode(prev => prev || data.personal!.countryCode);
+    }
+    if (data.store) {
+      setStoreName(prev => prev || data.store!.storeName);
+      setStoreDescription(prev => prev || data.store!.storeDescription);
+      setStoreLocation(prev => prev || data.store!.storeLocation);
+    }
+  }, [isHydrated, data.personal, data.store]);
+
   useEffect(() => {
     if (appSession && searchParams.get("step") === "2") navigateToStep("step2");
   }, [appSession, navigateToStep, searchParams]);
-
-  const getCallbackURL = () =>
-    typeof window === "undefined"
-      ? "/c?entry=seller_google&step=2"
-      : `${window.location.origin}/c?entry=seller_google&step=2`;
 
   const handleSubmit = async () => {
     setError(null);
@@ -73,12 +82,7 @@ export function Step1Info() {
     });
 
     setFormState("loading");
-    try {
-      await signInWithGoogle({ callbackURL: getCallbackURL() });
-    } catch {
-      setError("Google sign-up failed. Please try again.");
-      setFormState("idle");
-    }
+    navigateToStep("step2");
   };
 
   return (
@@ -214,13 +218,12 @@ export function Step1Info() {
 
         <Button
           type="button"
-          variant="outline"
+          variant="default"
           onClick={handleSubmit}
           disabled={isLoading || !agreed}
           className="w-full md:w-auto shrink-0"
         >
-          <GoogleIcon />
-          {isLoading ? "Redirecting…" : "Continue with Google"}
+          {isLoading ? "Continuing…" : "Continue"}
         </Button>
       </div>
     </div>

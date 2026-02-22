@@ -1,46 +1,32 @@
 "use client";
 
-import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from "react";
+import { createContext, useContext, useState, useEffect, useCallback, useRef, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
+import type { PersonalInfo, StoreInfo, BusinessInfo, OnboardingData } from "../lib/models";
+
+// Re-export for convenience so consumers don't need a separate import
+export type { PersonalInfo, StoreInfo, BusinessInfo, OnboardingData };
 
 export type OnboardingStep = "step1" | "step2" | "complete";
-
-export interface PersonalInfo {
-    fullName: string;
-    phoneNumber: string;
-    countryCode: string;
-}
-
-export interface StoreInfo {
-    storeName: string;
-    storeDescription: string;
-    storeLocation: string;
-}
-
-export interface BusinessInfo {
-    categories: string[];
-}
-
-export interface OnboardingData {
-    personal?: PersonalInfo;
-    store?: StoreInfo;
-    business?: BusinessInfo;
-}
 
 interface OnboardingState {
     currentStep: OnboardingStep;
     data: OnboardingData;
     isComplete: boolean;
     isLoading: boolean;
+    isHydrated: boolean;
     error: string | null;
 }
 
 interface OnboardingContextValue extends OnboardingState {
     saveDraft: (info: PersonalInfo & StoreInfo) => void;
+    saveBusinessDraft: (info: BusinessInfo) => void;
     completeOnboarding: (dataOverride?: Partial<OnboardingData>) => Promise<boolean>;
     goBack: () => void;
     navigateToStep: (step: OnboardingStep) => void;
 }
+
+// ── localStorage helpers ────────────────────────────────────────────
 
 const LS_DATA_KEY = "vendly_onboarding_data";
 const LS_STEP_KEY = "vendly_onboarding_step";
@@ -72,6 +58,8 @@ function clearLS() {
     localStorage.removeItem(LS_STEP_KEY);
 }
 
+// ── API helper ──────────────────────────────────────────────────────
+
 async function apiCall<T>(endpoint: string, options?: RequestInit): Promise<T> {
     const res = await fetch(`/api/onboarding${endpoint}`, {
         ...options,
@@ -91,6 +79,8 @@ async function apiCall<T>(endpoint: string, options?: RequestInit): Promise<T> {
     return data;
 }
 
+// ── Context & hook ──────────────────────────────────────────────────
+
 const OnboardingContext = createContext<OnboardingContextValue | null>(null);
 
 export function useOnboarding() {
@@ -103,9 +93,11 @@ export function useOnboarding() {
 
 const STEP_ROUTES: Record<OnboardingStep, string> = {
     step1: "/c",
-    step2: "/c/business",
+    step2: "/c?step=2",
     complete: "/c/complete",
 };
+
+// ── Provider ────────────────────────────────────────────────────────
 
 interface ProviderProps {
     children: ReactNode;
@@ -114,23 +106,39 @@ interface ProviderProps {
 export function OnboardingProvider({ children }: ProviderProps) {
     const router = useRouter();
 
-    const [state, setState] = useState<OnboardingState>(() => {
-        const data = readLS();
-        const currentStep = readLSStep();
-        return {
-            currentStep,
-            data,
-            isComplete: false,
-            isLoading: false,
-            error: null,
-        };
+    // Guard against double-submission (React StrictMode, fast navigations, etc.)
+    const submittingRef = useRef(false);
+
+    const [state, setState] = useState<OnboardingState>({
+        currentStep: "step1",
+        data: {},
+        isComplete: false,
+        isLoading: false,
+        isHydrated: false,
+        error: null,
     });
 
+    // Rehydrate from localStorage after client mount (SSR can't access localStorage)
     useEffect(() => {
-        if (!state.isLoading) {
+        if (typeof window === "undefined") return;
+        const data = readLS();
+        const currentStep = readLSStep();
+        setState(prev => ({
+            ...prev,
+            data,
+            currentStep,
+            isHydrated: true,
+        }));
+    }, []);
+
+    // Persist state → localStorage whenever it changes (after hydration only)
+    useEffect(() => {
+        if (!state.isHydrated || state.isLoading) return;
+        const hasData = state.data.personal || state.data.store || state.data.business;
+        if (hasData) {
             writeLS(state.data, state.currentStep);
         }
-    }, [state.data, state.currentStep, state.isLoading]);
+    }, [state.data, state.currentStep, state.isLoading, state.isHydrated]);
 
     const navigateToStep = useCallback((step: OnboardingStep) => {
         setState(prev => ({ ...prev, currentStep: step }));
@@ -154,12 +162,36 @@ export function OnboardingProvider({ children }: ProviderProps) {
         });
     }, []);
 
+    const saveBusinessDraft = useCallback((business: BusinessInfo) => {
+        setState(prev => {
+            const updatedData: OnboardingData = {
+                ...prev.data,
+                business,
+            };
+            writeLS(updatedData, "step2");
+            return { ...prev, data: updatedData };
+        });
+    }, []);
+
+    /**
+     * Finalize onboarding — sends all collected data to the API.
+     * Uses in-memory state.data as the source of truth (not a fresh readLS()),
+     * and guards against double-submission.
+     */
     const completeOnboarding = useCallback(async (dataOverride?: Partial<OnboardingData>): Promise<boolean> => {
+        // Prevent double-submission
+        if (submittingRef.current) return false;
+        submittingRef.current = true;
+
         try {
             setState(prev => ({ ...prev, isLoading: true, error: null }));
 
-            const persisted = readLS();
-            const payloadData: OnboardingData = { ...persisted, ...dataOverride };
+            // Use in-memory state merged with any overrides; fall back to localStorage
+            // only as a safety net (e.g. after OAuth redirect before state rehydrates)
+            const currentData = state.data;
+            const hasInMemoryData = currentData.personal || currentData.store || currentData.business;
+            const baseData = hasInMemoryData ? currentData : readLS();
+            const payloadData: OnboardingData = { ...baseData, ...dataOverride };
 
             const result = await apiCall<{
                 success: boolean;
@@ -191,6 +223,9 @@ export function OnboardingProvider({ children }: ProviderProps) {
                 router.push(STEP_ROUTES["complete"]);
                 return true;
             }
+
+            setState(prev => ({ ...prev, isLoading: false }));
+            submittingRef.current = false;
             return false;
         } catch (err) {
             setState(prev => ({
@@ -198,9 +233,10 @@ export function OnboardingProvider({ children }: ProviderProps) {
                 isLoading: false,
                 error: err instanceof Error ? err.message : "Failed to complete",
             }));
+            submittingRef.current = false;
             return false;
         }
-    }, [router]);
+    }, [router, state.data]);
 
     const goBack = useCallback(() => {
         navigateToStep("step1");
@@ -209,6 +245,7 @@ export function OnboardingProvider({ children }: ProviderProps) {
     const value: OnboardingContextValue = {
         ...state,
         saveDraft,
+        saveBusinessDraft,
         completeOnboarding,
         goBack,
         navigateToStep,

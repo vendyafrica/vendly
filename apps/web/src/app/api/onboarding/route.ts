@@ -2,9 +2,11 @@ import { auth } from "@vendly/auth";
 import { headers } from "next/headers";
 import { NextResponse } from "next/server";
 import { onboardingService } from "@/app/c/lib/onboarding-service";
+import { onboardingRepository } from "@/app/c/lib/onboarding-repository";
 import type { OnboardingData } from "@/app/c/lib/models";
 import { db } from "@vendly/db/db";
-import { verification } from "@vendly/db/schema";
+import { verification, tenantMemberships, tenants, stores } from "@vendly/db/schema";
+import { eq } from "@vendly/db";
 import { sendWelcomeEmail } from "@vendly/transactional";
 import crypto from "crypto";
 
@@ -23,6 +25,35 @@ export async function POST(req: Request) {
 
         if (!data) {
             return NextResponse.json({ error: "Missing onboarding data" }, { status: 400 });
+        }
+
+        // ── Idempotency: if user already has a tenant, return it ─────
+        const alreadyOnboarded = await onboardingRepository.hasTenant(session.user.id);
+        if (alreadyOnboarded) {
+            // Fetch existing tenant + store to return consistent shape
+            const membership = await db.query.tenantMemberships.findFirst({
+                where: eq(tenantMemberships.userId, session.user.id),
+            });
+            if (membership) {
+                const tenant = await db.query.tenants.findFirst({
+                    where: eq(tenants.id, membership.tenantId),
+                });
+                const store = await db.query.stores.findFirst({
+                    where: eq(stores.tenantId, membership.tenantId),
+                });
+                if (tenant && store) {
+                    return NextResponse.json({
+                        success: true,
+                        tenantId: tenant.id,
+                        storeId: store.id,
+                        storeSlug: store.slug,
+                        tenantSlug: tenant.slug,
+                        message: "Already onboarded",
+                        emailSent: false,
+                        emailError: null,
+                    });
+                }
+            }
         }
 
         const result = await onboardingService.createFullTenant(
