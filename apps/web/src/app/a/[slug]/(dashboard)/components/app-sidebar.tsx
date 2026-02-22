@@ -34,10 +34,12 @@ import {
   SidebarMenuSubItem,
   useSidebar,
 } from "@vendly/ui/components/sidebar";
-import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useParams } from "next/navigation";
 import { ChevronsLeft, ChevronsRight } from "lucide-react";
+import { StoreAvatarSimple } from "@/components/store-avatar";
+
+import { useTenant } from "../tenant-context";
 
 type SidebarNavSubItem = {
   title: string;
@@ -162,6 +164,9 @@ export function AppSidebar({
   const pathname = usePathname();
   const params = useParams();
   const { state, toggleSidebar } = useSidebar();
+  const { bootstrap } = useTenant();
+
+  const storeName = bootstrap?.storeName || "Vendly";
 
   // Try to get slug from params first, then fallback to parsing basePath
   let slug = getSlugFromParams(params);
@@ -191,11 +196,9 @@ export function AppSidebar({
                   size="lg"
                   render={<Link href={basePath || "/"} />}
                 >
-                  <div className="flex aspect-square size-6 items-center justify-center rounded-lg">
-                    <Image src="/vendly.png" alt="Vendly" width={24} height={24} />
-                  </div>
+                  <StoreAvatarSimple storeName={storeName} size={24} className="rounded-sm" />
                   <div className="grid flex-1 text-left text-sm leading-tight">
-                    <span className="truncate font-semibold">Vendly</span>
+                    <span className="truncate font-semibold">{storeName}</span>
                   </div>
                 </SidebarMenuButton>
 
