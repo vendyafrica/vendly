@@ -9,7 +9,10 @@ const nextConfig: NextConfig = {
   },
   transpilePackages: ["@vendly/ui", "@vendly/auth"],
   outputFileTracingRoot: repoRoot,
-  allowedDevOrigins: ["harmonically-carpetless-janna.ngrok-free.dev", "*.ngrok-free.dev"],
+  allowedDevOrigins: [
+    "harmonically-carpetless-janna.ngrok-free.dev",
+    "*.ngrok-free.dev",
+  ],
   experimental: {
     optimizePackageImports: ["lucide-react"],
   },
@@ -20,6 +23,10 @@ const nextConfig: NextConfig = {
         hostname: "images.unsplash.com",
         port: "",
         pathname: "/**",
+      },
+      {
+        protocol: "https",
+        hostname: "mplsrodasp.ufs.sh",
       },
       {
         protocol: "https",

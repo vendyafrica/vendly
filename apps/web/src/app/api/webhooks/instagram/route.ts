@@ -1,5 +1,6 @@
 import crypto from "crypto";
 import { NextRequest, NextResponse } from "next/server";
+import { put } from "@vercel/blob";
 import {
   and,
   db,
@@ -17,6 +18,45 @@ function timingSafeEqual(a: string, b: string) {
   const bBuf = Buffer.from(b);
   if (aBuf.length !== bBuf.length) return false;
   return crypto.timingSafeEqual(aBuf, bBuf);
+}
+
+async function copyToBlob(params: {
+  tenantId: string;
+  sourceUrl: string;
+  preferredBasename: string;
+  fallbackContentType: string;
+}) {
+  try {
+    const res = await fetch(params.sourceUrl);
+    if (!res.ok) {
+      throw new Error(`Fetch failed: ${res.status}`);
+    }
+
+    const arrayBuf = await res.arrayBuffer();
+    const buffer = Buffer.from(arrayBuf);
+
+    const contentType = res.headers.get("content-type") || params.fallbackContentType;
+    const ext = contentType.includes("png")
+      ? "png"
+      : contentType.includes("webp")
+        ? "webp"
+        : contentType.includes("gif")
+          ? "gif"
+          : contentType.includes("mp4")
+            ? "mp4"
+            : "jpg";
+
+    const pathname = `instagram/${params.tenantId}/${params.preferredBasename}.${ext}`;
+    const blob = await put(pathname, buffer, { access: "public", contentType });
+
+    return { url: blob.url, pathname: blob.pathname, contentType };
+  } catch (err) {
+    console.warn("[InstagramWebhook] Blob copy failed; falling back to source URL", {
+      url: params.sourceUrl,
+      err,
+    });
+    return { url: params.sourceUrl, pathname: params.preferredBasename, contentType: params.fallbackContentType };
+  }
 }
 
 async function verifySignature(request: NextRequest): Promise<boolean> {
@@ -206,13 +246,19 @@ export async function POST(request: NextRequest) {
         if (!childUrl) continue;
 
         const contentType = childMediaType === "VIDEO" ? "video/mp4" : "image/jpeg";
+        const copied = await copyToBlob({
+          tenantId: igAccount.tenantId,
+          sourceUrl: childUrl,
+          preferredBasename: childId,
+          fallbackContentType: contentType,
+        });
         const [mediaRow] = await db
           .insert(mediaObjects)
           .values({
             tenantId: igAccount.tenantId,
-            blobUrl: childUrl,
-            blobPathname: childId,
-            contentType,
+            blobUrl: copied.url,
+            blobPathname: copied.pathname,
+            contentType: copied.contentType,
             source: "instagram",
             sourceMediaId: childId,
           })
@@ -237,13 +283,19 @@ export async function POST(request: NextRequest) {
       const mediaUrl = String(mediaObj?.media_url || mediaObj?.thumbnail_url || "");
       if (mediaUrl) {
         const contentType = mediaType === "VIDEO" ? "video/mp4" : "image/jpeg";
+        const copied = await copyToBlob({
+          tenantId: igAccount.tenantId,
+          sourceUrl: mediaUrl,
+          preferredBasename: sourceId,
+          fallbackContentType: contentType,
+        });
         const [mediaRow] = await db
           .insert(mediaObjects)
           .values({
             tenantId: igAccount.tenantId,
-            blobUrl: mediaUrl,
-            blobPathname: sourceId,
-            contentType,
+            blobUrl: copied.url,
+            blobPathname: copied.pathname,
+            contentType: copied.contentType,
             source: "instagram",
             sourceMediaId: sourceId,
           })

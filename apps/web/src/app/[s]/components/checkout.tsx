@@ -11,17 +11,11 @@ import {
     DialogHeader,
     DialogTitle,
 } from "@vendly/ui/components/dialog";
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@vendly/ui/components/select";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { Loading03Icon, CheckmarkCircle02Icon } from "@hugeicons/core-free-icons";
 
-const API_BASE = ""; // Force relative for same-origin internal API
+const API_BASE = ""; 
+const PAYMENTS_API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
 interface CheckoutProduct {
     id: string;
@@ -39,13 +33,11 @@ interface CheckoutProps {
     quantity: number;
 }
 
-type PaymentMethod = "cash_on_delivery" | "mpesa" | "card";
-
 export function Checkout({ open, onOpenChange, storeSlug, product, quantity }: CheckoutProps) {
     const [customerName, setCustomerName] = useState("");
     const [customerEmail, setCustomerEmail] = useState("");
     const [customerPhone, setCustomerPhone] = useState("");
-    const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("cash_on_delivery");
+    const paymentMethod = "paystack" as const;
     const [notes, setNotes] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isSuccess, setIsSuccess] = useState(false);
@@ -54,11 +46,31 @@ export function Checkout({ open, onOpenChange, storeSlug, product, quantity }: C
 
     const totalAmount = product.price * quantity;
 
+    /**
+     * Lazily loads the Paystack InlineJS script and returns the PaystackPop constructor.
+     * Using dynamic loading avoids adding a global script tag to _every_ page.
+     */
+    const loadPaystackPopup = (): Promise<new () => { resumeTransaction: (accessCode: string) => void }> =>
+        new Promise((resolve, reject) => {
+            if (typeof window !== "undefined" && (window as unknown as Record<string, unknown>).PaystackPop) {
+                resolve((window as unknown as Record<string, unknown>).PaystackPop as new () => { resumeTransaction: (accessCode: string) => void });
+                return;
+            }
+            const script = document.createElement("script");
+            script.src = "https://js.paystack.co/v2/inline.js";
+            script.onload = () => {
+                const pop = (window as unknown as Record<string, unknown>).PaystackPop;
+                if (pop) resolve(pop as new () => { resumeTransaction: (accessCode: string) => void });
+                else reject(new Error("Paystack InlineJS failed to load"));
+            };
+            script.onerror = () => reject(new Error("Failed to load Paystack InlineJS"));
+            document.head.appendChild(script);
+        });
+
     const resetState = () => {
         setCustomerName("");
         setCustomerEmail("");
         setCustomerPhone("");
-        setPaymentMethod("cash_on_delivery");
         setIsSuccess(false);
         setSuccessStage("paid");
         setError(null);
@@ -78,7 +90,7 @@ export function Checkout({ open, onOpenChange, storeSlug, product, quantity }: C
                 body: JSON.stringify({
                     customerName,
                     customerEmail,
-                    customerPhone,
+                    customerPhone: customerPhone || undefined,
                     paymentMethod,
                     notes: notes || undefined,
                     items: [
@@ -95,11 +107,79 @@ export function Checkout({ open, onOpenChange, storeSlug, product, quantity }: C
                 throw new Error(data.error || "Failed to place order");
             }
 
-            await response.json();
+            const data = await response.json();
+
+            // Step 2: Initialize transaction server-side
+            const callbackUrl = typeof window !== "undefined" ? `${window.location.origin}/${storeSlug}` : undefined;
+
+            const initRes = await fetch(`${PAYMENTS_API_BASE}/api/payments/paystack/initialize`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    email: customerEmail,
+                    amount: Math.round(totalAmount),
+                    currency: product.currency,
+                    orderId: data.order?.id ?? "",
+                    callbackUrl,
+                }),
+            });
+
+            if (!initRes.ok) {
+                const initData = await initRes.json().catch(() => ({}));
+                throw new Error((initData as { error?: string }).error || "Failed to initialize payment");
+            }
+
+            const { access_code, reference } = await initRes.json() as {
+                access_code: string;
+                reference: string;
+            };
+
+            // Step 3: Load Paystack InlineJS and open popup
+            const PaystackPop = await loadPaystackPopup();
+            const popup = new PaystackPop();
+
+            await new Promise<void>((resolve, reject) => {
+                const popupAny = popup as unknown as {
+                    resumeTransaction: (code: string, callback?: (resp: { status: string; reference: string }) => void) => void;
+                    newTransaction: (config: {
+                        key: string;
+                        email: string;
+                        amount: number;
+                        currency: string;
+                        ref: string;
+                        onSuccess: (resp: { reference: string }) => void;
+                        onCancel: () => void;
+                    }) => void;
+                };
+
+                const publicKey = process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY;
+                if (publicKey) {
+                    popupAny.newTransaction({
+                        key: publicKey,
+                        email: customerEmail,
+                        amount: Math.round(totalAmount),
+                        currency: product.currency,
+                        ref: reference,
+                        onSuccess: async (_resp) => {
+                            resolve();
+                        },
+                        onCancel: () => reject(new Error("Payment cancelled")),
+                    });
+                } else {
+                    popupAny.resumeTransaction(access_code, (resp) => {
+                        if (resp.status === "success") resolve();
+                        else reject(new Error("Payment not completed"));
+                    });
+                }
+            });
 
             setIsSuccess(true);
             setSuccessStage("paid");
-            setTimeout(() => setSuccessStage("processing"), 1500);
+            setTimeout(() => {
+                if (storeSlug) {
+                    window.location.assign(`${window.location.origin}/${storeSlug}`);
+                }
+            }, 1200);
         } catch (err) {
             setError(err instanceof Error ? err.message : "Failed to place order");
         } finally {
@@ -125,12 +205,18 @@ export function Checkout({ open, onOpenChange, storeSlug, product, quantity }: C
                             <HugeiconsIcon icon={CheckmarkCircle02Icon} className="h-12 w-12 text-green-600" />
                         </div>
                         <h2 className="text-2xl font-semibold mb-2">
-                            {successStage === "paid" ? "Order Placed!" : "Processing Order"}
+                            {paymentMethod === "paystack"
+                                ? "Payment Confirmed!"
+                                : successStage === "paid"
+                                    ? "Order Placed!"
+                                    : "Processing Order"}
                         </h2>
                         <p className="text-muted-foreground mb-6">
-                            {successStage === "paid"
-                                ? "Check your WhatsApp for payment instructions and order updates."
-                                : "Your order is now being processed by the seller."}
+                            {paymentMethod === "paystack"
+                                ? "Your card payment was confirmed. The seller is now processing your order."
+                                : successStage === "paid"
+                                    ? "Check your WhatsApp for payment instructions and order updates."
+                                    : "Your order is now being processed by the seller."}
                         </p>
                         <Button onClick={handleClose} className="w-full">
                             Continue Shopping
@@ -193,35 +279,22 @@ export function Checkout({ open, onOpenChange, storeSlug, product, quantity }: C
                         </div>
 
                         <div className="grid gap-2">
-                            <Label htmlFor="phone">WhatsApp Phone Number *</Label>
+                            <Label htmlFor="phone">WhatsApp Phone Number</Label>
                             <Input
                                 id="phone"
                                 type="tel"
                                 placeholder="+256 7XX XXX XXX"
                                 value={customerPhone}
                                 onChange={(e) => setCustomerPhone(e.target.value)}
-                                required
                             />
-                            <p className="text-xs text-muted-foreground">We will send order updates to this number on WhatsApp.</p>
+                            <p className="text-xs text-muted-foreground">
+                                Optional, used for order updates on WhatsApp.
+                            </p>
                         </div>
                     </div>
 
-                    {/* Payment Method */}
-                    <div className="space-y-4">
-                        <h3 className="font-medium">Payment Method</h3>
-                        <Select
-                            value={paymentMethod}
-                            onValueChange={(value) => setPaymentMethod(value as PaymentMethod)}
-                        >
-                            <SelectTrigger>
-                                <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="cash_on_delivery">Cash on Delivery</SelectItem>
-                                <SelectItem value="mpesa">M-Pesa</SelectItem>
-                                <SelectItem value="card">Card Payment</SelectItem>
-                            </SelectContent>
-                        </Select>
+                    <div className="rounded-lg border bg-muted/30 p-3 text-sm text-muted-foreground">
+                        Payment method: <span className="font-medium text-foreground">Card / Mobile Money (Paystack)</span>
                     </div>
 
                     {/* Notes */}
@@ -244,7 +317,11 @@ export function Checkout({ open, onOpenChange, storeSlug, product, quantity }: C
                     <Button
                         type="submit"
                         className="w-full h-12"
-                        disabled={isSubmitting || !customerName || !customerEmail || !customerPhone}
+                        disabled={
+                            isSubmitting ||
+                            !customerName ||
+                            !customerEmail
+                        }
                     >
                         {isSubmitting ? (
                             <>

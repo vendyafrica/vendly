@@ -22,14 +22,14 @@ export async function generateMetadata({ params }: StorefrontPageProps): Promise
   const store = await getStoreDetailsCached(s);
   if (!store) {
     return {
-      title: "Store not found | Duuka",
-      description: "Browse independent sellers on Duuka.",
+      title: "Store not found | ShopVendly",
+      description: "Browse independent sellers on ShopVendly.",
       robots: { index: false, follow: false },
     };
   }
 
-  const title = `${store.name} | Shop on Duuka`;
-  const description = store.description || `Shop ${store.name} with trusted payments and delivery on Duuka.`;
+  const title = `${store.name} | Shop on ShopVendly`;
+  const description = store.description || `Shop ${store.name} with trusted payments and delivery on ShopVendly.`;
   const ogImage = store.heroMedia?.[0] || store.logoUrl || "/og-image.png";
 
   return {
@@ -42,7 +42,7 @@ export async function generateMetadata({ params }: StorefrontPageProps): Promise
       title,
       description,
       url: `/${store.slug}`,
-      siteName: "Duuka",
+      siteName: "ShopVendly",
       images: [{ url: ogImage }],
     },
     twitter: {

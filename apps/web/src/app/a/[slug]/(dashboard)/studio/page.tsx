@@ -21,7 +21,7 @@ export default function StudioPage() {
 
   const storefrontUrl =
     process.env.NODE_ENV === "production"
-      ? `https://duuka.store/${storeSlug}`
+      ? `https://shopvendly.store/${storeSlug}`
       : `http://localhost:3000/${storeSlug}`;
 
   useEffect(() => {
