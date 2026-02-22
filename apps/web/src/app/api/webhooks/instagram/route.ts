@@ -1,6 +1,5 @@
 import crypto from "crypto";
 import { NextRequest, NextResponse } from "next/server";
-import { put } from "@vercel/blob";
 import {
   and,
   db,
@@ -12,6 +11,7 @@ import {
   mediaObjects,
   productMedia,
 } from "@vendly/db";
+import { mediaService } from "@/lib/services/media-service";
 
 function timingSafeEqual(a: string, b: string) {
   const aBuf = Buffer.from(a);
@@ -46,10 +46,17 @@ async function copyToBlob(params: {
             ? "mp4"
             : "jpg";
 
-    const pathname = `instagram/${params.tenantId}/${params.preferredBasename}.${ext}`;
-    const blob = await put(pathname, buffer, { access: "public", contentType });
+    const uploadResult = await mediaService.uploadSingle(
+      {
+        buffer,
+        originalname: `${params.preferredBasename}.${ext}`,
+        mimetype: contentType,
+      },
+      params.tenantId,
+      "instagram"
+    );
 
-    return { url: blob.url, pathname: blob.pathname, contentType };
+    return { url: uploadResult.url, pathname: uploadResult.pathname, contentType };
   } catch (err) {
     console.warn("[InstagramWebhook] Blob copy failed; falling back to source URL", {
       url: params.sourceUrl,

@@ -6,7 +6,7 @@ import { tenantMemberships, instagramAccounts, instagramSyncJobs, account, store
 import { eq, and } from "@vendly/db";
 import { z } from "zod";
 import { parseInstagramCaption } from "@/lib/instagram/parse-caption";
-import { put } from "@vercel/blob";
+import { mediaService } from "@/lib/services/media-service";
 
 type InstagramMediaChild = {
   id: string | number;
@@ -64,10 +64,17 @@ async function copyToBlob(params: {
             ? "mp4"
             : "jpg";
 
-    const pathname = `instagram/${params.tenantId}/${params.preferredBasename}.${ext}`;
-    const blob = await put(pathname, buffer, { access: "public", contentType });
+    const uploadResult = await mediaService.uploadSingle(
+      {
+        buffer,
+        originalname: `${params.preferredBasename}.${ext}`,
+        mimetype: contentType,
+      },
+      params.tenantId,
+      "instagram"
+    );
 
-    return { url: blob.url, pathname: blob.pathname, contentType };
+    return { url: uploadResult.url, pathname: uploadResult.pathname, contentType };
   } catch (err) {
     console.warn("[InstagramImport] Blob copy failed; falling back to source URL", {
       url: params.sourceUrl,

@@ -165,9 +165,9 @@ export default async function RootLayout({
   children: ReactNode;
 }) {
   return (
-    <html lang="en" className={publicSans.variable}>
+    <html lang="en" className={`${publicSans.variable} h-full`}>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen h-full bg-background`}
       >
         <script
           type="application/ld+json"
