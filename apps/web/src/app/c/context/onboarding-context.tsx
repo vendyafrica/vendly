@@ -7,7 +7,7 @@ import type { PersonalInfo, StoreInfo, BusinessInfo, OnboardingData } from "../l
 // Re-export for convenience so consumers don't need a separate import
 export type { PersonalInfo, StoreInfo, BusinessInfo, OnboardingData };
 
-export type OnboardingStep = "step1" | "step2" | "complete";
+export type OnboardingStep = "step0" | "step1" | "step2" | "complete";
 
 interface OnboardingState {
     currentStep: OnboardingStep;
@@ -42,9 +42,9 @@ function readLS(): OnboardingData {
 
 function readLSStep(): OnboardingStep {
     try {
-        return (localStorage.getItem(LS_STEP_KEY) as OnboardingStep) || "step1";
+        return (localStorage.getItem(LS_STEP_KEY) as OnboardingStep) || "step0";
     } catch {
-        return "step1";
+        return "step0";
     }
 }
 
@@ -92,7 +92,8 @@ export function useOnboarding() {
 }
 
 const STEP_ROUTES: Record<OnboardingStep, string> = {
-    step1: "/c",
+    step0: "/c",
+    step1: "/c?step=1",
     step2: "/c?step=2",
     complete: "/c/complete",
 };
@@ -110,7 +111,7 @@ export function OnboardingProvider({ children }: ProviderProps) {
     const submittingRef = useRef(false);
 
     const [state, setState] = useState<OnboardingState>({
-        currentStep: "step1",
+        currentStep: "step0",
         data: {},
         isComplete: false,
         isLoading: false,
