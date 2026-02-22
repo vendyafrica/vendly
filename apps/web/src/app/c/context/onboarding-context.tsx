@@ -3,7 +3,7 @@
 import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 
-export type OnboardingStep = "signup" | "personal" | "store" | "business" | "complete";
+export type OnboardingStep = "step1" | "step2" | "complete";
 
 export interface PersonalInfo {
     fullName: string;
@@ -36,20 +36,14 @@ interface OnboardingState {
 }
 
 interface OnboardingContextValue extends OnboardingState {
-    setPersonalDraft: (data: Pick<PersonalInfo, "fullName">) => void;
-    savePersonal: (data: PersonalInfo) => Promise<boolean>;
-    saveStore: (data: StoreInfo) => Promise<boolean>;
-    saveBusiness: (data: BusinessInfo) => Promise<boolean>;
+    saveDraft: (info: PersonalInfo & StoreInfo) => void;
     completeOnboarding: (dataOverride?: Partial<OnboardingData>) => Promise<boolean>;
-    goBack: () => Promise<void>;
-    refreshStatus: () => Promise<void>;
+    goBack: () => void;
     navigateToStep: (step: OnboardingStep) => void;
 }
 
 const LS_DATA_KEY = "vendly_onboarding_data";
 const LS_STEP_KEY = "vendly_onboarding_step";
-
-// ── localStorage helpers (called synchronously — no races) ──────────────────
 
 function readLS(): OnboardingData {
     try {
@@ -62,9 +56,9 @@ function readLS(): OnboardingData {
 
 function readLSStep(): OnboardingStep {
     try {
-        return (localStorage.getItem(LS_STEP_KEY) as OnboardingStep) || "signup";
+        return (localStorage.getItem(LS_STEP_KEY) as OnboardingStep) || "step1";
     } catch {
-        return "signup";
+        return "step1";
     }
 }
 
@@ -77,8 +71,6 @@ function clearLS() {
     localStorage.removeItem(LS_DATA_KEY);
     localStorage.removeItem(LS_STEP_KEY);
 }
-
-// ── API helper ──────────────────────────────────────────────────────────────
 
 async function apiCall<T>(endpoint: string, options?: RequestInit): Promise<T> {
     const res = await fetch(`/api/onboarding${endpoint}`, {
@@ -99,8 +91,6 @@ async function apiCall<T>(endpoint: string, options?: RequestInit): Promise<T> {
     return data;
 }
 
-// ── Context ─────────────────────────────────────────────────────────────────
-
 const OnboardingContext = createContext<OnboardingContextValue | null>(null);
 
 export function useOnboarding() {
@@ -112,10 +102,8 @@ export function useOnboarding() {
 }
 
 const STEP_ROUTES: Record<OnboardingStep, string> = {
-    signup: "/c",
-    personal: "/c/personal",
-    store: "/c/store",
-    business: "/c/business",
+    step1: "/c",
+    step2: "/c/business",
     complete: "/c/complete",
 };
 
@@ -126,7 +114,6 @@ interface ProviderProps {
 export function OnboardingProvider({ children }: ProviderProps) {
     const router = useRouter();
 
-    // ── Synchronous init from localStorage — eliminates the useEffect race ──
     const [state, setState] = useState<OnboardingState>(() => {
         const data = readLS();
         const currentStep = readLSStep();
@@ -139,8 +126,6 @@ export function OnboardingProvider({ children }: ProviderProps) {
         };
     });
 
-    // Persist to localStorage whenever data or step changes.
-    // Because initial state already matches localStorage, the first write is a harmless no-op.
     useEffect(() => {
         if (!state.isLoading) {
             writeLS(state.data, state.currentStep);
@@ -148,72 +133,33 @@ export function OnboardingProvider({ children }: ProviderProps) {
     }, [state.data, state.currentStep, state.isLoading]);
 
     const navigateToStep = useCallback((step: OnboardingStep) => {
+        setState(prev => ({ ...prev, currentStep: step }));
         router.push(STEP_ROUTES[step]);
     }, [router]);
 
-    const refreshStatus = useCallback(async () => {
-        setState(prev => ({ ...prev, isLoading: false }));
-    }, []);
-
-    const setPersonalDraft = useCallback((draft: Pick<PersonalInfo, "fullName">) => {
+    /**
+     * Save personal + store info to localStorage before triggering Google OAuth.
+     * This data is retrieved after the OAuth redirect completes.
+     */
+    const saveDraft = useCallback((info: PersonalInfo & StoreInfo) => {
+        const { fullName, phoneNumber, countryCode, storeName, storeDescription, storeLocation } = info;
         setState(prev => {
             const updatedData: OnboardingData = {
                 ...prev.data,
-                personal: {
-                    fullName: draft.fullName,
-                    phoneNumber: prev.data.personal?.phoneNumber ?? "",
-                    countryCode: prev.data.personal?.countryCode ?? "256",
-                },
+                personal: { fullName, phoneNumber, countryCode },
+                store: { storeName, storeDescription, storeLocation },
             };
-            writeLS(updatedData);
+            writeLS(updatedData, "step1");
             return { ...prev, data: updatedData };
         });
-    }, []);
-
-    const savePersonal = useCallback(async (info: PersonalInfo): Promise<boolean> => {
-        const nextStep: OnboardingStep = "store";
-        setState(prev => {
-            const updatedData = { ...prev.data, personal: info };
-            writeLS(updatedData, nextStep);
-            return { ...prev, data: updatedData, currentStep: nextStep };
-        });
-        navigateToStep(nextStep);
-        return true;
-    }, [navigateToStep]);
-
-    const saveStore = useCallback(async (info: StoreInfo): Promise<boolean> => {
-        const nextStep: OnboardingStep = "business";
-        setState(prev => {
-            const updatedData = { ...prev.data, store: info };
-            writeLS(updatedData, nextStep);
-            return { ...prev, data: updatedData, currentStep: nextStep };
-        });
-        navigateToStep(nextStep);
-        return true;
-    }, [navigateToStep]);
-
-    const saveBusiness = useCallback(async (info: BusinessInfo): Promise<boolean> => {
-        setState(prev => {
-            const updatedData = { ...prev.data, business: info };
-            // Also persist business data to localStorage so completeOnboarding can read it
-            writeLS(updatedData, "business");
-            return { ...prev, data: updatedData };
-        });
-        return true;
     }, []);
 
     const completeOnboarding = useCallback(async (dataOverride?: Partial<OnboardingData>): Promise<boolean> => {
         try {
             setState(prev => ({ ...prev, isLoading: true, error: null }));
 
-            // Single source of truth: read everything from localStorage
-            // (every save* function writes there synchronously inside setState)
             const persisted = readLS();
-
-            // Merge persisted data with any explicit override (e.g. business categories)
             const payloadData: OnboardingData = { ...persisted, ...dataOverride };
-
-            console.log("[completeOnboarding] payload:", JSON.stringify(payloadData));
 
             const result = await apiCall<{
                 success: boolean;
@@ -242,7 +188,7 @@ export function OnboardingProvider({ children }: ProviderProps) {
                     data: {},
                 }));
 
-                navigateToStep("complete");
+                router.push(STEP_ROUTES["complete"]);
                 return true;
             }
             return false;
@@ -254,31 +200,17 @@ export function OnboardingProvider({ children }: ProviderProps) {
             }));
             return false;
         }
+    }, [router]);
+
+    const goBack = useCallback(() => {
+        navigateToStep("step1");
     }, [navigateToStep]);
-
-    const goBack = useCallback(async () => {
-        const current = state.currentStep;
-        let prev: OnboardingStep = "signup";
-        if (current === "personal") prev = "signup";
-        else if (current === "store") prev = "personal";
-        else if (current === "business") prev = "store";
-        else if (current === "complete") prev = "business";
-
-        if (prev === "signup" && current === "signup") return;
-
-        setState(s => ({ ...s, currentStep: prev }));
-        navigateToStep(prev);
-    }, [state.currentStep, navigateToStep]);
 
     const value: OnboardingContextValue = {
         ...state,
-        setPersonalDraft,
-        savePersonal,
-        saveStore,
-        saveBusiness,
+        saveDraft,
         completeOnboarding,
         goBack,
-        refreshStatus,
         navigateToStep,
     };
 
@@ -288,4 +220,3 @@ export function OnboardingProvider({ children }: ProviderProps) {
         </OnboardingContext.Provider>
     );
 }
-

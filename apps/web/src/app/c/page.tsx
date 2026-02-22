@@ -1,268 +1,380 @@
 "use client";
 
 import { Button } from "@vendly/ui/components/button";
-import {
-  Field,
-  FieldGroup,
-  FieldLabel,
-  FieldSeparator,
-} from "@vendly/ui/components/field";
+import { Field, FieldGroup, FieldLabel } from "@vendly/ui/components/field";
 import { Input } from "@vendly/ui/components/input";
-import { HugeiconsIcon } from "@hugeicons/react";
+import { Textarea } from "@vendly/ui/components/textarea";
 import {
-  Store01FreeIcons,
-  Payment01FreeIcons,
-  Analytics01FreeIcons,
-} from "@hugeicons/core-free-icons";
-import { signInWithGoogle, signUp } from "@vendly/auth/react";
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@vendly/ui/components/select";
+import { Separator } from "@vendly/ui/components/separator";
+import { signInWithGoogle } from "@vendly/auth/react";
 import { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
+
 import { useOnboarding } from "./context/onboarding-context";
 import { GoogleIcon } from "@vendly/ui/components/svgs/google";
 import { useAppSession } from "@/contexts/app-session-context";
+import CategoriesSelector from "./components/categories";
+import { getCategoriesAction } from "./lib/categories";
+import { type Category } from "./components/tag-selector";
+import { Checkbox } from "@vendly/ui/components/checkbox";
+import { Label } from "@vendly/ui/components/label";
+
 
 type FormState = "idle" | "loading";
 
-export default function Welcome() {
-  const { session: appSession } = useAppSession();
-  const { navigateToStep, setPersonalDraft } = useOnboarding();
+const COUNTRY_OPTIONS = [
+  { code: "256", label: "Uganda", flag: "🇺🇬" },
+  { code: "254", label: "Kenya", flag: "🇰🇪" },
+];
 
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+function normalizePhone(countryCode: string, raw: string): string | null {
+  const digits = raw.replace(/\D/g, "");
+  if (!digits) return null;
+  let national = digits;
+  if (digits.startsWith(countryCode)) national = digits.slice(countryCode.length);
+  if (national.startsWith("0")) national = national.slice(1);
+  if (!national) return null;
+  return `+${countryCode}${national}`;
+}
+
+// ─── Step Indicator ──────────────────────────────────────────────────────────
+
+function StepIndicator({ current, total }: { current: number; total: number }) {
+  return (
+    <div className="flex items-center gap-2">
+      {Array.from({ length: total }).map((_, i) => (
+        <div
+          key={i}
+          className={
+            i + 1 === current
+              ? "h-1.5 w-6 rounded-full bg-primary transition-all"
+              : i + 1 < current
+                ? "h-1.5 w-4 rounded-full bg-primary/40 transition-all"
+                : "h-1.5 w-4 rounded-full bg-muted transition-all"
+          }
+        />
+      ))}
+      <span className="text-xs text-muted-foreground ml-1">
+        Step {current} of {total}
+      </span>
+    </div>
+  );
+}
+
+// ─── Section Label ────────────────────────────────────────────────────────────
+
+function SectionLabel({ children }: { children: React.ReactNode }) {
+  return (
+    <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+      {children}
+    </p>
+  );
+}
+
+// ─── Root Router ─────────────────────────────────────────────────────────────
+
+export default function OnboardingRoute() {
+  const { currentStep } = useOnboarding();
+  return currentStep === "step2" ? <Step2Categories /> : <Step1Info />;
+}
+
+// ─── Step 1: Info + Google Sign-Up ───────────────────────────────────────────
+
+function Step1Info() {
+  const { session: appSession } = useAppSession();
+  const { saveDraft, navigateToStep, data } = useOnboarding();
+  const searchParams = useSearchParams();
+
+  const [fullName, setFullName] = useState(data.personal?.fullName ?? "");
+  const [phoneNumber, setPhoneNumber] = useState(data.personal?.phoneNumber ?? "");
+  const [countryCode, setCountryCode] = useState<string>(data.personal?.countryCode ?? "256");
+  const [storeName, setStoreName] = useState(data.store?.storeName ?? "");
+  const [storeDescription, setStoreDescription] = useState(data.store?.storeDescription ?? "");
+  const [storeLocation, setStoreLocation] = useState(data.store?.storeLocation ?? "");
+  const [agreed, setAgreed] = useState(false);
   const [formState, setFormState] = useState<FormState>("idle");
+
   const [error, setError] = useState<string | null>(null);
 
+  const selectedCountry = COUNTRY_OPTIONS.find((o) => o.code === countryCode);
+  const isLoading = formState === "loading";
+
   useEffect(() => {
-    if (appSession) {
-      setPersonalDraft({ fullName: appSession.user?.name ?? "" });
-      navigateToStep("personal");
-    }
-  }, [appSession, navigateToStep, setPersonalDraft]);
+    const stepParam = searchParams.get("step");
+    if (appSession && stepParam === "2") navigateToStep("step2");
+  }, [appSession, navigateToStep, searchParams]);
 
-  const getOnboardingRedirect = () => {
-    if (typeof window === "undefined") {
-      return "/c/personal?entry=seller_google";
-    }
-    return `${window.location.origin}/c/personal?entry=seller_google`;
-  };
+  const getCallbackURL = () =>
+    typeof window === "undefined"
+      ? "/c?entry=seller_google&step=2"
+      : `${window.location.origin}/c?entry=seller_google&step=2`;
 
-  const handleGoogleSignIn = async () => {
-    try {
-      await signInWithGoogle({
-        callbackURL: getOnboardingRedirect(),
-      });
-    } catch (error) {
-      console.error("Google sign-in failed:", error);
-    }
-  };
-
-  const handleSignUp = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleGoogleSignUp = async () => {
     setError(null);
+    if (!fullName.trim()) return setError("Please enter your full name.");
+    if (!storeName.trim()) return setError("Please enter your store name.");
+    const normalizedPhone = normalizePhone(countryCode, phoneNumber);
+    if (!normalizedPhone) return setError("Please enter a valid phone number.");
 
-    if (!name.trim()) {
-      setError("Please enter your full name");
-      return;
-    }
-    if (!email || !email.includes("@")) {
-      setError("Please enter a valid email address");
-      return;
-    }
-    if (password.length < 8) {
-      setError("Password must be at least 8 characters");
-      return;
-    }
+    saveDraft({
+      fullName: fullName.trim(),
+      phoneNumber: normalizedPhone,
+      countryCode,
+      storeName: storeName.trim(),
+      storeDescription: storeDescription.trim(),
+      storeLocation: storeLocation.trim(),
+    });
 
     setFormState("loading");
-
     try {
-      // Precheck if this email already belongs to a seller
-      const res = await fetch(`/api/seller/precheck?email=${encodeURIComponent(email)}`);
-      if (res.ok) {
-        const precheck = await res.json() as { isSeller: boolean; adminStoreSlug?: string | null; tenantSlug?: string | null };
-        if (precheck.isSeller) {
-          const adminSlug = precheck.adminStoreSlug || precheck.tenantSlug;
-          setError(`An account with this email already exists. Please sign in at /a/${adminSlug}/login`);
-          setFormState("idle");
-          return;
-        }
-      }
-
-      const { error: signUpError } = await signUp(email, password, name);
-
-      if (signUpError) {
-        if (signUpError.message?.toLowerCase().includes("already")) {
-          setError("An account with this email already exists. Please sign in instead.");
-        } else {
-          setError(signUpError.message || "Sign up failed. Please try again.");
-        }
-        setFormState("idle");
-        return;
-      }
-
-      setPersonalDraft({ fullName: name.trim() });
-      navigateToStep("personal");
+      await signInWithGoogle({ callbackURL: getCallbackURL() });
     } catch {
-      setError("Something went wrong. Please try again.");
+      setError("Google sign-up failed. Please try again.");
       setFormState("idle");
     }
   };
 
   return (
-    <div className="border-0 shadow-sm rounded-sm bg-muted/30">
-      <div className="grid p-0 md:grid-cols-2 gap-4">
-        {/* LEFT — Marketing / Context */}
-        <div className="hidden md:flex flex-col justify-center items-start p-10 max-w-xl">
-          <h2 className="text-xl font-semibold tracking-tight mb-4">
-            Start selling smarter with Vendly
-          </h2>
-          <p className="text-sm text-muted-foreground mb-6">
-            All tools to manage and scale your business.
+    <div className="rounded-xl border bg-card text-card-foreground shadow-sm p-6 md:p-10 space-y-8">
+      {/* Header */}
+      <div className="space-y-3">
+        <StepIndicator current={1} total={2} />
+        <div>
+          <h1 className="text-2xl font-semibold tracking-tight">Set up your seller account</h1>
+          <p className="text-sm text-muted-foreground mt-1">
+            We'll use this to create your store on Vendly.
           </p>
-
-          <div className="space-y-5 w-full">
-            <div className="flex items-start gap-2">
-              <div className="p-3 rounded-xl shrink-0">
-                <HugeiconsIcon
-                  icon={Store01FreeIcons}
-                  className="h-4 w-4 text-primary"
-                />
-              </div>
-              <div>
-                <h3 className="text-md  font-semibold mb-2">
-                  Customizable Storefront
-                </h3>
-                <p className="text-sm text-muted-foreground leading-relaxed">
-                  Customizable storefront to sell your products online.
-                </p>
-              </div>
-            </div>
-            <div className="flex items-start gap-2">
-              <div className="p-3 rounded-xl shrink-0">
-                <HugeiconsIcon
-                  icon={Payment01FreeIcons}
-                  className="h-4 w-4 text-primary"
-                />
-              </div>
-              <div>
-                <h3 className="text-md font-semibold mb-2">
-                  Checkout & Delivery
-                </h3>
-                <p className="text-sm text-muted-foreground leading-relaxed">
-                  Payments and delivery infrastructure out of the box.
-                </p>
-              </div>
-            </div>
-            <div className="flex items-start gap-2">
-              <div className="p-3 rounded-xl shrink-0">
-                <HugeiconsIcon
-                  icon={Analytics01FreeIcons}
-                  className="h-4 w-4 text-primary"
-                />
-              </div>
-              <div>
-                <h3 className="text-md font-semibold mb-2">
-                  Advanced Business Analytics
-                </h3>
-                <p className="text-sm text-muted-foreground leading-relaxed">
-                  Get insights into your business performance.
-                </p>
-              </div>
-            </div>
-          </div>
         </div>
+      </div>
 
-        {/* RIGHT — Sign Up Form */}
-        <form className="p-6 md:p-8" onSubmit={handleSignUp}>
-          <FieldGroup>
-            <div className="flex flex-col items-center gap-2">
-              <h1 className="text-black-50 text-balance text-xl font-semibold ">
-                Welcome
-              </h1>
-              <p className="text-muted-foreground text-sm">
-                Create your free account
-              </p>
-            </div>
+      {error && (
+        <div className="rounded-lg border border-destructive/40 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+          {error}
+        </div>
+      )}
 
-            {error && (
-              <div className="rounded-lg border border-destructive/50 bg-destructive/10 px-4 py-3 text-sm text-destructive">
-                {error}
-              </div>
-            )}
-
+      <div className="space-y-6">
+        {/* ── Personal Info ── */}
+        <div className="space-y-4">
+          <SectionLabel>About you</SectionLabel>
+          <FieldGroup className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Field>
-              <FieldLabel htmlFor="name">Full Name</FieldLabel>
+              <FieldLabel htmlFor="fullName">Full Name *</FieldLabel>
               <Input
-                id="name"
+                id="fullName"
                 type="text"
                 autoComplete="name"
                 placeholder="Jane Doe"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                required
-                disabled={formState === "loading"}
-                className="focus-visible:border-primary/50 focus-visible:ring-primary/10 h-11"
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+                disabled={isLoading}
               />
             </Field>
 
             <Field>
-              <FieldLabel htmlFor="email">Email</FieldLabel>
-              <Input
-                id="email"
-                type="email"
-                inputMode="email"
-                autoComplete="email"
-                placeholder="m@example.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                disabled={formState === "loading"}
-                className="focus-visible:border-primary/50 focus-visible:ring-primary/10 h-11"
-              />
-            </Field>
+              <FieldLabel htmlFor="phoneNumber">Phone Number *</FieldLabel>
+              {/* Phone: country selector + number input sharing one border */}
+              <div className="flex h-9 rounded-md border border-input bg-background focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2 overflow-hidden">
+                <Select
+                  value={countryCode}
+                  onValueChange={(v) => setCountryCode(v ?? countryCode)}
+                  disabled={isLoading}
+                >
+                  <SelectTrigger className="w-[68px] shrink-0 rounded-none border-0 border-r border-input bg-muted/40 shadow-none focus:ring-0 focus-visible:ring-0 gap-1 px-2">
+                    <SelectValue>
+                      <span className="text-base leading-none">{selectedCountry?.flag}</span>
+                    </SelectValue>
+                  </SelectTrigger>
+                  <SelectContent align="start" className="min-w-[200px]">
+                    {COUNTRY_OPTIONS.map((opt) => (
+                      <SelectItem key={opt.code} value={opt.code}>
+                        <span className="flex items-center gap-2">
+                          <span>{opt.flag}</span>
+                          <span>{opt.label}</span>
+                          <span className="text-xs text-muted-foreground">+{opt.code}</span>
+                        </span>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
 
-            <Field>
-              <FieldLabel htmlFor="password">Password</FieldLabel>
-              <Input
-                id="password"
-                type="password"
-                autoComplete="new-password"
-                placeholder="At least 8 characters"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                disabled={formState === "loading"}
-                className="focus-visible:border-primary/50 focus-visible:ring-primary/10 h-11"
-              />
-            </Field>
-
-            <Field>
-              <Button
-                type="submit"
-                className="w-full h-11"
-                disabled={formState === "loading"}
-              >
-                {formState === "loading" ? "Creating account…" : "Sign Up"}
-              </Button>
-            </Field>
-
-            <FieldSeparator>or continue with</FieldSeparator>
-
-            <Field>
-              <Button
-                variant="outline"
-                type="button"
-                className="h-11"
-                onClick={handleGoogleSignIn}
-                disabled={formState === "loading"}
-              >
-                <GoogleIcon />
-                Continue with Google
-              </Button>
+                <Input
+                  id="phoneNumber"
+                  type="tel"
+                  placeholder="780 000 000"
+                  value={phoneNumber}
+                  onChange={(e) => setPhoneNumber(e.target.value)}
+                  disabled={isLoading}
+                  className="flex-1 rounded-none border-0 shadow-none focus-visible:ring-0"
+                />
+              </div>
             </Field>
           </FieldGroup>
-        </form>
+        </div>
+
+        <Separator />
+
+        {/* ── Store Info ── */}
+        <div className="space-y-4">
+          <SectionLabel>Your store</SectionLabel>
+          <FieldGroup className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Field>
+                <FieldLabel htmlFor="storeName">Store Name *</FieldLabel>
+                <Input
+                  id="storeName"
+                  type="text"
+                  placeholder="Acme Fashion"
+                  value={storeName}
+                  onChange={(e) => setStoreName(e.target.value)}
+                  disabled={isLoading}
+                />
+              </Field>
+
+              <Field>
+                <FieldLabel htmlFor="storeLocation">Location</FieldLabel>
+                <Input
+                  id="storeLocation"
+                  type="text"
+                  placeholder="Kampala, Uganda"
+                  value={storeLocation}
+                  onChange={(e) => setStoreLocation(e.target.value)}
+                  disabled={isLoading}
+                />
+              </Field>
+            </div>
+
+            <Field>
+              <FieldLabel htmlFor="storeDescription">
+                Store Description{" "}
+                <span className="text-muted-foreground font-normal">(optional)</span>
+              </FieldLabel>
+              <Textarea
+                id="storeDescription"
+                placeholder="Tell buyers what you sell and what makes your store special…"
+                rows={3}
+                value={storeDescription}
+                onChange={(e) => setStoreDescription(e.target.value)}
+                disabled={isLoading}
+              />
+            </Field>
+          </FieldGroup>
+        </div>
       </div>
+
+      {/* CTA */}
+      <div className="flex flex-col-reverse md:flex-row items-center justify-between gap-6 pt-4 border-t border-border">
+        <div className="flex items-start gap-2.5">
+          <Checkbox
+            id="terms"
+            checked={agreed}
+            onCheckedChange={(checked) => setAgreed(!!checked)}
+            disabled={isLoading}
+            className="mt-0.5"
+          />
+          <Label
+            htmlFor="terms"
+            className="text-xs font-normal text-muted-foreground leading-relaxed cursor-pointer select-none"
+          >
+            I agree to the{" "}
+            <a href="/terms" target="_blank" className="underline underline-offset-2 hover:text-foreground transition-colors" onClick={(e) => e.stopPropagation()}>
+              Terms
+            </a>{" "}
+            and{" "}
+            <a href="/privacy" target="_blank" className="underline underline-offset-2 hover:text-foreground transition-colors" onClick={(e) => e.stopPropagation()}>
+              Privacy Policy
+            </a>
+            .
+          </Label>
+        </div>
+
+        <Button
+          type="button"
+          variant="outline"
+          onClick={handleGoogleSignUp}
+          disabled={isLoading || !agreed}
+          className="w-full md:w-auto shrink-0"
+        >
+          <GoogleIcon />
+          {isLoading ? "Redirecting…" : "Continue with Google"}
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+// ─── Step 2: Categories ───────────────────────────────────────────────────────
+
+function Step2Categories() {
+  const { data, completeOnboarding, goBack, isLoading, error } = useOnboarding();
+
+  const [categories, setCategories] = useState<string[]>(data.business?.categories ?? []);
+  const [availableCategories, setAvailableCategories] = useState<Category[]>([]);
+
+  useEffect(() => {
+    getCategoriesAction().then((res) => {
+      if (res.success && res.data) {
+        setAvailableCategories(res.data.map((c) => ({ id: c.slug, label: c.name })));
+      }
+    });
+  }, []);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (categories.length === 0) return;
+    await completeOnboarding({ business: { categories } });
+  };
+
+  return (
+    <div className="rounded-xl border bg-card text-card-foreground shadow-sm p-6 md:p-10 space-y-8">
+      {/* Header */}
+      <div className="space-y-3">
+        <StepIndicator current={2} total={2} />
+        <div>
+          <h1 className="text-2xl font-semibold tracking-tight">What do you sell?</h1>
+          <p className="text-sm text-muted-foreground mt-1">
+            Pick one or more categories. This helps buyers find your store.
+          </p>
+        </div>
+      </div>
+
+      {error && (
+        <p className="text-sm text-destructive bg-destructive/10 p-3 rounded-md">{error}</p>
+      )}
+
+      <form onSubmit={handleSubmit} className="space-y-8">
+        <FieldGroup>
+          <Field>
+            <CategoriesSelector
+              selectedCategories={categories}
+              onChange={setCategories}
+              availableCategories={availableCategories}
+            />
+          </Field>
+        </FieldGroup>
+
+        {categories.length === 0 && (
+          <p className="text-sm text-muted-foreground">
+            Select at least one category to continue.
+          </p>
+        )}
+
+        <div className="flex items-center justify-between border-t border-border pt-4">
+          <Button type="button" variant="outline" onClick={goBack} disabled={isLoading}>
+            Back
+          </Button>
+
+          <Button type="submit" disabled={isLoading || categories.length === 0}>
+            {isLoading ? "Setting up your store…" : "Finish setup"}
+          </Button>
+        </div>
+      </form>
     </div>
   );
 }

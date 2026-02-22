@@ -1,6 +1,9 @@
 {
   "$schema": "https://ui.shadcn.com/schema.json",
-  "style": "base-nova",
+  "style": "base-lyra",
+  "theme": "fuchsia",
+  "radius": "default",
+  "font": "public-sans",
   "rsc": true,
   "tsx": true,
   "tailwind": {
@@ -12,7 +15,7 @@
   },
   "iconLibrary": "hugeicons",
   "menuColor": "default",
-  "menuAccent": "subtle",
+  "menuAccent": "bold",
   "aliases": {
     "components": "@/components",
     "utils": "@vendly/ui/lib/utils",

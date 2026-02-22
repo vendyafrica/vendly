@@ -1,10 +1,10 @@
 import "@vendly/ui/globals.css";
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono, Nunito_Sans } from "next/font/google";
+import { Geist, Geist_Mono, Public_Sans } from "next/font/google";
 import type { ReactNode } from "react";
 import { ThirdParty } from "./third-party";
 
-const nunitoSans = Nunito_Sans({ variable: "--font-sans" });
+const publicSans = Public_Sans({subsets:['latin'],variable:'--font-sans'});
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -165,7 +165,7 @@ export default async function RootLayout({
   children: ReactNode;
 }) {
   return (
-    <html lang="en" className={nunitoSans.variable}>
+    <html lang="en" className={publicSans.variable}>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
