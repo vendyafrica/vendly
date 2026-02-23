@@ -1,4 +1,4 @@
-import { db, stores, products, eq, and, isNull, instagramAccounts } from "@vendly/db";
+import { db, stores, products, eq, and, isNull, instagramAccounts, inArray } from "@vendly/db";
 import { cache } from "react";
 
 /**
@@ -24,6 +24,14 @@ const findStoreBySlugCached = cache(async (slug: string) => {
     return store;
 });
 
+function slugifyName(name: string): string {
+    return name.toLowerCase().trim().replace(/[^a-z0-9\s-]/g, "").replace(/\s+/g, "-").replace(/-+/g, "-");
+}
+
+function resolveProductSlug(product: { slug: string | null; productName: string }): string {
+    return product.slug || slugifyName(product.productName || "");
+}
+
 export const storefrontService = {
     /**
      * Find store by slug
@@ -35,13 +43,23 @@ export const storefrontService = {
     /**
      * Get all products for a store
      */
-    async getStoreProducts(storeId: string) {
-        return db.query.products.findMany({
+    async getStoreProducts(storeId: string, query?: string) {
+        const normalizedQuery = query?.trim().toLowerCase() || "";
+
+        const productsForStore = await db.query.products.findMany({
             where: and(
                 eq(products.storeId, storeId),
                 eq(products.status, "active"),
                 isNull(products.deletedAt)
             ),
+            columns: {
+                id: true,
+                slug: true,
+                productName: true,
+                description: true,
+                priceAmount: true,
+                currency: true,
+            },
             with: {
                 media: {
                     with: { media: true },
@@ -50,17 +68,24 @@ export const storefrontService = {
                 },
             },
         });
+
+        const filtered = normalizedQuery
+            ? productsForStore.filter((product) => product.productName?.toLowerCase().includes(normalizedQuery))
+            : productsForStore;
+
+        return filtered;
     },
 
     /**
      * Get a single product by slug for a store
      */
     async getStoreProductBySlug(storeId: string, productSlug: string) {
-        const allProducts = await db.query.products.findMany({
+        const bySlug = await db.query.products.findFirst({
             where: and(
                 eq(products.storeId, storeId),
                 eq(products.status, "active"),
-                isNull(products.deletedAt)
+                isNull(products.deletedAt),
+                eq(products.slug, productSlug)
             ),
             with: {
                 media: {
@@ -70,9 +95,77 @@ export const storefrontService = {
             },
         });
 
-        // Find product where the slugified name matches
-        return allProducts.find(
-            (p) => p.productName.toLowerCase().replace(/\s+/g, "-") === productSlug
-        );
+        if (bySlug) return bySlug;
+
+        const fallbackProducts = await db.query.products.findMany({
+            where: and(
+                eq(products.storeId, storeId),
+                eq(products.status, "active"),
+                isNull(products.deletedAt)
+            ),
+            columns: {
+                id: true,
+                slug: true,
+                productName: true,
+                description: true,
+                priceAmount: true,
+                currency: true,
+            },
+            with: {
+                media: {
+                    with: { media: true },
+                    orderBy: (media, { asc }) => [asc(media.sortOrder)],
+                },
+            },
+        });
+
+        return fallbackProducts.find((product) => resolveProductSlug(product) === productSlug);
+    },
+
+    async getStoreProductsByCategorySlug(storeId: string, categorySlug: string, query?: string) {
+        const normalizedQuery = query?.trim().toLowerCase() || "";
+        const { productCategories, categories } = await import("@vendly/db");
+
+        const matches = await db
+            .select({ id: products.id })
+            .from(products)
+            .innerJoin(productCategories, eq(productCategories.productId, products.id))
+            .innerJoin(categories, eq(categories.id, productCategories.categoryId))
+            .where(
+                and(
+                    eq(products.storeId, storeId),
+                    eq(products.status, "active"),
+                    isNull(products.deletedAt),
+                    eq(categories.slug, categorySlug)
+                )
+            );
+
+        const ids = matches.map((match) => match.id);
+        if (ids.length === 0) return [];
+
+        const productsForStore = await db.query.products.findMany({
+            where: and(inArray(products.id, ids), eq(products.status, "active"), isNull(products.deletedAt)),
+            columns: {
+                id: true,
+                slug: true,
+                productName: true,
+                description: true,
+                priceAmount: true,
+                currency: true,
+            },
+            with: {
+                media: {
+                    with: { media: true },
+                    orderBy: (media, { asc }) => [asc(media.sortOrder)],
+                    limit: 1,
+                },
+            },
+        });
+
+        const filtered = normalizedQuery
+            ? productsForStore.filter((product) => product.productName?.toLowerCase().includes(normalizedQuery))
+            : productsForStore;
+
+        return filtered;
     }
 };

@@ -29,8 +29,6 @@ export function Hero({ store }: HeroProps) {
     const mediaUrl = heroMedia[0] || FALLBACK_HERO_MEDIA;
     const isVideo = typeof mediaUrl === "string" && isVideoUrl(mediaUrl);
 
-    const isBlobUrl = typeof mediaUrl === "string" && mediaUrl.includes(".ufs.sh");
-
     return (
         <section className="relative h-[75vh] min-h-[75vh] sm:h-screen sm:min-h-screen w-full overflow-hidden">
             <div className="relative h-full w-full overflow-hidden">
@@ -48,7 +46,6 @@ export function Hero({ store }: HeroProps) {
                         priority
                         className="object-cover"
                         sizes="100vw"
-                        unoptimized={isBlobUrl}
                     />
                 )}
 

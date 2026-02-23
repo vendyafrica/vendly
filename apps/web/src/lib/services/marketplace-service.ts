@@ -97,7 +97,6 @@ export interface MarketplaceSearchResult {
  */
 async function batchFetchStoreProductImages(storeIds: string[]): Promise<Map<string, string[]>> {
     if (storeIds.length === 0) return new Map();
-
     const { db, products, inArray } = await import("@vendly/db");
 
     // Fetch all products with media for the given stores in one query
@@ -122,7 +121,7 @@ async function batchFetchStoreProductImages(storeIds: string[]): Promise<Map<str
         const existingImages = storeImages.get(product.storeId) || [];
         const productImages = (product.media ?? [])
             .map((m) => m?.media?.blobUrl)
-            .filter(Boolean); // Note: we are currently only returning strings here for StoreCard compatibility. StoreCard needs update if we want video on store cards.
+            .filter((url): url is string => Boolean(url)); // Note: we are currently only returning strings here for StoreCard compatibility. StoreCard needs update if we want video on store cards.
 
         // Limit to 5 images per store
         const combined = [...existingImages, ...productImages].slice(0, 5);
@@ -310,7 +309,7 @@ export const marketplaceService = {
 
 
     async getStoreProducts(slug: string, query?: string) {
-        const store = await storeRepo.findBySlug(slug);
+        const store = await this.getStoreDetails(slug);
         if (!store) return [];
 
         const normalizedQuery = query?.trim().toLowerCase() || "";
@@ -343,7 +342,7 @@ export const marketplaceService = {
     },
 
     async getStoreProductsByCategorySlug(storeSlug: string, categorySlug: string, query?: string) {
-        const store = await storeRepo.findBySlug(storeSlug);
+        const store = await this.getStoreDetails(storeSlug);
         if (!store) return [];
 
         const normalizedQuery = query?.trim().toLowerCase() || "";
@@ -398,11 +397,11 @@ export const marketplaceService = {
     },
 
     async getStoreProduct(storeSlug: string, productSlug: string) {
-        const store = await storeRepo.findBySlug(storeSlug);
+        const store = await this.getStoreDetails(storeSlug);
         if (!store) return null;
 
         const { productRepo } = await import("../data/product-repo");
-        // Optimization: Ideally repo has findOneBySlug. For now, we fetch all and find. 
+        // Optimization: Ideally repo has findOneBySlug. For now, we fetch all and find.
         // This mirrors storefrontService logic but we should improve repo later.
         const products = await productRepo.findByStoreId(store.id);
 
@@ -420,8 +419,13 @@ export const marketplaceService = {
         };
     },
 
+    async getStoreProductBySlug(storeSlug: string, productSlug: string) {
+        // Alias to keep symmetry with storefrontService; ensures slug-only routes can reuse this service
+        return this.getStoreProduct(storeSlug, productSlug);
+    },
+
     async getStoreProductById(storeSlug: string, productId: string) {
-        const store = await storeRepo.findBySlug(storeSlug);
+        const store = await this.getStoreDetails(storeSlug);
         if (!store) return null;
 
         const { productRepo } = await import("../data/product-repo");

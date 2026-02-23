@@ -26,11 +26,15 @@ interface StoreData {
   logoUrl?: string;
 }
 
-export function StorefrontHeader() {
+interface StorefrontHeaderProps {
+  initialStore?: StoreData | null;
+}
+
+export function StorefrontHeader({ initialStore }: StorefrontHeaderProps) {
   const params = useParams();
   const pathname = usePathname();
   const { itemsByStore } = useCart();
-  const [store, setStore] = useState<StoreData | null>(null);
+  const [store, setStore] = useState<StoreData | null>(initialStore ?? null);
 
   // Derive storeId matching the currently loaded slug context to show accurate item count
   const [storeId, setStoreId] = useState<string | null>(null);
@@ -50,16 +54,22 @@ export function StorefrontHeader() {
   const storeItems = storeId ? itemsByStore[storeId] : [];
   const storeItemCount = storeItems ? storeItems.length : 0;
 
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(!initialStore);
   const [isVisible, setIsVisible] = useState(true);
   const [isOverlay, setIsOverlay] = useState(true);
   const lastScrollYRef = useRef(0);
 
   useEffect(() => {
     const fetchStore = async () => {
-      const slug = params?.s as string;
+      const slug = params?.s as string | undefined;
 
       if (!slug) {
+        setLoading(false);
+        return;
+      }
+
+      if (initialStore?.slug === slug) {
+        setStore(initialStore);
         setLoading(false);
         return;
       }
@@ -76,18 +86,20 @@ export function StorefrontHeader() {
       }
     };
     fetchStore();
-  }, [params?.s]);
+  }, [params?.s, initialStore]);
 
   useEffect(() => {
     lastScrollYRef.current = window.scrollY;
-    setIsOverlay(window.scrollY < 120);
+    // Only allow overlay effect on the home/hero page; otherwise force solid header
+    const isHomePage = pathname === `/${params?.s ?? ""}`;
+    setIsOverlay(isHomePage && window.scrollY < 120);
 
     const handleScroll = () => {
       const currentY = window.scrollY;
       const isScrollingDown = currentY > lastScrollYRef.current;
       lastScrollYRef.current = currentY;
 
-      setIsOverlay(currentY < 120);
+      setIsOverlay(isHomePage && currentY < 120);
 
       // Always show when you're basically at the top.
       if (currentY < 80) {
@@ -103,7 +115,11 @@ export function StorefrontHeader() {
 
       // Scrolling up: only show again when near the categories rail.
       const rail = document.getElementById("storefront-categories-rail");
-      if (!rail) return;
+      if (!rail) {
+        // No rail on detail pages; keep header visible when scrolling up
+        setIsVisible(true);
+        return;
+      }
 
       const railTop = rail.getBoundingClientRect().top;
       const headerRevealThreshold = 140;
@@ -114,13 +130,13 @@ export function StorefrontHeader() {
 
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+  }, [params?.s, pathname]);
 
   if (loading) return <HeaderSkeleton />;
   if (!store) return null;
 
-  const isHomePage = pathname === '/';
-  const overlayActive = isHomePage || isOverlay;
+  const isHomePage = pathname === `/${params?.s ?? ""}`;
+  const overlayActive = isHomePage && isOverlay;
   const textColorClass = overlayActive
     ? "text-white hover:text-white/90"
     : "text-foreground hover:text-foreground/80";

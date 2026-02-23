@@ -26,6 +26,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
             description: store.description,
             logoUrl: store.logoUrl ?? null,
             heroMedia: store.heroMedia,
+            categories: (store as { categories?: string[] }).categories ?? [],
         });
     } catch (error) {
         console.error("Error fetching store data:", error);

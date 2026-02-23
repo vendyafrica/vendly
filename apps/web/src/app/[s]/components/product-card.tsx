@@ -13,7 +13,6 @@ interface ProductCardProps {
   image: string | null;
   contentType?: string | null;
   index?: number;
-  id: string;
   storeSlug?: string;
 }
 
@@ -29,7 +28,7 @@ const aspectVariants = [
   "aspect-[5/6]",
 ];
 
-export function ProductCard({ title, slug, price, image, contentType, index = 0, storeSlug, id }: ProductCardProps) {
+export function ProductCard({ title, slug, price, image, contentType, index = 0, storeSlug }: ProductCardProps) {
   const params = useParams();
   const router = useRouter();
   const [isNavigating, setIsNavigating] = useState(false);
@@ -38,7 +37,6 @@ export function ProductCard({ title, slug, price, image, contentType, index = 0,
   const aspectClass = aspectVariants[index % aspectVariants.length];
 
   const imageUrl = image || FALLBACK_PRODUCT_IMAGE;
-  const isBlobUrl = imageUrl.includes(".ufs.sh");
 
   const isVideo = contentType?.startsWith("video/")
     || imageUrl.match(/\.(mp4|webm|mov|ogg)$/i) !== null
@@ -52,7 +50,7 @@ export function ProductCard({ title, slug, price, image, contentType, index = 0,
     setIsNavigating(true);
     // Best-effort prefetch to reduce perceived delay
     try {
-      router.prefetch(getStorefrontUrl(currentStoreSlug, `/${id}/${slug}`));
+      router.prefetch(getStorefrontUrl(currentStoreSlug, `/${slug}`));
     } catch {
       // Prefetch is best-effort; ignore errors
     }
@@ -60,7 +58,7 @@ export function ProductCard({ title, slug, price, image, contentType, index = 0,
 
   return (
     <Link
-      href={getStorefrontUrl(currentStoreSlug, `/${id}/${slug}`)}
+      href={getStorefrontUrl(currentStoreSlug, `/${slug}`)}
       onClick={handleClick}
       className={`group block break-inside-avoid mb-3 sm:mb-4 lg:mb-5 ${isNavigating ? "pointer-events-none opacity-70" : ""}`}
       aria-busy={isNavigating}
@@ -81,9 +79,9 @@ export function ProductCard({ title, slug, price, image, contentType, index = 0,
             src={imageUrl}
             alt={title}
             fill
+            priority={index < 4}
             sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, 20vw"
             className="object-cover transition-all duration-700 ease-out group-hover:scale-[1.03]"
-            unoptimized={isBlobUrl}
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center text-muted-foreground">

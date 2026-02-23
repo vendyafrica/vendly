@@ -91,7 +91,7 @@ export function ProductActions({ product }: ProductActionsProps) {
   const wishlisted = isInWishlist(product.id);
 
   return (
-    <div className="max-w-sm mt-1">
+    <div className="w-full mt-1">
       {/* Quantity */}
       <div className="flex items-center justify-between border-b border-neutral-100 pb-5 mb-5">
         <span className="text-xs font-semibold uppercase tracking-wider text-neutral-500">Quantity</span>
@@ -113,37 +113,40 @@ export function ProductActions({ product }: ProductActionsProps) {
       </div>
 
       {/* Buttons */}
-      <div className="grid gap-3 pt-4">
+      <div className="pt-2">
         <Button
           onClick={handleAddToCart}
-          className="w-full h-12 rounded-none bg-primary text-white hover:bg-primary/80 uppercase text-xs tracking-widest font-semibold transition-colors"
+          className="w-full h-[52px] rounded-full bg-neutral-900 text-white hover:bg-neutral-800 text-base font-medium transition-colors mb-3"
           disabled={isAdded}
         >
           {isAdded ? (
             <span className="flex items-center gap-2">
-              <HugeiconsIcon icon={Tick02Icon} size={16} />
-              Added to Bag
+              <HugeiconsIcon icon={Tick02Icon} size={18} />
+              Added
             </span>
           ) : (
-            "Add to Bag"
+            `Purchase at ${product.store.name}`
           )}
         </Button>
-        <Button
-          onClick={handleToggleWishlist}
-          variant="outline"
-          className={`h-12 rounded-none border text-xs font-semibold uppercase tracking-widest transition-all flex items-center justify-center gap-2 ${wishlisted
-              ? "border-neutral-900 text-neutral-900 bg-neutral-50"
-              : "border-neutral-200 text-neutral-800 hover:border-neutral-900 hover:text-neutral-900"
-            }`}
-          aria-pressed={wishlisted}
-        >
-          <HugeiconsIcon
-            icon={FavouriteIcon}
-            size={16}
-            className={wishlisted ? "fill-neutral-900 text-neutral-900" : "text-neutral-600"}
-          />
-          {wishlisted ? "Saved" : "Save to Wishlist"}
-        </Button>
+
+        <div className="grid grid-cols-1 gap-3">
+          <Button
+            onClick={handleToggleWishlist}
+            variant="outline"
+            className={`h-[52px] rounded-full border text-[15px] font-medium transition-all flex items-center justify-center gap-2.5 ${wishlisted
+              ? "border-primary-500 text-primary-500 bg-primary-50"
+              : "border-neutral-200 text-neutral-900 hover:border-neutral-300 hover:bg-neutral-50"
+              }`}
+            aria-pressed={wishlisted}
+          >
+            <HugeiconsIcon
+              icon={FavouriteIcon}
+              size={18}
+              className={wishlisted ? "fill-neutral-900 text-neutral-900" : "text-neutral-900"}
+            />
+            {wishlisted ? "Saved" : "Save"}
+          </Button>
+        </div>
       </div>
     </div>
   );

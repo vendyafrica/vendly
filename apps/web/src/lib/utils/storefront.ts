@@ -6,7 +6,7 @@ export function getStorefrontUrl(storeSlug: string, path: string = "") {
     const formattedPath = path && !path.startsWith("/") ? `/${path}` : path;
 
     if (isLocalhost) {
-        return `http://${storeSlug}.localhost:3000${formattedPath}`;
+        return `http://localhost:3000/${storeSlug}${formattedPath}`;
     }
 
     return `https://${storeSlug}.${rootDomain}${formattedPath}`;

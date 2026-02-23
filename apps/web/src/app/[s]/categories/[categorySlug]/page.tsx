@@ -1,8 +1,34 @@
-import { marketplaceService } from "@/lib/services/marketplace-service";
 import { notFound } from "next/navigation";
 import { ProductGrid } from "../../components/product-grid";
 import { Categories } from "../../components/categories";
 import type { Metadata } from "next";
+import { headers } from "next/headers";
+
+type StorefrontStore = {
+  id: string;
+  name: string;
+  slug: string;
+  description: string | null;
+  logoUrl?: string | null;
+  heroMedia?: string[];
+};
+
+type StorefrontProduct = {
+  id: string;
+  slug: string;
+  name: string;
+  price: number;
+  currency: string;
+  image: string | null;
+  contentType?: string | null;
+};
+
+const getApiBaseUrl = async () => {
+  const headerList = await headers();
+  const host = headerList.get("x-forwarded-host") || headerList.get("host");
+  const proto = headerList.get("x-forwarded-proto") || "https";
+  return host ? `${proto}://${host}` : process.env.WEB_URL || "https://shopvendly.store";
+};
 
 interface PageProps {
   params: Promise<{ s: string; categorySlug: string }>;
@@ -11,8 +37,9 @@ interface PageProps {
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { s, categorySlug } = await params;
-
-  const store = await marketplaceService.getStoreDetails(s);
+  const baseUrl = await getApiBaseUrl();
+  const storeRes = await fetch(`${baseUrl}/api/storefront/${s}`, { next: { revalidate: 60 } });
+  const store = storeRes.ok ? (await storeRes.json()) as StorefrontStore : null;
 
   if (!store) {
     return {
@@ -54,10 +81,16 @@ export default async function StorefrontCategoryPage({ params, searchParams }: P
   const search = resolvedSearchParams?.q;
   const query = Array.isArray(search) ? search[0] : search;
 
-  const store = await marketplaceService.getStoreDetails(s);
+  const baseUrl = await getApiBaseUrl();
+  const storeRes = await fetch(`${baseUrl}/api/storefront/${s}`, { next: { revalidate: 60 } });
+  const store = storeRes.ok ? (await storeRes.json()) as StorefrontStore : null;
   if (!store) notFound();
 
-  const products = await marketplaceService.getStoreProductsByCategorySlug(s, categorySlug, query);
+  const productUrl = new URL(`${baseUrl}/api/storefront/${s}/products`);
+  productUrl.searchParams.set("category", categorySlug);
+  if (query) productUrl.searchParams.set("q", query);
+  const productsRes = await fetch(productUrl.toString(), { next: { revalidate: 30 } });
+  const products = productsRes.ok ? (await productsRes.json()) as StorefrontProduct[] : [];
 
   return (
     <div className="min-h-screen">

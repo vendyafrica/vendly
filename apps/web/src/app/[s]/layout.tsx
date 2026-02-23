@@ -2,17 +2,45 @@ import type { ReactNode } from "react";
 import MarketplaceLayout from "../(m)/layout";
 import { StorefrontHeader } from "./components/header";
 import { NavigationOverlayProvider } from "./components/navigation-overlay";
+import { headers } from "next/headers";
 
-export default function StorefrontLayout({
-  children,
-}: {
+type StorefrontStore = {
+  name: string;
+  slug: string;
+  logoUrl?: string | null;
+};
+
+const getApiBaseUrl = async () => {
+  const headerList = await headers();
+  const host = headerList.get("x-forwarded-host") || headerList.get("host");
+  const proto = headerList.get("x-forwarded-proto") || "https";
+  return host ? `${proto}://${host}` : process.env.WEB_URL || "https://shopvendly.store";
+};
+
+interface LayoutProps {
   children: ReactNode;
-}) {
+  params: Promise<{ s: string }>;
+}
+
+export default async function StorefrontLayout({ children, params }: LayoutProps) {
+  const { s } = await params;
+  const baseUrl = await getApiBaseUrl();
+  const storeRes = await fetch(`${baseUrl}/api/storefront/${s}`, { next: { revalidate: 60 } });
+  const store = storeRes.ok ? await storeRes.json() as StorefrontStore : null;
+
+  const initialStore = store
+    ? {
+        name: store.name,
+        slug: store.slug,
+        logoUrl: store.logoUrl ?? undefined,
+      }
+    : null;
+
   return (
     <MarketplaceLayout>
       <NavigationOverlayProvider>
         <div className="relative min-h-screen bg-background text-foreground antialiased">
-          <StorefrontHeader />
+          <StorefrontHeader initialStore={initialStore} />
           <main className="flex flex-col w-full">{children}</main>
         </div>
       </NavigationOverlayProvider>

@@ -39,7 +39,6 @@ export function ProductGrid({ products }: ProductGridProps) {
                     key={product.id}
                     index={index}
                     title={product.name}
-                    id={product.id}
                     slug={product.slug}
                     price={formatPrice(product.price, product.currency)}
                     image={product.image}

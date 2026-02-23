@@ -8,9 +8,13 @@ import { eq, inArray, and } from "@vendly/db";
 import { z } from "zod";
 
 const bulkUpdateSchema = z.object({
-    ids: z.array(z.string()),
+    // Allow strings, then filter to UUIDs to be lenient with temporary client IDs
+    ids: z.array(z.string(), { message: "ids must be strings" }),
     action: z.enum(["publish", "archive", "delete"]),
 });
+
+const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+const isUuid = (value: string) => uuidRegex.test(value);
 
 export async function POST(request: NextRequest) {
     try {
@@ -31,6 +35,11 @@ export async function POST(request: NextRequest) {
         const body = await request.json();
         const { ids, action } = bulkUpdateSchema.parse(body);
 
+        const validIds = ids.filter(isUuid);
+        if (validIds.length === 0) {
+            return NextResponse.json({ count: 0, skipped: ids.length });
+        }
+
         if (ids.length === 0) {
             return NextResponse.json({ count: 0 });
         }
@@ -39,7 +48,7 @@ export async function POST(request: NextRequest) {
             await db.update(products)
                 .set({ status: "active", updatedAt: new Date() })
                 .where(and(
-                    inArray(products.id, ids),
+                    inArray(products.id, validIds),
                     eq(products.tenantId, membership.tenantId)
                 ));
         } else if (action === "archive") {
@@ -53,12 +62,12 @@ export async function POST(request: NextRequest) {
             await db.update(products)
                 .set({ deletedAt: new Date(), updatedAt: new Date() })
                 .where(and(
-                    inArray(products.id, ids),
+                    inArray(products.id, validIds),
                     eq(products.tenantId, membership.tenantId)
                 ));
         }
 
-        return NextResponse.json({ success: true, count: ids.length });
+        return NextResponse.json({ success: true, count: validIds.length, skipped: ids.length - validIds.length });
     } catch (error) {
         console.error("Bulk update failed:", error);
         return NextResponse.json({ error: "Bulk update failed" }, { status: 500 });

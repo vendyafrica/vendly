@@ -5,6 +5,22 @@ type RouteParams = {
     params: Promise<{ slug: string; productSlug: string }>;
 };
 
+type ProductMedia = {
+    media?: { url?: string | null; blobUrl?: string | null; contentType?: string | null } | null;
+};
+
+type StorefrontProduct = {
+    id: string;
+    slug: string | null;
+    productName: string;
+    description: string | null;
+    priceAmount: unknown;
+    currency: string;
+    media?: ProductMedia[];
+    styleGuideEnabled?: boolean | null;
+    styleGuideType?: string | null;
+};
+
 /**
  * GET /api/storefront/[slug]/products/[productSlug]
  * Returns a single product by slug
@@ -18,7 +34,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
             return NextResponse.json({ error: "Store not found" }, { status: 404 });
         }
 
-        const product = await storefrontService.getStoreProductBySlug(store.id, productSlug);
+        const product = await storefrontService.getStoreProductBySlug(store.id, productSlug) as StorefrontProduct | undefined;
 
         if (!product) {
             return NextResponse.json({ error: "Product not found" }, { status: 404 });
@@ -26,16 +42,22 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 
         return NextResponse.json({
             id: product.id,
-            slug: product.productName.toLowerCase().replace(/\s+/g, "-"),
+            slug: product.slug || product.productName.toLowerCase().replace(/\s+/g, "-"),
             name: product.productName,
             description: product.description,
-            price: product.priceAmount,
+            price: Number(product.priceAmount || 0),
             currency: product.currency,
-            styleGuideEnabled: Boolean((product as any)?.styleGuideEnabled),
-            styleGuideType: (product as any)?.styleGuideType ?? "clothes",
-            images: product.media
-                .map((m: any) => m.media?.url ?? m.media?.blobUrl ?? null)
+            styleGuideEnabled: Boolean(product.styleGuideEnabled),
+            styleGuideType: product.styleGuideType ?? "clothes",
+            images: (product.media ?? [])
+                .map((m) => m.media?.url ?? m.media?.blobUrl ?? null)
                 .filter(Boolean),
+            mediaItems: (product.media ?? [])
+                .map((m) => ({
+                    url: m.media?.url ?? m.media?.blobUrl ?? null,
+                    contentType: m.media?.contentType ?? null,
+                }))
+                .filter((m) => Boolean(m.url)),
             rating: 0,
             store: {
                 id: store.id,

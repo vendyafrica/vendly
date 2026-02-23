@@ -1,37 +1,71 @@
-import { ProductDetails } from "../../components/product-details";
-import { ProductGridReveal } from "../../components/product-grid-reveal";
-import { StorefrontFooter } from "../../components/footer";
-import { marketplaceService } from "@/lib/services/marketplace-service";
-import { notFound, redirect } from "next/navigation";
+import { ProductDetails } from "../components/product-details";
+import { ProductGridReveal } from "../components/product-grid-reveal";
+import { StorefrontFooter } from "../components/footer";
+import { notFound } from "next/navigation";
 import type { Metadata } from "next";
+import { headers } from "next/headers";
 
 const siteUrl = process.env.WEB_URL || "https://shopvendly.store";
 
-function isUuid(value: string) {
-  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
-}
+type StorefrontStore = {
+  id: string;
+  name: string;
+  slug: string;
+  description: string | null;
+  logoUrl?: string | null;
+  heroMedia?: string[];
+  categories?: string[];
+};
+
+type StorefrontProduct = {
+  id: string;
+  slug: string;
+  name: string;
+  description?: string | null;
+  price: number;
+  currency: string;
+  images: string[];
+  mediaItems?: { url: string; contentType?: string | null }[];
+  rating?: number;
+  store: {
+    id: string;
+    name: string;
+    slug: string;
+  };
+};
+
+type StorefrontProductListItem = {
+  id: string;
+  slug: string;
+  name: string;
+  price: number;
+  currency: string;
+  image: string | null;
+  contentType?: string | null;
+  rating?: number;
+};
+
+const getApiBaseUrl = async () => {
+  const headerList = await headers();
+  const host = headerList.get("x-forwarded-host") || headerList.get("host");
+  const proto = headerList.get("x-forwarded-proto") || "https";
+  return host ? `${proto}://${host}` : process.env.WEB_URL || "https://shopvendly.store";
+};
 
 interface PageProps {
   params: Promise<{
     s: string;
-    productId: string;
     productSlug: string;
   }>;
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-  const { s, productId } = await params;
-
-  if (!isUuid(productId)) {
-    return {
-      title: "Product not found | ShopVendly",
-      description: "Browse independent sellers on ShopVendly.",
-      robots: { index: false, follow: false },
-    };
-  }
-
-  const store = await marketplaceService.getStoreDetails(s);
-  const product = await marketplaceService.getStoreProductById(s, productId);
+  const { s, productSlug } = await params;
+  const baseUrl = await getApiBaseUrl();
+  const storeRes = await fetch(`${baseUrl}/api/storefront/${s}`, { next: { revalidate: 60 } });
+  const store = storeRes.ok ? (await storeRes.json()) as StorefrontStore : null;
+  const productRes = await fetch(`${baseUrl}/api/storefront/${s}/products/${productSlug}`, { next: { revalidate: 60 } });
+  const product = productRes.ok ? (await productRes.json()) as StorefrontProduct : null;
 
   if (!store || !product) {
     return {
@@ -41,7 +75,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     };
   }
 
-  const canonical = `/${store.slug}/${product.id}/${product.slug}`;
+  const canonical = `/${store.slug}/${product.slug}`;
   const ogImage = product.images?.[0] || store.logoUrl || "/og-image.png";
 
   const title = `${product.name} by ${store.name} | ShopVendly`;
@@ -70,30 +104,21 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 }
 
 export default async function ProductPage({ params }: PageProps) {
-  const { s, productId, productSlug } = await params;
-
-  if (!isUuid(productId)) {
-    notFound();
-  }
-
-  const store = await marketplaceService.getStoreDetails(s);
-  const product = await marketplaceService.getStoreProductById(s, productId);
-  const products = (await marketplaceService.getStoreProducts(s)).map((p) => ({
-    ...p,
-    rating: 0,
-  }));
+  const { s, productSlug } = await params;
+  const baseUrl = await getApiBaseUrl();
+  const storeRes = await fetch(`${baseUrl}/api/storefront/${s}`, { next: { revalidate: 60 } });
+  const store = storeRes.ok ? (await storeRes.json()) as StorefrontStore : null;
+  const productRes = await fetch(`${baseUrl}/api/storefront/${s}/products/${productSlug}`, { next: { revalidate: 60 } });
+  const product = productRes.ok ? (await productRes.json()) as StorefrontProduct : null;
+  const productsRes = await fetch(`${baseUrl}/api/storefront/${s}/products`, { next: { revalidate: 30 } });
+  const products = productsRes.ok ? (await productsRes.json()) as StorefrontProductListItem[] : [];
 
   if (!store || !product) {
     notFound();
   }
 
-  const canonicalPath = `/${store.slug}/${product.id}/${product.slug}`;
-  const currentPath = `/${s}/${productId}/${productSlug}`;
-  const storeCategories = (store as { categories?: string[] }).categories ?? [];
-
-  if (currentPath !== canonicalPath) {
-    redirect(canonicalPath);
-  }
+  const canonicalPath = `/${store.slug}/${product.slug}`;
+  const storeCategories = store.categories ?? [];
 
   const productImage = product.images?.[0] || store.logoUrl || "";
   const productJsonLd = {
@@ -155,7 +180,7 @@ export default async function ProductPage({ params }: PageProps) {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-28 pb-12 md:pt-32 md:pb-20">
         <ProductDetails product={product} storeCategories={storeCategories} />
       </div>
-      <ProductGridReveal products={products} />
+      <ProductGridReveal products={products.map((p) => ({ ...p, rating: p.rating ?? 0 }))} />
       <StorefrontFooter store={store} />
     </main>
   );
