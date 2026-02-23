@@ -32,8 +32,8 @@ export function ProductGridReveal({ products = [] }: ProductGridRevealProps) {
 
     return (
         <section className={`transition-all duration-500 ease-out ${visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6 pointer-events-none"}`}>
-            <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 py-10 md:py-14">
-                <div className="flex items-center justify-between mb-4">
+            <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-5 py-8 md:py-10">
+                <div className="flex items-center justify-between mb-3">
                     <h2 className="text-xl sm:text-2xl font-semibold text-neutral-900">More looks</h2>
                 </div>
                 <ProductGrid products={products} />

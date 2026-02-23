@@ -177,7 +177,7 @@ export default async function ProductPage({ params }: PageProps) {
         suppressHydrationWarning
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
       />
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-28 pb-12 md:pt-32 md:pb-20">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-26 pb-8 md:pt-30 md:pb-12">
         <ProductDetails product={product} storeCategories={storeCategories} />
       </div>
       <ProductGridReveal products={products.map((p) => ({ ...p, rating: p.rating ?? 0 }))} />

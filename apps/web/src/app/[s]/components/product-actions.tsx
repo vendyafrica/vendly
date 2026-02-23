@@ -116,7 +116,7 @@ export function ProductActions({ product }: ProductActionsProps) {
       <div className="pt-2">
         <Button
           onClick={handleAddToCart}
-          className="w-full h-[52px] rounded-full bg-neutral-900 text-white hover:bg-neutral-800 text-base font-medium transition-colors mb-3"
+          className="w-full h-[52px] rounded-full bg-primary text-primary-foreground hover:bg-primary/80 text-base font-medium transition-colors mb-3"
           disabled={isAdded}
         >
           {isAdded ? (
@@ -133,10 +133,11 @@ export function ProductActions({ product }: ProductActionsProps) {
           <Button
             onClick={handleToggleWishlist}
             variant="outline"
-            className={`h-[52px] rounded-full border text-[15px] font-medium transition-all flex items-center justify-center gap-2.5 ${wishlisted
-              ? "border-primary-500 text-primary-500 bg-primary-50"
-              : "border-neutral-200 text-neutral-900 hover:border-neutral-300 hover:bg-neutral-50"
-              }`}
+            className={`h-[52px] rounded-full border text-[15px] font-medium transition-all flex items-center justify-center gap-2.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:border-primary/50 focus-visible:ring-primary/10 ${
+              wishlisted
+                ? "border-primary text-primary bg-primary/5"
+                : "border-neutral-200 text-neutral-900 hover:border-neutral-300 hover:bg-neutral-50"
+            }`}
             aria-pressed={wishlisted}
           >
             <HugeiconsIcon

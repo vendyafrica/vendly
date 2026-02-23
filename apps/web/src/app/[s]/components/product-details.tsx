@@ -36,6 +36,7 @@ interface ProductDetailsProps {
             logoUrl?: string | null;
         };
     };
+    storeCategories?: string[];
 }
 
 export function ProductDetails({ product }: ProductDetailsProps) {
