@@ -10,6 +10,8 @@ import { useRecentlyViewed } from "@/hooks/use-recently-viewed";
 import { trackStorefrontEvents } from "@/lib/storefront-tracking";
 import { ProductActions } from "./product-actions";
 import { Bricolage_Grotesque } from "next/font/google";
+import { signInWithOneTap } from "@vendly/auth/react";
+import { useAppSession } from "@/contexts/app-session-context";
 
 const geistSans = Bricolage_Grotesque({
     variable: "--font-bricolage-grotesque",
@@ -29,6 +31,8 @@ interface ProductDetailsProps {
         mediaItems?: { url: string; contentType?: string | null }[];
         videos?: string[];
         rating?: number;
+        ratingCount?: number;
+        userRating?: number | null;
         store: {
             id: string;
             name: string;
@@ -42,6 +46,7 @@ interface ProductDetailsProps {
 export function ProductDetails({ product }: ProductDetailsProps) {
 
     const { addToRecentlyViewed } = useRecentlyViewed();
+    const { session } = useAppSession();
 
     useEffect(() => {
         if (!product?.store?.slug || !product?.id) return;
@@ -74,9 +79,80 @@ export function ProductDetails({ product }: ProductDetailsProps) {
 
     const [selectedMediaIndex, setSelectedMediaIndex] = useState(0);
 
-    const ratingValue = typeof product.rating === "number" && Number.isFinite(product.rating)
+    const initialRating = typeof product.rating === "number" && Number.isFinite(product.rating)
         ? product.rating
         : 0;
+
+    const [averageRating, setAverageRating] = useState(initialRating);
+    const [ratingCount, setRatingCount] = useState(product.ratingCount ?? 0);
+    const [userRating, setUserRating] = useState<number | null>(product.userRating ?? null);
+    const [isSubmittingRating, setIsSubmittingRating] = useState(false);
+    const [hoverRating, setHoverRating] = useState<number | null>(null);
+
+    useEffect(() => {
+        setAverageRating(initialRating);
+        setRatingCount(product.ratingCount ?? 0);
+        setUserRating(product.userRating ?? null);
+    }, [initialRating, product.ratingCount, product.userRating]);
+
+    const handleSubmitRating = async (value: number) => {
+        if (isSubmittingRating) return;
+
+        if (!session?.user?.id) {
+            try {
+                await signInWithOneTap();
+            } catch (err) {
+                console.error("One Tap failed", err);
+            }
+            return;
+        }
+
+        const prevAverage = averageRating;
+        const prevCount = ratingCount;
+        const prevUserRating = userRating;
+
+        // Optimistic update
+        let nextAverage = averageRating;
+        let nextCount = ratingCount;
+        if (userRating == null) {
+            nextCount = ratingCount + 1;
+            nextAverage = ((averageRating * ratingCount) + value) / nextCount;
+        } else {
+            nextAverage = ((averageRating * ratingCount) - userRating + value) / ratingCount;
+        }
+
+        setAverageRating(nextAverage);
+        setRatingCount(nextCount);
+        setUserRating(value);
+        setIsSubmittingRating(true);
+        try {
+            const res = await fetch(`/api/storefront/${product.store.slug}/products/${product.slug}/rating`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ rating: value }),
+            });
+
+            if (!res.ok) {
+                console.error("Failed to submit rating", await res.text());
+                setAverageRating(prevAverage);
+                setRatingCount(prevCount);
+                setUserRating(prevUserRating ?? null);
+                return;
+            }
+
+            const data = await res.json();
+            setAverageRating(typeof data.rating === "number" ? data.rating : value);
+            setRatingCount(typeof data.ratingCount === "number" ? data.ratingCount : ratingCount);
+            setUserRating(value);
+        } catch (error) {
+            console.error("Error submitting rating", error);
+            setAverageRating(prevAverage);
+            setRatingCount(prevCount);
+            setUserRating(prevUserRating ?? null);
+        } finally {
+            setIsSubmittingRating(false);
+        }
+    };
 
     const FALLBACK_PRODUCT_IMAGE = "https://cdn.cosmos.so/25e7ef9d-3d95-486d-b7db-f0d19c1992d7?format=jpeg";
 
@@ -176,18 +252,42 @@ export function ProductDetails({ product }: ProductDetailsProps) {
                             {product.name}
                         </h1>
 
-                        <div className="flex items-center gap-1 mb-5">
-                            <HugeiconsIcon icon={StarIcon} size={16} className="fill-yellow-400 text-yellow-400" />
-                            <HugeiconsIcon icon={StarIcon} size={16} className="fill-yellow-400 text-yellow-400" />
-                            <HugeiconsIcon icon={StarIcon} size={16} className="fill-yellow-400 text-yellow-400" />
-                            <HugeiconsIcon icon={StarIcon} size={16} className="fill-yellow-400 text-yellow-400" />
-                            <HugeiconsIcon icon={StarIcon} size={16} className="fill-yellow-400 text-yellow-400" />
-                            <span className="text-sm font-medium text-neutral-900 ml-1">
-                                {ratingValue.toFixed(1) !== "NaN" ? ratingValue.toFixed(1) : "0.0"}
-                            </span>
-                            <span className="text-sm text-neutral-600 underline ml-1 cursor-pointer">
-                                {ratingValue > 0 ? "473 ratings" : "0 ratings"}
-                            </span>
+                        <div className="flex flex-col gap-2 mb-5">
+                            <div className="flex items-center gap-1">
+                                {Array.from({ length: 5 }).map((_, idx) => {
+                                    const activeValue = hoverRating ?? userRating ?? Math.round(averageRating);
+                                    const filled = activeValue >= idx + 1;
+                                    return (
+                                        <button
+                                            key={idx}
+                                            type="button"
+                                            onClick={() => handleSubmitRating(idx + 1)}
+                                            onMouseEnter={() => setHoverRating(idx + 1)}
+                                            onMouseLeave={() => setHoverRating(null)}
+                                            disabled={isSubmittingRating}
+                                            className="p-1 text-yellow-500 disabled:opacity-50"
+                                            aria-label={`Rate ${idx + 1} stars`}
+                                        >
+                                            <HugeiconsIcon
+                                                icon={StarIcon}
+                                                size={18}
+                                                className={filled ? "fill-yellow-400 text-yellow-400" : "text-neutral-300"}
+                                            />
+                                        </button>
+                                    );
+                                })}
+                                <span className="text-sm font-medium text-neutral-900 ml-2">
+                                    {Number.isFinite(averageRating) ? averageRating.toFixed(1) : "0.0"}
+                                </span>
+                                <span className="text-sm text-neutral-600 ml-1">
+                                    ({ratingCount || 0} ratings)
+                                </span>
+                            </div>
+                            {userRating ? (
+                                <span className="text-xs text-neutral-600">You rated this {userRating}★</span>
+                            ) : (
+                                <span className="text-xs text-neutral-500">Tap to rate</span>
+                            )}
                         </div>
 
                         <div className="flex items-center gap-3">

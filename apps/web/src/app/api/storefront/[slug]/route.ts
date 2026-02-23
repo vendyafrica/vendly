@@ -18,6 +18,8 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
             return NextResponse.json({ error: "Store not found" }, { status: 404 });
         }
 
+        const rating = await storefrontService.getStoreRatingAggregate(store.id);
+
         return NextResponse.json({
             id: store.id,
             tenantId: store.tenantId,
@@ -27,6 +29,8 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
             logoUrl: store.logoUrl ?? null,
             heroMedia: store.heroMedia,
             categories: (store as { categories?: string[] }).categories ?? [],
+            rating: rating.rating,
+            ratingCount: rating.ratingCount,
         });
     } catch (error) {
         console.error("Error fetching store data:", error);

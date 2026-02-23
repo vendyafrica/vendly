@@ -1,4 +1,4 @@
-import { db, stores, products, eq, and, isNull, instagramAccounts, inArray } from "@vendly/db";
+import { db, stores, products, productRatings, eq, and, isNull, instagramAccounts, inArray, sql } from "@vendly/db";
 import { cache } from "react";
 
 /**
@@ -30,6 +30,24 @@ function slugifyName(name: string): string {
 
 function resolveProductSlug(product: { slug: string | null; productName: string }): string {
     return product.slug || slugifyName(product.productName || "");
+}
+
+type RatingAggregate = { average: number; count: number };
+
+async function getRatingsMap(productIds: string[]): Promise<Map<string, RatingAggregate>> {
+    if (productIds.length === 0) return new Map();
+
+    const rows = await db
+        .select({
+            productId: productRatings.productId,
+            average: sql<number>`avg(${productRatings.rating})`,
+            count: sql<number>`count(${productRatings.id})`,
+        })
+        .from(productRatings)
+        .where(inArray(productRatings.productId, productIds))
+        .groupBy(productRatings.productId);
+
+    return new Map(rows.map((row) => [row.productId, { average: Number(row.average) || 0, count: Number(row.count) || 0 }]));
 }
 
 export const storefrontService = {
@@ -69,11 +87,20 @@ export const storefrontService = {
             },
         });
 
+        const ratingMap = await getRatingsMap(productsForStore.map((p) => p.id));
+
         const filtered = normalizedQuery
             ? productsForStore.filter((product) => product.productName?.toLowerCase().includes(normalizedQuery))
             : productsForStore;
 
-        return filtered;
+        return filtered.map((product) => {
+            const rating = ratingMap.get(product.id);
+            return {
+                ...product,
+                rating: rating?.average ?? 0,
+                ratingCount: rating?.count ?? 0,
+            };
+        });
     },
 
     /**
@@ -95,7 +122,16 @@ export const storefrontService = {
             },
         });
 
-        if (bySlug) return bySlug;
+        if (bySlug) {
+            const ratingMap = await getRatingsMap([bySlug.id]);
+            const rating = ratingMap.get(bySlug.id);
+
+            return {
+                ...bySlug,
+                rating: rating?.average ?? 0,
+                ratingCount: rating?.count ?? 0,
+            };
+        }
 
         const fallbackProducts = await db.query.products.findMany({
             where: and(
@@ -119,7 +155,49 @@ export const storefrontService = {
             },
         });
 
-        return fallbackProducts.find((product) => resolveProductSlug(product) === productSlug);
+        const match = fallbackProducts.find((product) => resolveProductSlug(product) === productSlug);
+
+        if (!match) return undefined;
+
+        const ratingMap = await getRatingsMap([match.id]);
+        const rating = ratingMap.get(match.id);
+
+        return {
+            ...match,
+            rating: rating?.average ?? 0,
+            ratingCount: rating?.count ?? 0,
+        };
+    },
+
+    async getStoreProductWithRating(storeId: string, productSlug: string) {
+        const product = await this.getStoreProductBySlug(storeId, productSlug);
+        if (!product) return undefined;
+
+        const ratingMap = await getRatingsMap([product.id]);
+        const rating = ratingMap.get(product.id);
+
+        return {
+            ...product,
+            rating: rating?.average ?? 0,
+            ratingCount: rating?.count ?? 0,
+        };
+    },
+
+    async getStoreRatingAggregate(storeId: string) {
+        const rows = await db
+            .select({
+                average: sql<number>`avg(${productRatings.rating})`,
+                count: sql<number>`count(${productRatings.id})`,
+            })
+            .from(productRatings)
+            .innerJoin(products, eq(products.id, productRatings.productId))
+            .where(eq(products.storeId, storeId));
+
+        const row = rows[0];
+        return {
+            rating: row ? Number(row.average) || 0 : 0,
+            ratingCount: row ? Number(row.count) || 0 : 0,
+        };
     },
 
     async getStoreProductsByCategorySlug(storeId: string, categorySlug: string, query?: string) {
@@ -162,10 +240,19 @@ export const storefrontService = {
             },
         });
 
+        const ratingMap = await getRatingsMap(productsForStore.map((p) => p.id));
+
         const filtered = normalizedQuery
             ? productsForStore.filter((product) => product.productName?.toLowerCase().includes(normalizedQuery))
             : productsForStore;
 
-        return filtered;
+        return filtered.map((product) => {
+            const rating = ratingMap.get(product.id);
+            return {
+                ...product,
+                rating: rating?.average ?? 0,
+                ratingCount: rating?.count ?? 0,
+            };
+        });
     }
 };

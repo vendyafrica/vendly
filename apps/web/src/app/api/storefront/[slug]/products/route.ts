@@ -16,6 +16,8 @@ type StorefrontProduct = {
     priceAmount: unknown;
     currency: string;
     media?: ProductMedia[];
+    rating?: number;
+    ratingCount?: number;
 };
 
 /**
@@ -47,7 +49,8 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
                 currency: product.currency,
                 image: product.media?.[0]?.media?.url ?? product.media?.[0]?.media?.blobUrl ?? null,
                 contentType: product.media?.[0]?.media?.contentType ?? null,
-                rating: 0,
+                rating: product.rating ?? 0,
+                ratingCount: product.ratingCount ?? 0,
             }))
         );
     } catch (error) {

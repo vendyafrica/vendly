@@ -1,4 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
+import { headers } from "next/headers";
+import { auth } from "@vendly/auth";
+import { db, eq, and, productRatings } from "@vendly/db";
 import { storefrontService } from "@/lib/services/storefront-service";
 
 type RouteParams = {
@@ -19,6 +22,8 @@ type StorefrontProduct = {
     media?: ProductMedia[];
     styleGuideEnabled?: boolean | null;
     styleGuideType?: string | null;
+    rating?: number;
+    ratingCount?: number;
 };
 
 /**
@@ -29,15 +34,29 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     try {
         const { slug, productSlug } = await params;
         const store = await storefrontService.findStoreBySlug(slug);
+        const headerList = await headers();
+        const session = await auth.api.getSession({ headers: headerList });
 
         if (!store) {
             return NextResponse.json({ error: "Store not found" }, { status: 404 });
         }
 
-        const product = await storefrontService.getStoreProductBySlug(store.id, productSlug) as StorefrontProduct | undefined;
+        const product = await storefrontService.getStoreProductWithRating(store.id, productSlug) as StorefrontProduct | undefined;
 
         if (!product) {
             return NextResponse.json({ error: "Product not found" }, { status: 404 });
+        }
+
+        let userRating: number | null = null;
+
+        if (session?.user?.id) {
+            const existing = await db.query.productRatings.findFirst({
+                where: and(
+                    eq(productRatings.productId, product.id),
+                    eq(productRatings.userId, session.user.id)
+                ),
+            });
+            userRating = existing?.rating ?? null;
         }
 
         return NextResponse.json({
@@ -58,7 +77,9 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
                     contentType: m.media?.contentType ?? null,
                 }))
                 .filter((m) => Boolean(m.url)),
-            rating: 0,
+            rating: product.rating ?? 0,
+            ratingCount: product.ratingCount ?? 0,
+            userRating,
             store: {
                 id: store.id,
                 name: store.name,

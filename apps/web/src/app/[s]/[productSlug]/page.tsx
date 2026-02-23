@@ -27,6 +27,8 @@ type StorefrontProduct = {
   images: string[];
   mediaItems?: { url: string; contentType?: string | null }[];
   rating?: number;
+  ratingCount?: number;
+  userRating?: number | null;
   store: {
     id: string;
     name: string;
@@ -43,6 +45,7 @@ type StorefrontProductListItem = {
   image: string | null;
   contentType?: string | null;
   rating?: number;
+  ratingCount?: number;
 };
 
 const getApiBaseUrl = async () => {

@@ -9,12 +9,14 @@ import {
   boolean,
   index,
   unique,
+  smallint,
 } from "drizzle-orm/pg-core";
 
 import { tenants } from "./tenant-schema";
 import { stores } from "./storefront-schema";
 import { mediaObjects } from "./media-schema";
 import { categories } from "./category-schema";
+import { users } from "./auth-schema";
 
 export const products = pgTable(
   "products",
@@ -64,6 +66,30 @@ export const products = pgTable(
     unique("products_store_slug_unique").on(table.storeId, table.slug),
   ],
 
+);
+
+export const productRatings = pgTable(
+  "product_ratings",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    productId: uuid("product_id")
+      .notNull()
+      .references(() => products.id, { onDelete: "cascade" }),
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    rating: smallint("rating").notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at")
+      .defaultNow()
+      .$onUpdate(() => new Date())
+      .notNull(),
+  },
+  (table) => [
+    unique("product_ratings_product_user_unique").on(table.productId, table.userId),
+    index("product_ratings_product_idx").on(table.productId),
+    index("product_ratings_user_idx").on(table.userId),
+  ],
 );
 
 export const productMedia = pgTable(
@@ -146,6 +172,18 @@ export const productsRelations = relations(products, ({ one, many }) => ({
     references: [stores.id],
   }),
   media: many(productMedia),
+  ratings: many(productRatings),
+}));
+
+export const productRatingsRelations = relations(productRatings, ({ one }) => ({
+  product: one(products, {
+    fields: [productRatings.productId],
+    references: [products.id],
+  }),
+  user: one(users, {
+    fields: [productRatings.userId],
+    references: [users.id],
+  }),
 }));
 
 export const productMediaRelations = relations(productMedia, ({ one }) => ({
@@ -171,3 +209,5 @@ export type NewProduct = typeof products.$inferInsert;
 
 export type ProductMedia = typeof productMedia.$inferSelect;
 export type NewProductMedia = typeof productMedia.$inferInsert;
+export type ProductRating = typeof productRatings.$inferSelect;
+export type NewProductRating = typeof productRatings.$inferInsert;
