@@ -17,10 +17,27 @@ const VIDEO_EXTENSIONS = [".mp4", ".webm", ".ogg"];
 function isVideoUrl(url: string) {
     try {
         const parsed = new URL(url);
-        return VIDEO_EXTENSIONS.some((ext) => parsed.pathname.toLowerCase().endsWith(ext));
+        const pathname = parsed.pathname.toLowerCase();
+
+        // UploadThing (and similar) keeps the mime type in a query param.
+        const typeParam = parsed.searchParams.get("x-ut-file-type") || parsed.searchParams.get("file-type");
+        if (typeParam && typeParam.toLowerCase().startsWith("video")) return true;
+
+        // Otherwise rely on the path extension.
+        const hasVideoExt = VIDEO_EXTENSIONS.some((ext) => pathname.endsWith(ext));
+        if (hasVideoExt) return true;
+
+        // UploadThing direct file links (ufs.sh) often have no extension; treat unknown extensionless URLs as video to avoid Next/Image errors.
+        const hasNoExtension = !pathname.includes(".");
+        return hasNoExtension;
     } catch {
         const cleanUrl = url.split("?")[0]?.split("#")[0] ?? url;
-        return VIDEO_EXTENSIONS.some((ext) => cleanUrl.toLowerCase().endsWith(ext));
+        const lower = cleanUrl.toLowerCase();
+        const hasVideoExt = VIDEO_EXTENSIONS.some((ext) => lower.endsWith(ext));
+        if (hasVideoExt) return true;
+
+        const hasNoExtension = !lower.includes(".");
+        return hasNoExtension;
     }
 }
 
@@ -28,6 +45,10 @@ export function Hero({ store }: HeroProps) {
     const heroMedia = Array.isArray(store.heroMedia) ? store.heroMedia : [];
     const mediaUrl = heroMedia[0] || FALLBACK_HERO_MEDIA;
     const isVideo = typeof mediaUrl === "string" && isVideoUrl(mediaUrl);
+
+    if (typeof window !== "undefined") {
+        console.info("[Hero] media selection", { mediaUrl, heroMediaCount: heroMedia.length, isVideo });
+    }
 
     return (
         <section className="relative h-[75vh] min-h-[75vh] sm:h-screen sm:min-h-screen w-full overflow-hidden">
