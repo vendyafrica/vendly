@@ -136,6 +136,10 @@ export function StorefrontHeader({ initialStore }: StorefrontHeaderProps) {
   if (!store) return null;
 
   const isHomePage = pathname === `/${params?.s ?? ""}`;
+
+  // Avoid double headers on the storefront home (hero) page; hero renders its own inline header.
+  if (isHomePage) return null;
+
   const overlayActive = isHomePage && isOverlay;
   const textColorClass = overlayActive
     ? "text-white hover:text-white/90"

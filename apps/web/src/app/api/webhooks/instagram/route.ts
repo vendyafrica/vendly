@@ -84,6 +84,43 @@ function asObject(v: unknown): Record<string, unknown> | null {
   return v as Record<string, unknown>;
 }
 
+function pickAttachmentMedia(payload: Record<string, unknown> | null | undefined) {
+  if (!payload) return null;
+  const mediaId = typeof payload.ig_post_media_id === "string" ? payload.ig_post_media_id : undefined;
+  const title = typeof payload.title === "string" ? payload.title : undefined;
+  const url = typeof payload.url === "string" ? payload.url : undefined;
+  if (!mediaId && !url) return null;
+  return { mediaId, title, url };
+}
+
+type AttachmentPick = { type?: string; mediaId: string | undefined; title: string | undefined; url: string | undefined };
+
+function pickPreferredAttachment(attachments: unknown[]): AttachmentPick | null {
+  const parsed: AttachmentPick[] = attachments
+    .map((att) => asObject(att))
+    .map((att) => {
+      const type = typeof att?.type === "string" ? att.type : undefined;
+      const payload = pickAttachmentMedia(asObject(att?.payload));
+      return payload
+        ? ({
+            type,
+            mediaId: payload.mediaId,
+            title: payload.title,
+            url: payload.url,
+          } as AttachmentPick)
+        : null;
+    })
+    .filter((v): v is AttachmentPick => Boolean(v));
+
+  if (!parsed.length) return null;
+
+  const igPost = parsed.find((p) => p.type === "ig_post");
+  if (igPost) return igPost;
+  const share = parsed.find((p) => p.type === "share");
+  if (share) return share;
+  return parsed[0];
+}
+
 function slugify(text: string) {
   return (
     text
@@ -158,7 +195,16 @@ export async function POST(request: NextRequest) {
   const changesObj = asObject(changes);
   const value = asObject(changesObj?.value);
 
-  const mediaId = typeof value?.media_id === "string" ? value.media_id : undefined;
+  // Messaging attachments (new ig_post + legacy share)
+  const messaging = (entryObj?.messaging as unknown as unknown[] | undefined)?.[0];
+  const messagingObj = asObject(messaging);
+  const messageObj = asObject(messagingObj?.message);
+  const attachmentsRaw = (messageObj?.attachments as unknown as unknown[] | undefined) || [];
+  const preferredAttachment = pickPreferredAttachment(attachmentsRaw);
+
+  const mediaIdFromChange = typeof value?.media_id === "string" ? value.media_id : undefined;
+  const mediaId = preferredAttachment?.mediaId || mediaIdFromChange;
+  const attachmentTitle = preferredAttachment?.title;
 
   if (!igUserId || !mediaId) {
     return NextResponse.json({ ok: true }, { status: 200 });
@@ -201,7 +247,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ ok: true }, { status: 200 });
     }
 
-    const caption = typeof mediaObj?.caption === "string" ? mediaObj.caption : "";
+    const caption = typeof mediaObj?.caption === "string" ? mediaObj.caption : attachmentTitle || "";
     const parsed = parseCaption(caption, store.defaultCurrency);
 
     const sourceId = typeof mediaObj?.id === "string" ? mediaObj.id : String(mediaId);

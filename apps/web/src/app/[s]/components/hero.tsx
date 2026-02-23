@@ -1,12 +1,22 @@
 "use client"
 
 import Image from "next/image";
+import Link from "next/link";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { ShoppingBag02Icon, FavouriteIcon, UserIcon } from "@hugeicons/core-free-icons";
 import { DeferredHeroVideo } from "./deferred-hero-video";
+import { Bricolage_Grotesque } from "next/font/google";
+
+const geistSans = Bricolage_Grotesque({
+  variable: "--font-bricolage-grotesque",
+  subsets: ["latin"],
+});
 
 interface HeroProps {
     store: {
         name: string;
         description: string | null;
+        slug?: string;
         heroMedia?: string[];
     };
 }
@@ -52,6 +62,42 @@ export function Hero({ store }: HeroProps) {
 
     return (
         <section className="relative h-[75vh] min-h-[75vh] sm:h-screen sm:min-h-screen w-full overflow-hidden">
+            {/* Inline header specific to the hero */}
+            <div className="absolute inset-x-0 top-0 z-20">
+                <div className="mx-auto max-w-[1440px] px-4 sm:px-6 md:px-10 py-4 flex items-center gap-4 sm:gap-6">
+                    <Link
+                        href={`/${store.slug ?? ""}`}
+                        className={`${geistSans.className} text-white font-semibold text-lg sm:text-xl tracking-tight hover:text-white/90 transition-colors`}
+                    >
+                        {store.name}
+                    </Link>
+
+                    <div className="flex items-center gap-2 sm:gap-3 ml-auto">
+                        <Link
+                            href={`/${store.slug ?? ""}/cart`}
+                            className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-black/30 backdrop-blur hover:bg-black/45 transition-colors"
+                            aria-label="Cart"
+                        >
+                            <HugeiconsIcon icon={ShoppingBag02Icon} size={18} className="text-white" />
+                        </Link>
+                        <Link
+                            href="/wishlist"
+                            className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-black/30 backdrop-blur hover:bg-black/45 transition-colors"
+                            aria-label="Wishlist"
+                        >
+                            <HugeiconsIcon icon={FavouriteIcon} size={18} className="text-white" />
+                        </Link>
+                        <Link
+                            href={`/${store.slug ?? ""}/account`}
+                            className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-black/30 backdrop-blur hover:bg-black/45 transition-colors"
+                            aria-label="Account"
+                        >
+                            <HugeiconsIcon icon={UserIcon} size={18} className="text-white" />
+                        </Link>
+                    </div>
+                </div>
+            </div>
+
             <div className="relative h-full w-full overflow-hidden">
                 {/* Media - Video or Image */}
                 {isVideo ? (
