@@ -10,7 +10,7 @@ import {
     FieldSeparator,
 } from "@vendly/ui/components/field"
 import { Input } from "@vendly/ui/components/input"
-import { signInWithEmail, signInWithGoogle } from "@vendly/auth/react"
+import { signInWithGoogle } from "@vendly/auth/react"
 import { HugeiconsIcon } from "@hugeicons/react"
 import { Loading03Icon } from "@hugeicons/core-free-icons"
 import { GoogleIcon } from "@vendly/ui/components/svgs/google"
@@ -24,9 +24,10 @@ export function SellerLoginForm({
     ...props
 }: React.ComponentProps<"div"> & { title?: string; redirectTo?: string }) {
     const [email, setEmail] = useState("")
-    const [password, setPassword] = useState("")
     const [formState, setFormState] = useState<FormState>("idle")
     const [error, setError] = useState<string | null>(null)
+
+    const callbackURL = redirectTo ?? (typeof window !== "undefined" ? window.location.pathname + window.location.search : undefined)
 
     const handleEmailSignIn = async (e: React.FormEvent) => {
         e.preventDefault()
@@ -36,26 +37,13 @@ export function SellerLoginForm({
             setError("Please enter a valid email address")
             return
         }
-        if (!password) {
-            setError("Please enter your password")
-            return
-        }
 
         setFormState("loading")
 
         try {
-            const { error: signInError } = await signInWithEmail(email, password)
-
-            if (signInError) {
-                setError(signInError.message || "Invalid email or password")
-                setFormState("idle")
-                return
-            }
-
-            // Redirect on success
-            if (redirectTo) {
-                window.location.href = redirectTo
-            }
+            await signInWithGoogle({
+                callbackURL,
+            })
         } catch {
             setError("Something went wrong. Please try again.")
             setFormState("idle")
@@ -66,7 +54,7 @@ export function SellerLoginForm({
         try {
             setFormState("loading")
             await signInWithGoogle({
-                callbackURL: redirectTo,
+                callbackURL,
             })
         } catch {
             setError("Failed to sign in with Google. Please try again.")
@@ -107,22 +95,6 @@ export function SellerLoginForm({
                         />
                     </Field>
 
-                    <Field>
-                        <div className="flex items-center">
-                            <FieldLabel htmlFor="password">Password</FieldLabel>
-                        </div>
-                        <Input
-                            id="password"
-                            type="password"
-                            autoComplete="current-password"
-                            placeholder="Enter your password"
-                            className="h-11 sm:h-9"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            disabled={formState === "loading"}
-                        />
-                    </Field>
-
                     <Button
                         type="submit"
                         className="h-11 sm:h-9 w-full"
@@ -131,10 +103,10 @@ export function SellerLoginForm({
                         {formState === "loading" ? (
                             <>
                                 <HugeiconsIcon icon={Loading03Icon} className="mr-2 h-4 w-4 animate-spin" />
-                                Signing in...
+                                Redirecting...
                             </>
                         ) : (
-                            "Sign In"
+                            "Continue"
                         )}
                     </Button>
 

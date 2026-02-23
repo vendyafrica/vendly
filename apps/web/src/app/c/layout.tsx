@@ -45,7 +45,7 @@ function OnboardingShell({ children }: { children: ReactNode }) {
       />
 
       {/* Header — fixed height */}
-      <header className="relative z-10 flex items-center justify-between px-4 py-3 md:px-8 border-b border-white/10 bg-transparent shrink-0">
+      <header className="relative z-10 flex flex-col gap-3 items-start md:flex-row md:items-center md:justify-between px-4 py-3 md:px-8 border-b border-white/10 bg-transparent shrink-0">
         <Link href="/" className="flex items-center gap-1 group shrink-0">
           <span
             className={`${anton.className} text-[20px] leading-none text-white`}
@@ -59,7 +59,9 @@ function OnboardingShell({ children }: { children: ReactNode }) {
             Vendly
           </span>
         </Link>
-        <StepIndicator />
+        <div className="w-full md:w-auto">
+          <StepIndicator />
+        </div>
       </header>
 
       {/* Scrollable content area */}

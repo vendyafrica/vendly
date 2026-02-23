@@ -42,9 +42,11 @@ function readLS(): OnboardingData {
 
 function readLSStep(): OnboardingStep {
     try {
-        return (localStorage.getItem(LS_STEP_KEY) as OnboardingStep) || "step0";
+        const stored = localStorage.getItem(LS_STEP_KEY) as OnboardingStep | null;
+        if (!stored || stored === "step0") return "step1";
+        return stored;
     } catch {
-        return "step0";
+        return "step1";
     }
 }
 
@@ -92,7 +94,7 @@ export function useOnboarding() {
 }
 
 const STEP_ROUTES: Record<OnboardingStep, string> = {
-    step0: "/c",
+    step0: "/c?step=1",
     step1: "/c?step=1",
     step2: "/c?step=2",
     complete: "/c/complete",
@@ -111,7 +113,7 @@ export function OnboardingProvider({ children }: ProviderProps) {
     const submittingRef = useRef(false);
 
     const [state, setState] = useState<OnboardingState>({
-        currentStep: "step0",
+        currentStep: "step1",
         data: {},
         isComplete: false,
         isLoading: false,

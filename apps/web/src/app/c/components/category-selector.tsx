@@ -10,6 +10,7 @@ export type Category = {
 };
 
 const STEP_LABELS: Record<import("../context/onboarding-context").OnboardingStep, string> = {
+  step0: "Start",
   step1: "Business",
   step2: "Categories",
   complete: "Complete",
@@ -24,36 +25,40 @@ export function StepIndicator() {
 
   if (!isHydrated) {  
     return (
-      <div className="flex items-center gap-3 text-xs font-medium text-muted-foreground">
-        {steps.map((step, idx) => (
-          <div key={step} className="flex items-center gap-2">
-            <div className="h-2.5 w-2.5 rounded-full border bg-muted border-border" />
-            <span>{STEP_LABELS[step]}</span>
-            {idx < steps.length - 1 && <div className="h-px w-6 bg-border" />}
-          </div>
-        ))}
+      <div className="w-full overflow-x-auto md:overflow-visible">
+        <div className="flex items-center gap-3 text-[11px] md:text-xs font-medium text-muted-foreground min-w-max pr-2">
+          {steps.map((step, idx) => (
+            <div key={step} className="flex items-center gap-2">
+              <div className="h-2.5 w-2.5 rounded-full border bg-muted border-border" />
+              <span>{STEP_LABELS[step]}</span>
+              {idx < steps.length - 1 && <div className="h-px w-6 bg-border" />}
+            </div>
+          ))}
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="flex items-center gap-3 text-xs font-medium text-muted-foreground">
-      {steps.map((step, idx) => {
-        const isActive = idx === currentIndex;
-        const isComplete = idx < currentIndex;
-        return (
-          <div key={step} className="flex items-center gap-2">
-            <div
-              className={cn(
-                "h-2.5 w-2.5 rounded-full border",
-                isActive || isComplete ? "bg-primary border-primary" : "bg-muted border-border"
-              )}
-            />
-            <span className={cn(isActive ? "text-foreground" : "")}>{STEP_LABELS[step]}</span>
-            {idx < steps.length - 1 && <div className="h-px w-6 bg-border" />}
-          </div>
-        );
-      })}
+    <div className="w-full overflow-x-auto md:overflow-visible">
+      <div className="flex items-center gap-3 text-[11px] md:text-xs font-medium text-muted-foreground min-w-max pr-2">
+        {steps.map((step, idx) => {
+          const isActive = idx === currentIndex;
+          const isComplete = idx < currentIndex;
+          return (
+            <div key={step} className="flex items-center gap-2">
+              <div
+                className={cn(
+                  "h-2.5 w-2.5 rounded-full border",
+                  isActive || isComplete ? "bg-primary border-primary" : "bg-muted border-border"
+                )}
+              />
+              <span className={cn(isActive ? "text-foreground" : "")}>{STEP_LABELS[step]}</span>
+              {idx < steps.length - 1 && <div className="h-px w-6 bg-border" />}
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }

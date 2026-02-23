@@ -5,7 +5,7 @@ import { unstable_cache } from "next/cache";
 
 const getCachedCategories = unstable_cache(
     async () => {
-        return db.select().from(categories).where(eq(categories.level, 0));
+        return await db.select().from(categories).where(eq(categories.level, 0));
     },
     ["onboarding-categories"],
     { revalidate: 60 * 60 * 24 }
