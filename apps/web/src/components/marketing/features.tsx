@@ -1,34 +1,35 @@
 "use client"
 
+import Image from "next/image"
 import { useEffect, useMemo, useRef, useState } from "react"
 
 const steps = [
     {
         num: "01",
         tab: "Post",
-        title: "Post it.",
-        body: "Add your Shopvendly link to your bio or drop it in the caption. Every product gets its own link. Share the dress. Share the skincare set. Share anything.",
+        title: "Post once, link every product.",
+        body: "Drop your ShopVendly link in bio or caption. Every product gets its own link—dress, serum, bundle—so buyers land on the exact thing they saw.",
         media: { type: "image", src: "https://mplsrodasp.ufs.sh/f/9yFN4ZxbAeCYJSC8u5AGXKmU67zhiVxFL4cqrgDYdMQaenAN" }
     },
     {
         num: "02",
         tab: "Buy",
-        title: "They click. They buy.",
-        body: "Your buyer lands on a clean product page. No account. No password. Name, phone, address, Mobile Money. Under 90 seconds on any phone.",
+        title: "They tap, they pay.",
+        body: "Buyers go to a product page. Checkout instantly.",
         media: { type: "video", src: "https://cdn.cosmos.so/08020ebf-2819-4bb1-ab66-ae3642a73697.mp4" }
     },
     {
         num: "03",
         tab: "Ping",
-        title: "You get the ping.",
-        body: "The moment an order lands, your WhatsApp gets everything — buyer name, number, address, and what they ordered. No inbox-checking. No missed messages.",
+        title: "Instant order ping.",
+        body: "The moment an order lands, WhatsApp sends buyer name, number, address, and items.",
         media: { type: "image", src: "https://mplsrodasp.ufs.sh/f/9yFN4ZxbAeCYbewHzom1tJzyuCTxU2RmXc6QZOKgE8wSPGIn" }
     },
     {
         num: "04",
         tab: "Credit",
-        title: "Creators get credit.",
-        body: "Give any creator a link with their tag. Every sale they drive shows up in your dashboard — automatically tracked, commission calculated. They earn. You scale.",
+        title: "Creators get credit automatically.",
+        body: "Give any creator a tagged link. Every sale they drive is tracked and commission ready in your dashboard. They earn; you grow.",
         media: { type: "image", src: "https://mplsrodasp.ufs.sh/f/9yFN4ZxbAeCYBgl6bhtJ1aPV9vKIdZyqjXue6k7FNTswrcLA" }
     }
 ]
@@ -58,12 +59,14 @@ export function Features() {
         >
             {/* Background media */}
             {step.media.type === "image" ? (
-                <img
+                <Image
                     key={step.media.src}
                     src={step.media.src}
                     alt={step.title}
+                    fill
+                    sizes="100vw"
                     className="absolute inset-0 h-full w-full object-cover object-[50%_30%]"
-                    loading="lazy"
+                    priority={false}
                 />
             ) : (
                 <video

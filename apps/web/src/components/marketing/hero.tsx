@@ -24,17 +24,17 @@ export function Hero() {
         <div className="max-w-2xl space-y-6 md:space-y-8">
           <div className="inline-flex items-center gap-2 rounded-full bg-white/10 border border-white/15 px-3.5 py-1.5 backdrop-blur">
             <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-            <span className="text-[9px] font-semibold tracking-[0.18em] uppercase text-white/80">Automate Instagram, TikTok, WhatsApp</span>
+            <span className="text-[9px] font-semibold tracking-[0.18em] uppercase text-white/80">Social Commerce, Simplified</span>
           </div>
 
           <div className="space-y-3 md:space-y-4">
             <h1
               className={`${anton.className} text-[clamp(30px,5vw,58px)] leading-[1.05] font-black tracking-tight`}
             >
-              Make the most out of every customer conversation.
+             No more DM to order.<br /> Just buy now.
             </h1>
             <p className="text-base md:text-xl text-white/80 max-w-xl">
-              Sell more, engage better, and grow your audience with automated checkouts, instant confirmations, and human support when it matters.
+              Shareable product pages, secure payments, and delivery coordination built for social sellers.
             </p>
           </div>
 
@@ -45,7 +45,7 @@ export function Hero() {
             >
               Get Started
             </Link>
-            <span className="text-sm text-white/60">Try it 14 days free.</span>
+            {/* <span className="text-sm text-white/60">Try it 14 days free.</span> */}
           </div>
 
           <div className="flex flex-wrap items-center gap-4 md:gap-6 pt-2 md:pt-4 text-sm text-white/80">

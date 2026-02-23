@@ -1,10 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { Anton } from "next/font/google";
 import { useState, useEffect } from "react";
-
-const anton = Anton({ weight: "400", subsets: ["latin"], display: "swap" });
+import { Logo } from "./logo";
 
 const navLinks = ["Product", "Solutions", "Pricing", "About"];
 
@@ -54,18 +52,8 @@ export function Header() {
       >
         <div className="mx-auto max-w-[1400px] px-5 md:px-12 flex items-center justify-between h-[68px] md:h-[78px]">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-1 group shrink-0">
-            <span
-              className={`${anton.className} text-[20px] leading-none text-(--white)`}
-            >
-              shop
-            </span>
-            <span
-              className="text-[18px] font-bold leading-none text-(--brand) -ml-[2px]"
-              style={{ fontFamily: "var(--font-sora), Sora, sans-serif" }}
-            >
-              Vendly
-            </span>
+          <Link href="/" className="group shrink-0">
+            <Logo />
           </Link>
 
           {/* Desktop Nav */}

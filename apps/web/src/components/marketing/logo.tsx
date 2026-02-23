@@ -1,10 +1,19 @@
-import Image from "next/image";
+import { Anton } from "next/font/google";
 
-export function Logo() {
+const anton = Anton({ weight: "400", subsets: ["latin"], display: "swap" });
+
+export function Logo({ className = "" }: { className?: string }) {
   return (
-    <div className="flex items-center gap-2 font-semibold text-xl">
-      <Image src="/vendly.png" alt="Logo" width={40} height={40} />
-      <span>vendly.</span>
+    <div className={`flex items-center gap-1 ${className}`}>
+      <span className={`${anton.className} text-[20px] leading-none text-white`}>
+        shop
+      </span>
+      <span
+        className="text-[18px] font-bold leading-none text-[#5B4BFF] -ml-[2px]"
+        style={{ fontFamily: "var(--font-sora), Sora, sans-serif" }}
+      >
+        Vendly
+      </span>
     </div>
   );
 }

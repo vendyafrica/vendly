@@ -18,8 +18,8 @@ const companyLinks = [
 ]
 
 const followLinks = [
-  { title: "Instagram", href: "https://instagram.com/vendlyafrica" },
-  { title: "TikTok", href: "https://tiktok.com/@vendlyafrica" },
+  { title: "Instagram", href: "https://www.instagram.com/shopvendly" },
+  { title: "TikTok", href: "https://www.tiktok.com/@shopvendly" },
   { title: "WhatsApp", href: "https://wa.me/256780808992" },
 ]
 
@@ -31,11 +31,11 @@ const Footer = () => {
         <h2
           className={`${anton.className} text-[clamp(26px,4vw,44px)] font-extrabold text-white leading-[1.1] mb-4 tracking-normal`}
         >
-          Your followers are already interested.<br />
-          Give them somewhere to buy.
+          Your forever customers are waiting.<br />
+          Give them a checkout in minutes.
         </h2>
         <p className="text-[14px] text-white/70 mb-10">
-          Takes 3 minutes.
+          Set up ShopVendly in 3 minutes.
         </p>
         <Link
           href="/c"

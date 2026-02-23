@@ -9,32 +9,32 @@ const faqItems = [
   {
     id: "item-1",
     question: "Do buyers need to create an account?",
-    answer: "No. Name, phone, address, pay. That's it. We removed every step that wasn't absolutely necessary — because every extra field loses you a sale.",
+    answer: "No. Name, phone, address, pay. That's it. Fewer fields means fewer drop-offs.",
   },
   {
     id: "item-2",
     question: "What if I don't have many followers yet?",
-    answer: "Then every buyer you do reach matters more. Shopvendly makes sure none of them fall through the cracks. Start with 100 followers. Grow from there.",
+    answer: "Then every buyer matters more. ShopVendly makes sure none fall through the cracks. Start with 100 followers and convert all of them.",
   },
   {
     id: "item-3",
     question: "How does the creator referral work?",
-    answer: "You generate a product link with a creator's tag. They share it. When someone buys through it, both dashboards show the sale. You set the commission. We track it automatically.",
+    answer: "Create a product link with a creator tag. They share it; every sale shows up in both dashboards. You set commission, we track automatically.",
   },
   {
     id: "item-4",
     question: "Is it really free to start?",
-    answer: "Yes. Your first 10 completed orders cost you nothing. After that, we take 4% of each sale. No monthly subscription, no upfront cost. You only pay when you make money.",
+    answer: "Yes. First 10 completed orders are free. After that, it's 8% per sale.",
   },
   {
     id: "item-5",
     question: "What about delivery?",
-    answer: "Your buyer gives their address at checkout. You arrange delivery your way — your rider, your boda, whatever works. We handle the order and the payment. You handle the last mile.",
+    answer: "Buyer adds their address at checkout. You choose delivery—your rider, your boda, your courier. We handle the order and payment; you handle the last mile.",
   },
   {
     id: "item-6",
     question: "Can I use it for TikTok too?",
-    answer: "Yes. The link works anywhere. Post it anywhere — Instagram bio, TikTok caption, WhatsApp status. It always leads back to your Shopvendly store.",
+    answer: "Yes. Links work anywhere—Instagram bio, TikTok caption, WhatsApp status—and always route back to your ShopVendly store.",
   },
 ];
 
