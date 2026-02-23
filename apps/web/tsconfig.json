@@ -50,5 +50,5 @@
     "next.config.ts",
     "next-env.d.ts",
     ".next/types/**/*.ts"
-  ]
+, "proxy.ts"  ]
 }

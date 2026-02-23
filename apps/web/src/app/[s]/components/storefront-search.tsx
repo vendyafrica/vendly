@@ -26,7 +26,7 @@ export function StorefrontSearch({ storeSlug, isHomePage, onSubmitted }: Storefr
         } else {
             params.delete("q");
         }
-        router.push(`/${storeSlug}?${params.toString()}`);
+        router.push(`/?${params.toString()}`);
         onSubmitted?.();
     };
 

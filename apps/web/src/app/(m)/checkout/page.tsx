@@ -14,6 +14,7 @@ import { Button } from "@vendly/ui/components/button";
 import { Input } from "@vendly/ui/components/input";
 import { useCart } from "../../../contexts/cart-context";
 import { useAppSession } from "@/contexts/app-session-context";
+import { getStorefrontUrl } from "@/lib/utils/storefront";
 
 const API_BASE = ""; // Force relative for same-origin internal API
 const PAYMENTS_API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://127.0.0.1:8000";
@@ -135,7 +136,7 @@ function CheckoutContent() {
             const orderId = "order" in data ? data.order?.id : data.id;
             if (!orderId) throw new Error("Missing order ID");
 
-            const callbackUrl = `${window.location.origin}/${store.slug}`;
+            const callbackUrl = getStorefrontUrl(store.slug);
             const initRes = await fetch(`${PAYMENTS_API_BASE}/api/payments/paystack/initialize`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -185,7 +186,7 @@ function CheckoutContent() {
             await clearStoreFromCart(store.id);
             setIsSuccess(true);
             setTimeout(() => {
-                window.location.assign(`${window.location.origin}/${store.slug}`);
+                window.location.assign(getStorefrontUrl(store.slug));
             }, 1200);
         } catch {
             setError("Something went wrong. Please try again.");
@@ -229,7 +230,7 @@ function CheckoutContent() {
                         className="w-full max-w-xl space-y-6"
                     >
                         <div className="flex items-center gap-2">
-                            <Link href={`/${store.slug}`} className="text-xl font-semibold hover:underline hover:text-primary/80">
+                            <Link href={getStorefrontUrl(store.slug)} className="text-xl font-semibold hover:underline hover:text-primary/80">
                                 {store.name}
                             </Link>
                             <HugeiconsIcon

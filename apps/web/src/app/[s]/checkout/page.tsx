@@ -87,7 +87,7 @@ function CheckoutContent() {
     useEffect(() => {
         if (!isLoaded) return;
         if (!storeId || !store) {
-            router.push(`/${storeSlug}/cart`);
+            router.push(`/cart`);
         }
     }, [isLoaded, storeId, store, storeSlug, router]);
 
@@ -149,7 +149,7 @@ function CheckoutContent() {
             const orderId = "order" in data ? data.order?.id : data.id;
             if (!orderId) throw new Error("Missing order ID");
 
-            const callbackUrl = `${window.location.origin}/${store.slug}`;
+            const callbackUrl = `${window.location.origin}/`;
             const initRes = await fetch(`${PAYMENTS_API_BASE}/api/payments/paystack/initialize`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -199,7 +199,7 @@ function CheckoutContent() {
             await clearStoreFromCart(store.id);
             setIsSuccess(true);
             setTimeout(() => {
-                window.location.assign(`${window.location.origin}/${store.slug}`);
+                window.location.assign(`${window.location.origin}/`);
             }, 1500);
         } catch (err: unknown) {
             setError(err instanceof Error ? err.message : "Something went wrong. Please try again.");
@@ -224,7 +224,7 @@ function CheckoutContent() {
                     <p className="text-neutral-500 mb-10 max-w-sm mx-auto uppercase tracking-wider text-xs">
                         Thank you for shopping with {store.name}. Your order receipt has been sent to your email.
                     </p>
-                    <Link href={`/${storeSlug}`}>
+                    <Link href="/">
                         <Button className="h-14 rounded-none px-10 bg-neutral-900 text-white hover:bg-black uppercase text-xs tracking-widest font-semibold transition-colors">
                             Continue Shopping
                         </Button>
@@ -245,7 +245,7 @@ function CheckoutContent() {
                     >
                         <div>
                             <div className="flex items-center gap-3 mb-8">
-                                <Link href={`/${store.slug}/cart`} className="text-neutral-500 hover:text-neutral-900 transition-colors -ml-1">
+                                <Link href="/cart" className="text-neutral-500 hover:text-neutral-900 transition-colors -ml-1">
                                     <HugeiconsIcon icon={ArrowLeft01Icon} className="h-5 w-5" />
                                 </Link>
                                 <span className="text-xs font-semibold text-neutral-400 tracking-widest uppercase">Checkout</span>
@@ -253,7 +253,7 @@ function CheckoutContent() {
                                     icon={ArrowRight01Icon}
                                     className="h-3 w-3 text-neutral-300"
                                 />
-                                <Link href={`/${store.slug}`} className={`${geistSans.className} text-lg font-semibold tracking-tight hover:opacity-80 transition-opacity`}>
+                                <Link href="/" className={`${geistSans.className} text-lg font-semibold tracking-tight hover:opacity-80 transition-opacity`}>
                                     {store.name}
                                 </Link>
                             </div>

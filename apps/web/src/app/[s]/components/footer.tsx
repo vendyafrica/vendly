@@ -11,6 +11,7 @@ import {
 import { Button } from "@vendly/ui/components/button";
 import { Bricolage_Grotesque } from "next/font/google";
 import { Input } from "@vendly/ui/components/input";
+import { getRootUrl } from "@/lib/utils/storefront";
 
 const geistSans = Bricolage_Grotesque({
   variable: "--font-bricolage-grotesque",
@@ -44,7 +45,7 @@ export function StorefrontFooter({ store }: StorefrontFooterProps) {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-16">
           <div>
             <Link
-              href={`/${store.slug}`}
+              href="/"
               className={`${geistSans.className} font-semibold text-xl sm:text-xl tracking-tight transition-colors`}
             >
               {storeName}
@@ -61,7 +62,7 @@ export function StorefrontFooter({ store }: StorefrontFooterProps) {
             <ul className="space-y-3">
               <li>
                 <Link
-                  href={`/${store.slug}`}
+                  href="/"
                   className="text-sm transition-colors duration-200 text-foreground hover:text-muted-foreground"
                 >
                   Home
@@ -69,7 +70,7 @@ export function StorefrontFooter({ store }: StorefrontFooterProps) {
               </li>
               <li>
                 <Link
-                  href={`/${store.slug}/cart`}
+                  href="/cart"
                   className="text-sm transition-colors duration-200 text-foreground hover:text-muted-foreground"
                 >
                   Shopping Bag
@@ -77,7 +78,7 @@ export function StorefrontFooter({ store }: StorefrontFooterProps) {
               </li>
               <li>
                 <Link
-                  href={`/${store.slug}/wishlist`}
+                  href="/wishlist"
                   className="text-sm transition-colors duration-200 text-foreground hover:text-muted-foreground"
                 >
                   Wishlist
@@ -85,7 +86,7 @@ export function StorefrontFooter({ store }: StorefrontFooterProps) {
               </li>
               <li>
                 <Link
-                  href={`/a/${store.slug}/login`}
+                  href={getRootUrl(`/a/${store.slug}/login`)}
                   className="text-sm transition-colors duration-200 text-foreground hover:text-muted-foreground"
                 >
                   Account
@@ -110,7 +111,7 @@ export function StorefrontFooter({ store }: StorefrontFooterProps) {
               </li>
               <li>
                 <Link
-                  href={`/${store.slug}/shipping-returns`}
+                  href="/shipping-returns"
                   className="text-sm transition-colors duration-200 text-foreground hover:text-muted-foreground"
                 >
                   Shipping & Returns
@@ -118,7 +119,7 @@ export function StorefrontFooter({ store }: StorefrontFooterProps) {
               </li>
               <li>
                 <Link
-                  href={`/${store.slug}/privacy-policy`}
+                  href="/privacy-policy"
                   className="text-sm transition-colors duration-200 text-foreground hover:text-muted-foreground"
                 >
                   Privacy Policy
@@ -126,7 +127,7 @@ export function StorefrontFooter({ store }: StorefrontFooterProps) {
               </li>
               <li>
                 <Link
-                  href={`/${store.slug}/terms`}
+                  href="/terms"
                   className="text-sm transition-colors duration-200 text-foreground hover:text-muted-foreground"
                 >
                   Terms of Service

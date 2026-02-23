@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import type { MarketplaceStore } from "@/types/marketplace";
+import { getStorefrontUrl } from "@/lib/utils/storefront";
 import {
   Carousel,
   CarouselContent,
@@ -43,12 +44,12 @@ export function StoreCard({ store }: StoreCardProps) {
     <div
       className="group cursor-pointer"
       onClick={() => {
-        router.push(`/${store.slug}`);
+        router.push(getStorefrontUrl(store.slug));
       }}
       onKeyDown={(e) => {
         if (e.key === "Enter" || e.key === " ") {
           e.preventDefault();
-          router.push(`/${store.slug}`);
+          router.push(getStorefrontUrl(store.slug));
         }
       }}
       role="link"

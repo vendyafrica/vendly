@@ -59,7 +59,7 @@ export default function StoreCartPage() {
             <div className="min-h-screen bg-white pt-24">
                 <div className="max-w-2xl mx-auto px-4 py-8">
                     <div className="flex items-center gap-2 mb-10">
-                        <Link href={`/${storeSlug}`} className="p-2 -ml-2 hover:bg-neutral-100 transition-colors">
+                        <Link href="/" className="p-2 -ml-2 hover:bg-neutral-100 transition-colors">
                             <HugeiconsIcon icon={ArrowLeft01Icon} className="h-5 w-5" />
                         </Link>
                         <h1 className={`${geistSans.className} text-xl uppercase tracking-widest font-semibold`}>Shopping Bag</h1>
@@ -73,7 +73,7 @@ export default function StoreCartPage() {
                         <p className="text-neutral-500 mb-8 max-w-sm">
                             Looks like you haven't added anything from this store to your bag yet.
                         </p>
-                        <Link href={`/${storeSlug}`}>
+                        <Link href="/">
                             <Button className="h-14 rounded-none px-8 bg-neutral-900 text-white hover:bg-black uppercase text-xs tracking-widest font-semibold transition-colors">
                                 Continue Shopping
                             </Button>
@@ -88,7 +88,7 @@ export default function StoreCartPage() {
         <div className="min-h-screen bg-white pt-24 pb-24">
             <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                 <div className="flex items-center gap-4 border-b border-neutral-200 pb-6 mb-8">
-                    <Link href={`/${storeSlug}`} className="p-2 -ml-2 text-neutral-400 hover:text-neutral-900 transition-colors">
+                    <Link href="/" className="p-2 -ml-2 text-neutral-400 hover:text-neutral-900 transition-colors">
                         <HugeiconsIcon icon={ArrowLeft01Icon} className="h-6 w-6" />
                     </Link>
                     <h1 className={`${geistSans.className} text-2xl uppercase tracking-widest font-semibold`}>Shopping Bag</h1>
@@ -103,7 +103,7 @@ export default function StoreCartPage() {
                         {storeItems.map((item) => (
                             <div key={item.id} className="py-8 flex gap-6">
                                 <Link
-                                    href={`/${storeSlug}/products/${item.product.slug}`}
+                                    href={`/${item.product.id}/${item.product.slug}`}
                                     className="relative w-28 aspect-3/4 bg-neutral-100 shrink-0 block overflow-hidden"
                                 >
                                     {item.product.contentType?.startsWith("video/") || item.product.image?.match(/\.(mp4|webm|mov|ogg)$/i) || ((item.product.image || "").includes(".ufs.sh") && !(item.product.image || "").match(/\.(jpg|jpeg|png|webp|gif)$/i) && !item.product.contentType?.startsWith("image/")) ? (
@@ -131,7 +131,7 @@ export default function StoreCartPage() {
                                     <div className="flex justify-between items-start gap-4">
                                         <div>
                                             <h3 className="font-serif text-lg leading-tight mb-1">
-                                                <Link href={`/${storeSlug}/products/${item.product.slug}`} className="hover:underline">
+                                                <Link href={`/${item.product.id}/${item.product.slug}`} className="hover:underline">
                                                     {item.product.name}
                                                 </Link>
                                             </h3>
@@ -209,7 +209,7 @@ export default function StoreCartPage() {
                             </div>
                         </div>
 
-                        <Link href={`/${storeSlug}/checkout?storeId=${storeId}`} className="mt-auto">
+                        <Link href={`/checkout?storeId=${storeId}`} className="mt-auto">
                             <Button className="w-full h-14 rounded-none bg-neutral-900 text-white hover:bg-black uppercase text-xs tracking-widest font-semibold transition-colors">
                                 Secure Checkout
                             </Button>

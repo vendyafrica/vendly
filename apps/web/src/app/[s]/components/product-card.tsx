@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useState } from "react";
+import { getStorefrontUrl } from "@/lib/utils/storefront";
 
 interface ProductCardProps {
   title: string;
@@ -51,7 +52,7 @@ export function ProductCard({ title, slug, price, image, contentType, index = 0,
     setIsNavigating(true);
     // Best-effort prefetch to reduce perceived delay
     try {
-      router.prefetch(`/${currentStoreSlug}/${id}/${slug}`);
+      router.prefetch(getStorefrontUrl(currentStoreSlug, `/${id}/${slug}`));
     } catch {
       // Prefetch is best-effort; ignore errors
     }
@@ -59,7 +60,7 @@ export function ProductCard({ title, slug, price, image, contentType, index = 0,
 
   return (
     <Link
-      href={`/${currentStoreSlug}/${id}/${slug}`}
+      href={getStorefrontUrl(currentStoreSlug, `/${id}/${slug}`)}
       onClick={handleClick}
       className={`group block break-inside-avoid mb-3 sm:mb-4 lg:mb-5 ${isNavigating ? "pointer-events-none opacity-70" : ""}`}
       aria-busy={isNavigating}

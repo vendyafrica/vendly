@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
+import { getStorefrontUrl } from "@/lib/utils/storefront";
 
 export default function TenantUnauthorizedPage() {
   const router = useRouter();
@@ -10,7 +11,7 @@ export default function TenantUnauthorizedPage() {
 
   useEffect(() => {
     const t = setTimeout(() => {
-      router.replace(`/${slug}`);
+      router.replace(getStorefrontUrl(slug));
     }, 3000);
 
     return () => clearTimeout(t);

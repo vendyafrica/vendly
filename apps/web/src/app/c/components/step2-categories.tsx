@@ -9,6 +9,7 @@ import { useOnboarding } from "../context/onboarding-context";
 import { getCategoriesAction } from "../lib/categories";
 import { CategoriesSelector, type Category } from "../components/category-selector";
 import { useAppSession } from "@/contexts/app-session-context";
+import { getRootUrl } from "@/lib/utils/storefront";
 
 export function Step2Categories() {
   const { session: appSession } = useAppSession();
@@ -27,10 +28,7 @@ export function Step2Categories() {
   }, []);
 
   const getCallbackURL = useMemo(
-    () => () =>
-      typeof window === "undefined"
-        ? "/c/complete"
-        : `${window.location.origin}/c/complete`,
+    () => () => getRootUrl("/c/complete"),
     []
   );
 

@@ -11,6 +11,7 @@ import {
 } from "@hugeicons/core-free-icons";
 import Image from "next/image";
 import { useOnboarding } from "../context/onboarding-context";
+import { getRootUrl } from "@/lib/utils/storefront";
 
 export default function Complete() {
   const { isComplete, completeOnboarding, isLoading, isHydrated, error } = useOnboarding();
@@ -75,7 +76,7 @@ export default function Complete() {
       try {
         const { linkInstagram } = await import("@vendly/auth/client");
         await linkInstagram({
-          callbackURL: `${window.location.origin}/a/${tenantSlug}?instagramConnected=true`,
+          callbackURL: getRootUrl(`/a/${tenantSlug}?instagramConnected=true`),
         });
       } catch (err) {
         console.error("Instagram connect failed:", err);

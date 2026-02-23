@@ -9,6 +9,7 @@ import { Bell } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useTenant } from "../tenant-context";
 import { useHeaderActions } from "./header-actions-context";
+import { getStorefrontUrl } from "@/lib/utils/storefront";
 
 export function DashboardHeader({
   title = "Dashboard",
@@ -26,7 +27,7 @@ export function DashboardHeader({
   const firstName = fullName.split(" ")[0];
   const avatarUrl = session?.user?.image || "";
   const resolvedTenantName = tenantName || "Store";
-  const storefrontUrl = bootstrap?.storeSlug ? `/${bootstrap.storeSlug}` : "/";
+  const storefrontUrl = bootstrap?.storeSlug ? getStorefrontUrl(bootstrap.storeSlug) : "/";
 
   const handleSignOut = async () => {
     await signOut();

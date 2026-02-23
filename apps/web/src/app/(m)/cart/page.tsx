@@ -11,10 +11,11 @@ import Header from "../components/header";
 import Footer from "../components/footer";
 import RecentlyViewed from "../components/recently-viewed";
 import { Bricolage_Grotesque } from "next/font/google";
+import { getStorefrontUrl } from "@/lib/utils/storefront";
 
 const geistSans = Bricolage_Grotesque({
-  variable: "--font-bricolage-grotesque",
-  subsets: ["latin"],
+    variable: "--font-bricolage-grotesque",
+    subsets: ["latin"],
 });
 
 
@@ -102,7 +103,7 @@ export default function CartPage() {
                                             className="border border-neutral-100"
                                         />
                                         <div>
-                                            <Link href={`/${store.slug}`}>
+                                            <Link href={getStorefrontUrl(store.slug)}>
                                                 <h2 className={`${geistSans.className} font-semibold text-base hover:text-primary transition-colors capitalize`}>{store.name}</h2>
                                             </Link>
                                             <p className="text-xs text-neutral-500">{storeItems.length} items</p>
@@ -140,7 +141,7 @@ export default function CartPage() {
                                                 <div className="flex justify-between items-start gap-4">
                                                     <div>
                                                         <h3 className="font-medium text-base mb-1">
-                                                            <Link href={`/${store.slug}/products/${item.product.slug}`} className="hover:underline">
+                                                            <Link href={getStorefrontUrl(store.slug, `/${item.product.id}/${item.product.slug}`)} className="hover:underline">
                                                                 {item.product.name}
                                                             </Link>
                                                         </h3>

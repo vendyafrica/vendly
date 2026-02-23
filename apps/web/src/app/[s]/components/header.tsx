@@ -13,6 +13,7 @@ import {
 import { HeaderSkeleton } from "./skeletons";
 import { useCart } from "@/contexts/cart-context";
 import { Bricolage_Grotesque } from "next/font/google";
+import { getRootUrl } from "@/lib/utils/storefront";
 
 const geistSans = Bricolage_Grotesque({
   variable: "--font-bricolage-grotesque",
@@ -51,6 +52,7 @@ export function StorefrontHeader() {
 
   const [loading, setLoading] = useState(true);
   const [isVisible, setIsVisible] = useState(true);
+  const [isOverlay, setIsOverlay] = useState(true);
   const lastScrollYRef = useRef(0);
 
   useEffect(() => {
@@ -78,11 +80,14 @@ export function StorefrontHeader() {
 
   useEffect(() => {
     lastScrollYRef.current = window.scrollY;
+    setIsOverlay(window.scrollY < 120);
 
     const handleScroll = () => {
       const currentY = window.scrollY;
       const isScrollingDown = currentY > lastScrollYRef.current;
       lastScrollYRef.current = currentY;
+
+      setIsOverlay(currentY < 120);
 
       // Always show when you're basically at the top.
       if (currentY < 80) {
@@ -114,16 +119,17 @@ export function StorefrontHeader() {
   if (loading) return <HeaderSkeleton />;
   if (!store) return null;
 
-  const isHomePage = pathname === `/${params?.s}`;
-  const textColorClass = isHomePage
+  const isHomePage = pathname === '/';
+  const overlayActive = isHomePage || isOverlay;
+  const textColorClass = overlayActive
     ? "text-white hover:text-white/90"
     : "text-foreground hover:text-foreground/80";
 
-  const barClass = isHomePage
+  const barClass = overlayActive
     ? "bg-transparent"
     : "bg-background border-b border-border";
 
-  const iconColor = isHomePage ? "text-white" : "text-foreground";
+  const iconColor = overlayActive ? "text-white" : "text-foreground";
 
   return (
     <header
@@ -135,7 +141,7 @@ export function StorefrontHeader() {
             {/* Left: Store name */}
             <div className="min-w-[120px] sm:min-w-[160px] flex items-center gap-3">
               <Link
-                href={`/${store.slug}`}
+                href="/"
                 className={`${geistSans.className} ${textColorClass} font-semibold text-xl sm:text-xl tracking-tight transition-colors`}
               >
                 {store.name}
@@ -145,7 +151,7 @@ export function StorefrontHeader() {
             {/* Right: Icons */}
             <div className="flex items-center gap-1 sm:gap-1 ml-auto">
               <Link
-                href={`/${store.slug}/cart`}
+                href="/cart"
                 className={`relative inline-flex h-10 w-10 items-center cursor-pointer justify-center transition-colors ${isHomePage ? "hover:opacity-80" : "hover:bg-muted/70 rounded-full"}`}
                 aria-label="Cart"
               >
@@ -164,7 +170,7 @@ export function StorefrontHeader() {
               </Link>
 
               <Link
-                href={`/${store.slug}/wishlist`}
+                href="/wishlist"
                 className={`relative inline-flex h-10 w-10 items-center justify-center transition-colors ${isHomePage ? "hover:opacity-80" : "hover:bg-muted/70 rounded-full"}`}
                 aria-label="Wishlist"
               >
@@ -176,7 +182,7 @@ export function StorefrontHeader() {
               </Link>
 
               <Link
-                href={`/a/${store.slug}/login?next=${encodeURIComponent(`/a/${store.slug}`)}`}
+                href={getRootUrl(`/a/${store.slug}/login?next=${encodeURIComponent(`/a/${store.slug}`)}`)}
                 className={`relative inline-flex h-10 w-10 items-center justify-center transition-colors ${isHomePage ? "hover:opacity-80" : "hover:bg-muted/70 rounded-full"}`}
                 aria-label="Account"
               >

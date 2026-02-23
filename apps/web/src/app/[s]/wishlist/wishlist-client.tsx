@@ -28,7 +28,7 @@ export default function WishlistClient() {
             <main className="min-h-screen bg-white pt-24">
                 <div className="max-w-2xl mx-auto px-4 py-8">
                     <div className="flex items-center gap-2 mb-10">
-                        <Link href={`/${storeSlug || ""}`} className="p-2 -ml-2 text-neutral-400 hover:text-neutral-900 transition-colors">
+                        <Link href="/" className="p-2 -ml-2 text-neutral-400 hover:text-neutral-900 transition-colors">
                             <HugeiconsIcon icon={ArrowLeft01Icon} className="h-5 w-5" />
                         </Link>
                         <h1 className="text-xl uppercase tracking-widest font-semibold">Wishlist</h1>
@@ -42,7 +42,7 @@ export default function WishlistClient() {
                         <p className="text-neutral-500 mb-8 max-w-sm">
                             Tap the heart on a product to save it here for later.
                         </p>
-                        <Link href={`/${storeSlug || ""}`}>
+                        <Link href="/">
                             <Button className="h-14 rounded-none px-8 bg-neutral-900 text-white hover:bg-black uppercase text-xs tracking-widest font-semibold transition-colors">
                                 Continue Shopping
                             </Button>
@@ -57,7 +57,7 @@ export default function WishlistClient() {
         <main className="min-h-screen bg-white pt-24 pb-24">
             <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                 <div className="flex items-center gap-4 border-b border-neutral-200 pb-6 mb-8">
-                    <Link href={`/${storeSlug || ""}`} className="p-2 -ml-2 text-neutral-400 hover:text-neutral-900 transition-colors">
+                    <Link href="/" className="p-2 -ml-2 text-neutral-400 hover:text-neutral-900 transition-colors">
                         <HugeiconsIcon icon={ArrowLeft01Icon} className="h-6 w-6" />
                     </Link>
                     <h1 className="text-2xl uppercase tracking-widest font-semibold">Wishlist</h1>
@@ -68,7 +68,7 @@ export default function WishlistClient() {
 
                 <div className="space-y-4">
                     {storeItems.map((item) => {
-                        const href = item.slug ? `/${storeSlug}/${item.id}/${item.slug}` : `/${storeSlug}`;
+                        const href = item.slug ? `/${item.id}/${item.slug}` : `/`;
                         return (
                             <div
                                 key={item.id}
