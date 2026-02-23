@@ -156,7 +156,8 @@ export const auth = betterAuth({
           providerId: "instagram",
           clientId: process.env.INSTAGRAM_CLIENT_ID as string,
           clientSecret: process.env.INSTAGRAM_CLIENT_SECRET as string,
-          authorizationUrl: "https://www.instagram.com/oauth/authorize",
+          // Use API host to avoid mobile deep-link into the Instagram app.
+          authorizationUrl: "https://api.instagram.com/oauth/authorize",
           tokenUrl: "https://api.instagram.com/oauth/access_token",
           responseType: "code",
           responseMode: "query",
