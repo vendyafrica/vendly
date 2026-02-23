@@ -88,18 +88,19 @@ export function StorefrontHeader({ initialStore }: StorefrontHeaderProps) {
     fetchStore();
   }, [params?.s, initialStore]);
 
+  const isHomePath = pathname === "/" || pathname === `/${params?.s ?? ""}`;
+
   useEffect(() => {
     lastScrollYRef.current = window.scrollY;
-    // Only allow overlay effect on the home/hero page; otherwise force solid header
-    const isHomePage = pathname === `/${params?.s ?? ""}`;
-    setIsOverlay(isHomePage && window.scrollY < 120);
+    // Only allow overlay effect on the home/hero page (slug route or subdomain root); otherwise force solid header
+    setIsOverlay(isHomePath && window.scrollY < 120);
 
     const handleScroll = () => {
       const currentY = window.scrollY;
       const isScrollingDown = currentY > lastScrollYRef.current;
       lastScrollYRef.current = currentY;
 
-      setIsOverlay(isHomePage && currentY < 120);
+      setIsOverlay(isHomePath && currentY < 120);
 
       // Always show when you're basically at the top.
       if (currentY < 80) {
@@ -130,17 +131,17 @@ export function StorefrontHeader({ initialStore }: StorefrontHeaderProps) {
 
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
-  }, [params?.s, pathname]);
+  }, [params?.s, pathname, isHomePath]);
 
   if (loading) return <HeaderSkeleton />;
   if (!store) return null;
 
-  const isHomePage = pathname === `/${params?.s ?? ""}`;
+  const isHomePage = isHomePath;
 
   // Avoid double headers on the storefront home (hero) page; hero renders its own inline header.
   if (isHomePage) return null;
 
-  const overlayActive = isHomePage && isOverlay;
+  const overlayActive = isHomePath && isOverlay;
   const textColorClass = overlayActive
     ? "text-white hover:text-white/90"
     : "text-foreground hover:text-foreground/80";
