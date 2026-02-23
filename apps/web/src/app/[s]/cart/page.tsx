@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useMemo } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useParams } from "next/navigation";
@@ -20,22 +20,16 @@ export default function StoreCartPage() {
     const storeSlug = params?.s as string;
     const { itemsByStore, updateQuantity, removeItem, isLoaded } = useCart();
 
-    // We need to resolve the store ID from the slug. We can either do an API fetch or find it from the cart items. 
-    // Since items are grouped by storeId, let's find the storeId that matches this slug.
-    const [storeId, setStoreId] = useState<string | null>(null);
+    const storeId = useMemo(() => {
+        if (!isLoaded) return null;
 
-    useEffect(() => {
-        if (!isLoaded) return;
-
-        // Find storeId by looking at cart items
-        let foundId = null;
         for (const [id, items] of Object.entries(itemsByStore)) {
             if (items[0]?.store?.slug === storeSlug) {
-                foundId = id;
-                break;
+                return id;
             }
         }
-        setStoreId(foundId);
+
+        return null;
     }, [isLoaded, itemsByStore, storeSlug]);
 
     if (!isLoaded) {
@@ -71,7 +65,7 @@ export default function StoreCartPage() {
                         </div>
                         <h2 className={`${geistSans.className} text-xl uppercase tracking-widest font-semibold mb-2`}>Your bag is empty</h2>
                         <p className="text-neutral-500 mb-8 max-w-sm">
-                            Looks like you haven't added anything from this store to your bag yet.
+                            Looks like you haven&apos;t added anything from this store to your bag yet.
                         </p>
                         <Link href={`/${storeSlug || ""}`}>
                             <Button className="h-14 rounded-none px-8 bg-neutral-900 text-white hover:bg-black uppercase text-xs tracking-widest font-semibold transition-colors">
