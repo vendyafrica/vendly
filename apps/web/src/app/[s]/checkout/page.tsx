@@ -87,7 +87,7 @@ function CheckoutContent() {
     useEffect(() => {
         if (!isLoaded) return;
         if (!storeId || !store) {
-            router.push(`/cart`);
+            router.push(`/${storeSlug || ""}/cart`);
         }
     }, [isLoaded, storeId, store, storeSlug, router]);
 
@@ -245,7 +245,7 @@ function CheckoutContent() {
                     >
                         <div>
                             <div className="flex items-center gap-3 mb-8">
-                                <Link href="/cart" className="text-neutral-500 hover:text-neutral-900 transition-colors -ml-1">
+                                <Link href={`/${storeSlug || ""}/cart`} className="text-neutral-500 hover:text-neutral-900 transition-colors -ml-1">
                                     <HugeiconsIcon icon={ArrowLeft01Icon} className="h-5 w-5" />
                                 </Link>
                                 <span className="text-xs font-semibold text-neutral-400 tracking-widest uppercase">Checkout</span>

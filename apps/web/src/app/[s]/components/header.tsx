@@ -157,7 +157,7 @@ export function StorefrontHeader({ initialStore }: StorefrontHeaderProps) {
             {/* Left: Store name */}
             <div className="min-w-[120px] sm:min-w-[160px] flex items-center gap-3">
               <Link
-                href="/"
+                href={`/${store.slug}`}
                 className={`${geistSans.className} ${textColorClass} font-semibold text-xl sm:text-xl tracking-tight transition-colors`}
               >
                 {store.name}
@@ -167,7 +167,7 @@ export function StorefrontHeader({ initialStore }: StorefrontHeaderProps) {
             {/* Right: Icons */}
             <div className="flex items-center gap-1 sm:gap-1 ml-auto">
               <Link
-                href="/cart"
+                href={`/${store.slug}/cart`}
                 className={`relative inline-flex h-10 w-10 items-center cursor-pointer justify-center transition-colors ${isHomePage ? "hover:opacity-80" : "hover:bg-muted/70 rounded-full"}`}
                 aria-label="Cart"
               >

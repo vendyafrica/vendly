@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { HugeiconsIcon } from "@hugeicons/react";
 
 import { StarIcon } from "@hugeicons/core-free-icons";
@@ -176,7 +177,7 @@ export function ProductDetails({ product }: ProductDetailsProps) {
                         {displayImages.map((img, index) => (
                             <div
                                 key={index}
-                                className="relative w-[85vw] sm:w-[70vw] shrink-0 snap-center rounded-none overflow-hidden bg-neutral-100 aspect-3/4 min-h-[320px]"
+                                className="relative w-[85vw] sm:w-[70vw] shrink-0 snap-center rounded-none md:rounded-md overflow-hidden bg-neutral-100 aspect-3/4 min-h-[320px]"
                                 style={{ aspectRatio: "3 / 4" }}
                             >
                                 <Image
@@ -199,7 +200,7 @@ export function ProductDetails({ product }: ProductDetailsProps) {
                                     onClick={() => setSelectedMediaIndex(index)}
                                     onMouseEnter={() => setSelectedMediaIndex(index)}
                                     className={`
-                                        relative w-full aspect-3/4 overflow-hidden transition-all duration-300
+                                        relative w-full aspect-3/4 overflow-hidden transition-all duration-300 rounded-none
                                         ${safeSelectedIndex === index
                                             ? "ring-1 ring-black opacity-100"
                                             : "opacity-60 hover:opacity-100"
@@ -216,7 +217,7 @@ export function ProductDetails({ product }: ProductDetailsProps) {
                             ))}
                         </div>
 
-                        <div className="flex-1 relative bg-neutral-100 overflow-hidden h-full">
+                        <div className="flex-1 relative bg-neutral-100 overflow-hidden h-full rounded-md">
                             <Image
                                 src={currentImage}
                                 alt={product.name}
@@ -234,16 +235,20 @@ export function ProductDetails({ product }: ProductDetailsProps) {
 
                     {/* Store Info - Header */}
                     <div className="flex items-center justify-between mb-3 mt-0">
-                        <div className="flex items-center gap-3">
+                        <Link
+                            href={`/${product.store.slug ?? ""}`}
+                            className="flex items-center gap-3 group"
+                            prefetch
+                        >
                             <StoreAvatar
                                 storeName={product.store.name}
                                 logoUrl={product.store.logoUrl}
                                 size="sm"
                             />
                             <div>
-                                <p className={` ${geistSans.className} text-base tracking-wide font-medium text-neutral-900`}>{product.store.name}</p>
+                                <p className={` ${geistSans.className} text-base tracking-wide font-medium text-neutral-900 group-hover:underline`}>{product.store.name}</p>
                             </div>
-                        </div>
+                        </Link>
                     </div>
 
                     {/* Product Name & Rating */}

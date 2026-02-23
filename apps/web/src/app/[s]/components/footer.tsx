@@ -62,7 +62,7 @@ export function StorefrontFooter({ store }: StorefrontFooterProps) {
             <ul className="space-y-3">
               <li>
                 <Link
-                  href="/"
+                  href={`/${store.slug}`}
                   className="text-sm transition-colors duration-200 text-foreground hover:text-muted-foreground"
                 >
                   Home
@@ -70,7 +70,7 @@ export function StorefrontFooter({ store }: StorefrontFooterProps) {
               </li>
               <li>
                 <Link
-                  href="/cart"
+                  href={`/${store.slug}/cart`}
                   className="text-sm transition-colors duration-200 text-foreground hover:text-muted-foreground"
                 >
                   Shopping Bag

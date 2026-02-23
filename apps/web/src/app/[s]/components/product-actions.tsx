@@ -116,7 +116,7 @@ export function ProductActions({ product }: ProductActionsProps) {
       <div className="pt-2">
         <Button
           onClick={handleAddToCart}
-          className="w-full h-[52px] rounded-full bg-primary text-primary-foreground hover:bg-primary/80 text-base font-medium transition-colors mb-3"
+          className="w-full h-14 rounded-none bg-neutral-900 text-white hover:bg-black uppercase text-xs tracking-widest font-semibold transition-colors mb-3"
           disabled={isAdded}
         >
           {isAdded ? (
@@ -132,11 +132,10 @@ export function ProductActions({ product }: ProductActionsProps) {
         <div className="grid grid-cols-1 gap-3">
           <Button
             onClick={handleToggleWishlist}
-            variant="outline"
-            className={`h-[52px] rounded-full border text-[15px] font-medium transition-all flex items-center justify-center gap-2.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:border-primary/50 focus-visible:ring-primary/10 ${
+            className={`w-full h-14 rounded-none bg-neutral-50 text-neutral-900 hover:bg-neutral-100 uppercase text-xs tracking-widest font-semibold transition-colors border border-neutral-200 flex items-center justify-center gap-2.5 ${
               wishlisted
-                ? "border-primary text-primary bg-primary/5"
-                : "border-neutral-200 text-neutral-900 hover:border-neutral-300 hover:bg-neutral-50"
+                ? "border-neutral-900 text-neutral-900 bg-neutral-100"
+                : ""
             }`}
             aria-pressed={wishlisted}
           >
