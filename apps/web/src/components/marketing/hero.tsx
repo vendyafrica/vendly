@@ -10,55 +10,58 @@ const anton = Anton({ weight: "400", subsets: ["latin"], display: "swap" })
 
 export function Hero() {
   return (
-    <section className="relative min-h-[88vh] bg-black text-white overflow-hidden flex items-center" id="product">
+    <section className="relative min-h-screen bg-black text-white overflow-hidden flex items-end pb-16 md:pb-24" id="product">
       <Image
         src="https://mplsrodasp.ufs.sh/f/9yFN4ZxbAeCYGCqT4P0y6qtUZFGzTeojCd8gH4bMhVIBcL5m"
         alt="Seller relaxing while business runs"
         fill
-        className="object-cover object-center opacity-70"
+        className="object-cover object-center"
         priority
       />
-      <div className="absolute inset-0 bg-linear-to-r from-[#121214] via-[#121214]/80 to-[#121214]/35" />
 
-      <div className="relative mx-auto w-full max-w-6xl px-5 md:px-10 py-16 md:py-28">
-        <div className="max-w-2xl space-y-6 md:space-y-8">
-          <div className="inline-flex items-center gap-2 rounded-full bg-white/10 border border-white/15 px-3.5 py-1.5 backdrop-blur">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-            <span className="text-[9px] font-semibold tracking-[0.18em] uppercase text-white/80">Social Commerce, Simplified</span>
+      {/* Bottom gradient */}
+      <div className="absolute inset-0 bg-linear-to-t from-[#121214] via-[#121214]/60 to-transparent" />
+      {/* Left gradient */}
+      <div className="absolute inset-0 bg-linear-to-r from-[#121214]/80 via-[#121214]/30 to-transparent" />
+
+      <div className="relative mx-auto w-full max-w-6xl px-5 md:px-10 pt-32 flex flex-col items-center text-center">
+        <div className="flex flex-col items-center max-w-3xl space-y-6 md:space-y-8">
+          <div className="inline-flex items-center gap-2 rounded-full bg-white/20 border border-white/30 px-3.5 py-1.5 backdrop-blur-md">
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_8px_rgba(52,211,153,0.8)]" />
+            <span className="text-[10px] font-bold tracking-[0.18em] uppercase text-white">Social Commerce, Simplified</span>
           </div>
 
           <div className="space-y-3 md:space-y-4">
             <h1
-              className={`${anton.className} text-[clamp(30px,5vw,58px)] leading-[1.05] font-black tracking-tight`}
+              className={`${anton.className} text-[clamp(40px,8vw,80px)] leading-[1.05] font-black tracking-tight drop-shadow-xl`}
             >
-             No more DM to order.<br /> Just buy now.
+              No more DM to order.<br /> Just buy now.
             </h1>
-            <p className="text-base md:text-xl text-white/80 max-w-xl">
+            <p className="text-base md:text-xl text-white/90 max-w-2xl mx-auto font-medium drop-shadow-md">
               Shareable product pages, secure payments, and delivery coordination built for social sellers.
             </p>
           </div>
 
-          <div className="flex flex-wrap items-center gap-3 md:gap-4">
+          <div className="flex flex-wrap justify-center items-center gap-3 md:gap-4">
             <Link
               href="/c"
-              className="inline-flex items-center justify-center rounded-full bg-[#FF2FB2] hover:bg-[#ff4bc2] text-white font-extrabold tracking-[0.16em] uppercase px-6 py-3 text-sm shadow-lg shadow-[#FF2FB2]/30 transition-transform hover:-translate-y-0.5"
+              className="inline-flex items-center justify-center rounded-full bg-[#FF2FB2] hover:bg-[#ff4bc2] text-white font-extrabold tracking-[0.16em] uppercase px-8 py-4 text-sm shadow-xl shadow-[#FF2FB2]/40 transition-transform hover:-translate-y-1"
             >
               Get Started
             </Link>
-            {/* <span className="text-sm text-white/60">Try it 14 days free.</span> */}
           </div>
 
-          <div className="flex flex-wrap items-center gap-4 md:gap-6 pt-2 md:pt-4 text-sm text-white/80">
+          <div className="flex flex-wrap justify-center items-center gap-4 md:gap-8 pt-4 md:pt-6 text-sm text-white/90 drop-shadow-md">
             <div className="flex items-center gap-2">
-              <HugeiconsIcon icon={MetaIcon} size={22} />
+              <HugeiconsIcon icon={MetaIcon} size={24} />
               <span className="font-semibold">Meta Business</span>
             </div>
             <div className="flex items-center gap-2">
-              <HugeiconsIcon icon={InstagramIcon} size={22} />
+              <HugeiconsIcon icon={InstagramIcon} size={24} />
               <span className="font-semibold">Instagram Shopping</span>
             </div>
             <div className="flex items-center gap-2">
-              <HugeiconsIcon icon={TiktokIcon} size={22} />
+              <HugeiconsIcon icon={TiktokIcon} size={24} />
               <span className="font-semibold">TikTok Marketing</span>
             </div>
           </div>
