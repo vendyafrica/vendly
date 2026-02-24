@@ -3,6 +3,7 @@
 import { Checkbox } from "@vendly/ui/components/checkbox";
 import { cn } from "@vendly/ui/lib/utils";
 import { useOnboarding } from "../context/onboarding-context";
+import { motion } from "framer-motion";
 
 export type Category = {
   id: string;
@@ -23,7 +24,7 @@ export function StepIndicator() {
 
   const currentIndex = steps.indexOf(currentStep);
 
-  if (!isHydrated) {  
+  if (!isHydrated) {
     return (
       <div className="w-full overflow-x-auto md:overflow-visible">
         <div className="flex items-center gap-3 text-[11px] md:text-xs font-medium text-muted-foreground min-w-max pr-2">
@@ -47,14 +48,19 @@ export function StepIndicator() {
           const isComplete = idx < currentIndex;
           return (
             <div key={step} className="flex items-center gap-2">
-              <div
+              <motion.div
+                initial={false}
+                animate={{
+                  scale: isActive ? 1.2 : 1,
+                  backgroundColor: isActive || isComplete ? "var(--primary)" : "transparent"
+                }}
                 className={cn(
                   "h-2.5 w-2.5 rounded-full border",
-                  isActive || isComplete ? "bg-primary border-primary" : "bg-muted border-border"
+                  isActive || isComplete ? "border-primary" : "border-border"
                 )}
               />
-              <span className={cn(isActive ? "text-foreground" : "")}>{STEP_LABELS[step]}</span>
-              {idx < steps.length - 1 && <div className="h-px w-6 bg-border" />}
+              <span className={cn(isActive ? "text-foreground font-semibold" : "")}>{STEP_LABELS[step]}</span>
+              {idx < steps.length - 1 && <div className="h-px w-6 bg-border/50" />}
             </div>
           );
         })}
@@ -87,32 +93,53 @@ export function CategoriesSelector({
 
   const atMax = selectedCategories.length >= maxSelections;
 
+  const container = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: { staggerChildren: 0.05, delayChildren: 0.1 }
+    }
+  };
+
+  const item = {
+    hidden: { opacity: 0, scale: 0.95, y: 10 },
+    show: { opacity: 1, scale: 1, y: 0, transition: { type: "spring", stiffness: 300, damping: 24 } }
+  };
+
   return (
-    <div className="space-y-3">
+    <div className="space-y-4">
       {/* Count hint */}
-      <p className="text-xs text-muted-foreground">
+      <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-sm font-medium text-muted-foreground">
         {selectedCategories.length === 0
           ? `Choose up to ${maxSelections}`
           : `${selectedCategories.length} of ${maxSelections} selected`}
-      </p>
+      </motion.p>
 
       {/* Checkbox grid */}
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+      <motion.div
+        variants={container}
+        initial="hidden"
+        animate="show"
+        className="grid grid-cols-2 md:grid-cols-3 gap-3"
+      >
         {availableCategories.map((cat) => {
           const checked = selectedCategories.includes(cat.id);
           const disabled = !checked && atMax;
 
           return (
-            <label
+            <motion.label
               key={cat.id}
+              variants={item}
+              whileHover={{ scale: disabled ? 1 : 1.02, y: disabled ? 0 : -2 }}
+              whileTap={{ scale: disabled ? 1 : 0.98 }}
               htmlFor={`cat-${cat.id}`}
               className={cn(
-                "flex items-center gap-2.5 rounded-md border px-3 py-2.5 cursor-pointer transition-colors select-none",
+                "flex items-center gap-3 rounded-xl border px-4 py-3 cursor-pointer transition-colors shadow-sm select-none",
                 checked
-                  ? "border-primary bg-primary/5"
+                  ? "border-primary bg-primary/10 ring-1 ring-primary/20"
                   : disabled
-                  ? "border-border bg-muted/30 opacity-50 cursor-not-allowed"
-                  : "border-border bg-background hover:border-primary/40 hover:bg-muted/30"
+                    ? "border-border bg-muted/30 opacity-50 cursor-not-allowed"
+                    : "border-border/60 bg-card hover:border-primary/40 hover:bg-muted/40 hover:shadow-md"
               )}
             >
               <Checkbox
@@ -120,7 +147,7 @@ export function CategoriesSelector({
                 checked={checked}
                 onCheckedChange={() => toggle(cat.id)}
                 disabled={disabled}
-                className="shrink-0"
+                className="shrink-0 data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground"
               />
               <span
                 className={cn(
@@ -130,10 +157,10 @@ export function CategoriesSelector({
               >
                 {cat.label}
               </span>
-            </label>
+            </motion.label>
           );
         })}
-      </div>
+      </motion.div>
     </div>
   );
 }

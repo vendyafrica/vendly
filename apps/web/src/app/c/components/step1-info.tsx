@@ -7,8 +7,9 @@ import { Textarea } from "@vendly/ui/components/textarea";
 import { Separator } from "@vendly/ui/components/separator";
 import { Checkbox } from "@vendly/ui/components/checkbox";
 import { Label } from "@vendly/ui/components/label";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useSearchParams } from "next/navigation";
+import { motion, AnimatePresence } from "framer-motion";
 
 import { useOnboarding } from "../context/onboarding-context";
 import { useAppSession } from "@/contexts/app-session-context";
@@ -45,7 +46,6 @@ export function Step1Info() {
   const isLoading = formState === "loading";
 
   // Sync form fields from localStorage data once hydration completes
-  // (useState initializers run before the hydration effect, so they start empty)
   useEffect(() => {
     if (!isHydrated) return;
     if (data.personal) {
@@ -85,30 +85,60 @@ export function Step1Info() {
     navigateToStep("step2");
   };
 
+  // Progressive disclosure triggers
+  const isAboutYouFilled = fullName.trim().length >= 2 && phoneNumber.replace(/\D/g, "").length >= 7;
+  const isStoreFilled = isAboutYouFilled && storeName.trim().length >= 2;
+
+  // Refs for scrolling into view
+  const storeRef = useRef<HTMLDivElement>(null);
+  const descRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (isAboutYouFilled && !isStoreFilled) {
+      setTimeout(() => {
+        storeRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      }, 300);
+    }
+  }, [isAboutYouFilled, isStoreFilled]);
+
+  useEffect(() => {
+    if (isStoreFilled) {
+      setTimeout(() => {
+        descRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      }, 300);
+    }
+  }, [isStoreFilled]);
+
+  const sectionVariants = {
+    hidden: { opacity: 0, height: 0, y: 10 },
+    visible: { opacity: 1, height: "auto", y: 0, transition: { duration: 0.4, ease: "easeOut" } }
+  };
+
   return (
-    <div className="rounded-xl border bg-card text-card-foreground shadow-sm p-5 md:p-7 space-y-5">
+    <div className="rounded-xl border bg-card text-card-foreground shadow-sm p-6 md:p-8 space-y-8 overflow-hidden">
       {/* Header */}
-      <div>
-        <h1 className="text-xl font-semibold tracking-tight">Set up your seller account</h1>
-        <p className="text-sm text-muted-foreground mt-0.5">
-          We&apos;ll use this to create your store on Vendly.
+      <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
+        <h1 className="text-2xl font-semibold tracking-tight">Set up your seller account</h1>
+        <p className="text-muted-foreground mt-1">
+          Let&apos;s get to know you and your store. We&apos;ll build this together.
         </p>
-      </div>
+      </motion.div>
 
       {error && (
-        <div className="rounded-lg border border-destructive/40 bg-destructive/10 px-4 py-2.5 text-sm text-destructive">
+        <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="rounded-lg border border-destructive/40 bg-destructive/10 px-4 py-3 text-sm text-destructive">
           {error}
-        </div>
+        </motion.div>
       )}
 
-      {/* ── Two columns: Personal | Store ── */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-5">
-        {/* Left col — About you */}
-        <div className="space-y-3">
-          <SectionLabel>About you</SectionLabel>
-          <FieldGroup className="space-y-3">
+      {/* ── Progressive Form Layout ── */}
+      <div className="space-y-8">
+
+        {/* step 1: About you */}
+        <motion.div className="space-y-4" layout>
+          <SectionLabel>1. About you</SectionLabel>
+          <FieldGroup className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Field>
-              <FieldLabel htmlFor="fullName">Full Name *</FieldLabel>
+              <FieldLabel htmlFor="fullName">Full Name</FieldLabel>
               <Input
                 id="fullName"
                 type="text"
@@ -117,10 +147,11 @@ export function Step1Info() {
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
                 disabled={isLoading}
+                className="h-11 bg-muted/30 focus:bg-background transition-colors"
               />
             </Field>
             <Field>
-              <FieldLabel htmlFor="phoneNumber">Phone Number *</FieldLabel>
+              <FieldLabel htmlFor="phoneNumber">Phone Number</FieldLabel>
               <PhoneInput
                 value={phoneNumber}
                 countryCode={countryCode}
@@ -130,102 +161,125 @@ export function Step1Info() {
               />
             </Field>
           </FieldGroup>
-        </div>
+        </motion.div>
 
-        {/* Right col — Your store */}
-        <div className="space-y-3">
-          <SectionLabel>Your store</SectionLabel>
-          <FieldGroup className="space-y-3">
-            <Field>
-              <FieldLabel htmlFor="storeName">Store Name *</FieldLabel>
-              <Input
-                id="storeName"
-                type="text"
-                placeholder="Acme Fashion"
-                value={storeName}
-                onChange={(e) => setStoreName(e.target.value)}
-                disabled={isLoading}
-              />
-            </Field>
-            <Field>
-              <FieldLabel htmlFor="storeLocation">Location</FieldLabel>
-              <Input
-                id="storeLocation"
-                type="text"
-                placeholder="Kampala, Uganda"
-                value={storeLocation}
-                onChange={(e) => setStoreLocation(e.target.value)}
-                disabled={isLoading}
-              />
-            </Field>
-          </FieldGroup>
-        </div>
-      </div>
-
-      {/* Description — full width */}
-      <Field>
-        <FieldLabel htmlFor="storeDescription">
-          Store Description{" "}
-          <span className="text-muted-foreground font-normal">(optional)</span>
-        </FieldLabel>
-        <Textarea
-          id="storeDescription"
-          placeholder="Tell buyers what you sell and what makes your store special…"
-          rows={2}
-          value={storeDescription}
-          onChange={(e) => setStoreDescription(e.target.value)}
-          disabled={isLoading}
-          className="focus-visible:border-primary/50 focus-visible:ring-primary/10 transition-colors"
-        />
-      </Field>
-
-      <Separator />
-
-      {/* CTA row */}
-      <div className="flex flex-col-reverse md:flex-row items-center justify-between gap-4">
-        <div className="flex items-start gap-2.5">
-          <Checkbox
-            id="terms"
-            checked={agreed}
-            onCheckedChange={(c) => setAgreed(!!c)}
-            disabled={isLoading}
-            className="mt-0.5 shrink-0"
-          />
-          <Label
-            htmlFor="terms"
-            className="text-xs font-normal text-muted-foreground leading-relaxed cursor-pointer select-none"
-          >
-            I agree to the{" "}
-            <a
-              href="/terms"
-              target="_blank"
-              className="underline underline-offset-2 hover:text-foreground transition-colors"
-              onClick={(e) => e.stopPropagation()}
+        {/* step 2: Your store */}
+        <AnimatePresence>
+          {isAboutYouFilled && (
+            <motion.div
+              ref={storeRef}
+              variants={sectionVariants}
+              initial="hidden"
+              animate="visible"
+              exit="hidden"
+              className="space-y-4 pt-4 border-t border-border/50"
             >
-              Terms
-            </a>{" "}
-            and{" "}
-            <a
-              href="/privacy"
-              target="_blank"
-              className="underline underline-offset-2 hover:text-foreground transition-colors"
-              onClick={(e) => e.stopPropagation()}
-            >
-              Privacy Policy
-            </a>
-            .
-          </Label>
-        </div>
+              <SectionLabel>2. Your store</SectionLabel>
+              <FieldGroup className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Field>
+                  <FieldLabel htmlFor="storeName">Store Name</FieldLabel>
+                  <Input
+                    id="storeName"
+                    type="text"
+                    placeholder="E.g. Acme Fashion"
+                    value={storeName}
+                    onChange={(e) => setStoreName(e.target.value)}
+                    disabled={isLoading}
+                    className="h-11 bg-muted/30 focus:bg-background transition-colors"
+                  />
+                </Field>
+                <Field>
+                  <FieldLabel htmlFor="storeLocation">Location</FieldLabel>
+                  <Input
+                    id="storeLocation"
+                    type="text"
+                    placeholder="E.g. Kampala, Uganda"
+                    value={storeLocation}
+                    onChange={(e) => setStoreLocation(e.target.value)}
+                    disabled={isLoading}
+                    className="h-11 bg-muted/30 focus:bg-background transition-colors"
+                  />
+                </Field>
+              </FieldGroup>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
-        <Button
-          type="button"
-          variant="default"
-          onClick={handleSubmit}
-          disabled={isLoading || !agreed}
-          className="w-full md:w-auto shrink-0"
-        >
-          {isLoading ? "Continuing…" : "Continue"}
-        </Button>
+        {/* step 3: Store Description & CTA */}
+        <AnimatePresence>
+          {isStoreFilled && (
+            <motion.div
+              ref={descRef}
+              variants={sectionVariants}
+              initial="hidden"
+              animate="visible"
+              exit="hidden"
+              className="space-y-8 pt-4 border-t border-border/50"
+            >
+              <div className="space-y-4">
+                <SectionLabel>3. Details (Optional)</SectionLabel>
+                <Field>
+                  <FieldLabel htmlFor="storeDescription">Store Description</FieldLabel>
+                  <Textarea
+                    id="storeDescription"
+                    placeholder="Tell buyers what you sell and what makes your store special…"
+                    rows={3}
+                    value={storeDescription}
+                    onChange={(e) => setStoreDescription(e.target.value)}
+                    disabled={isLoading}
+                    className="resize-none bg-muted/30 focus:bg-background transition-colors"
+                  />
+                </Field>
+              </div>
+
+              <div className="flex flex-col md:flex-row items-center justify-between gap-6 bg-muted/20 p-4 rounded-xl border border-border/40">
+                <div className="flex items-start gap-3 w-full md:w-auto">
+                  <Checkbox
+                    id="terms"
+                    checked={agreed}
+                    onCheckedChange={(c) => setAgreed(!!c)}
+                    disabled={isLoading}
+                    className="mt-1 shadow-sm data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground"
+                  />
+                  <Label
+                    htmlFor="terms"
+                    className="text-sm font-normal text-muted-foreground leading-relaxed cursor-pointer select-none"
+                  >
+                    I agree to the{" "}
+                    <a
+                      href="/terms"
+                      target="_blank"
+                      className="text-foreground font-medium underline underline-offset-4 hover:text-primary transition-colors"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      Terms
+                    </a>{" "}
+                    and{" "}
+                    <a
+                      href="/privacy"
+                      target="_blank"
+                      className="text-foreground font-medium underline underline-offset-4 hover:text-primary transition-colors"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      Privacy Policy
+                    </a>
+                  </Label>
+                </div>
+
+                <Button
+                  type="button"
+                  size="lg"
+                  onClick={handleSubmit}
+                  disabled={isLoading || !agreed}
+                  className="w-full md:w-auto min-w-[160px] shadow-sm transition-all active:scale-[0.98]"
+                >
+                  {isLoading ? "Saving…" : "Continue"}
+                </Button>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
       </div>
     </div>
   );
