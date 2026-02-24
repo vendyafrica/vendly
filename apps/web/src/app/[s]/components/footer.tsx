@@ -86,7 +86,7 @@ export function StorefrontFooter({ store }: StorefrontFooterProps) {
               </li>
               <li>
                 <Link
-                  href={getRootUrl(`/a/${store.slug}/login`)}
+                  href={getRootUrl(`/login?next=${encodeURIComponent(`/${store.slug}`)}`)}
                   className="text-sm transition-colors duration-200 text-foreground hover:text-muted-foreground"
                 >
                   Account

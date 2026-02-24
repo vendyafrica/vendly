@@ -180,14 +180,18 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
     const addItem = async (newItem: Omit<CartItem, "quantity">, quantity = 1) => {
         if (newItem?.store?.slug && newItem?.product?.id) {
-            void trackStorefrontEvents(newItem.store.slug, [
-                {
-                    eventType: "add_to_cart",
-                    productId: newItem.product.id,
-                    quantity,
-                    meta: { productSlug: newItem.product.slug },
-                },
-            ]);
+            void trackStorefrontEvents(
+                newItem.store.slug,
+                [
+                    {
+                        eventType: "add_to_cart",
+                        productId: newItem.product.id,
+                        quantity,
+                        meta: { productSlug: newItem.product.slug },
+                    },
+                ],
+                { userId: session?.user?.id }
+            );
         }
 
         let nextQuantity = quantity;

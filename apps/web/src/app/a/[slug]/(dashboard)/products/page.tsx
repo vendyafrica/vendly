@@ -31,6 +31,7 @@ import {
   type ProductApiRow,
 } from "@/hooks/use-products";
 import { ProductsPageSkeleton } from "@/components/ui/page-skeletons";
+import { isLikelyVideoMedia } from "@/lib/utils/media";
 
 function formatMoney(amount: number, currency: string) {
   return new Intl.NumberFormat("en-KE", {
@@ -38,6 +39,48 @@ function formatMoney(amount: number, currency: string) {
     currency,
     minimumFractionDigits: 0,
   }).format(amount);
+}
+
+function ProductThumbnail({
+  url,
+  name,
+  contentType,
+}: {
+  url?: string;
+  name: string;
+  contentType?: string;
+}) {
+  const [forceVideo, setForceVideo] = React.useState(false);
+
+  if (!url) {
+    return <div className="flex size-full items-center justify-center text-xs text-muted-foreground">N/A</div>;
+  }
+
+  const isVideo = forceVideo || isLikelyVideoMedia({ url, contentType });
+
+  if (isVideo) {
+    return (
+      <video
+        src={url}
+        className="h-full w-full object-cover"
+        muted
+        playsInline
+        loop
+        autoPlay
+      />
+    );
+  }
+
+  return (
+    <Image
+      src={url}
+      alt={name}
+      fill
+      className="object-cover"
+      unoptimized={url.includes(".ufs.sh")}
+      onError={() => setForceVideo(true)}
+    />
+  );
 }
 
 export default function ProductsPage() {
@@ -358,28 +401,11 @@ export default function ProductsPage() {
       cell: ({ row }) => (
         <div className="flex items-center gap-3 min-w-0">
           <div className="relative size-10 overflow-hidden rounded-md bg-muted shrink-0">
-            {row.original.thumbnailUrl ? (
-              row.original.thumbnailType?.startsWith("video/") ? (
-                <video
-                  src={row.original.thumbnailUrl}
-                  className="h-full w-full object-cover"
-                  muted
-                  playsInline
-                  loop
-                  autoPlay
-                />
-              ) : (
-                <Image
-                  src={row.original.thumbnailUrl}
-                  alt={row.original.name}
-                  fill
-                  className="object-cover"
-                  unoptimized={row.original.thumbnailUrl.includes(".ufs.sh")}
-                />
-              )
-            ) : (
-              <div className="flex size-full items-center justify-center text-xs text-muted-foreground">N/A</div>
-            )}
+            <ProductThumbnail
+              url={row.original.thumbnailUrl}
+              name={row.original.name}
+              contentType={row.original.thumbnailType}
+            />
           </div>
           <div className="min-w-0 max-w-[220px]">
             <div className="truncate font-medium" title={row.original.name}>

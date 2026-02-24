@@ -5,7 +5,6 @@ import Link from "next/link";
 import { marketplaceService } from "@/lib/services/marketplace-service";
 import type { MarketplaceStore } from "@/types/marketplace";
 import type { StoreWithCategory } from "@/lib/services/marketplace-service";
-import { OneTapLogin } from "@/app/(m)/components/one-tap-login";
 import { HeroSection } from "@/app/(m)/components/home/hero-section";
 import { CollectionsRail } from "@/app/(m)/components/home/collections-rail";
 import { StoreShelf } from "@/app/(m)/components/home/store-shelf";
@@ -69,7 +68,6 @@ export default async function HomePage() {
   return (
     <main className="min-h-screen bg-background text-foreground">
       <Header hideSearch />
-      <OneTapLogin />
 
       <HeroSection />
       <CollectionsRail

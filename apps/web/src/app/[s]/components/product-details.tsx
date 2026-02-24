@@ -13,12 +13,12 @@ import { ProductActions } from "./product-actions";
 import { Bricolage_Grotesque } from "next/font/google";
 import { signInWithOneTap } from "@vendly/auth/react";
 import { useAppSession } from "@/contexts/app-session-context";
+import { isLikelyVideoMedia } from "@/lib/utils/media";
 
 const geistSans = Bricolage_Grotesque({
     variable: "--font-bricolage-grotesque",
     subsets: ["latin"],
 });
-
 
 interface ProductDetailsProps {
     product: {
@@ -51,14 +51,18 @@ export function ProductDetails({ product }: ProductDetailsProps) {
 
     useEffect(() => {
         if (!product?.store?.slug || !product?.id) return;
-        void trackStorefrontEvents(product.store.slug, [
-            {
-                eventType: "product_view",
-                productId: product.id,
-                meta: { productSlug: product.slug },
-            },
-        ]);
-    }, [product]);
+        void trackStorefrontEvents(
+            product.store.slug,
+            [
+                {
+                    eventType: "product_view",
+                    productId: product.id,
+                    meta: { productSlug: product.slug },
+                },
+            ],
+            { userId: session?.user?.id }
+        );
+    }, [product, session?.user?.id]);
 
     useEffect(() => {
         if (product) {
@@ -89,6 +93,7 @@ export function ProductDetails({ product }: ProductDetailsProps) {
     const [userRating, setUserRating] = useState<number | null>(product.userRating ?? null);
     const [isSubmittingRating, setIsSubmittingRating] = useState(false);
     const [hoverRating, setHoverRating] = useState<number | null>(null);
+    const [failedImageUrls, setFailedImageUrls] = useState<Record<string, true>>({});
 
     useEffect(() => {
         setAverageRating(initialRating);
@@ -157,10 +162,13 @@ export function ProductDetails({ product }: ProductDetailsProps) {
 
     const FALLBACK_PRODUCT_IMAGE = "https://cdn.cosmos.so/25e7ef9d-3d95-486d-b7db-f0d19c1992d7?format=jpeg";
 
+    const handleImageError = (url: string) => {
+        setFailedImageUrls((prev) => (prev[url] ? prev : { ...prev, [url]: true }));
+    };
+
     const isVideoUrl = (url: string, contentType?: string | null) => {
-        if (contentType?.startsWith("video/")) return true;
-        return /\.(mp4|webm|mov|ogg)$/i.test(url)
-            || (url.includes(".ufs.sh") && (!/\.(jpg|jpeg|png|webp|gif)$/i.test(url) || contentType?.startsWith("video/")));
+        if (failedImageUrls[url]) return true;
+        return isLikelyVideoMedia({ url, contentType });
     };
 
     const mediaItems = useMemo(() => {
@@ -218,6 +226,8 @@ export function ProductDetails({ product }: ProductDetailsProps) {
                                             fill
                                             className="object-cover"
                                             priority={index === 0}
+                                            unoptimized={media.url.includes(".ufs.sh")}
+                                            onError={() => handleImageError(media.url)}
                                         />
                                     )}
                                 </div>
@@ -259,6 +269,8 @@ export function ProductDetails({ product }: ProductDetailsProps) {
                                                 alt={`View ${index + 1}`}
                                                 fill
                                                 className="object-cover"
+                                                unoptimized={media.url.includes(".ufs.sh")}
+                                                onError={() => handleImageError(media.url)}
                                             />
                                         )}
                                     </button>
@@ -291,6 +303,8 @@ export function ProductDetails({ product }: ProductDetailsProps) {
                                     sizes="(max-width: 1024px) 100vw, 60vw"
                                     className="object-cover object-center"
                                     priority
+                                    unoptimized={currentMedia.url.includes(".ufs.sh")}
+                                    onError={() => handleImageError(currentMedia.url)}
                                 />
                             )}
                         </div>

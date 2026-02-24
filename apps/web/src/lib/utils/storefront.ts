@@ -9,7 +9,13 @@ export function getStorefrontUrl(storeSlug: string, path: string = "") {
         return `http://localhost:3000/${storeSlug}${formattedPath}`;
     }
 
-    return `https://${storeSlug}.${rootDomain}${formattedPath}`;
+    const normalizedRootDomain = rootDomain
+        .trim()
+        .replace(/^https?:\/\//i, "")
+        .replace(/\/$/, "")
+        .replace(/^www\./i, "");
+
+    return `https://${storeSlug}.${normalizedRootDomain}${formattedPath}`;
 }
 
 export function getRootUrl(path: string = "") {
@@ -21,7 +27,13 @@ export function getRootUrl(path: string = "") {
         return `http://localhost:3000${formattedPath}`;
     }
 
-    return `https://${rootDomain}${formattedPath}`;
+    const normalizedRoot = rootDomain.trim().replace(/\/$/, "");
+    const withProtocol = /^https?:\/\//i.test(normalizedRoot)
+        ? normalizedRoot
+        : `https://${normalizedRoot}`;
+    const secureOrigin = withProtocol.replace(/^http:\/\//i, "https://");
+
+    return `${secureOrigin}${formattedPath}`;
 }
 
 export function getStorefrontRelativePath(path: string = "") {

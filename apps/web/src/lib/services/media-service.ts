@@ -12,6 +12,7 @@ export interface UploadResult {
     url: string;
     pathname: string;
     originalName: string;
+    contentType: string;
 }
 
 type UploadThingSuccess = {
@@ -74,6 +75,7 @@ export const mediaService = {
                 url: uploaded.ufsUrl,
                 pathname: uploaded.key,
                 originalName: file.originalname,
+                contentType: file.mimetype,
             };
         });
 

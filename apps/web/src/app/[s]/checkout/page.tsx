@@ -15,6 +15,8 @@ import { Button } from "@vendly/ui/components/button";
 import { Input } from "@vendly/ui/components/input";
 import { useCart } from "@/contexts/cart-context";
 import { useAppSession } from "@/contexts/app-session-context";
+import { signInWithOneTap } from "@vendly/auth/react";
+import { trackStorefrontEvents } from "@/lib/storefront-tracking";
 import { Bricolage_Grotesque } from "next/font/google";
 
 const geistSans = Bricolage_Grotesque({
@@ -115,6 +117,31 @@ function CheckoutContent() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        if (!session?.user?.id) {
+            void trackStorefrontEvents(
+                store.slug,
+                [{ eventType: "signin_prompt_shown" }]
+            );
+
+            try {
+                await signInWithOneTap();
+                void trackStorefrontEvents(
+                    store.slug,
+                    [{ eventType: "signin_success" }]
+                );
+            } catch (err) {
+                void trackStorefrontEvents(
+                    store.slug,
+                    [{ eventType: err instanceof Error && err.name === "IdentityCredentialError" ? "signin_dismissed" : "signin_error" }]
+                );
+                if (!(err instanceof Error && err.name === "IdentityCredentialError")) {
+                    console.error("One Tap failed", err);
+                }
+            }
+            return;
+        }
+
         setIsSubmitting(true);
         setError(null);
 

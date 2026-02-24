@@ -2,6 +2,7 @@ import { ProductGrid } from "./components/product-grid";
 import { StorefrontFooter } from "./components/footer";
 import { Hero } from "./components/hero";
 import { StorefrontViewTracker } from "./components/StorefrontViewTracker";
+import { OneTapLogin } from "@/app/(m)/components/one-tap-login";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { headers } from "next/headers";
@@ -102,6 +103,7 @@ export default async function StorefrontHomePage({ params, searchParams }: Store
   return (
     <div className="min-h-screen">
       <StorefrontViewTracker storeSlug={s} />
+      <OneTapLogin storeSlug={s} />
       <Hero store={store} />
       <div className="w-full">
         <div className="px-3 sm:px-6 lg:px-8">

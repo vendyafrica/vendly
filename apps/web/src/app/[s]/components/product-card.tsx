@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useState } from "react";
 import { getStorefrontUrl } from "@/lib/utils/storefront";
+import { isLikelyVideoMedia } from "@/lib/utils/media";
 
 interface ProductCardProps {
   title: string;
@@ -32,15 +33,14 @@ export function ProductCard({ title, slug, price, image, contentType, index = 0,
   const params = useParams();
   const router = useRouter();
   const [isNavigating, setIsNavigating] = useState(false);
+  const [forceVideo, setForceVideo] = useState(false);
 
   const currentStoreSlug = storeSlug || (params?.s as string);
   const aspectClass = aspectVariants[index % aspectVariants.length];
 
   const imageUrl = image || FALLBACK_PRODUCT_IMAGE;
 
-  const isVideo = contentType?.startsWith("video/")
-    || /\.(mp4|webm|mov|ogg)$/i.test(imageUrl)
-    || (imageUrl.includes(".ufs.sh") && (!/\.(jpg|jpeg|png|webp|gif)$/i.test(imageUrl) || contentType?.startsWith("video/")));
+  const isVideo = forceVideo || isLikelyVideoMedia({ url: imageUrl, contentType });
 
   const handleClick = (event: React.MouseEvent<HTMLAnchorElement>) => {
     if (isNavigating) {
@@ -83,6 +83,8 @@ export function ProductCard({ title, slug, price, image, contentType, index = 0,
             priority={index < 4}
             sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, 20vw"
             className="object-cover transition-all duration-700 ease-out group-hover:scale-[1.03]"
+            unoptimized={imageUrl.includes(".ufs.sh")}
+            onError={() => setForceVideo(true)}
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center text-muted-foreground">

@@ -120,7 +120,7 @@ export const productService = {
                     tenantId,
                     blobUrl: img.url,
                     blobPathname: img.pathname,
-                    contentType: "image/jpeg",
+                    contentType: img.contentType || "application/octet-stream",
                     source: "upload",
                 }))
             ).returning();
@@ -163,7 +163,7 @@ export const productService = {
                 tenantId,
                 blobUrl: img.url,
                 blobPathname: img.pathname,
-                contentType: "image/jpeg",
+                contentType: img.contentType || "application/octet-stream",
                 source: "upload",
             }))
         ).returning();

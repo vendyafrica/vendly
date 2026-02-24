@@ -20,6 +20,11 @@ type TrackPayload = {
   events: StorefrontTrackEvent[];
 };
 
+type StorefrontTrackOptions = {
+  userId?: string;
+  includeHostTypeMeta?: boolean;
+};
+
 function isBrowser() {
   return typeof window !== "undefined";
 }
@@ -53,22 +58,57 @@ function getDeviceType() {
   return "desktop";
 }
 
-export async function trackStorefrontEvents(storeSlug: string, events: StorefrontTrackEvent[]) {
+function getEntryHostType() {
+  const hostname = window.location.hostname.toLowerCase();
+  const rootDomain = (process.env.NEXT_PUBLIC_ROOT_DOMAIN || "shopvendly.store").toLowerCase();
+
+  if (
+    hostname === "localhost"
+    || hostname === "127.0.0.1"
+    || hostname === rootDomain
+    || hostname === `www.${rootDomain}`
+  ) {
+    return "root";
+  }
+
+  if (hostname.endsWith(`.${rootDomain}`)) {
+    return "subdomain";
+  }
+
+  return "other";
+}
+
+export async function trackStorefrontEvents(
+  storeSlug: string,
+  events: StorefrontTrackEvent[],
+  options?: StorefrontTrackOptions
+) {
   if (!isBrowser()) return;
   if (!storeSlug) return;
   if (!events.length) return;
 
   const sessionId = getOrCreateSessionId(storeSlug);
   const { utmSource, utmMedium, utmCampaign } = getUtmParams();
+  const includeHostTypeMeta = options?.includeHostTypeMeta ?? true;
+  const entryHostType = includeHostTypeMeta ? getEntryHostType() : undefined;
+
+  const normalizedEvents = events.map((event) => ({
+    ...event,
+    meta: {
+      ...(event.meta ?? {}),
+      ...(entryHostType ? { entryHostType } : {}),
+    },
+  }));
 
   const payload: TrackPayload = {
     sessionId,
+    userId: options?.userId,
     referrer: document.referrer || undefined,
     utmSource,
     utmMedium,
     utmCampaign,
     deviceType: getDeviceType(),
-    events,
+    events: normalizedEvents,
   };
 
   try {
