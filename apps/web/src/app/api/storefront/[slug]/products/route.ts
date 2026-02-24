@@ -13,9 +13,7 @@ type RouteParams = {
 
 
 type ProductMedia = {
-
-    media?: { url?: string | null; blobUrl?: string | null; contentType?: string | null } | null;
-
+    media?: { ufsUrl?: string | null; url?: string | null; blobUrl?: string | null; contentType?: string | null } | null;
 };
 
 
@@ -94,7 +92,11 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 
                 currency: product.currency,
 
-                image: product.media?.[0]?.media?.url ?? product.media?.[0]?.media?.blobUrl ?? null,
+                image:
+                    product.media?.[0]?.media?.ufsUrl
+                    ?? product.media?.[0]?.media?.url
+                    ?? product.media?.[0]?.media?.blobUrl
+                    ?? null,
 
                 contentType: product.media?.[0]?.media?.contentType ?? null,
 
