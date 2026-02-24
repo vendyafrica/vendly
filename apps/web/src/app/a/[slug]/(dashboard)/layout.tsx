@@ -46,19 +46,16 @@ async function TenantDashboardLayoutInner({
 }) {
   const headerList = await headers();
 
-  const sessionPromise = auth.api.getSession({ headers: headerList });
-  const storePromise = db.query.stores.findFirst({
-    where: and(eq(stores.slug, slug), isNull(stores.deletedAt)),
-    columns: { id: true, tenantId: true, name: true, defaultCurrency: true },
-  });
-
-  const session = await sessionPromise;
+  const session = await auth.api.getSession({ headers: headerList });
 
   if (!session?.user) {
     redirect(`/a/${slug}/login?next=${encodeURIComponent(basePath)}`);
   }
 
-  const store = await storePromise;
+  const store = await db.query.stores.findFirst({
+    where: and(eq(stores.slug, slug), isNull(stores.deletedAt)),
+    columns: { id: true, tenantId: true, name: true, defaultCurrency: true },
+  });
 
   if (!store) {
     redirect("/");
