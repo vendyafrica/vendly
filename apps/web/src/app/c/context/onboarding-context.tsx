@@ -202,7 +202,7 @@ export function OnboardingProvider({ children }: ProviderProps) {
                 tenantSlug: string;
                 storeId: string;
                 storeSlug: string;
-            }>("/", {
+            }>("", {
                 method: "POST",
                 body: JSON.stringify({ data: payloadData }),
             });

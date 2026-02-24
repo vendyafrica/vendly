@@ -45,7 +45,11 @@ export function Step2Categories() {
 
     try {
       setAuthLoading(true);
-      await signInWithGoogle({ callbackURL: getCallbackURL() });
+      const res = await signInWithGoogle({ callbackURL: getCallbackURL() });
+      if (res?.error) {
+        console.error("Sign in failed:", res.error);
+        setAuthLoading(false);
+      }
     } catch {
       setAuthLoading(false);
     }

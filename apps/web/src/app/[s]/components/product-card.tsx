@@ -39,8 +39,8 @@ export function ProductCard({ title, slug, price, image, contentType, index = 0,
   const imageUrl = image || FALLBACK_PRODUCT_IMAGE;
 
   const isVideo = contentType?.startsWith("video/")
-    || imageUrl.match(/\.(mp4|webm|mov|ogg)$/i) !== null
-    || (imageUrl.includes(".ufs.sh") && !imageUrl.match(/\.(jpg|jpeg|png|webp|gif)$/i) && !contentType?.startsWith("image/")); // Heuristic for CDN URLs if no extension and not explicitly image
+    || /\.(mp4|webm|mov|ogg)$/i.test(imageUrl)
+    || (imageUrl.includes(".ufs.sh") && (!/\.(jpg|jpeg|png|webp|gif)$/i.test(imageUrl) || contentType?.startsWith("video/")));
 
   const handleClick = (event: React.MouseEvent<HTMLAnchorElement>) => {
     if (isNavigating) {
@@ -68,6 +68,7 @@ export function ProductCard({ title, slug, price, image, contentType, index = 0,
         {isVideo ? (
           <video
             src={imageUrl}
+            poster={FALLBACK_PRODUCT_IMAGE}
             className="h-full w-full object-cover transition-all duration-700 ease-out group-hover:scale-[1.03]"
             muted
             playsInline

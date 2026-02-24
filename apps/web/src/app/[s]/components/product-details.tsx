@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { HugeiconsIcon } from "@hugeicons/react";
@@ -157,15 +157,34 @@ export function ProductDetails({ product }: ProductDetailsProps) {
 
     const FALLBACK_PRODUCT_IMAGE = "https://cdn.cosmos.so/25e7ef9d-3d95-486d-b7db-f0d19c1992d7?format=jpeg";
 
-    const validImages = product.images && product.images.length > 0
-        ? product.images.filter(Boolean)
-        : [FALLBACK_PRODUCT_IMAGE];
+    const isVideoUrl = (url: string, contentType?: string | null) => {
+        if (contentType?.startsWith("video/")) return true;
+        return /\.(mp4|webm|mov|ogg)$/i.test(url)
+            || (url.includes(".ufs.sh") && (!/\.(jpg|jpeg|png|webp|gif)$/i.test(url) || contentType?.startsWith("video/")));
+    };
 
-    // Only show the real images/variants without padding or duplication
-    const displayImages = Array.from(new Set(validImages));
+    const mediaItems = useMemo(() => {
+        const items = (product.mediaItems?.length
+            ? product.mediaItems
+            : product.images?.map((url) => ({ url, contentType: null }))
+        )?.filter((m) => !!m?.url) ?? [];
 
-    const safeSelectedIndex = Math.min(selectedMediaIndex, displayImages.length - 1);
-    const currentImage = displayImages[safeSelectedIndex] ?? displayImages[0];
+        if (items.length === 0) return [{ url: FALLBACK_PRODUCT_IMAGE, contentType: "image/jpeg" }];
+
+        // Deduplicate by url to avoid repeats
+        const seen = new Set<string>();
+        return items.filter((m) => {
+            const key = m.url;
+            if (seen.has(key)) return false;
+            seen.add(key);
+            return true;
+        });
+    }, [product.mediaItems, product.images]);
+
+    const safeSelectedIndex = Math.min(selectedMediaIndex, mediaItems.length - 1);
+    const currentMedia = mediaItems[safeSelectedIndex] ?? mediaItems[0];
+    const posterFallback = product.images?.find((img) => !isVideoUrl(img)) || FALLBACK_PRODUCT_IMAGE;
+    const currentIsVideo = isVideoUrl(currentMedia.url, currentMedia.contentType);
 
     return (
         <div className="min-h-screen bg-white pb-16" suppressHydrationWarning>
@@ -174,58 +193,106 @@ export function ProductDetails({ product }: ProductDetailsProps) {
                 <div className="flex flex-col gap-3 lg:sticky lg:top-0 lg:self-start lg:h-max">
                     {/* Mobile carousel */}
                     <div className="lg:hidden flex gap-3 overflow-x-auto snap-x snap-mandatory pb-2 scrollbar-hide">
-                        {displayImages.map((img, index) => (
-                            <div
-                                key={index}
-                                className="relative w-[85vw] sm:w-[70vw] shrink-0 snap-center rounded-none md:rounded-md overflow-hidden bg-neutral-100 aspect-3/4 min-h-[320px]"
-                                style={{ aspectRatio: "3 / 4" }}
-                            >
-                                <Image
-                                    src={img}
-                                    alt={`${product.name} ${index + 1}`}
-                                    fill
-                                    className="object-cover"
-                                    priority={index === 0}
-                                />
-                            </div>
-                        ))}
+                        {mediaItems.map((media, index) => {
+                            const isVideo = isVideoUrl(media.url, media.contentType);
+                            return (
+                                <div
+                                    key={`${media.url}-${index}`}
+                                    className="relative w-[85vw] sm:w-[70vw] shrink-0 snap-center rounded-none md:rounded-md overflow-hidden bg-neutral-100 aspect-3/4 min-h-[320px]"
+                                    style={{ aspectRatio: "3 / 4" }}
+                                >
+                                    {isVideo ? (
+                                        <video
+                                            src={media.url}
+                                            poster={posterFallback}
+                                            className="h-full w-full object-cover"
+                                            muted
+                                            loop
+                                            playsInline
+                                            autoPlay
+                                        />
+                                    ) : (
+                                        <Image
+                                            src={media.url}
+                                            alt={`${product.name} ${index + 1}`}
+                                            fill
+                                            className="object-cover"
+                                            priority={index === 0}
+                                        />
+                                    )}
+                                </div>
+                            );
+                        })}
                     </div>
 
                     {/* Desktop thumbs + main */}
                     <div className="hidden lg:flex flex-row gap-6 lg:gap-8 h-[75vh] min-h-[600px] max-h-[900px]">
                         <div className="flex flex-col gap-4 w-20 xl:w-24 shrink-0 overflow-y-auto scrollbar-hide">
-                            {displayImages.map((img, index) => (
-                                <button
-                                    key={index}
-                                    onClick={() => setSelectedMediaIndex(index)}
-                                    onMouseEnter={() => setSelectedMediaIndex(index)}
-                                    className={`
-                                        relative w-full aspect-3/4 overflow-hidden transition-all duration-300 rounded-none
-                                        ${safeSelectedIndex === index
-                                            ? "ring-1 ring-black opacity-100"
-                                            : "opacity-60 hover:opacity-100"
-                                        }
-                                    `}
-                                >
-                                    <Image
-                                        src={img}
-                                        alt={`View ${index + 1}`}
-                                        fill
-                                        className="object-cover"
-                                    />
-                                </button>
-                            ))}
+                            {mediaItems.map((media, index) => {
+                                const isVideo = isVideoUrl(media.url, media.contentType);
+                                return (
+                                    <button
+                                        key={`${media.url}-${index}`}
+                                        onClick={() => setSelectedMediaIndex(index)}
+                                        onMouseEnter={() => setSelectedMediaIndex(index)}
+                                        className={`
+                                            relative w-full aspect-3/4 overflow-hidden transition-all duration-300 rounded-none
+                                            ${safeSelectedIndex === index
+                                                ? "ring-1 ring-black opacity-100"
+                                                : "opacity-60 hover:opacity-100"
+                                            }
+                                        `}
+                                    >
+                                        {isVideo ? (
+                                            <video
+                                                src={media.url}
+                                                poster={posterFallback}
+                                                className="h-full w-full object-cover"
+                                                muted
+                                                loop
+                                                playsInline
+                                                autoPlay
+                                            />
+                                        ) : (
+                                            <Image
+                                                src={media.url}
+                                                alt={`View ${index + 1}`}
+                                                fill
+                                                className="object-cover"
+                                            />
+                                        )}
+                                    </button>
+                                );
+                            })}
                         </div>
 
                         <div className="flex-1 relative bg-neutral-100 overflow-hidden h-full rounded-md">
-                            <Image
-                                src={currentImage}
-                                alt={product.name}
-                                fill
-                                sizes="(max-width: 1024px) 100vw, 60vw"
-                                className="object-cover object-center"
-                                priority
-                            />
+                            {currentIsVideo ? (
+                                <>
+                                    <video
+                                        src={currentMedia.url}
+                                        poster={posterFallback}
+                                        className="h-full w-full object-cover"
+                                        muted
+                                        loop
+                                        autoPlay
+                                        playsInline
+                                    />
+                                    {/* <div className="absolute bottom-3 left-3 flex items-center gap-1 rounded-full bg-black/70 text-white text-xs px-2 py-1">
+                                        <span aria-hidden>▶</span>
+                                        <span>Playing</span>
+                                    </div> */}
+                                </>
+                            ) : (
+                                <Image
+                                    src={currentMedia.url}
+                                    alt={product.name}
+                                    fill
+                                    sizes="(max-width: 1024px) 100vw, 60vw"
+                                    className="object-cover object-center"
+                                    priority
+                                />
+                            )}
                         </div>
                     </div>
                 </div>

@@ -25,9 +25,13 @@ export function LoginForm({
     const handleGoogleSignIn = async () => {
         try {
             setFormState("loading")
-            await signInWithGoogle({
+            const res = await signInWithGoogle({
                 callbackURL: redirectTo,
             })
+            if (res?.error) {
+                setError(res.error.message || "Failed to sign in with Google. Please try again.")
+                setFormState("idle")
+            }
         } catch {
             setError("Failed to sign in with Google. Please try again.")
             setFormState("idle")

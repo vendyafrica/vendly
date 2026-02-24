@@ -1,7 +1,8 @@
 "use client";
 
 import { Button } from "@vendly/ui/components/button";
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useEffect, useRef, useState, useCallback, useMemo } from "react";
+
 import { HugeiconsIcon } from "@hugeicons/react";
 import {
   ArrowRight02Icon,
@@ -11,12 +12,11 @@ import {
 } from "@hugeicons/core-free-icons";
 import Image from "next/image";
 import { useOnboarding } from "../context/onboarding-context";
-import { getRootUrl } from "@/lib/utils/storefront";
+import { getRootUrl, getStorefrontUrl } from "@/lib/utils/storefront";
 
 export default function Complete() {
   const { isComplete, completeOnboarding, isLoading, isHydrated, error } = useOnboarding();
 
-  const [tenantSlug, setTenantSlug] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [previews, setPreviews] = useState<{ url: string; name: string; file: File }[]>([]);
   const [isUploading, setIsUploading] = useState(false);
@@ -29,24 +29,33 @@ export default function Complete() {
     (async () => { await completeOnboarding(); })();
   }, [isHydrated, isComplete, completeOnboarding]);
 
-  useEffect(() => {
-    if (isComplete) setTenantSlug(localStorage.getItem("vendly_tenant_slug"));
-  }, [isComplete]);
+  const [tenantSlug, setTenantSlug] = useState<string | null>(null);
+  const [storeSlug, setStoreSlug] = useState<string | null>(null);
 
-  // Cleanup object URLs on unmount
   useEffect(() => {
     return () => { previews.forEach((p) => URL.revokeObjectURL(p.url)); };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const adminBase = tenantSlug ? `/a/${tenantSlug}` : "/a";
+  useEffect(() => {
+    if (!isHydrated || typeof window === "undefined") return;
+    setTenantSlug(localStorage.getItem("vendly_tenant_slug"));
+    setStoreSlug(localStorage.getItem("vendly_store_slug"));
+  }, [isHydrated, isComplete]);
+
+  const dashboardSlug = useMemo(() => storeSlug || tenantSlug || "", [storeSlug, tenantSlug]);
+  const adminBase = useMemo(() => getRootUrl(dashboardSlug ? `/a/${dashboardSlug}` : "/a"), [dashboardSlug]);
+
+  const storefrontUrl = useMemo(() => (dashboardSlug ? getStorefrontUrl(dashboardSlug) : null), [dashboardSlug]);
+
   const showLoading = (isLoading || !isHydrated) && !isComplete;
   const hasFiles = previews.length > 0;
 
   const addFiles = useCallback((files: File[]) => {
-    const images = files.filter((f) => f.type.startsWith("image/") || f.type.startsWith("video/"));
-    if (images.length === 0) return;
-    const newPreviews = images.map((f) => ({ url: URL.createObjectURL(f), name: f.name, file: f }));
+    const media = files.filter((f) => f.type.startsWith("image/") || f.type.startsWith("video/"));
+    if (media.length === 0) return;
+    const newPreviews = media.map((f) => ({ url: URL.createObjectURL(f), name: f.name, file: f }));
+
     setPreviews((prev) => [...prev, ...newPreviews]);
   }, []);
 
@@ -71,12 +80,12 @@ export default function Complete() {
   const handleContinue = async () => {
     // If no files are dropped, we assume they chose the normal "Continue" (which is Instagram logic for the empty state)
     if (!hasFiles) {
-      if (!tenantSlug) return;
+      if (!dashboardSlug) return;
       setIsUploading(true);
       try {
         const { linkInstagram } = await import("@vendly/auth/client");
         await linkInstagram({
-          callbackURL: getRootUrl(`/a/${tenantSlug}?instagramConnected=true`),
+          callbackURL: getRootUrl(`/a/${dashboardSlug}?instagramConnected=true`),
         });
       } catch (err) {
         console.error("Instagram connect failed:", err);
@@ -90,10 +99,9 @@ export default function Complete() {
     // Manual Upload flow
     const tenantId = localStorage.getItem("vendly_tenant_id");
     const storeId = localStorage.getItem("vendly_store_id");
-    const storeSlug = localStorage.getItem("vendly_store_slug");
 
     if (!tenantId || !storeId) {
-      window.location.href = `/a/${tenantSlug}`;
+      window.location.href = getRootUrl(`/a/${dashboardSlug}`);
       return;
     }
 
@@ -120,18 +128,18 @@ export default function Complete() {
         throw new Error("Failed to upload product");
       }
 
-      window.location.href = `/a/${storeSlug || tenantSlug}`; // land squarely on admin page dashboard
+      window.location.href = getRootUrl(`/a/${dashboardSlug}`); // land squarely on admin page dashboard
     } catch (err) {
       console.error(err);
       // Even if it fails, drop them into admin dashboard instead of getting stuck
-      window.location.href = `/a/${tenantSlug}`;
+      window.location.href = getRootUrl(`/a/${dashboardSlug}`);
     } finally {
       setIsUploading(false);
     }
   };
 
   const handleSkip = () => {
-    window.location.href = `/a/${tenantSlug}`;
+    window.location.href = getRootUrl(`/a/${dashboardSlug}`);
   };
 
   return (
@@ -197,7 +205,18 @@ export default function Complete() {
                         key={i}
                         className="relative w-16 h-16 rounded-lg overflow-hidden border border-border/60 shrink-0"
                       >
-                        <Image src={p.url} alt={p.name} fill className="object-cover" />
+                        {p.file.type.startsWith("video/") ? (
+                          <video
+                            src={p.url}
+                            className="h-full w-full object-cover"
+                            muted
+                            loop
+                            playsInline
+                            autoPlay
+                          />
+                        ) : (
+                          <Image src={p.url} alt={p.name} fill className="object-cover" />
+                        )}
                         <button
                           type="button"
                           onClick={(e) => { e.stopPropagation(); removePreview(i); }}
@@ -265,16 +284,41 @@ export default function Complete() {
               )}
             </Button>
 
-            <p className="text-center text-xs text-muted-foreground">
-              <button
-                type="button"
-                onClick={handleSkip}
-                className="underline underline-offset-2 hover:text-foreground transition-colors"
-              >
-                Skip for now
-              </button>
-              {" "}— you can always add products from your dashboard.
-            </p>
+            <div className="text-center text-xs text-muted-foreground space-y-1">
+              <p>
+                <button
+                  type="button"
+                  onClick={handleSkip}
+                  className="underline underline-offset-2 hover:text-foreground transition-colors"
+                >
+                  Skip for now
+                </button>
+                — you can always add products from your dashboard.
+              </p>
+              {dashboardSlug ? (
+                <p className="flex items-center justify-center gap-2">
+                  <a
+                    href={getRootUrl(`/a/${dashboardSlug}`)}
+                    className="underline underline-offset-2 hover:text-foreground transition-colors"
+                  >
+                    Go to dashboard
+                  </a>
+                  {storefrontUrl && (
+                    <>
+                      <span className="text-border">•</span>
+                      <a
+                        href={storefrontUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="underline underline-offset-2 hover:text-foreground transition-colors"
+                      >
+                        View your store
+                      </a>
+                    </>
+                  )}
+                </p>
+              ) : null}
+            </div>
           </div>
         )}
       </div>

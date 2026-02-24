@@ -6,6 +6,7 @@ import { HugeiconsIcon } from "@hugeicons/react";
 import { ShoppingBag02Icon, FavouriteIcon, UserIcon } from "@hugeicons/core-free-icons";
 import { DeferredHeroVideo } from "./deferred-hero-video";
 import { Bricolage_Grotesque } from "next/font/google";
+import { getRootUrl } from "@/lib/utils/storefront";
 
 const geistSans = Bricolage_Grotesque({
   variable: "--font-bricolage-grotesque",
@@ -55,6 +56,7 @@ export function Hero({ store }: HeroProps) {
     const heroMedia = Array.isArray(store.heroMedia) ? store.heroMedia : [];
     const mediaUrl = heroMedia[0] || FALLBACK_HERO_MEDIA;
     const isVideo = typeof mediaUrl === "string" && isVideoUrl(mediaUrl);
+    const dashboardHref = store.slug ? getRootUrl(`/a/${store.slug}`) : getRootUrl("/a");
 
     if (typeof window !== "undefined") {
         console.info("[Hero] media selection", { mediaUrl, heroMediaCount: heroMedia.length, isVideo });
@@ -88,7 +90,7 @@ export function Hero({ store }: HeroProps) {
                             <HugeiconsIcon icon={FavouriteIcon} size={18} className="text-white" />
                         </Link>
                         <Link
-                            href={`/${store.slug ?? ""}/account`}
+                            href={dashboardHref}
                             className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-black/30 backdrop-blur hover:bg-black/45 transition-colors"
                             aria-label="Account"
                         >
