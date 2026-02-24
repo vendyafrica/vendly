@@ -16,9 +16,7 @@ type RouteParams = {
 
 
 type ProductMedia = {
-
-    media?: { url?: string | null; blobUrl?: string | null; contentType?: string | null } | null;
-
+    media?: { ufsUrl?: string | null; url?: string | null; blobUrl?: string | null; contentType?: string | null } | null;
 };
 
 
@@ -121,7 +119,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 
             images: (product.media ?? [])
 
-                .map((m) => m.media?.url ?? m.media?.blobUrl ?? null)
+                .map((m) => m.media?.ufsUrl ?? m.media?.url ?? m.media?.blobUrl ?? null)
 
                 .filter(Boolean),
 
@@ -129,7 +127,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 
                 .map((m) => ({
 
-                    url: m.media?.url ?? m.media?.blobUrl ?? null,
+                    url: m.media?.ufsUrl ?? m.media?.url ?? m.media?.blobUrl ?? null,
 
                     contentType: m.media?.contentType ?? null,
 
@@ -138,6 +136,8 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
                 .filter((m) => Boolean(m.url)),
 
             rating: 0,
+
+            userRating,
 
             store: {
 
