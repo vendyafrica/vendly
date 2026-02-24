@@ -13,3 +13,5 @@ public/dist
 
 test-results
 playwright-report
+
+.env.sentry-build-plugin 
