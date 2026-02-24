@@ -106,7 +106,7 @@ export function ProductDetails({ product }: ProductDetailsProps) {
 
         if (!session?.user?.id) {
             try {
-                await signInWithOneTap();
+                await signInWithOneTap({ callbackURL: window.location.href });
             } catch (err) {
                 console.error("One Tap failed", err);
             }

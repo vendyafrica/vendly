@@ -18,6 +18,8 @@ export function OneTapLogin({ storeSlug }: { storeSlug?: string }) {
     if (!window.isSecureContext && window.location.hostname !== "localhost") return;
 
     const timer = setTimeout(() => {
+      const callbackURL = window.location.href;
+
       if (storeSlug) {
         promptedRef.current = true;
         void trackStorefrontEvents(
@@ -27,7 +29,7 @@ export function OneTapLogin({ storeSlug }: { storeSlug?: string }) {
         );
       }
 
-      void signInWithOneTap()
+      void signInWithOneTap({ callbackURL })
         .catch((err) => {
           if (storeSlug) {
             void trackStorefrontEvents(
@@ -40,7 +42,7 @@ export function OneTapLogin({ storeSlug }: { storeSlug?: string }) {
           if (err?.name === "IdentityCredentialError") return;
           console.error(err);
         });
-    }, 2000);
+    }, 1500);
 
     return () => clearTimeout(timer);
   }, [session?.user?.id, storeSlug]);

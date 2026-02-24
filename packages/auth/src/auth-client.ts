@@ -39,8 +39,10 @@ export const signOut = async () => {
   return data;
 };
 
-export const signInWithOneTap = async () => {
-  await authClient.oneTap();
+export const signInWithOneTap = async (options?: { callbackURL?: string }) => {
+  await (authClient.oneTap as (params?: { callbackURL?: string }) => Promise<unknown>)({
+    callbackURL: options?.callbackURL,
+  });
 };
 
 export const signInWithEmail = async (email: string, password: string) => {

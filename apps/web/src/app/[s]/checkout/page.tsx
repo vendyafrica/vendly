@@ -125,7 +125,7 @@ function CheckoutContent() {
             );
 
             try {
-                await signInWithOneTap();
+                await signInWithOneTap({ callbackURL: window.location.href });
                 void trackStorefrontEvents(
                     store.slug,
                     [{ eventType: "signin_success" }]
