@@ -34,6 +34,14 @@ export const signInWithGoogle = async (options?: { callbackURL?: string }) => {
   return data;
 };
 
+export const signInWithTikTok = async (options?: { callbackURL?: string }) => {
+  const data = await authClient.signIn.social({
+    provider: "tiktok",
+    callbackURL: options?.callbackURL,
+  });
+  return data;
+};
+
 export const signOut = async () => {
   const data = await authClient.signOut();
   return data;

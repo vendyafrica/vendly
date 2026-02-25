@@ -145,6 +145,10 @@ export const auth = betterAuth({
       clientId: process.env.GOOGLE_CLIENT_ID as string,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
     },
+    tiktok: {
+      clientKey: process.env.TIKTOK_CLIENT_KEY as string,
+      clientSecret: process.env.TIKTOK_CLIENT_SECRET as string,
+    },
   },
 
   plugins: [
@@ -154,7 +158,6 @@ export const auth = betterAuth({
           providerId: "instagram",
           clientId: process.env.INSTAGRAM_CLIENT_ID as string,
           clientSecret: process.env.INSTAGRAM_CLIENT_SECRET as string,
-          // Use API host to avoid mobile deep-link into the Instagram app.
           authorizationUrl: "https://api.instagram.com/oauth/authorize",
           tokenUrl: "https://api.instagram.com/oauth/access_token",
           responseType: "code",
@@ -189,7 +192,7 @@ export const auth = betterAuth({
     cookies: {
       state: {
         attributes: {
-          sameSite: isSecure ? "none" : "lax",
+          sameSite: "lax",
           secure: isSecure,
         },
       },
@@ -203,7 +206,7 @@ export const auth = betterAuth({
   account: {
     accountLinking: {
       enabled: true,
-      trustedProviders: ["instagram", "google"],
+      trustedProviders: ["instagram", "google", "tiktok"],
       allowDifferentEmails: true,
       updateUserInfoOnLink: false,
     },

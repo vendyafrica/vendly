@@ -6,7 +6,7 @@ import { Button } from "@vendly/ui/components/button"
 import {
     FieldGroup,
 } from "@vendly/ui/components/field"
-import { signInWithGoogle } from "@vendly/auth/react"
+import { signInWithGoogle, signInWithTikTok } from "@vendly/auth/react"
 import { HugeiconsIcon } from "@hugeicons/react"
 import { Loading03Icon } from "@hugeicons/core-free-icons"
 import { GoogleIcon } from "@vendly/ui/components/svgs/google"
@@ -34,6 +34,22 @@ export function LoginForm({
             }
         } catch {
             setError("Failed to sign in with Google. Please try again.")
+            setFormState("idle")
+        }
+    }
+
+    const handleTikTokSignIn = async () => {
+        try {
+            setFormState("loading")
+            const res = await signInWithTikTok({
+                callbackURL: redirectTo,
+            })
+            if (res?.error) {
+                setError(res.error.message || "Failed to sign in with TikTok. Please try again.")
+                setFormState("idle")
+            }
+        } catch {
+            setError("Failed to sign in with TikTok. Please try again.")
             setFormState("idle")
         }
     }
@@ -73,6 +89,23 @@ export function LoginForm({
                             <GoogleIcon />
                             Continue with Google
                         </>
+                    )}
+                </Button>
+
+                <Button
+                    variant="outline"
+                    type="button"
+                    onClick={handleTikTokSignIn}
+                    className="h-11 sm:h-9"
+                    disabled={formState === "loading"}
+                >
+                    {formState === "loading" ? (
+                        <>
+                            <HugeiconsIcon icon={Loading03Icon} className="mr-2 h-4 w-4 animate-spin" />
+                            Connecting...
+                        </>
+                    ) : (
+                        "Continue with TikTok"
                     )}
                 </Button>
             </FieldGroup>
