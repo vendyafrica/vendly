@@ -1,21 +1,21 @@
 {
   "$schema": "https://ui.shadcn.com/schema.json",
   "style": "base-lyra",
-  "theme": "fuchsia",
-  "radius": "default",
+  "theme": "violet",
+  "radius": "small",
   "font": "public-sans",
   "rsc": true,
   "tsx": true,
   "tailwind": {
     "config": "",
     "css": "../../packages/ui/src/styles/globals.css",
-    "baseColor": "neutral",
+    "baseColor": "gray",
     "cssVariables": true,
     "prefix": ""
   },
   "iconLibrary": "hugeicons",
   "menuColor": "default",
-  "menuAccent": "bold",
+  "menuAccent": "subtle",
   "aliases": {
     "components": "@/components",
     "utils": "@vendly/ui/lib/utils",
