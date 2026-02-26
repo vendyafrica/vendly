@@ -114,7 +114,6 @@ export const auth = betterAuth({
           }
         },
         after: async (user, request) => {
-          // Auto-assign super_admin role for admin app users
           if (request?.headers?.get("referer")?.includes("localhost:4000") ||
             request?.headers?.get("host")?.includes("admin")) {
             try {
@@ -145,10 +144,12 @@ export const auth = betterAuth({
       clientId: process.env.GOOGLE_CLIENT_ID as string,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
     },
+    /// eslint-disable-next-line @typescript-eslint/no-explicit-any
     tiktok: {
       clientKey: process.env.TIKTOK_CLIENT_KEY as string,
+      clientId: process.env.TIKTOK_CLIENT_KEY as string, // Better Auth validates config.clientId for ALL providers
       clientSecret: process.env.TIKTOK_CLIENT_SECRET as string,
-    },
+    } as any,
   },
 
   plugins: [

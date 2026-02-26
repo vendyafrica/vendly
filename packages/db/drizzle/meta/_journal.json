@@ -246,6 +246,13 @@
       "when": 1771849277212,
       "tag": "0034_real_blonde_phantom",
       "breakpoints": true
+    },
+    {
+      "idx": 35,
+      "version": "7",
+      "when": 1772047010132,
+      "tag": "0035_fearless_saracen",
+      "breakpoints": true
     }
   ]
 }

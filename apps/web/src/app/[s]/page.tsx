@@ -1,4 +1,4 @@
-import { ProductGrid } from "./components/product-grid";
+import { StorefrontContentTabs } from "./components/storefront-content-tabs";
 import { StorefrontFooter } from "./components/footer";
 import { Hero } from "./components/hero";
 import { StorefrontViewTracker } from "./components/StorefrontViewTracker";
@@ -25,6 +25,16 @@ type StorefrontProduct = {
   currency: string;
   image: string | null;
   contentType?: string | null;
+};
+
+type StorefrontTikTokVideo = {
+  id: string;
+  title?: string;
+  video_description?: string;
+  duration?: number;
+  cover_image_url?: string;
+  embed_link?: string;
+  share_url?: string;
 };
 
 const getApiBaseUrl = async () => {
@@ -100,6 +110,13 @@ export default async function StorefrontHomePage({ params, searchParams }: Store
   const productsRes = await fetch(productUrl.toString(), { next: { revalidate: 30 } });
   const products = productsRes.ok ? (await productsRes.json()) as StorefrontProduct[] : [];
 
+  const inspirationRes = await fetch(`${baseUrl}/api/storefront/${s}/inspiration`, { next: { revalidate: 30 } });
+  const inspirationPayload = inspirationRes.ok
+    ? (await inspirationRes.json()) as { connected?: boolean; videos?: StorefrontTikTokVideo[] }
+    : { connected: false, videos: [] };
+  const showInspirationTab = Boolean(inspirationPayload?.connected);
+  const inspirationVideos = Array.isArray(inspirationPayload?.videos) ? inspirationPayload.videos : [];
+
   return (
     <div className="min-h-screen">
       <StorefrontViewTracker storeSlug={s} />
@@ -107,10 +124,13 @@ export default async function StorefrontHomePage({ params, searchParams }: Store
       <Hero store={store} />
       <div className="w-full">
         <div className="px-3 sm:px-6 lg:px-8">
-          <h3 className="text-lg font-semibold my-8 text-foreground">
-            All Products
-          </h3>
-          <ProductGrid products={products} />
+          <div className="my-8">
+            <StorefrontContentTabs
+              products={products}
+              showInspirationTab={showInspirationTab}
+              inspirationVideos={inspirationVideos}
+            />
+          </div>
         </div>
         <div className="my-20" />
       </div>

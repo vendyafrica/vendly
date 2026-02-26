@@ -6,11 +6,12 @@ import { useTenant } from "../tenant-context";
 import { Button } from "@vendly/ui/components/button";
 import { Loading03Icon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
-import { Instagram, CheckCircle2, AlertCircle, Download, Trash2, ChevronDown } from "lucide-react";
+import { Instagram, CheckCircle2, AlertCircle, Download, Trash2, ChevronDown, Music2 } from "lucide-react";
 
 export default function IntegrationsPage() {
   const params = useSearchParams();
   const paramConnected = params.get("connected") === "true";
+  const tiktokConnectedParam = params.get("tiktokConnected") === "true";
 
   const { bootstrap, error } = useTenant();
   const storeId = bootstrap?.storeId;
@@ -21,6 +22,9 @@ export default function IntegrationsPage() {
   const [importSuccess, setImportSuccess] = React.useState(false);
   const [syncError, setSyncError] = React.useState<string | null>(null);
   const [isConnectedFromApi, setIsConnectedFromApi] = React.useState(false);
+  const [isTikTokConnectedFromApi, setIsTikTokConnectedFromApi] = React.useState(false);
+  const [isTikTokConnecting, setIsTikTokConnecting] = React.useState(false);
+  const [tiktokSyncError, setTiktokSyncError] = React.useState<string | null>(null);
   const [isDeleting, setIsDeleting] = React.useState(false);
   const [deleteError, setDeleteError] = React.useState<string | null>(null);
   const [deleteSuccess, setDeleteSuccess] = React.useState(false);
@@ -35,9 +39,17 @@ export default function IntegrationsPage() {
         if (data.imported) setImportSuccess(true);
       })
       .catch((e) => console.error("Failed to check instagram status", e));
+
+    fetch(`/api/integrations/tiktok/status?storeId=${storeId}`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.storeLinked) setIsTikTokConnectedFromApi(true);
+      })
+      .catch((e) => console.error("Failed to check tiktok status", e));
   }, [storeId]);
 
   const connected = paramConnected || isConnectedFromApi;
+  const tiktokConnected = tiktokConnectedParam || isTikTokConnectedFromApi;
 
   React.useEffect(() => {
     const shouldSync = paramConnected && Boolean(storeId);
@@ -61,9 +73,39 @@ export default function IntegrationsPage() {
         if (!cancelled) setSyncError(e instanceof Error ? e.message : "Instagram sync failed");
       }
     };
+
     void run();
     return () => { cancelled = true; };
   }, [paramConnected, storeId]);
+
+  React.useEffect(() => {
+    const shouldSyncTikTok = tiktokConnectedParam && Boolean(storeId);
+    if (!shouldSyncTikTok) return;
+
+    let cancelled = false;
+    const run = async () => {
+      try {
+        setTiktokSyncError(null);
+        const res = await fetch("/api/integrations/tiktok/sync", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ storeId }),
+        });
+        if (!res.ok) {
+          const text = await res.text();
+          throw new Error(text || "TikTok sync failed");
+        }
+        if (!cancelled) setIsTikTokConnectedFromApi(true);
+      } catch (e) {
+        if (!cancelled) setTiktokSyncError(e instanceof Error ? e.message : "TikTok sync failed");
+      }
+    };
+
+    void run();
+    return () => {
+      cancelled = true;
+    };
+  }, [tiktokConnectedParam, storeId]);
 
   const handleConnect = async () => {
     if (!bootstrap?.storeSlug) return;
@@ -75,6 +117,44 @@ export default function IntegrationsPage() {
       });
     } finally {
       setIsConnecting(false);
+    }
+  };
+
+  const handleTikTokConnect = async () => {
+    if (!bootstrap?.storeSlug) return;
+    setIsTikTokConnecting(true);
+    try {
+      const authModule = await import("@vendly/auth/client");
+      const maybeLinkTikTok = (
+        authModule as {
+          linkTikTok?: (options?: { callbackURL?: string; scopes?: string[] }) => Promise<unknown>;
+        }
+      ).linkTikTok;
+
+      if (maybeLinkTikTok) {
+        await maybeLinkTikTok({
+          callbackURL: `/a/${bootstrap.storeSlug}/integrations?tiktokConnected=true`,
+          scopes: ["user.info.basic", "user.info.profile", "video.list"],
+        });
+      } else {
+        await (
+          authModule as {
+            authClient: {
+              linkSocial: (options: {
+                provider: "tiktok";
+                callbackURL: string;
+                scopes: string[];
+              }) => Promise<unknown>;
+            };
+          }
+        ).authClient.linkSocial({
+          provider: "tiktok",
+          callbackURL: `/a/${bootstrap.storeSlug}/integrations?tiktokConnected=true`,
+          scopes: ["user.info.basic", "user.info.profile", "video.list"],
+        });
+      }
+    } finally {
+      setIsTikTokConnecting(false);
     }
   };
 
@@ -302,6 +382,75 @@ export default function IntegrationsPage() {
             )}
           </div>
         )}
+      </div>
+
+      {/* TikTok Card */}
+      <div className="rounded-xl border border-border/70 overflow-hidden shadow-sm">
+        <div className="bg-gradient-to-r from-neutral-900 via-neutral-800 to-neutral-700 px-6 py-5 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="h-10 w-10 rounded-lg bg-white/20 backdrop-blur-sm flex items-center justify-center">
+              <Music2 className="h-5 w-5 text-white" />
+            </div>
+            <div>
+              <p className="font-semibold text-white text-sm">TikTok</p>
+              <p className="text-xs text-white/70">Show your TikTok inspiration feed on storefront</p>
+            </div>
+          </div>
+
+          {tiktokConnected ? (
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-white/20 backdrop-blur-sm px-3 py-1 text-xs font-medium text-white">
+              <CheckCircle2 className="h-3.5 w-3.5" />
+              Connected
+            </span>
+          ) : (
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-black/20 px-3 py-1 text-xs font-medium text-white/80">
+              Not connected
+            </span>
+          )}
+        </div>
+
+        <div className="p-6 space-y-5 bg-card">
+          {tiktokSyncError && (
+            <div className="flex items-center gap-2 rounded-lg bg-destructive/10 border border-destructive/20 px-4 py-3 text-sm text-destructive">
+              <AlertCircle className="h-4 w-4 shrink-0" />
+              {tiktokSyncError}
+            </div>
+          )}
+
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <p className="text-sm font-medium">
+                {tiktokConnected ? "Account linked" : "Connect your account"}
+              </p>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                {tiktokConnected
+                  ? "Your TikTok account is linked to this store's Inspiration tab."
+                  : "Link TikTok to enable the Inspiration feed on your storefront."}
+              </p>
+            </div>
+            <Button
+              onClick={handleTikTokConnect}
+              disabled={isTikTokConnecting || !bootstrap?.storeSlug}
+              variant={tiktokConnected ? "outline" : "default"}
+              size="sm"
+              className="shrink-0"
+            >
+              {isTikTokConnecting ? (
+                <>
+                  <HugeiconsIcon icon={Loading03Icon} className="mr-2 h-3.5 w-3.5 animate-spin" />
+                  Connecting…
+                </>
+              ) : tiktokConnected ? (
+                "Reconnect"
+              ) : (
+                <>
+                  <Music2 className="mr-2 h-3.5 w-3.5" />
+                  Connect
+                </>
+              )}
+            </Button>
+          </div>
+        </div>
       </div>
     </div>
   );

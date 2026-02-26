@@ -87,4 +87,17 @@ export const linkInstagram = async (options?: { callbackURL?: string }) => {
   return response;
 }
 
+export const linkTikTok = async (options?: { callbackURL?: string; scopes?: string[] }) => {
+  const response = await authClient.linkSocial({
+    provider: "tiktok",
+    callbackURL: options?.callbackURL,
+    scopes: options?.scopes,
+  } as {
+    provider: "tiktok";
+    callbackURL?: string;
+    scopes?: string[];
+  });
+  return response;
+}
+
 export const useSession = authClient.useSession;

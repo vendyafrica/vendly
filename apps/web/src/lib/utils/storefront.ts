@@ -21,7 +21,17 @@ export function getStorefrontUrl(storeSlug: string, path: string = "") {
 export function getRootUrl(path: string = "") {
     const isLocalhost = process.env.NODE_ENV === "development";
     const rootDomain = process.env.NEXT_PUBLIC_ROOT_DOMAIN || "shopvendly.store";
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL;
     const formattedPath = path && !path.startsWith("/") ? `/${path}` : path;
+
+    if (typeof window !== "undefined") {
+        return `${window.location.origin}${formattedPath}`;
+    }
+
+    if (appUrl) {
+        const normalizedAppUrl = appUrl.trim().replace(/\/$/, "");
+        return `${normalizedAppUrl}${formattedPath}`;
+    }
 
     if (isLocalhost) {
         return `http://localhost:3000${formattedPath}`;
