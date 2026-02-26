@@ -40,8 +40,17 @@ type StorefrontTikTokVideo = {
 const getApiBaseUrl = async () => {
   const headerList = await headers();
   const host = headerList.get("x-forwarded-host") || headerList.get("host");
-  const proto = headerList.get("x-forwarded-proto") || "https";
-  return host ? `${proto}://${host}` : process.env.WEB_URL || "https://shopvendly.store";
+  const forwardedProto = headerList.get("x-forwarded-proto");
+  const isDev = process.env.NODE_ENV === "development";
+  const isLocalHost = host ? /^(localhost|127\.0\.0\.1)(:\d+)?$/i.test(host) : false;
+  const proto = forwardedProto || (isDev || isLocalHost ? "http" : "https");
+
+  if (host) return `${proto}://${host}`;
+
+  const fallbackUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.WEB_URL;
+  if (fallbackUrl) return fallbackUrl.replace(/\/$/, "");
+
+  return isDev ? "http://localhost:3000" : "https://shopvendly.store";
 };
 
 interface StorefrontPageProps {

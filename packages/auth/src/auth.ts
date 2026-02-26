@@ -147,8 +147,9 @@ export const auth = betterAuth({
     /// eslint-disable-next-line @typescript-eslint/no-explicit-any
     tiktok: {
       clientKey: process.env.TIKTOK_CLIENT_KEY as string,
-      clientId: process.env.TIKTOK_CLIENT_KEY as string, // Better Auth validates config.clientId for ALL providers
+      clientId: process.env.TIKTOK_CLIENT_KEY as string,
       clientSecret: process.env.TIKTOK_CLIENT_SECRET as string,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } as any,
   },
 

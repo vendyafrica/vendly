@@ -24,7 +24,7 @@ export function InspirationGrid({ videos }: InspirationGridProps) {
   const getEmbedSrc = React.useCallback((video?: TikTokVideo | null) => {
     if (!video?.embed_link) return undefined;
     const hasQuery = video.embed_link.includes("?");
-    const autoplayParams = "autoplay=1&muted=1";
+    const autoplayParams = "autoplay=1&muted=0";
     return `${video.embed_link}${hasQuery ? "&" : "?"}${autoplayParams}`;
   }, []);
 
@@ -51,7 +51,7 @@ export function InspirationGrid({ videos }: InspirationGridProps) {
                 setPlayerOpen(true);
               }}
             >
-              <div className="relative overflow-hidden rounded-lg aspect-[1/1] bg-muted">
+              <div className="relative overflow-hidden rounded-lg aspect-square bg-muted">
                 {video.cover_image_url ? (
                   <Image
                     src={video.cover_image_url}
@@ -91,9 +91,9 @@ export function InspirationGrid({ videos }: InspirationGridProps) {
           if (!open) setSelectedVideo(null);
         }}
       >
-        <DialogContent className="w-[min(92vw,900px)] p-0 overflow-hidden">
-          <div className="p-5">
-            <div className="relative overflow-hidden rounded-lg aspect-[1/1] bg-black">
+        <DialogContent className="w-[min(95vw,1200px)] p-0 overflow-hidden" showCloseButton={false}>
+          <div className="p-3 sm:p-5">
+            <div className="relative overflow-hidden rounded-lg aspect-video bg-black">
               {selectedVideo?.embed_link ? (
                 <iframe
                   key={selectedVideo.id}
