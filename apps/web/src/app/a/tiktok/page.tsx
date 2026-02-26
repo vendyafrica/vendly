@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { Suspense, useCallback, useEffect, useState } from "react";
 import Image from "next/image";
 import { useSearchParams } from "next/navigation";
 import { Button } from "@vendly/ui/components/button";
@@ -44,6 +44,20 @@ const aspectVariants = [
 const TILE_ASPECT_CLASS = "aspect-[1/1]";
 
 export default function TikTokAuthTestPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex min-h-[60vh] items-center justify-center text-sm text-muted-foreground">
+          Loading TikTok integration...
+        </div>
+      }
+    >
+      <TikTokAuthTestPageContent />
+    </Suspense>
+  );
+}
+
+function TikTokAuthTestPageContent() {
   const searchParams = useSearchParams();
   const connectedFromCallback = searchParams.get("connected") === "true";
 
